@@ -1,3 +1,7 @@
+open Ppx_yojson_conv_lib.Yojson_conv.Primitives
+
+type message_object = { message : string } [@@deriving yojson]
+
 let greet who =
   let open Dream_html in
   let open HTML in
@@ -40,4 +44,8 @@ let run () =
        [
          Dream.get "/" (fun _ ->
              Dream.html (greet "World" |> Dream_html.to_string));
+         Dream.get "/hi" (fun _ ->
+             let message_object = { message = "Hello, World!" } in
+             yojson_of_message_object message_object
+             |> Yojson.Safe.to_string |> Dream.json);
        ]

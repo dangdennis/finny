@@ -24,7 +24,9 @@
   dune
   dream
   (dream-html
-   (>= 2.0.0)))
+   (>= 2.0.0))
+  (ppx_yojson_conv
+   (= v0.16.0)))
  (tags
   (topics "to describe" your project)))
 

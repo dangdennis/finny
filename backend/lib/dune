@@ -1,5 +1,7 @@
 (library
  (name app)
- (libraries dream dream-html))
+ (libraries dream dream-html)
+ (preprocess
+  (pps lwt_ppx ppx_yojson_conv)))
 
 (include_subdirs qualified)
