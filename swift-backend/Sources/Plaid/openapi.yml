@@ -1188,30 +1188,31 @@ paths:
             schema:
               $ref: '#/components/schemas/StatementsListRequest'
         description: ""
-  /statements/download:
-    x-plaid-business-unit-context: BUSINESS_UNIT_PLAID
-    post:
-      tags:
-      - plaid
-      summary: Retrieve a single statement.
-      externalDocs:
-        url: /api/products/statements#statementsdownload
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/StatementsDownloadResponse'
-      operationId: statementsDownload
-      description: The `/statements/download` endpoint retrieves a single statement PDF in binary format.  The response will contain a `Plaid-Content-Hash` header containing a SHA 256 checksum of the statement. This can be used to verify that the file being sent by Plaid is the same file that was downloaded to your system.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/StatementsDownloadRequest'
-        description: ""
+  # todo(dennis): see why this prevents openapi generation
+  # /statements/download:
+  #   x-plaid-business-unit-context: BUSINESS_UNIT_PLAID
+  #   post:
+  #     tags:
+  #     - plaid
+  #     summary: Retrieve a single statement.
+  #     externalDocs:
+  #       url: /api/products/statements#statementsdownload
+  #     responses:
+  #       "200":
+  #         description: OK
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: '#/components/schemas/StatementsDownloadResponse'
+  #     operationId: statementsDownload
+  #     description: The `/statements/download` endpoint retrieves a single statement PDF in binary format.  The response will contain a `Plaid-Content-Hash` header containing a SHA 256 checksum of the statement. This can be used to verify that the file being sent by Plaid is the same file that was downloaded to your system.
+  #     requestBody:
+  #       required: true
+  #       content:
+  #         application/json:
+  #           schema:
+  #             $ref: '#/components/schemas/StatementsDownloadRequest'
+  #       description: ""
   /statements/refresh:
     x-plaid-business-unit-context: BUSINESS_UNIT_PLAID
     post:
