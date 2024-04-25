@@ -21,6 +21,8 @@ public func configure(_ app: Application) async throws {
     app.migrations.add(CreateTodo())
 
     app.views.use(.leaf)
+    app.asyncCommands.use(HelloCommand(), as: "hello")
+    app.asyncCommands.use(PlaidCommand(), as: "plaid")
 
 
     // register routes

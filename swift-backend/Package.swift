@@ -28,14 +28,9 @@ let package = Package(
         .product(name: "FluentPostgresDriver", package: "fluent-postgres-driver"),
         .product(name: "Leaf", package: "leaf"),
         .product(name: "Vapor", package: "vapor"),
-        // .product(name: "OpenAPIRuntime", package: "swift-openapi-runtime"),
-        // .product(name: "OpenAPIAsyncHTTPClient", package: "swift-openapi-async-http-client"),
         .target(name: "Plaid"),
       ],
       swiftSettings: swiftSettings
-        // plugins: [
-        //   .plugin(name: "OpenAPIGenerator", package: "swift-openapi-generator")
-        // ]
     ),
 
     .testTarget(
@@ -49,11 +44,7 @@ let package = Package(
 
     .target(
       name: "Plaid",
-      dependencies: [
-        .product(name: "OpenAPIRuntime", package: "swift-openapi-runtime"),
-        .product(name: "OpenAPIAsyncHTTPClient", package: "swift-openapi-async-http-client"),
-      ],
-      swiftSettings: swiftSettings,
+      dependencies: [],
       plugins: [
         .plugin(name: "OpenAPIGenerator", package: "swift-openapi-generator")
       ]
