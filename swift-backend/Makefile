@@ -9,3 +9,9 @@ f:
 
 l:
 	swift-format lint ./Sources --recursive --parallel 
+
+migrate:
+	swift run App migrate
+
+revert:
+	swift run App migrate --revert
