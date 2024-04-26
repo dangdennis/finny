@@ -30,4 +30,13 @@ final class Account: Model, Content {
 
   @Children(for: \.$account)
   var transactions: [Transaction]
+
+  @Timestamp(key: "created_at", on: .create)
+  var createdAt: Date?
+
+  @Timestamp(key: "updated_at", on: .update)
+  var updatedAt: Date?
+
+  @Timestamp(key: "deleted_at", on: .delete)
+  var deletedAt: Date?
 }
