@@ -21,7 +21,9 @@ public func configure(_ app: Application) async throws {
         tls: .prefer(try .init(configuration: .clientDefault)))
     ), as: .psql)
 
-  app.migrations.add(CreateTodo())
+  app.migrations.add(CreateUser())
+  app.migrations.add(CreatePlaidItem())
+  app.migrations.add(CreateAsset())
   app.migrations.add(CreateAccount())
   app.migrations.add(CreateTransaction())
 

@@ -1,3 +1,6 @@
+d:
+	watchexec --exts swift -- swift build
+
 r:
 	swift run
 
