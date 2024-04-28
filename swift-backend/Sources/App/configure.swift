@@ -26,6 +26,8 @@ public func configure(_ app: Application) async throws {
   app.migrations.add(CreateAsset())
   app.migrations.add(CreateAccount())
   app.migrations.add(CreateTransaction())
+  app.migrations.add(CreatePlaidLinkItem())
+  app.migrations.add(CreatePlaidApiEvent())
 
   app.views.use(.leaf)
   app.asyncCommands.use(HelloCommand(), as: "hello")

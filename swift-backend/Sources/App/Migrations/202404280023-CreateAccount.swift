@@ -5,7 +5,7 @@ struct CreateAccount: AsyncMigration {
   func prepare(on database: Database) async throws {
     try await database.schema("accounts")
       .id()
-      .field("item_id", .uuid, .required, .references("items", "id"))
+      .field("item_id", .uuid, .required, .references("plaid_items", "id"))
       .field("plaid_account_id", .string, .required)
       .unique(on: "plaid_account_id")
       .field("name", .string, .required)

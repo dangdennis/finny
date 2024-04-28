@@ -1,7 +1,7 @@
 import Fluent
 import FluentPostgresDriver
 
-struct CreateLinkEvent: AsyncMigration {
+struct CreatePlaidLinkItem: AsyncMigration {
   func prepare(on database: Database) async throws {
     try await database.schema("plaid_link_events")
       .id()
