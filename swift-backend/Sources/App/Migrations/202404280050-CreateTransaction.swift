@@ -1,9 +1,9 @@
 import Fluent
 import FluentPostgresDriver
 
-struct CreateTransaction: Migration {
-  func prepare(on database: Database) -> EventLoopFuture<Void> {
-    database.schema("transactions")
+struct CreateTransaction: AsyncMigration {
+  func prepare(on database: Database) async throws {
+    try await database.schema("transactions")
       .id()
       .field(
         "account_id", .uuid, .required, .references("accounts", "id")
@@ -27,7 +27,7 @@ struct CreateTransaction: Migration {
       .create()
   }
 
-  func revert(on database: Database) -> EventLoopFuture<Void> {
-    database.schema("transactions").delete()
+  func revert(on database: Database) async throws {
+    try await database.schema("transactions").delete()
   }
 }
