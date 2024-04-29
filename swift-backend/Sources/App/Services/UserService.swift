@@ -13,8 +13,8 @@ struct UserService {
     }
   }
 
-  func createUser(username: String, password: String) async throws -> User {
-    let user = User(username: username, passwordHash: password)
+  func createUser(username: String, passwordHash: String) async throws -> User {
+    let user = User(username: username, passwordHash: passwordHash)
     try await user.save(on: db)
     return user
   }

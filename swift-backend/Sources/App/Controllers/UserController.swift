@@ -6,32 +6,36 @@ struct UserController: Sendable {
   let userService: UserService
 
   func create(payload: User.CreateRequest) async throws -> User {
-    let existing = await userService.fetchUser(username: payload.username)
+    guard payload.password == payload.confirmPassword else {
+      throw Abort(.badRequest, reason: "Passwords do not match.")
+    }
+    let lname = payload.username.lowercased()
+    let existing = await userService.fetchUser(username: lname)
     guard existing == nil else {
       throw Abort(.badRequest, reason: "A user with that username already exists.")
     }
     return try await userService.createUser(
-      username: payload.username, password: payload.password)
+      username: lname, passwordHash: try Bcrypt.hash(payload.password))
   }
 }
 
 extension User {
   struct CreateRequest: Content {
-    var username: String
-    var password: String
-    var confirmPassword: String
+    let username: String
+    let password: String
+    let confirmPassword: String
   }
 
   struct CreateResponse: Content {
-    var id: UUID
-    var username: String
+    let id: UUID
+    let username: String
   }
 }
 
 extension User.CreateRequest: Validatable {
   static func validations(_ validations: inout Validations) {
-    validations.add("name", as: String.self, is: !.empty)
-    validations.add("email", as: String.self, is: .email)
+    validations.add("username", as: String.self, is: !.empty)
     validations.add("password", as: String.self, is: .count(8...))
+    validations.add("confirmPassword", as: String.self, is: .count(8...))
   }
 }
