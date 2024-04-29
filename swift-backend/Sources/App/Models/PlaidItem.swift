@@ -37,7 +37,7 @@ final class PlaidItem: Model, Content {
   init() {}
 
   init(
-    id: UUID? = nil, userId: UUID, plaidAccessToken: String, plaidItemId: String,
+    id: UUID? = nil, userId: User.IDValue, plaidAccessToken: String, plaidItemId: String,
     plaidInstitutionId: String, status: String, transactionsCursor: String?
   ) {
     self.id = id

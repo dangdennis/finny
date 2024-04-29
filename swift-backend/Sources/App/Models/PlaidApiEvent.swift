@@ -7,11 +7,11 @@ final class PlaidApiEvent: Model, Content {
   @ID(key: .id)
   var id: UUID?
 
-  @OptionalField(key: "item_id")
-  var itemId: String?
+  @OptionalParent(key: "item_id")
+  var item: PlaidItem?
 
-  @OptionalField(key: "user_id")
-  var userId: String?
+  @OptionalParent(key: "user_id")
+  var user: User?
 
   @Field(key: "plaid_method")
   var plaidMethod: String
@@ -40,12 +40,13 @@ final class PlaidApiEvent: Model, Content {
   init() {}
 
   init(
-    id: UUID? = nil, itemId: String?, userId: String?, plaidMethod: String, arguments: String?,
+    id: UUID? = nil, itemId: PlaidItem.IDValue?, userId: User.IDValue?, plaidMethod: String,
+    arguments: String?,
     requestId: String?, errorType: String?, errorCode: String?
   ) {
     self.id = id
-    self.itemId = itemId
-    self.userId = userId
+    self.$item.id = itemId
+    self.$user.id = userId
     self.plaidMethod = plaidMethod
     self.arguments = arguments
     self.requestId = requestId

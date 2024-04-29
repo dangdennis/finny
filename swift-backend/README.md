@@ -7,6 +7,7 @@
 - Install [Beekeeper Studio](https://www.beekeeperstudio.io)
 - `brew install swift-format`
 - `docker compose up`
-- `make r`
+- `make d` to build in dev mode
+- `make r` to run the server
 
 See Makefile for all development aliases.
