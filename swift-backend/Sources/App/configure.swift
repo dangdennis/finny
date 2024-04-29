@@ -32,6 +32,7 @@ public func configure(_ app: Application) async throws {
   app.migrations.add(UserToken.Migration())
 
   app.views.use(.leaf)
+  // todo: set jwt secret
   app.jwt.signers.use(.hs256(key: "secret"))
   app.asyncCommands.use(HelloCommand(), as: "hello")
   app.asyncCommands.use(PlaidCommand(), as: "plaid")

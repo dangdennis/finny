@@ -19,10 +19,10 @@ struct UserController: Sendable {
     }
     let user = try await userService.createUser(
       username: lname, passwordHash: try Bcrypt.hash(payload.password))
-    let userToken = try await userAuthenticatorService.generateToken(user: user)
+    let sessionToken = try SessionToken(user: user)
     return try User.CreateResponse(
       id: user.requireID(), username: user.username,
-      token: userToken.value
+      token: req.jwt.sign(sessionToken)
     )
   }
 
@@ -37,10 +37,11 @@ struct UserController: Sendable {
     guard verified else {
       throw Abort(.unauthorized, reason: "Invalid username or password.")
     }
-    let userToken = try await userAuthenticatorService.generateToken(user: user)
-    return User.LoginResponse(
+    let sessionToken = try SessionToken(user: user)
+    return try User.LoginResponse(
       username: user.username,
-      token: userToken.value)
+      token: req.jwt.sign(sessionToken)
+    )
   }
 }
 
