@@ -19,11 +19,10 @@ struct UserController: Sendable {
     }
     let user = try await userService.createUser(
       username: lname, passwordHash: try Bcrypt.hash(payload.password))
-    let userToken = try userAuthenticatorService.generateToken(user: user)
+    let userToken = try await userAuthenticatorService.generateToken(user: user)
     return try User.CreateResponse(
       id: user.requireID(), username: user.username,
-      token: UserToken.CreateResponse(
-        value: userToken.value)
+      token: userToken.value
     )
   }
 
@@ -38,12 +37,10 @@ struct UserController: Sendable {
     guard verified else {
       throw Abort(.unauthorized, reason: "Invalid username or password.")
     }
-    let userToken = try userAuthenticatorService.generateToken(user: user)
+    let userToken = try await userAuthenticatorService.generateToken(user: user)
     return User.LoginResponse(
       username: user.username,
-      token: UserToken.CreateResponse(
-        value: userToken.value
-      ))
+      token: userToken.value)
   }
 }
 
@@ -57,7 +54,7 @@ extension User {
   struct CreateResponse: Content {
     let id: UUID
     let username: String
-    let token: UserToken.CreateResponse
+    let token: String
   }
 
   struct LoginRequest: Content {
@@ -67,15 +64,8 @@ extension User {
 
   struct LoginResponse: Content {
     let username: String
-    let token: UserToken.CreateResponse
+    let token: String
   }
-}
-
-extension UserToken {
-  struct CreateResponse: Content {
-    let value: String
-  }
-
 }
 
 extension User.CreateRequest: Validatable {

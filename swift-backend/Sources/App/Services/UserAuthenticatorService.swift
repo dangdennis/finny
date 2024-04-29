@@ -5,11 +5,15 @@ struct UserAuthenticatorService: AsyncBearerAuthenticator {
   typealias User = App.User
   let db: Database
 
-  func generateToken(user: User) throws -> UserToken {
-    try .init(
+  func generateToken(user: User) async throws -> UserToken {
+    let token = try UserToken(
       value: [UInt8].random(count: 16).base64,
       userId: user.requireID()
     )
+
+    try await token.save(on: db)
+
+    return token
   }
 
   func authenticate(
