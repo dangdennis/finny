@@ -19,8 +19,12 @@ struct UserController: Sendable {
     }
     let user = try await userService.createUser(
       username: lname, passwordHash: try Bcrypt.hash(payload.password))
-
-    return try User.CreateResponse(id: user.requireID(), username: user.username)
+    let userToken = try userAuthenticatorService.generateToken(user: user)
+    return try User.CreateResponse(
+      id: user.requireID(), username: user.username,
+      token: UserToken.CreateResponse(
+        value: userToken.value)
+    )
   }
 
   func login(req: Request) async throws -> User.LoginResponse {
@@ -30,12 +34,13 @@ struct UserController: Sendable {
     guard let user = await userService.fetchUser(username: lname) else {
       throw Abort(.unauthorized, reason: "Invalid username or password.")
     }
-    guard try Bcrypt.verify(payload.password, created: user.passwordHash) else {
+    let verified = try Bcrypt.verify(payload.password, created: user.passwordHash)
+    guard verified else {
       throw Abort(.unauthorized, reason: "Invalid username or password.")
     }
     let userToken = try userAuthenticatorService.generateToken(user: user)
     return User.LoginResponse(
-      user: User.CreateResponse(id: try user.requireID(), username: user.username),
+      username: user.username,
       token: UserToken.CreateResponse(
         value: userToken.value
       ))
@@ -52,6 +57,7 @@ extension User {
   struct CreateResponse: Content {
     let id: UUID
     let username: String
+    let token: UserToken.CreateResponse
   }
 
   struct LoginRequest: Content {
@@ -60,7 +66,7 @@ extension User {
   }
 
   struct LoginResponse: Content {
-    let user: CreateResponse
+    let username: String
     let token: UserToken.CreateResponse
   }
 }
