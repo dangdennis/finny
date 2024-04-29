@@ -1,14 +1,14 @@
 import Fluent
 import Vapor
 
-final class PlaidItemDb: Model, Content {
+final class PlaidItem: Model, Content {
   static let schema = "plaid_items"
 
   @ID(key: .id)
   var id: UUID?
 
   @Parent(key: "user_id")
-  var user: UserDb
+  var user: User
 
   @Field(key: "plaid_access_token")
   var plaidAccessToken: String

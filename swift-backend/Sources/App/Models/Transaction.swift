@@ -1,14 +1,14 @@
 import Fluent
 import Vapor
 
-final class TransactionDb: Model, Content {
+final class Transaction: Model, Content {
   static let schema = "transactions"
 
   @ID(key: .id)
   var id: UUID?
 
   @Parent(key: "account_id")
-  var account: AccountDb
+  var account: Account
 
   @Field(key: "plaid_transaction_id")
   var plaidTransactionId: String

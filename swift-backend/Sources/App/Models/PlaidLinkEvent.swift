@@ -11,7 +11,7 @@ final class PlaidLinkEvent: Model, Content {
   var type: String
 
   @Parent(key: "user_id")
-  var user: UserDb
+  var user: User
 
   @OptionalField(key: "link_session_id")
   var linkSessionId: String?

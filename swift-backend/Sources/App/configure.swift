@@ -1,5 +1,6 @@
 import Fluent
 import FluentPostgresDriver
+import JWT
 import Leaf
 import NIOSSL
 import Vapor
@@ -30,6 +31,7 @@ public func configure(_ app: Application) async throws {
   app.migrations.add(CreatePlaidApiEvent())
 
   app.views.use(.leaf)
+  app.jwt.signers.use(.hs256(key: "secret"))
   app.asyncCommands.use(HelloCommand(), as: "hello")
   app.asyncCommands.use(PlaidCommand(), as: "plaid")
 

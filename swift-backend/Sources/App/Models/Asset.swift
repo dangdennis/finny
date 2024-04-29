@@ -1,14 +1,14 @@
 import Fluent
 import Vapor
 
-final class AssetDb: Model, Content {
+final class Asset: Model, Content {
   static let schema = "assets"
 
   @ID(key: .id)
   var id: UUID?
 
   @Parent(key: "user_id")
-  var user: UserDb
+  var user: User
 
   @Field(key: "value")
   var value: Decimal

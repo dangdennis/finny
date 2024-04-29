@@ -1,5 +1,5 @@
-d:
-	watchexec --restart --exts swift -- make r
+dev:
+	watchexec --restart --exts swift -- make b
 
 r:
 	swift run

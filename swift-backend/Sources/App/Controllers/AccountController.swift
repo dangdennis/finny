@@ -12,19 +12,19 @@ struct AccountController: RouteCollection {
     }
   }
 
-  func index(req: Request) async throws -> [AccountDb] {
-    try await AccountDb.query(on: req.db).all()
+  func index(req: Request) async throws -> [Account] {
+    try await Account.query(on: req.db).all()
   }
 
-  func create(req: Request) async throws -> AccountDb {
-    let account = try req.content.decode(AccountDb.self)
+  func create(req: Request) async throws -> Account {
+    let account = try req.content.decode(Account.self)
 
     try await account.save(on: req.db)
     return account
   }
 
   func delete(req: Request) async throws -> HTTPStatus {
-    guard let account = try await AccountDb.find(req.parameters.get("account_id"), on: req.db)
+    guard let account = try await Account.find(req.parameters.get("account_id"), on: req.db)
     else {
       throw Abort(.notFound)
     }
