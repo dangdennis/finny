@@ -4,7 +4,6 @@ import Vapor
 struct UserController: Sendable {
   let db: Database
   let userService: UserService
-  let userAuthenticatorService: UserAuthenticatorService
 
   func create(req: Request) async throws -> User.CreateResponse {
     try User.CreateRequest.validate(content: req)

@@ -29,7 +29,6 @@ public func configure(_ app: Application) async throws {
   app.migrations.add(Transaction.Migration())
   app.migrations.add(PlaidLinkEvent.Migration())
   app.migrations.add(PlaidApiEvent.Migration())
-  app.migrations.add(UserToken.Migration())
 
   app.views.use(.leaf)
   // todo: set jwt secret

@@ -3,17 +3,14 @@ import Vapor
 
 func routes(_ app: Application) throws {
   app.get { req async throws in
-    try await req.view.render("index", ["title": "Hello Vapor!"])
+    try await req.view.render("index", ["title": "Finny"])
   }
 
   // let plaidLinkService = PlaidLinkService(db: app.db)
   // let plaidLinkController = PlaidLinkController(plaidLinkService: plaidLinkService)
   let userService = UserService(db: app.db)
-  let userAuthenticatorService = UserAuthenticatorService(db: app.db)
   let userController = UserController(
-    db: app.db, userService: userService, userAuthenticatorService: userAuthenticatorService)
-
-  // let protected = app.grouped(UserAuthenticator())
+    db: app.db, userService: userService)
 
   app.group("api") { api in
     api.group("users") { users in
@@ -25,7 +22,4 @@ func routes(_ app: Application) throws {
       }
     }
   }
-
-  // try app.register(collection: TodoController())
-  // try app.register(collection: AccountController())
 }

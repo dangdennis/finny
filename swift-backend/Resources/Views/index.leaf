@@ -6,7 +6,7 @@
   <title>#(title)</title>
 </head>
 
-<body>
+<body style="background-color: black; color: white; display: flex; align-items: center; justify-content: center; height: 100vh">
   <h1>#(title)</h1>
 </body>
 </html>
