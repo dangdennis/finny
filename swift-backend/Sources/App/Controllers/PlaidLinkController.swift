@@ -1,20 +1,20 @@
 import Vapor
 
 struct PlaidLinkController: Sendable {
-  let plaidLinkService: PlaidLinkServiceProtocol
+  let plaidLinkService: PlaidLinkService
 
-  struct CreateLinkTokenRequest: Content {
-    let clientName: String
-    let products: [String]
-    let countryCodes: [String]
-    let language: String
+  func createLinkToken(req: Request) async throws -> LinkTokenResponse {
+    //  make a request to /link/token/create
+    return LinkTokenResponse(data: .init(linkToken: ""))
+
   }
 
-  struct CreateLinkTokenResponse: Content {
+  struct LinkTokenDTO: Content {
     let linkToken: String
   }
 
-  func createLinkToken() -> String {
-    return "link-token"
+  struct LinkTokenResponse: DataContaining {
+    var data: LinkTokenDTO
   }
+
 }

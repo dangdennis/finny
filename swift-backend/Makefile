@@ -1,11 +1,14 @@
-dev:
-	watchexec --restart --exts swift -- make r
-
-r:
+run:
 	swift run
+	
+build:
+	swift build
+	
+r:
+	watchexec --restart --exts swift -- make run
 
 b:
-	swift build
+	watchexec --restart --exts swift -- make build
 
 f: 
 	swift-format format ./Sources --in-place --recursive --parallel

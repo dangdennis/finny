@@ -6,8 +6,8 @@ func routes(_ app: Application) throws {
     try await req.view.render("index", ["title": "Finny"])
   }
 
-  // let plaidLinkService = PlaidLinkService(db: app.db)
-  // let plaidLinkController = PlaidLinkController(plaidLinkService: plaidLinkService)
+  let plaidLinkService = PlaidLinkService(db: app.db)
+  let plaidLinkController = PlaidLinkController(plaidLinkService: plaidLinkService)
   let plaidItemService = PlaidItemService(db: app.db)
   let plaidItemController = PlaidItemController(db: app.db, plaidItemService: plaidItemService)
   let userService = UserService(db: app.db)
@@ -29,6 +29,12 @@ func routes(_ app: Application) throws {
     protectedApi.group("plaid-items") { plaidItems in
       plaidItems.get("list") { req async throws in
         return try await plaidItemController.list(req: req)
+      }
+    }
+
+    protectedApi.group("plaid-link") { plaidLink in
+      plaidLink.post("new") { req async throws in
+        return try await plaidLinkController.createLinkToken(req: req)
       }
     }
   }

@@ -1,4 +1,6 @@
 @preconcurrency import Fluent
+import OpenAPIAsyncHTTPClient
+import OpenAPIRuntime
 import Vapor
 
 struct PlaidItemController {
@@ -22,14 +24,35 @@ struct PlaidItemController {
       }
     )
   }
+
+  func exchangePublicToken(req: Request) async throws -> PlaidItem.ExchangePublicTokenResponse {
+    try PlaidItem.ExchangePublicTokenRequest.validate(content: req)
+    let sessionToken = try req.auth.require(SessionToken.self)
+    let _ = try req.content.decode(PlaidItem.ExchangePublicTokenRequest.self)
+    //  exchange publicToken for access_token /item/public_token/exchange
+
+    // let plaid = (
+    //   serverURL: URL(string: "https://sandbox.plaid.com")!, transport: AsyncHTTPClientTransport())
+    let _ = UUID(uuidString: sessionToken.sub.value)!
+    // create the PlaidItem
+    // let sessionToken = try req.auth.require(SessionToken.self)
+    // let _ = UUID(uuidString: sessionToken.sub.value)!
+    // let publicToken = try req.content.decode(PlaidItem.ExchangePublicTokenRequest.self).publicToken
+    // try await plaidItemService.exchangePublicToken(userId: userId, publicToken: publicToken)
+    return PlaidItem.ExchangePublicTokenResponse(
+      data: PlaidItem.DTO(
+        id: UUID(),
+        name: "name",
+        itemId: "itemId",
+        institutionId: "institutionId",
+        status: "status",
+        createdAt: Date()
+      )
+    )
+  }
 }
 
 extension PlaidItem {
-  protocol DataContaining: Content {
-    associatedtype DataType: Content
-    var data: [DataType] { get set }
-  }
-
   struct DTO: Content {
     let id: UUID
     let name: String
@@ -41,5 +64,19 @@ extension PlaidItem {
 
   struct ListResponse: DataContaining {
     var data: [DTO]
+  }
+
+  struct ExchangePublicTokenRequest: Content {
+    let publicToken: String
+  }
+
+  struct ExchangePublicTokenResponse: DataContaining {
+    var data: DTO
+  }
+}
+
+extension PlaidItem.ExchangePublicTokenRequest: Validatable {
+  static func validations(_ validations: inout Validations) {
+    validations.add("publicToken", as: String.self, is: !.empty)
   }
 }
