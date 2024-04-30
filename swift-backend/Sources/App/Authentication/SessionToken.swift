@@ -2,12 +2,7 @@ import JWT
 import Vapor
 
 struct SessionToken: Content, Authenticatable, JWTPayload {
-
-  // Constants
-  // 8 hours in seconds
-  let duration: TimeInterval = 60 * 60 * 8
-
-  // Token Data
+  let duration: TimeInterval = 60 * 60 * 8  // 8 hours in seconds
   let iss = IssuerClaim(value: "com.belmont.finnyapp")
   let iat: IssuedAtClaim
   let exp: ExpirationClaim

@@ -8,11 +8,15 @@ func routes(_ app: Application) throws {
 
   // let plaidLinkService = PlaidLinkService(db: app.db)
   // let plaidLinkController = PlaidLinkController(plaidLinkService: plaidLinkService)
+  let plaidItemService = PlaidItemService(db: app.db)
+  let plaidItemController = PlaidItemController(db: app.db, plaidItemService: plaidItemService)
   let userService = UserService(db: app.db)
   let userController = UserController(
     db: app.db, userService: userService)
 
   app.group("api") { api in
+    let protectedApi = api.grouped(SessionToken.asyncAuthenticator())
+
     api.group("users") { users in
       users.post("register") { req async throws in
         return try await userController.create(req: req)
@@ -21,12 +25,10 @@ func routes(_ app: Application) throws {
         return try await userController.login(req: req)
       }
     }
-    let protectedApi = api.grouped(SessionToken.asyncAuthenticator())
+
     protectedApi.group("plaid-items") { plaidItems in
-      plaidItems.get("list") { req async throws -> HTTPStatus in
-        let sessionToken = try req.auth.require(SessionToken.self)
-        print(sessionToken)
-        return .ok
+      plaidItems.get("list") { req async throws in
+        return try await plaidItemController.list(req: req)
       }
     }
   }

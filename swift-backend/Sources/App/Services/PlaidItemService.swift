@@ -1,7 +1,11 @@
+@preconcurrency import Fluent
+
 struct PlaidItemService {
-  // static func createItem(accessToken: String, userId: UUID) throws -> PlaidItem {
-  //     let item = PlaidItem(accessToken: accessToken, userId: userId)
-  //     try item.save()
-  //     return item
-  // }
+  let db: Database
+
+  func listItems(userId: UUID) async throws -> [PlaidItem] {
+    return try await PlaidItem.query(on: db)
+      .filter(\.$user.$id == userId)
+      .all()
+  }
 }
