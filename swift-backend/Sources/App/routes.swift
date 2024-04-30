@@ -21,5 +21,13 @@ func routes(_ app: Application) throws {
         return try await userController.login(req: req)
       }
     }
+    let protectedApi = api.grouped(SessionToken.asyncAuthenticator())
+    protectedApi.group("plaid-items") { plaidItems in
+      plaidItems.get("list") { req async throws -> HTTPStatus in
+        let sessionToken = try req.auth.require(SessionToken.self)
+        print(sessionToken)
+        return .ok
+      }
+    }
   }
 }

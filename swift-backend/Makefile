@@ -1,4 +1,4 @@
-d:
+dev:
 	watchexec --restart --exts swift -- make b
 
 r:
