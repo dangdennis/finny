@@ -1,10 +1,8 @@
 generate:
   - types
   - client
-accessModifier: internal
+accessModifier: public
 filter:
   paths: 
     - "/link/token/create"
-  tags:
-  schemas:
-  operations:
+    - "/item/public_token/exchange"

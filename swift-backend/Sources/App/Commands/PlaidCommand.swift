@@ -1,17 +1,17 @@
 import Vapor
 
 struct PlaidCommand: AsyncCommand {
-  struct Signature: CommandSignature {
-    @Argument(name: "name")
-    var name: String
-  }
+    struct Signature: CommandSignature {
+        @Argument(name: "name")
+        var name: String
+    }
 
-  var help: String {
-    "Says hello"
-  }
+    var help: String {
+        "Says hello"
+    }
 
-  func run(using context: CommandContext, signature: Signature) async throws {
-    let name = context.console.ask("What is your \("name", color: .blue)?")
-    context.console.print("Hello, \(name) 👋")
-  }
+    func run(using context: CommandContext, signature: Signature) async throws {
+        let name = context.console.ask("What is your \("name", color: .blue)?")
+        context.console.print("Hello, \(name) 👋")
+    }
 }
