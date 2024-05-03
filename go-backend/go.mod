@@ -1,6 +1,6 @@
 module github.com/financialplanner
 
-go 1.22.0
+go 1.22.2
 
 require github.com/danielgtaylor/huma/v2 v2.14.0
 

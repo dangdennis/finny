@@ -14,7 +14,7 @@ import (
 
 // Options for the CLI. Pass `--port` or set the `SERVICE_PORT` env var.
 type Options struct {
-	Port int `help:"Port to listen on" short:"p" default:"8888"`
+	Port int `help:"Port to listen on" short:"p" default:"8080"`
 }
 
 // GreetingOutput represents the greeting operation response.
@@ -41,7 +41,7 @@ func main() {
 		})
 
 		fmt.Printf("Server listening on port http://localhost:%d", options.Port)
-		e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", options.Port)))
+		e.Logger.Fatal(e.Start(fmt.Sprintf("0.0.0.0:%d", options.Port)))
 	})
 
 	cli.Run()

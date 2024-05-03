@@ -1,21 +1,29 @@
-FROM --platform=linux/x86_64 golang:1.21.3-bookworm AS build
+# Use the official Golang image from the Docker Hub
+FROM golang:1.22.2 as builder
 
-WORKDIR /src
+# Set the Current Working Directory inside the container
+WORKDIR /app
 
-COPY ./go.mod /src/go.mod
-COPY ./go.sum /src/go.sum
-COPY ./main.go /src/server.go
+# Copy go mod and sum files
+COPY go.mod go.sum ./
 
-RUN set -xe; \
-    go build \
-      -buildmode=pie \
-      -ldflags "-linkmode external -extldflags -static-pie" \
-      -tags netgo \
-      -o /server server.go \
-    ;
+# Download all dependencies. Dependencies will be cached if the go.mod and go.sum files are not changed
+RUN go mod download
 
-FROM scratch
+# Copy the source code into the container
+COPY . .
 
-COPY --from=build /server /server
-COPY --from=build /lib/x86_64-linux-gnu/libc.so.6 /lib/x86_64-linux-gnu/
-COPY --from=build /lib64/ld-linux-x86-64.so.2 /lib64/
+# Build the Go app
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
+
+# Start a new stage from scratch
+FROM alpine:latest
+
+# Copy the Pre-built binary file from the previous stage
+COPY --from=builder /app/main .
+
+# Expose port 8080 to the outside world
+EXPOSE 8080
+
+# Command to run the executable
+CMD ["./main"]
