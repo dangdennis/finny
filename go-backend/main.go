@@ -9,6 +9,7 @@ import (
 	_ "github.com/danielgtaylor/huma/v2/formats/cbor"
 	"github.com/danielgtaylor/huma/v2/humacli"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 // Options for the CLI. Pass `--port` or set the `SERVICE_PORT` env var.
@@ -27,6 +28,7 @@ func main() {
 	cli := humacli.New(func(hooks humacli.Hooks, options *Options) {
 		// Create a new router & API.
 		e := echo.New()
+		e.Use(middleware.Logger())
 		api := humaecho.New(e, huma.DefaultConfig("My API", "1.0.0"))
 
 		// Register GET /greeting/{name} handler.
