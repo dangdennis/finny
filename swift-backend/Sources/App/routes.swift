@@ -12,7 +12,7 @@ func routes(_ app: Application) throws {
     let plaidItemService = PlaidItemService(db: app.db)
     let plaidItemController = PlaidItemController(
         db: app.db, plaidItemService: plaidItemService,
-        plaidClient: try Plaid.PlaidClient(
+        plaidClient: try PlaidClient(
             clientId: "todo",
             secret: "todo",
             env: .sandbox

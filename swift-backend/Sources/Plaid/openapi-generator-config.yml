@@ -5,4 +5,5 @@ accessModifier: public
 filter:
   paths: 
     - "/link/token/create"
+    - "/item/get"
     - "/item/public_token/exchange"

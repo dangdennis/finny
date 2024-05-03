@@ -4,10 +4,10 @@ import OpenAPIRuntime
 import Plaid
 import Vapor
 
-struct PlaidItemController {
+struct PlaidItemController: Sendable {
     let db: Database
     let plaidItemService: PlaidItemService
-    let plaidClient: Plaid.PlaidClient
+    let plaidClient: PlaidClient
 
     func list(req: Request) async throws -> PlaidItem.ListResponse {
         let sessionToken = try req.auth.require(SessionToken.self)
@@ -30,25 +30,26 @@ struct PlaidItemController {
     func exchangePublicToken(req: Request) async throws -> PlaidItem.ExchangePublicTokenResponse {
         try PlaidItem.ExchangePublicTokenRequest.validate(content: req)
         let sessionToken = try req.auth.require(SessionToken.self)
-        let _ = try req.content.decode(PlaidItem.ExchangePublicTokenRequest.self)
-        //  exchange publicToken for access_token /item/public_token/exchange
-
-        // let plaid = (
-        //   serverURL: URL(string: "https://sandbox.plaid.com")!, transport: AsyncHTTPClientTransport())
-        let _ = UUID(uuidString: sessionToken.sub.value)!
-        // create the PlaidItem
-        // let sessionToken = try req.auth.require(SessionToken.self)
-        // let _ = UUID(uuidString: sessionToken.sub.value)!
-        // let publicToken = try req.content.decode(PlaidItem.ExchangePublicTokenRequest.self).publicToken
-        // try await plaidItemService.exchangePublicToken(userId: userId, publicToken: publicToken)
+        let exchangeContent = try req.content.decode(PlaidItem.ExchangePublicTokenRequest.self)
+        let exchanged = try await plaidClient.exchangePublicToken(
+            publicToken: exchangeContent.publicToken)
+        let userId = UUID(uuidString: sessionToken.sub.value)!
+        let plaidItemExternal = try await plaidClient.getItem(
+            itemId: exchanged.item_id, accessToken: exchanged.access_token)
+        let plaidItem = try await plaidItemService.createItem(
+            userId: userId, accessToken: exchanged.access_token,
+            itemId: plaidItemExternal.item.item_id,
+            institutionId: plaidItemExternal.item.institution_id!,
+            status: "good",
+            transactionsCursor: nil)
         return PlaidItem.ExchangePublicTokenResponse(
             data: PlaidItem.DTO(
-                id: UUID(),
-                name: "name",
-                itemId: "itemId",
-                institutionId: "institutionId",
-                status: "status",
-                createdAt: Date()
+                id: plaidItem.id!,
+                name: "Finny",
+                itemId: plaidItem.plaidItemId,
+                institutionId: plaidItem.plaidInstitutionId,
+                status: plaidItem.status,
+                createdAt: plaidItem.createdAt!
             )
         )
     }

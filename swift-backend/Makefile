@@ -3,6 +3,9 @@ run:
 	
 build:
 	swift build
+
+build-release:
+	swift build -c release
 	
 r:
 	watchexec --restart --exts swift -- make run

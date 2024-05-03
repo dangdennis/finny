@@ -30,6 +30,8 @@ let package = Package(
         .product(name: "Leaf", package: "leaf"),
         .product(name: "Vapor", package: "vapor"),
         .product(name: "JWT", package: "jwt"),
+        .product(name: "OpenAPIRuntime", package: "swift-openapi-runtime"),
+        .product(name: "OpenAPIAsyncHTTPClient", package: "swift-openapi-async-http-client"),
         .target(name: "Plaid"),
       ],
       swiftSettings: swiftSettings

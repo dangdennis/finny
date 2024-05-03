@@ -2,8 +2,8 @@ import Foundation
 import OpenAPIAsyncHTTPClient
 import OpenAPIRuntime
 
-public struct PlaidClient {
-    private let underlyingClient: APIProtocol
+public struct PlaidClient: Sendable {
+    private let client: APIProtocol
     private let plaidSecret: String
     private let plaidClientId: String
 
@@ -25,15 +25,17 @@ public struct PlaidClient {
             serverURL = URL(string: "https://production.plaid.com")!
         }
 
-        self.underlyingClient = Client(
+        self.client = Client(
             serverURL: serverURL,
             transport: AsyncHTTPClientTransport())
         self.plaidSecret = secret
         self.plaidClientId = clientId
     }
 
-    func createLinkToken(userId: UUID) async throws -> Components.Schemas.LinkTokenCreateResponse {
-        let response = try await underlyingClient.linkTokenCreate(
+    public func createLinkToken(userId: UUID) async throws
+        -> Components.Schemas.LinkTokenCreateResponse
+    {
+        let response = try await client.linkTokenCreate(
             Operations.linkTokenCreate.Input(
                 body: .json(
                     Components.Schemas.LinkTokenCreateRequest(
@@ -47,13 +49,29 @@ public struct PlaidClient {
         return try response.ok.body.json
     }
 
-    func exchangePublicToken(publicToken: String) async throws
+    public func getItem(itemId: String, accessToken: String) async throws
+        -> Components.Schemas.ItemGetResponse
+    {
+        let response = try await client.itemGet(
+            .init(
+                body: .json(
+                    .init(
+                        client_id: self.plaidClientId,
+                        secret: self.plaidSecret,
+                        access_token: accessToken
+
+                    ))))
+
+        return try response.ok.body.json
+    }
+
+    public func exchangePublicToken(publicToken: String) async throws
         -> Components.Schemas.ItemPublicTokenExchangeResponse
     {
-        let response = try await underlyingClient.itemPublicTokenExchange(
-            Operations.itemPublicTokenExchange.Input(
+        let response = try await client.itemPublicTokenExchange(
+            .init(
                 body: .json(
-                    Components.Schemas.ItemPublicTokenExchangeRequest(
+                    .init(
                         client_id: self.plaidClientId,
                         secret: self.plaidSecret,
                         public_token: publicToken
