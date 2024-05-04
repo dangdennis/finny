@@ -7,3 +7,5 @@ filter:
     - "/link/token/create"
     - "/item/get"
     - "/item/public_token/exchange"
+    - "/transactions/sync"
+    - "/accounts/get"

@@ -1,23 +1,111 @@
 @preconcurrency import Fluent
-import OpenAPIAsyncHTTPClient
-import OpenAPIRuntime
 import Plaid
 import Vapor
 
 struct PlaidItemController: Sendable {
     let db: Database
     let plaidItemService: PlaidItemService
-    let plaidClient: PlaidClient
+    let accountService: AccountService
+    let plaid: PlaidClient
 
-    func list(req: Request) async throws -> PlaidItem.ListResponse {
+    func createItem(req: Request) async throws -> PlaidItem.CreateItemResponse {
+        try PlaidItem.CreateItemRequest.validate(content: req)
+        let userId = try Auth.getUserId(from: req)
+        let content = try req.content.decode(PlaidItem.CreateItemRequest.self)
+        let item = try await plaidItemService.getByInstitutionId(
+            institutionId: content.institutionId
+        )
+        if item != nil {
+            throw Abort(.badRequest, reason: "You have already linked this institution.")
+        }
+
+        let exchanged = try await plaid.exchangePublicToken(publicToken: content.publicToken)
+
+        let newItem = try await plaidItemService.createItem(
+            userId: userId,
+            accessToken: exchanged.access_token,
+            itemId: exchanged.item_id,
+            institutionId: content.institutionId,
+            status: .success,
+            transactionsCursor: nil
+        )
+
+        let itemId = try newItem.requireID()
+
+        // todo: move task to a persistent queue
+        Task {
+            do {
+                guard let item = try await plaidItemService.getById(id: itemId) else {
+                    req.logger.error(
+                        "Cannot sync transactions. Failed to fetch item with id \(itemId)"
+                    )
+                    return
+                }
+
+                let batchSize = 100
+                var cursor = item.transactionsCursor
+                var hasMore = true
+                var added: [Components.Schemas.Transaction] = []
+                var updated: [Components.Schemas.Transaction] = []
+                var removed: [Components.Schemas.RemovedTransaction] = []
+
+                while hasMore {
+
+                    let data = try await plaid.getTransactionsSync(
+                        plaidItemId: item.plaidItemId,
+                        accessToken: item.plaidAccessToken,
+                        cursor: cursor,
+                        count: batchSize
+                    )
+
+                    added.append(contentsOf: data.added)
+                    updated.append(contentsOf: data.modified)
+                    removed.append(contentsOf: data.removed)
+
+                    hasMore = data.has_more
+                    cursor = data.next_cursor
+                }
+
+                let accountsResponse = try await plaid.getAccounts(
+                    accessToken: item.plaidAccessToken
+                )
+                try await accountService.upsertAccounts(
+                    plaidItemId: item.plaidItemId,
+                    accounts: accountsResponse.accounts
+                )
+                // await createOrUpdateTransactions(added.concat(modified));
+                // await deleteTransactions(removed);
+                guard let cursor = cursor else {
+                    req.logger.error("Cursor is nil. Cannot update cursor.")
+                    return
+                }
+                try await plaidItemService.updateCursor(
+                    itemId: try item.requireID(),
+                    cursor: cursor
+                )
+
+            } catch { print("Failed to fetch transactions: \(error)") }
+        }
+
+        return .init(
+            data: .init(
+                id: try newItem.requireID(),
+                itemId: newItem.plaidItemId,
+                institutionId: newItem.plaidInstitutionId,
+                status: newItem.status,
+                createdAt: newItem.createdAt!
+            )
+        )
+    }
+
+    func listItems(req: Request) async throws -> PlaidItem.ListItemsResponse {
         let sessionToken = try req.auth.require(SessionToken.self)
         let userId = UUID(uuidString: sessionToken.sub.value)!
         let items = try await plaidItemService.listItems(userId: userId)
-        return try PlaidItem.ListResponse(
+        return try PlaidItem.ListItemsResponse(
             data: items.map { item in
                 PlaidItem.DTO(
                     id: try item.requireID(),
-                    name: item.plaidInstitutionId,
                     itemId: item.plaidItemId,
                     institutionId: item.plaidInstitutionId,
                     status: item.status,
@@ -26,60 +114,30 @@ struct PlaidItemController: Sendable {
             }
         )
     }
-
-    func exchangePublicToken(req: Request) async throws -> PlaidItem.ExchangePublicTokenResponse {
-        try PlaidItem.ExchangePublicTokenRequest.validate(content: req)
-        let sessionToken = try req.auth.require(SessionToken.self)
-        let exchangeContent = try req.content.decode(PlaidItem.ExchangePublicTokenRequest.self)
-        let exchanged = try await plaidClient.exchangePublicToken(
-            publicToken: exchangeContent.publicToken)
-        let userId = UUID(uuidString: sessionToken.sub.value)!
-        let plaidItemExternal = try await plaidClient.getItem(
-            itemId: exchanged.item_id, accessToken: exchanged.access_token)
-        let plaidItem = try await plaidItemService.createItem(
-            userId: userId, accessToken: exchanged.access_token,
-            itemId: plaidItemExternal.item.item_id,
-            institutionId: plaidItemExternal.item.institution_id!,
-            status: "good",
-            transactionsCursor: nil)
-        return PlaidItem.ExchangePublicTokenResponse(
-            data: PlaidItem.DTO(
-                id: plaidItem.id!,
-                name: "Finny",
-                itemId: plaidItem.plaidItemId,
-                institutionId: plaidItem.plaidInstitutionId,
-                status: plaidItem.status,
-                createdAt: plaidItem.createdAt!
-            )
-        )
-    }
 }
 
 extension PlaidItem {
     struct DTO: Content {
         let id: UUID
-        let name: String
         let itemId: String
         let institutionId: String
         let status: String
         let createdAt: Date
     }
 
-    struct ListResponse: DataContaining {
-        var data: [DTO]
-    }
+    struct ListItemsResponse: DataContaining { var data: [DTO] }
 
-    struct ExchangePublicTokenRequest: Content {
+    struct CreateItemRequest: Content {
         let publicToken: String
+        let institutionId: String
     }
 
-    struct ExchangePublicTokenResponse: DataContaining {
-        var data: DTO
-    }
+    struct CreateItemResponse: DataContaining { var data: DTO }
 }
 
-extension PlaidItem.ExchangePublicTokenRequest: Validatable {
+extension PlaidItem.CreateItemRequest: Validatable {
     static func validations(_ validations: inout Validations) {
         validations.add("publicToken", as: String.self, is: !.empty)
+        validations.add("institutionId", as: String.self, is: !.empty)
     }
 }

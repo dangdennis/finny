@@ -3,23 +3,23 @@ import Plaid
 import Vapor
 
 func routes(_ app: Application) throws {
-    app.get { req async throws in
-        try await req.view.render("index", ["title": "Finny"])
-    }
+    let plaid = try PlaidClient(clientId: "todo", secret: "todo", env: .sandbox)
 
     let plaidLinkService = PlaidLinkService(db: app.db)
-    let plaidLinkController = PlaidLinkController(plaidLinkService: plaidLinkService)
+    let plaidLinkController = PlaidLinkController(plaidLinkService: plaidLinkService, plaid: plaid)
     let plaidItemService = PlaidItemService(db: app.db)
+    let accountService = AccountService(db: app.db, plaidItemService: plaidItemService)
     let plaidItemController = PlaidItemController(
-        db: app.db, plaidItemService: plaidItemService,
-        plaidClient: try PlaidClient(
-            clientId: "todo",
-            secret: "todo",
-            env: .sandbox
-        ))
+        db: app.db,
+        plaidItemService: plaidItemService,
+        accountService: accountService,
+
+        plaid: plaid
+    )
     let userService = UserService(db: app.db)
-    let userController = UserController(
-        db: app.db, userService: userService)
+    let userController = UserController(db: app.db, userService: userService)
+
+    app.get { req async throws in try await req.view.render("index", ["title": "Finny"]) }
 
     app.group("api") { api in
         let protectedApi = api.grouped(SessionToken.asyncAuthenticator())
@@ -34,8 +34,12 @@ func routes(_ app: Application) throws {
         }
 
         protectedApi.group("plaid-items") { plaidItems in
+            plaidItems.post("/new") { req async throws in
+                return try await plaidItemController.createItem(req: req)
+            }
+
             plaidItems.get("list") { req async throws in
-                return try await plaidItemController.list(req: req)
+                return try await plaidItemController.listItems(req: req)
             }
         }
 

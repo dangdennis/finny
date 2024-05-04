@@ -17,10 +17,13 @@ struct UserController: Sendable {
             throw Abort(.badRequest, reason: "A user with that username already exists.")
         }
         let user = try await userService.createUser(
-            username: lname, passwordHash: try Bcrypt.hash(payload.password))
+            username: lname,
+            passwordHash: try Bcrypt.hash(payload.password)
+        )
         let sessionToken = try SessionToken(user: user)
         return try User.CreateResponse(
-            id: user.requireID(), username: user.username,
+            id: user.requireID(),
+            username: user.username,
             token: req.jwt.sign(sessionToken)
         )
     }
@@ -33,14 +36,9 @@ struct UserController: Sendable {
             throw Abort(.unauthorized, reason: "Invalid username or password.")
         }
         let verified = try Bcrypt.verify(payload.password, created: user.passwordHash)
-        guard verified else {
-            throw Abort(.unauthorized, reason: "Invalid username or password.")
-        }
+        guard verified else { throw Abort(.unauthorized, reason: "Invalid username or password.") }
         let sessionToken = try SessionToken(user: user)
-        return try User.LoginResponse(
-            username: user.username,
-            token: req.jwt.sign(sessionToken)
-        )
+        return try User.LoginResponse(username: user.username, token: req.jwt.sign(sessionToken))
     }
 }
 

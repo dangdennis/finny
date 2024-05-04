@@ -6,6 +6,5 @@ import OpenAPIRuntime
 struct PlaidLinkService {
     let db: Database
 
-    static func createLinkToken() async throws {
-    }
+    static func createLinkToken() async throws {}
 }

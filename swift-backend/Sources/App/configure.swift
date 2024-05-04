@@ -19,8 +19,11 @@ public func configure(_ app: Application) async throws {
                 username: Environment.get("DATABASE_USERNAME") ?? "postgres",
                 password: Environment.get("DATABASE_PASSWORD") ?? "postgres",
                 database: Environment.get("DATABASE_NAME") ?? "postgres",
-                tls: .prefer(try .init(configuration: .clientDefault)))
-        ), as: .psql)
+                tls: .prefer(try .init(configuration: .clientDefault))
+            )
+        ),
+        as: .psql
+    )
 
     app.migrations.add(User.Migration())
     app.migrations.add(PlaidItem.Migration())

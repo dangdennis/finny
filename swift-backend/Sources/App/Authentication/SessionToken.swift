@@ -28,7 +28,5 @@ struct SessionToken: Content, Authenticatable, JWTPayload {
         self.iat = IssuedAtClaim(value: Date())
     }
 
-    func verify(using signer: JWTSigner) throws {
-        try exp.verifyNotExpired()
-    }
+    func verify(using signer: JWTSigner) throws { try exp.verifyNotExpired() }
 }
