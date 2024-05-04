@@ -22,7 +22,8 @@ final class Account: Model, Content {
 
     @OptionalField(key: "iso_currency_code") var isoCurrencyCode: String?
 
-    @OptionalField(key: "unofficial_currency_code") var unofficialCurrencyCode: String?
+    @OptionalField(key: "unofficial_currency_code") var unofficialCurrencyCode:
+        String?
 
     @OptionalField(key: "type") var type: String?
 

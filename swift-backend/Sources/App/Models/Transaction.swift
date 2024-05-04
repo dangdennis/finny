@@ -10,8 +10,6 @@ final class Transaction: Model, Content {
 
     @Field(key: "plaid_transaction_id") var plaidTransactionId: String
 
-    @OptionalField(key: "plaid_category_id") var plaidCategoryId: String?
-
     @OptionalField(key: "category") var category: String?
 
     @OptionalField(key: "subcategory") var subcategory: String?
@@ -24,7 +22,8 @@ final class Transaction: Model, Content {
 
     @OptionalField(key: "iso_currency_code") var isoCurrencyCode: String?
 
-    @OptionalField(key: "unofficial_currency_code") var unofficialCurrencyCode: String?
+    @OptionalField(key: "unofficial_currency_code") var unofficialCurrencyCode:
+        String?
 
     @Field(key: "date") var date: Date
 
@@ -44,7 +43,6 @@ final class Transaction: Model, Content {
         id: UUID? = nil,
         accountId: UUID,
         plaidTransactionId: String,
-        plaidCategoryId: String?,
         category: String?,
         subcategory: String?,
         type: String,
@@ -59,7 +57,6 @@ final class Transaction: Model, Content {
         self.id = id
         self.$account.id = accountId
         self.plaidTransactionId = plaidTransactionId
-        self.plaidCategoryId = plaidCategoryId
         self.category = category
         self.subcategory = subcategory
         self.type = type

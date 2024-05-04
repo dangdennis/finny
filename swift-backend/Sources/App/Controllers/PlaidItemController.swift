@@ -6,6 +6,7 @@ struct PlaidItemController: Sendable {
     let db: Database
     let plaidItemService: PlaidItemService
     let accountService: AccountService
+    let transactionService: TransactionService
     let plaid: PlaidClient
 
     func createItem(req: Request) async throws -> PlaidItem.CreateItemResponse {
@@ -16,10 +17,15 @@ struct PlaidItemController: Sendable {
             institutionId: content.institutionId
         )
         if item != nil {
-            throw Abort(.badRequest, reason: "You have already linked this institution.")
+            throw Abort(
+                .badRequest,
+                reason: "You have already linked this institution."
+            )
         }
 
-        let exchanged = try await plaid.exchangePublicToken(publicToken: content.publicToken)
+        let exchanged = try await plaid.exchangePublicToken(
+            publicToken: content.publicToken
+        )
 
         let newItem = try await plaidItemService.createItem(
             userId: userId,
@@ -35,7 +41,8 @@ struct PlaidItemController: Sendable {
         // todo: move task to a persistent queue
         Task {
             do {
-                guard let item = try await plaidItemService.getById(id: itemId) else {
+                guard let item = try await plaidItemService.getById(id: itemId)
+                else {
                     req.logger.error(
                         "Cannot sync transactions. Failed to fetch item with id \(itemId)"
                     )
@@ -73,8 +80,12 @@ struct PlaidItemController: Sendable {
                     plaidItemId: item.plaidItemId,
                     accounts: accountsResponse.accounts
                 )
-                // await createOrUpdateTransactions(added.concat(modified));
-                // await deleteTransactions(removed);
+                try await transactionService.upsertTransactions(
+                    transactions: added + updated
+                )
+                try await transactionService.deleteTransactions(
+                    transactions: removed
+                )
                 guard let cursor = cursor else {
                     req.logger.error("Cursor is nil. Cannot update cursor.")
                     return
@@ -84,7 +95,8 @@ struct PlaidItemController: Sendable {
                     cursor: cursor
                 )
 
-            } catch { print("Failed to fetch transactions: \(error)") }
+            }
+            catch { print("Failed to fetch transactions: \(error)") }
         }
 
         return .init(

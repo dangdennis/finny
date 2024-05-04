@@ -9,7 +9,8 @@ import Vapor
         let app = Application(env)
         defer { app.shutdown() }
 
-        do { try await configure(app) } catch {
+        do { try await configure(app) }
+        catch {
             app.logger.report(error: error)
             throw error
         }

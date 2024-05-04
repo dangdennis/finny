@@ -6,20 +6,30 @@ func routes(_ app: Application) throws {
     let plaid = try PlaidClient(clientId: "todo", secret: "todo", env: .sandbox)
 
     let plaidLinkService = PlaidLinkService(db: app.db)
-    let plaidLinkController = PlaidLinkController(plaidLinkService: plaidLinkService, plaid: plaid)
+    let plaidLinkController = PlaidLinkController(
+        plaidLinkService: plaidLinkService,
+        plaid: plaid
+    )
     let plaidItemService = PlaidItemService(db: app.db)
-    let accountService = AccountService(db: app.db, plaidItemService: plaidItemService)
+    let accountService = AccountService(
+        db: app.db,
+        plaidItemService: plaidItemService
+    )
+    let userService = UserService(db: app.db)
+    let transactionService = TransactionService(db: app.db)
+
     let plaidItemController = PlaidItemController(
         db: app.db,
         plaidItemService: plaidItemService,
         accountService: accountService,
-
+        transactionService: transactionService,
         plaid: plaid
     )
-    let userService = UserService(db: app.db)
     let userController = UserController(db: app.db, userService: userService)
 
-    app.get { req async throws in try await req.view.render("index", ["title": "Finny"]) }
+    app.get { req async throws in
+        try await req.view.render("index", ["title": "Finny"])
+    }
 
     app.group("api") { api in
         let protectedApi = api.grouped(SessionToken.asyncAuthenticator())
