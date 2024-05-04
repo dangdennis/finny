@@ -6,13 +6,13 @@ struct PlaidLinkController: Sendable {
     let plaid: Plaid.PlaidClient
 
     func createLinkToken(req: Request) async throws -> LinkTokenResponse {
-        let userId = try Auth.getUserId(from: req)
-        let linkToken = try await plaid.createLinkToken(userId: userId)
+        let userID = try Auth.getUserID(from: req)
+        let linkToken = try await plaid.createLinkToken(userID: userID)
         return LinkTokenResponse(data: .init(linkToken: linkToken.link_token))
     }
 
     struct LinkTokenDTO: Content { let linkToken: String }
 
-    struct LinkTokenResponse: DataContaining { var data: LinkTokenDTO }
+    struct LinkTokenResponse: DataContaining { let data: LinkTokenDTO }
 
 }

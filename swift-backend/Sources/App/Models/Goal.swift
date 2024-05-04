@@ -28,14 +28,14 @@ final class Goal: Model {
         name: String,
         amount: Double,
         targetDate: Date,
-        userId: User.IDValue,
+        userID: User.IDValue,
         progress: Double = 0
     ) {
         self.id = id
         self.name = name
         self.amount = amount
         self.targetDate = targetDate
-        self.user.id = userId
+        self.user.id = userID
         self.progress = progress
     }
 }

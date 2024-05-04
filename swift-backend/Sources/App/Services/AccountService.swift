@@ -6,19 +6,23 @@ struct AccountService {
     let db: Database
     let plaidItemService: PlaidItemService
 
-    func getByPlaidAccountId(plaidAccountId: String) async throws -> Account? {
-        return try await Account.query(on: db).filter(\.$plaidAccountId == plaidAccountId)
+    func getAccounts(userID: UUID) async throws -> [Account] {
+        return try await Account.query(on: db).filter(\.$user.$id == userID).all()
+    }
+
+    func getByPlaidAccountID(plaidAccountID: String) async throws -> Account? {
+        return try await Account.query(on: db).filter(\.$plaidAccountID == plaidAccountID)
             .first()
     }
 
     func upsertAccounts(
-        plaidItemId: String,
+        plaidItemID: String,
         accounts: [Components.Schemas.AccountBase]
     ) async throws {
-        let plaidItem = try await plaidItemService.getByPlaidItemId(
-            plaidItemId: plaidItemId
+        let plaidItem = try await plaidItemService.getByPlaidItemID(
+            plaidItemID: plaidItemID
         )
-        guard let plaidItemId = plaidItem?.id else {
+        guard let plaidItemID = plaidItem?.id else {
             throw Abort(
                 .notFound,
                 reason: "Plaid item not found. Fail to upsert accounts."
@@ -27,8 +31,8 @@ struct AccountService {
         for plaidAcct in accounts {
             do {
                 let existingAccount = try await Account.query(on: db).filter(
-                    \.$plaidAccountId == plaidAcct.account_id
-                ).filter(\.$item.$id == plaidItemId).first()
+                    \.$plaidAccountID == plaidAcct.account_id
+                ).filter(\.$item.$id == plaidItemID).first()
 
                 if let existingAccount = existingAccount {
                     existingAccount.currentBalance = 5
@@ -37,8 +41,9 @@ struct AccountService {
                 }
                 else {
                     let account = Account(
-                        itemId: plaidItemId,
-                        plaidAccountId: plaidAcct.account_id,
+                        itemID: plaidItemID,
+                        userID: plaidItem!.$user.id,
+                        plaidAccountID: plaidAcct.account_id,
                         name: plaidAcct.name,
                         mask: plaidAcct.mask,
                         officialName: plaidAcct.official_name,

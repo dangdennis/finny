@@ -6,12 +6,22 @@ struct TransactionService {
     let db: Database
     let accountService: AccountService
 
+    func getTransactions(userID: UUID) async throws -> [Transaction] {
+        return try await Transaction.query(on: db)
+            .join(
+                Account.self,
+                on: \Transaction.$account.$id == \Account.$id
+            )
+            .filter(Account.self, \.$user.$id == userID)
+            .all()
+    }
+
     func upsertTransactions(transactions: [Components.Schemas.Transaction]) async throws {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
         for transaction in transactions {
             let existingTransaction = try await Transaction.query(on: db).filter(
-                \.$plaidTransactionId == transaction.value1.transaction_id
+                \.$plaidTransactionID == transaction.value1.transaction_id
             ).first()
 
             if let existingTransaction = existingTransaction {
@@ -32,13 +42,13 @@ struct TransactionService {
                 try await existingTransaction.save(on: db)
             }
             else {
-                let account = try await accountService.getByPlaidAccountId(
-                    plaidAccountId: transaction.value1.account_id
+                let account = try await accountService.getByPlaidAccountID(
+                    plaidAccountID: transaction.value1.account_id
                 )
                 guard let account = account else { continue }
                 let newTransaction = Transaction(
-                    accountId: try account.requireID(),
-                    plaidTransactionId: transaction.value1.transaction_id,
+                    accountID: try account.requireID(),
+                    plaidTransactionID: transaction.value1.transaction_id,
                     category: transaction.value2.personal_finance_category?.primary,
                     subcategory: transaction.value2.personal_finance_category?.detailed,
                     type: transaction.value2.payment_channel.rawValue,
@@ -58,9 +68,9 @@ struct TransactionService {
     func deleteTransactions(
         transactions: [Components.Schemas.RemovedTransaction]
     ) async throws {
-        let transactionIds = transactions.compactMap({ $0.transaction_id })
+        let transactionIDs = transactions.compactMap({ $0.transaction_id })
         try await Transaction.query(on: db).filter(
-            \.$plaidTransactionId ~~ transactionIds
+            \.$plaidTransactionID ~~ transactionIDs
         ).delete()
     }
 }

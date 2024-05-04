@@ -9,12 +9,12 @@ struct SyncService {
     let transactionService: TransactionService
 
     // todo: move task to a persistent queue
-    func syncTransactionsAndAccounts(itemId: UUID, logger: Logger) {
+    func syncTransactionsAndAccounts(itemID: UUID, logger: Logger) {
         Task {
             do {
-                guard let item = try await plaidItemService.getById(id: itemId) else {
+                guard let item = try await plaidItemService.getByID(id: itemID) else {
                     logger.error(
-                        "Cannot sync transactions. Failed to fetch item with id \(itemId)"
+                        "Cannot sync transactions. Failed to fetch item with id \(itemID)"
                     )
                     return
                 }
@@ -28,7 +28,7 @@ struct SyncService {
 
                 while hasMore {
                     let data = try await plaid.getTransactionsSync(
-                        plaidItemId: item.plaidItemId,
+                        plaidItemID: item.plaidItemID,
                         accessToken: item.plaidAccessToken,
                         cursor: cursor,
                         count: batchSize
@@ -46,7 +46,7 @@ struct SyncService {
                     accessToken: item.plaidAccessToken
                 )
                 try await accountService.upsertAccounts(
-                    plaidItemId: item.plaidItemId,
+                    plaidItemID: item.plaidItemID,
                     accounts: accountsResponse.accounts
                 )
                 try await transactionService.upsertTransactions(
@@ -58,7 +58,7 @@ struct SyncService {
                     return
                 }
                 try await plaidItemService.updateCursor(
-                    itemId: try item.requireID(),
+                    itemID: try item.requireID(),
                     cursor: cursor
                 )
 

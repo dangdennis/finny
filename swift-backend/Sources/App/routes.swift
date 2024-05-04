@@ -3,10 +3,10 @@ import Plaid
 import Vapor
 
 func routes(_ app: Application) throws {
-    let plaidClientId = Environment.get("PLAID_CLIENT_ID")!
+    let plaidClientID = Environment.get("PLAID_CLIENT_ID")!
     let plaidSecret = Environment.get("PLAID_SECRET_SANDBOX")!
     let plaid = try PlaidClient(
-        clientId: plaidClientId,
+        clientID: plaidClientID,
         secret: plaidSecret,
         env: .sandbox
     )
@@ -41,6 +41,10 @@ func routes(_ app: Application) throws {
         plaid: plaid
     )
     let userController = UserController(db: app.db, userService: userService)
+    let accountController = AccountController(accountService: accountService)
+    let transactionController = TransactionController(
+        transactionService: transactionService
+    )
 
     app.get { req async throws in try await req.view.render("index", ["title": "Finny"]) }
 
@@ -56,22 +60,34 @@ func routes(_ app: Application) throws {
             }
         }
 
-        protectedApi.group("plaid-items") { plaidItems in
-            plaidItems.post("link") { req async throws in
+        protectedApi.group("plaid-items") { itemApi in
+            itemApi.post("link") { req async throws in
                 return try await plaidItemController.linkItem(req: req)
             }
 
-            plaidItems.get("list") { req async throws in
+            itemApi.get("list") { req async throws in
                 return try await plaidItemController.listItems(req: req)
             }
 
-            plaidItems.post("sync") { req async throws in
+            itemApi.post("sync") { req async throws in
                 return try await plaidItemController.syncItem(req: req)
             }
         }
 
-        protectedApi.group("plaid-link") { plaidLink in
-            plaidLink.post("new") { req async throws in
+        protectedApi.group("accounts") { accountApi in
+            accountApi.get("list") { req async throws in
+                return try await accountController.listAccounts(req: req)
+            }
+        }
+
+        protectedApi.group("transactions") { transactionApi in
+            transactionApi.get("list") { req async throws in
+                return try await transactionController.listTransactions(req: req)
+            }
+        }
+
+        protectedApi.group("plaid-link") { linkApi in
+            linkApi.post("new") { req async throws in
                 return try await plaidLinkController.createLinkToken(req: req)
             }
         }

@@ -20,9 +20,9 @@ final class Asset: Model {
 
     init() {}
 
-    init(id: UUID? = nil, userId: UUID, value: Double, description: String) {
+    init(id: UUID? = nil, userID: UUID, value: Double, description: String) {
         self.id = id
-        self.$user.id = userId
+        self.$user.id = userID
         self.value = value
         self.description = description
     }

@@ -4,32 +4,32 @@ import Vapor
 struct PlaidItemService {
     let db: Database
 
-    func getById(id: UUID) async throws -> PlaidItem? {
+    func getByID(id: UUID) async throws -> PlaidItem? {
         return try await PlaidItem.query(on: db).filter(\.$id == id).first()
     }
 
-    func getByPlaidItemId(plaidItemId: String) async throws -> PlaidItem? {
-        return try await PlaidItem.query(on: db).filter(\.$plaidItemId == plaidItemId)
+    func getByPlaidItemID(plaidItemID: String) async throws -> PlaidItem? {
+        return try await PlaidItem.query(on: db).filter(\.$plaidItemID == plaidItemID)
             .first()
     }
 
-    func listItems(userId: UUID) async throws -> [PlaidItem] {
-        return try await PlaidItem.query(on: db).filter(\.$user.$id == userId).all()
+    func listItems(userID: UUID) async throws -> [PlaidItem] {
+        return try await PlaidItem.query(on: db).filter(\.$user.$id == userID).all()
     }
 
     func createItem(
-        userId: UUID,
+        userID: UUID,
         accessToken: String,
-        itemId: String,
-        institutionId: String,
+        itemID: String,
+        institutionID: String,
         status: PlaidItem.Status,
         transactionsCursor: String?
     ) async throws -> PlaidItem {
         let item = PlaidItem(
-            userId: userId,
+            userID: userID,
             plaidAccessToken: accessToken,
-            plaidItemId: itemId,
-            plaidInstitutionId: institutionId,
+            plaidItemID: itemID,
+            plaidInstitutionID: institutionID,
             status: status.rawValue,
             transactionsCursor: transactionsCursor
         )
@@ -37,15 +37,15 @@ struct PlaidItemService {
         return item
     }
 
-    func getByInstitutionId(institutionId: String) async throws -> PlaidItem? {
+    func getByInstitutionID(institutionID: String) async throws -> PlaidItem? {
         return try await PlaidItem.query(on: db).filter(
-            \.$plaidInstitutionId == institutionId
+            \.$plaidInstitutionID == institutionID
         ).first()
     }
 
-    func updateCursor(itemId: UUID, cursor: String) async throws {
+    func updateCursor(itemID: UUID, cursor: String) async throws {
         try await PlaidItem.query(on: db).set(\.$transactionsCursor, to: cursor).filter(
-            \.$id == itemId
+            \.$id == itemID
         ).update()
     }
 }

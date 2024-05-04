@@ -14,7 +14,7 @@ final class PlaidApiEvent: Model {
 
     @OptionalField(key: "arguments") var arguments: String?
 
-    @OptionalField(key: "request_id") var requestId: String?
+    @OptionalField(key: "request_id") var requestID: String?
 
     @OptionalField(key: "error_type") var errorType: String?
 
@@ -30,20 +30,20 @@ final class PlaidApiEvent: Model {
 
     init(
         id: UUID? = nil,
-        itemId: PlaidItem.IDValue?,
-        userId: User.IDValue?,
+        itemID: PlaidItem.IDValue?,
+        userID: User.IDValue?,
         plaidMethod: String,
         arguments: String?,
-        requestId: String?,
+        requestID: String?,
         errorType: String?,
         errorCode: String?
     ) {
         self.id = id
-        self.$item.id = itemId
-        self.$user.id = userId
+        self.$item.id = itemID
+        self.$user.id = userID
         self.plaidMethod = plaidMethod
         self.arguments = arguments
-        self.requestId = requestId
+        self.requestID = requestID
         self.errorType = errorType
         self.errorCode = errorCode
     }

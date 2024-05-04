@@ -5,7 +5,7 @@ import OpenAPIRuntime
 public struct PlaidClient: Sendable {
     private let client: APIProtocol
     private let plaidSecret: String
-    private let plaidClientId: String
+    private let plaidClientID: String
 
     public enum Environment: String {
         case development = "development"
@@ -14,7 +14,7 @@ public struct PlaidClient: Sendable {
     }
 
     /// Creates a new client for GreetingService.
-    public init(clientId: String, secret: String, env: Environment) throws {
+    public init(clientID: String, secret: String, env: Environment) throws {
         let serverURL: URL
         switch env {
         case .development: serverURL = URL(string: "https://development.plaid.com")!
@@ -24,11 +24,11 @@ public struct PlaidClient: Sendable {
 
         self.client = Client(serverURL: serverURL, transport: AsyncHTTPClientTransport())
         self.plaidSecret = secret
-        self.plaidClientId = clientId
+        self.plaidClientID = clientID
     }
 
     public func getTransactionsSync(
-        plaidItemId: String,
+        plaidItemID: String,
         accessToken: String,
         cursor: String?,
         count: Int?
@@ -37,7 +37,7 @@ public struct PlaidClient: Sendable {
             Operations.transactionsSync.Input(
                 body: .json(
                     Components.Schemas.TransactionsSyncRequest(
-                        client_id: self.plaidClientId,
+                        client_id: self.plaidClientID,
                         access_token: accessToken,
                         secret: self.plaidSecret,
                         cursor: cursor,
@@ -51,7 +51,7 @@ public struct PlaidClient: Sendable {
     }
 
     public func createLinkToken(
-        userId: UUID
+        userID: UUID
     ) async throws -> Components.Schemas.LinkTokenCreateResponse {
         let response = try await client.linkTokenCreate(
             Operations.linkTokenCreate.Input(
@@ -61,7 +61,7 @@ public struct PlaidClient: Sendable {
                         language: "en",
                         country_codes: [Components.Schemas.CountryCode.US],
                         user: Components.Schemas.LinkTokenCreateRequestUser(
-                            client_user_id: userId.uuidString
+                            client_user_id: userID.uuidString
                         )
                     )
                 )
@@ -72,14 +72,14 @@ public struct PlaidClient: Sendable {
     }
 
     public func getItem(
-        itemId: String,
+        itemID: String,
         accessToken: String
     ) async throws -> Components.Schemas.ItemGetResponse {
         let response = try await client.itemGet(
             .init(
                 body: .json(
                     .init(
-                        client_id: self.plaidClientId,
+                        client_id: self.plaidClientID,
                         secret: self.plaidSecret,
                         access_token: accessToken
 
@@ -98,7 +98,7 @@ public struct PlaidClient: Sendable {
             .init(
                 body: .json(
                     .init(
-                        client_id: self.plaidClientId,
+                        client_id: self.plaidClientID,
                         secret: self.plaidSecret,
                         public_token: publicToken
                     )
@@ -116,7 +116,7 @@ public struct PlaidClient: Sendable {
             .init(
                 body: .json(
                     .init(
-                        client_id: self.plaidClientId,
+                        client_id: self.plaidClientID,
                         secret: self.plaidSecret,
                         access_token: accessToken
                     )

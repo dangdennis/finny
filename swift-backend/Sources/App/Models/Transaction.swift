@@ -8,7 +8,7 @@ final class Transaction: Model {
 
     @Parent(key: "account_id") var account: Account
 
-    @Field(key: "plaid_transaction_id") var plaidTransactionId: String
+    @Field(key: "plaid_transaction_id") var plaidTransactionID: String
 
     @OptionalField(key: "category") var category: String?
 
@@ -40,8 +40,8 @@ final class Transaction: Model {
 
     init(
         id: UUID? = nil,
-        accountId: UUID,
-        plaidTransactionId: String,
+        accountID: UUID,
+        plaidTransactionID: String,
         category: String?,
         subcategory: String?,
         type: String,
@@ -54,8 +54,8 @@ final class Transaction: Model {
         accountOwner: String?
     ) {
         self.id = id
-        self.$account.id = accountId
-        self.plaidTransactionId = plaidTransactionId
+        self.$account.id = accountID
+        self.plaidTransactionID = plaidTransactionID
         self.category = category
         self.subcategory = subcategory
         self.type = type

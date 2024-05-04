@@ -10,9 +10,9 @@ final class PlaidLinkEvent: Model {
 
     @Parent(key: "user_id") var user: User
 
-    @OptionalField(key: "link_session_id") var linkSessionId: String?
+    @OptionalField(key: "link_session_id") var linkSessionID: String?
 
-    @OptionalField(key: "request_id") var requestId: String?
+    @OptionalField(key: "request_id") var requestID: String?
 
     @OptionalField(key: "error_type") var errorType: String?
 
@@ -31,18 +31,18 @@ final class PlaidLinkEvent: Model {
     init(
         id: UUID? = nil,
         type: String,
-        userId: UUID,
-        linkSessionId: String?,
-        requestId: String?,
+        userID: UUID,
+        linkSessionID: String?,
+        requestID: String?,
         errorType: String?,
         errorCode: String?,
         status: String?
     ) {
         self.id = id
         self.type = type
-        self.$user.id = userId
-        self.linkSessionId = linkSessionId
-        self.requestId = requestId
+        self.$user.id = userID
+        self.linkSessionID = linkSessionID
+        self.requestID = requestID
         self.errorType = errorType
         self.errorCode = errorCode
         self.status = status

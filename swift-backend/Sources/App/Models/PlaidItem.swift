@@ -10,9 +10,9 @@ final class PlaidItem: Model {
 
     @Field(key: "plaid_access_token") var plaidAccessToken: String
 
-    @Field(key: "plaid_item_id") var plaidItemId: String
+    @Field(key: "plaid_item_id") var plaidItemID: String
 
-    @Field(key: "plaid_institution_id") var plaidInstitutionId: String
+    @Field(key: "plaid_institution_id") var plaidInstitutionID: String
 
     @Field(key: "status") var status: String
 
@@ -28,18 +28,18 @@ final class PlaidItem: Model {
 
     init(
         id: UUID? = nil,
-        userId: User.IDValue,
+        userID: User.IDValue,
         plaidAccessToken: String,
-        plaidItemId: String,
-        plaidInstitutionId: String,
+        plaidItemID: String,
+        plaidInstitutionID: String,
         status: String,
         transactionsCursor: String?
     ) {
         self.id = id
-        self.$user.id = userId
+        self.$user.id = userID
         self.plaidAccessToken = plaidAccessToken
-        self.plaidItemId = plaidItemId
-        self.plaidInstitutionId = plaidInstitutionId
+        self.plaidItemID = plaidItemID
+        self.plaidInstitutionID = plaidInstitutionID
         self.status = status
         self.transactionsCursor = transactionsCursor
     }

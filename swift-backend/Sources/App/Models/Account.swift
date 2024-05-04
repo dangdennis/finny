@@ -6,9 +6,11 @@ final class Account: Model {
 
     @ID(key: .id) var id: UUID?
 
+    @Parent(key: "user_id") var user: User
+
     @Parent(key: "item_id") var item: PlaidItem
 
-    @Field(key: "plaid_account_id") var plaidAccountId: String
+    @Field(key: "plaid_account_id") var plaidAccountID: String
 
     @Field(key: "name") var name: String
 
@@ -38,8 +40,9 @@ final class Account: Model {
 
     init(
         id: UUID? = nil,
-        itemId: UUID,
-        plaidAccountId: String,
+        itemID: PlaidItem.IDValue,
+        userID: User.IDValue,
+        plaidAccountID: String,
         name: String,
         mask: String?,
         officialName: String?,
@@ -51,8 +54,9 @@ final class Account: Model {
         subtype: String?
     ) {
         self.id = id
-        self.$item.id = itemId
-        self.plaidAccountId = plaidAccountId
+        self.$item.id = itemID
+        self.$user.id = userID
+        self.plaidAccountID = plaidAccountID
         self.name = name
         self.mask = mask
         self.officialName = officialName
