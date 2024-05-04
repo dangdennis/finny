@@ -1,7 +1,7 @@
 import Fluent
 import Vapor
 
-final class PlaidLinkEvent: Model, Content {
+final class PlaidLinkEvent: Model {
     static let schema = "plaid_link_events"
 
     @ID(key: .id) var id: UUID?

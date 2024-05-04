@@ -7,6 +7,7 @@ struct PlaidItemController: Sendable {
     let plaidItemService: PlaidItemService
     let accountService: AccountService
     let transactionService: TransactionService
+    let syncService: SyncService
     let plaid: PlaidClient
 
     func createItem(req: Request) async throws -> PlaidItem.CreateItemResponse {
@@ -17,15 +18,10 @@ struct PlaidItemController: Sendable {
             institutionId: content.institutionId
         )
         if item != nil {
-            throw Abort(
-                .badRequest,
-                reason: "You have already linked this institution."
-            )
+            throw Abort(.badRequest, reason: "You have already linked this institution.")
         }
 
-        let exchanged = try await plaid.exchangePublicToken(
-            publicToken: content.publicToken
-        )
+        let exchanged = try await plaid.exchangePublicToken(publicToken: content.publicToken)
 
         let newItem = try await plaidItemService.createItem(
             userId: userId,
@@ -38,66 +34,7 @@ struct PlaidItemController: Sendable {
 
         let itemId = try newItem.requireID()
 
-        // todo: move task to a persistent queue
-        Task {
-            do {
-                guard let item = try await plaidItemService.getById(id: itemId)
-                else {
-                    req.logger.error(
-                        "Cannot sync transactions. Failed to fetch item with id \(itemId)"
-                    )
-                    return
-                }
-
-                let batchSize = 100
-                var cursor = item.transactionsCursor
-                var hasMore = true
-                var added: [Components.Schemas.Transaction] = []
-                var updated: [Components.Schemas.Transaction] = []
-                var removed: [Components.Schemas.RemovedTransaction] = []
-
-                while hasMore {
-
-                    let data = try await plaid.getTransactionsSync(
-                        plaidItemId: item.plaidItemId,
-                        accessToken: item.plaidAccessToken,
-                        cursor: cursor,
-                        count: batchSize
-                    )
-
-                    added.append(contentsOf: data.added)
-                    updated.append(contentsOf: data.modified)
-                    removed.append(contentsOf: data.removed)
-
-                    hasMore = data.has_more
-                    cursor = data.next_cursor
-                }
-
-                let accountsResponse = try await plaid.getAccounts(
-                    accessToken: item.plaidAccessToken
-                )
-                try await accountService.upsertAccounts(
-                    plaidItemId: item.plaidItemId,
-                    accounts: accountsResponse.accounts
-                )
-                try await transactionService.upsertTransactions(
-                    transactions: added + updated
-                )
-                try await transactionService.deleteTransactions(
-                    transactions: removed
-                )
-                guard let cursor = cursor else {
-                    req.logger.error("Cursor is nil. Cannot update cursor.")
-                    return
-                }
-                try await plaidItemService.updateCursor(
-                    itemId: try item.requireID(),
-                    cursor: cursor
-                )
-
-            }
-            catch { print("Failed to fetch transactions: \(error)") }
-        }
+        syncService.syncTransactionsAndAccounts(itemId: itemId, logger: req.logger)
 
         return .init(
             data: .init(

@@ -17,17 +17,12 @@ public struct PlaidClient: Sendable {
     public init(clientId: String, secret: String, env: Environment) throws {
         let serverURL: URL
         switch env {
-        case .development:
-            serverURL = URL(string: "https://development.plaid.com")!
+        case .development: serverURL = URL(string: "https://development.plaid.com")!
         case .sandbox: serverURL = URL(string: "https://sandbox.plaid.com")!
-        case .production:
-            serverURL = URL(string: "https://production.plaid.com")!
+        case .production: serverURL = URL(string: "https://production.plaid.com")!
         }
 
-        self.client = Client(
-            serverURL: serverURL,
-            transport: AsyncHTTPClientTransport()
-        )
+        self.client = Client(serverURL: serverURL, transport: AsyncHTTPClientTransport())
         self.plaidSecret = secret
         self.plaidClientId = clientId
     }

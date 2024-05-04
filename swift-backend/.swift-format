@@ -1,10 +1,9 @@
 {
-    "lineLength": 80,
+    "lineLength": 100,
     "indentation": {
         "spaces": 4
     },
     "prioritizeKeepingFunctionOutputTogether": true,
-    "maximumBlankLines": 1,
     "respectsExistingLineBreaks": false,
     "lineBreakBeforeControlFlowKeywords": true,
     "lineBreakBeforeEachArgument": true,

@@ -1,7 +1,7 @@
 import Fluent
 import Vapor
 
-final class PlaidItem: Model, Content {
+final class PlaidItem: Model {
     static let schema = "plaid_items"
 
     @ID(key: .id) var id: UUID?

@@ -9,14 +9,11 @@ struct PlaidItemService {
     }
 
     func getByPlaidItemId(plaidItemId: String) async throws -> PlaidItem? {
-        return try await PlaidItem.query(on: db).filter(
-            \.$plaidItemId == plaidItemId
-        ).first()
+        return try await PlaidItem.query(on: db).filter(\.$plaidItemId == plaidItemId).first()
     }
 
     func listItems(userId: UUID) async throws -> [PlaidItem] {
-        return try await PlaidItem.query(on: db).filter(\.$user.$id == userId)
-            .all()
+        return try await PlaidItem.query(on: db).filter(\.$user.$id == userId).all()
     }
 
     func createItem(
@@ -40,13 +37,13 @@ struct PlaidItemService {
     }
 
     func getByInstitutionId(institutionId: String) async throws -> PlaidItem? {
-        return try await PlaidItem.query(on: db).filter(
-            \.$plaidInstitutionId == institutionId
-        ).first()
+        return try await PlaidItem.query(on: db).filter(\.$plaidInstitutionId == institutionId)
+            .first()
     }
 
     func updateCursor(itemId: UUID, cursor: String) async throws {
-        try await PlaidItem.query(on: db).set(\.$transactionsCursor, to: cursor)
-            .filter(\.$id == itemId).update()
+        try await PlaidItem.query(on: db).set(\.$transactionsCursor, to: cursor).filter(
+            \.$id == itemId
+        ).update()
     }
 }

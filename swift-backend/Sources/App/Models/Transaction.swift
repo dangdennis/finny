@@ -1,7 +1,7 @@
 import Fluent
 import Vapor
 
-final class Transaction: Model, Content {
+final class Transaction: Model {
     static let schema = "transactions"
 
     @ID(key: .id) var id: UUID?
@@ -22,8 +22,7 @@ final class Transaction: Model, Content {
 
     @OptionalField(key: "iso_currency_code") var isoCurrencyCode: String?
 
-    @OptionalField(key: "unofficial_currency_code") var unofficialCurrencyCode:
-        String?
+    @OptionalField(key: "unofficial_currency_code") var unofficialCurrencyCode: String?
 
     @Field(key: "date") var date: Date
 

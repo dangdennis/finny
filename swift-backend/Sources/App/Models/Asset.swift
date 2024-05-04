@@ -1,7 +1,7 @@
 import Fluent
 import Vapor
 
-final class Asset: Model, Content {
+final class Asset: Model {
     static let schema = "assets"
 
     @ID(key: .id) var id: UUID?
