@@ -16,9 +16,9 @@ final class Account: Model {
 
     @OptionalField(key: "official_name") var officialName: String?
 
-    @OptionalField(key: "current_balance") var currentBalance: Decimal?
+    @OptionalField(key: "current_balance") var currentBalance: Double?
 
-    @OptionalField(key: "available_balance") var availableBalance: Decimal?
+    @OptionalField(key: "available_balance") var availableBalance: Double?
 
     @OptionalField(key: "iso_currency_code") var isoCurrencyCode: String?
 
@@ -43,8 +43,8 @@ final class Account: Model {
         name: String,
         mask: String?,
         officialName: String?,
-        currentBalance: Decimal?,
-        availableBalance: Decimal?,
+        currentBalance: Double?,
+        availableBalance: Double?,
         isoCurrencyCode: String?,
         unofficialCurrencyCode: String?,
         type: String?,

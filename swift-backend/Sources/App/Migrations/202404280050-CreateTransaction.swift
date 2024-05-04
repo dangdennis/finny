@@ -9,25 +9,27 @@ extension Transaction {
                 .uuid,
                 .required,
                 .references("accounts", "id")
-            ).field("plaid_transaction_id", .string, .required).unique(on: "plaid_transaction_id")
-                .field("category", .string).field("subcategory", .string).field(
-                    "type",
-                    .string,
-                    .required
-                ).field("name", .string, .required).field("amount", .double, .required).field(
-                    "iso_currency_code",
-                    .string
-                ).field("unofficial_currency_code", .string).field("date", .date, .required).field(
-                    "pending",
-                    .bool,
-                    .required
-                ).field("account_owner", .string).field(
+            ).field("plaid_transaction_id", .string, .required).unique(
+                on: "plaid_transaction_id"
+            ).field("category", .string).field("subcategory", .string).field(
+                "type",
+                .string,
+                .required
+            ).field("name", .string, .required).field("amount", .double, .required).field(
+                "iso_currency_code",
+                .string
+            ).field("unofficial_currency_code", .string).field("date", .date, .required)
+                .field("pending", .bool, .required).field("account_owner", .string).field(
                     "created_at",
                     .datetime,
                     .required,
                     .sql(.default(SQLFunction("now")))
-                ).field("updated_at", .datetime, .required, .sql(.default(SQLFunction("now"))))
-                .field("deleted_at", .datetime).create()
+                ).field(
+                    "updated_at",
+                    .datetime,
+                    .required,
+                    .sql(.default(SQLFunction("now")))
+                ).field("deleted_at", .datetime).create()
         }
 
         func revert(on database: Database) async throws {

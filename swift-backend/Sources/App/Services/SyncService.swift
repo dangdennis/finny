@@ -13,7 +13,9 @@ struct SyncService {
         Task {
             do {
                 guard let item = try await plaidItemService.getById(id: itemId) else {
-                    logger.error("Cannot sync transactions. Failed to fetch item with id \(itemId)")
+                    logger.error(
+                        "Cannot sync transactions. Failed to fetch item with id \(itemId)"
+                    )
                     return
                 }
 
@@ -25,7 +27,6 @@ struct SyncService {
                 var removed: [Components.Schemas.RemovedTransaction] = []
 
                 while hasMore {
-
                     let data = try await plaid.getTransactionsSync(
                         plaidItemId: item.plaidItemId,
                         accessToken: item.plaidAccessToken,
@@ -48,7 +49,9 @@ struct SyncService {
                     plaidItemId: item.plaidItemId,
                     accounts: accountsResponse.accounts
                 )
-                try await transactionService.upsertTransactions(transactions: added + updated)
+                try await transactionService.upsertTransactions(
+                    transactions: added + updated
+                )
                 try await transactionService.deleteTransactions(transactions: removed)
                 guard let cursor = cursor else {
                     logger.error("Cursor is nil. Cannot update cursor.")
@@ -60,7 +63,7 @@ struct SyncService {
                 )
 
             }
-            catch { print("Failed to fetch transactions: \(error)") }
+            catch { print("Failed to sync plaid: \(String(reflecting: error))") }
         }
     }
 }

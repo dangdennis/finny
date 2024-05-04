@@ -9,15 +9,18 @@ extension Asset {
                 .uuid,
                 .required,
                 .references("users", "id")
-            ).field("value", .double, .required).field("description", .string, .required).field(
-                "created_at",
-                .datetime,
-                .required,
-                .sql(.default(SQLFunction("now")))
-            ).field("updated_at", .datetime, .required, .sql(.default(SQLFunction("now")))).field(
-                "deleted_at",
-                .datetime
-            ).create()
+            ).field("value", .double, .required).field("description", .string, .required)
+                .field(
+                    "created_at",
+                    .datetime,
+                    .required,
+                    .sql(.default(SQLFunction("now")))
+                ).field(
+                    "updated_at",
+                    .datetime,
+                    .required,
+                    .sql(.default(SQLFunction("now")))
+                ).field("deleted_at", .datetime).create()
         }
 
         func revert(on database: Database) async throws {

@@ -8,7 +8,7 @@ final class Asset: Model {
 
     @Parent(key: "user_id") var user: User
 
-    @Field(key: "value") var value: Decimal
+    @Field(key: "value") var value: Double
 
     @Field(key: "description") var description: String
 
@@ -20,7 +20,7 @@ final class Asset: Model {
 
     init() {}
 
-    init(id: UUID? = nil, userId: UUID, value: Decimal, description: String) {
+    init(id: UUID? = nil, userId: UUID, value: Double, description: String) {
         self.id = id
         self.$user.id = userId
         self.value = value

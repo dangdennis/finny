@@ -18,14 +18,15 @@ struct TransactionService {
                 existingTransaction.name =
                     transaction.value1.merchant_name ?? transaction.value1.name!
                 existingTransaction.date = formatter.date(from: transaction.value1.date)!
-                existingTransaction.amount = Decimal(transaction.value1.amount)
+                existingTransaction.amount = transaction.value1.amount
                 existingTransaction.isoCurrencyCode = transaction.value1.iso_currency_code
                 existingTransaction.unofficialCurrencyCode =
                     transaction.value1.unofficial_currency_code
                 existingTransaction.pending = transaction.value1.pending
                 existingTransaction.accountOwner = transaction.value1.account_owner
                 existingTransaction.type = transaction.value2.payment_channel.rawValue
-                existingTransaction.category = transaction.value2.personal_finance_category?.primary
+                existingTransaction.category =
+                    transaction.value2.personal_finance_category?.primary
                 existingTransaction.subcategory =
                     transaction.value2.personal_finance_category?.detailed
                 try await existingTransaction.save(on: db)
@@ -42,7 +43,7 @@ struct TransactionService {
                     subcategory: transaction.value2.personal_finance_category?.detailed,
                     type: transaction.value2.payment_channel.rawValue,
                     name: transaction.value1.merchant_name ?? transaction.value1.name!,
-                    amount: Decimal(transaction.value1.amount),
+                    amount: transaction.value1.amount,
                     isoCurrencyCode: transaction.value1.iso_currency_code,
                     unofficialCurrencyCode: transaction.value1.unofficial_currency_code,
                     date: formatter.date(from: transaction.value1.date) ?? Date(),
@@ -54,8 +55,12 @@ struct TransactionService {
         }
     }
 
-    func deleteTransactions(transactions: [Components.Schemas.RemovedTransaction]) async throws {
+    func deleteTransactions(
+        transactions: [Components.Schemas.RemovedTransaction]
+    ) async throws {
         let transactionIds = transactions.compactMap({ $0.transaction_id })
-        try await Transaction.query(on: db).filter(\.$plaidTransactionId ~~ transactionIds).delete()
+        try await Transaction.query(on: db).filter(
+            \.$plaidTransactionId ~~ transactionIds
+        ).delete()
     }
 }

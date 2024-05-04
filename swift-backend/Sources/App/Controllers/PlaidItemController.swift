@@ -10,7 +10,7 @@ struct PlaidItemController: Sendable {
     let syncService: SyncService
     let plaid: PlaidClient
 
-    func createItem(req: Request) async throws -> PlaidItem.CreateItemResponse {
+    func linkItem(req: Request) async throws -> PlaidItem.CreateItemResponse {
         try PlaidItem.CreateItemRequest.validate(content: req)
         let userId = try Auth.getUserId(from: req)
         let content = try req.content.decode(PlaidItem.CreateItemRequest.self)
@@ -21,7 +21,9 @@ struct PlaidItemController: Sendable {
             throw Abort(.badRequest, reason: "You have already linked this institution.")
         }
 
-        let exchanged = try await plaid.exchangePublicToken(publicToken: content.publicToken)
+        let exchanged = try await plaid.exchangePublicToken(
+            publicToken: content.publicToken
+        )
 
         let newItem = try await plaidItemService.createItem(
             userId: userId,
@@ -63,6 +65,20 @@ struct PlaidItemController: Sendable {
             }
         )
     }
+
+    func syncItem(req: Request) async throws -> HTTPStatus {
+        try PlaidItem.SyncItemRequest.validate(content: req)
+        let content = try req.content.decode(PlaidItem.SyncItemRequest.self)
+        let plaidItem = try await plaidItemService.getById(id: content.itemId)
+        guard let plaidItem = plaidItem else {
+            throw Abort(.notFound, reason: "Item not found.")
+        }
+        syncService.syncTransactionsAndAccounts(
+            itemId: try plaidItem.requireID(),
+            logger: req.logger
+        )
+        return .ok
+    }
 }
 
 extension PlaidItem {
@@ -82,11 +98,21 @@ extension PlaidItem {
     }
 
     struct CreateItemResponse: DataContaining { var data: DTO }
+
+    struct SyncItemRequest: Content { let itemId: UUID }
+
+    struct SyncItemResponse: DataContaining { var data: DTO }
 }
 
 extension PlaidItem.CreateItemRequest: Validatable {
     static func validations(_ validations: inout Validations) {
         validations.add("publicToken", as: String.self, is: !.empty)
         validations.add("institutionId", as: String.self, is: !.empty)
+    }
+}
+
+extension PlaidItem.SyncItemRequest: Validatable {
+    static func validations(_ validations: inout Validations) {
+        validations.add("itemId", as: UUID.self, is: .valid)
     }
 }

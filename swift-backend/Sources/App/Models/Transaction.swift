@@ -18,7 +18,7 @@ final class Transaction: Model {
 
     @Field(key: "name") var name: String
 
-    @Field(key: "amount") var amount: Decimal
+    @Field(key: "amount") var amount: Double
 
     @OptionalField(key: "iso_currency_code") var isoCurrencyCode: String?
 
@@ -46,7 +46,7 @@ final class Transaction: Model {
         subcategory: String?,
         type: String,
         name: String,
-        amount: Decimal,
+        amount: Double,
         isoCurrencyCode: String?,
         unofficialCurrencyCode: String?,
         date: Date,
