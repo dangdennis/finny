@@ -1,13 +1,17 @@
+//go:generate edgeql-go
+
 package main
 
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/danielgtaylor/huma/v2/adapters/humaecho"
 	_ "github.com/danielgtaylor/huma/v2/formats/cbor"
 	"github.com/danielgtaylor/huma/v2/humacli"
+	"github.com/edgedb/edgedb-go"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -39,6 +43,26 @@ func main() {
 			resp.Body.Message = fmt.Sprintf("Hello, %s!", input.Name)
 			return resp, nil
 		})
+
+		ctx := context.Background()
+		client, err := edgedb.CreateClient(ctx, edgedb.Options{})
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer client.Close()
+
+		age := int16(21)
+
+		users, err := getuserolderthanage(ctx, client, age)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		fmt.Println("Found users:", len(users))
+		for _, user := range users {
+			fmt.Printf("User: %d\n", user.age)
+
+		}
 
 		fmt.Printf("Server listening on port http://localhost:%d", options.Port)
 		e.Logger.Fatal(e.Start(fmt.Sprintf("0.0.0.0:%d", options.Port)))
