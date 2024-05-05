@@ -10,7 +10,7 @@ public func configure(_ app: Application) async throws {
     // uncomment to serve files from /Public folder
     // app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
 
-    try applyDatabaseConfig(app: app, databaseUrl: Environment.get("DATABASE_URL")!)
+    try applyDatabaseConfig(app: app)
 
     app.migrations.add(PGExtensionMigration())
     app.migrations.add(User.Migration())
@@ -21,6 +21,7 @@ public func configure(_ app: Application) async throws {
     app.migrations.add(PlaidLinkEvent.Migration())
     app.migrations.add(PlaidApiEvent.Migration())
     app.migrations.add(Goal.Migration())
+    app.migrations.add(PowerSync.Migration())
     try await app.autoMigrate()
 
     app.views.use(.leaf)

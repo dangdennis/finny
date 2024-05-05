@@ -2,6 +2,8 @@ import FluentPostgresDriver
 import Foundation
 import Vapor
 
+struct PowerSync {}
+
 struct DatabaseConfiguration {
     let hostname: String
     let port: Int
@@ -11,7 +13,7 @@ struct DatabaseConfiguration {
     let tls: TLSConfiguration
 }
 
-func applyDatabaseConfig(app: Application, databaseUrl: String) throws {
+func applyDatabaseConfig(app: Application) throws {
     guard let databaseUrl = Environment.get("DATABASE_URL") else {
         fatalError("DATABASE_URL environment variable not set")
     }
