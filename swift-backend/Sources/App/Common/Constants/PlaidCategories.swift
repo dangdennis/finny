@@ -5,7 +5,7 @@ struct PlaidCategoryKey: Hashable {
 
 typealias PlaidCategoryDict = [PlaidCategoryKey: String]
 
-let PLAID_CATEGORIES: PlaidCategoryDict = [
+let plaidCategories: PlaidCategoryDict = [
     PlaidCategoryKey(category: "INCOME", subcategory: "INCOME_DIVIDENDS"):
         "Dividends from investment accounts",
     PlaidCategoryKey(category: "INCOME", subcategory: "INCOME_INTEREST_EARNED"):

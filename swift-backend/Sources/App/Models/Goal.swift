@@ -11,7 +11,7 @@ final class Goal: Model {
 
     @Field(key: "target_date") var targetDate: Date
 
-    @Field(key: "user_id") var user: User
+    @Parent(key: "user_id") var user: User
 
     @Field(key: "progress") var progress: Double
 

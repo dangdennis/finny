@@ -7,8 +7,11 @@ build:
 build-release:
 	swift build -c release
 
-format:
+fmt:
 	swift-format format ./Sources --in-place --recursive --parallel
+
+lint:
+	swift-format lint ./Sources --recursive --parallel
 	
 r:
 	watchexec --restart --exts swift -- make run
@@ -17,10 +20,10 @@ b:
 	watchexec --restart --exts swift -- make build
 
 f: 
-	watchexec --restart --exts swift -- make format
+	watchexec --restart --exts swift -- make fmt
 
 l:
-	swift-format lint ./Sources --recursive --parallel 
+	watchexec --restart --exts swift -- make lint
 
 migrate:
 	swift run App migrate
