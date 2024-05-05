@@ -3,14 +3,14 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
+
+	"github.com/financialplanner/prisma/db"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/danielgtaylor/huma/v2/adapters/humaecho"
 	_ "github.com/danielgtaylor/huma/v2/formats/cbor"
 	"github.com/danielgtaylor/huma/v2/humacli"
-	"github.com/edgedb/edgedb-go"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -28,13 +28,22 @@ type GreetingOutput struct {
 }
 
 func main() {
+	prisma := db.NewClient()
+	if err := prisma.Prisma.Connect(); err != nil {
+		panic(err)
+	}
+
+	defer func() {
+		if err := prisma.Prisma.Disconnect(); err != nil {
+			panic(err)
+		}
+	}()
+
 	cli := humacli.New(func(hooks humacli.Hooks, options *Options) {
-		// Create a new router & API.
 		e := echo.New()
 		e.Use(middleware.Logger())
 		api := humaecho.New(e, huma.DefaultConfig("My API", "1.0.0"))
 
-		// Register GET /greeting/{name} handler.
 		huma.Register(api, huma.Operation{
 			OperationID: "get-greeting",
 			Method:      http.MethodGet,
@@ -47,28 +56,17 @@ func main() {
 		}) (*GreetingOutput, error) {
 			resp := &GreetingOutput{}
 			resp.Body.Message = fmt.Sprintf("Hello, %s!", input.Name)
+
+			// create a post
+			users, err := prisma.Users.FindMany().Exec(ctx)
+			if err != nil {
+				return nil, err
+			}
+
+			fmt.Println(users)
+
 			return resp, nil
 		})
-
-		ctx := context.Background()
-		client, err := edgedb.CreateClient(ctx, edgedb.Options{})
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer client.Close()
-
-		age := int16(21)
-
-		users, err := getuserolderthanage(ctx, client, age)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		fmt.Println("Found users:", len(users))
-		for _, user := range users {
-			fmt.Printf("User: %d\n", user.age)
-
-		}
 
 		fmt.Printf("Server listening on port http://localhost:%d", options.Port)
 		e.Logger.Fatal(e.Start(fmt.Sprintf("0.0.0.0:%d", options.Port)))

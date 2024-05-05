@@ -7,14 +7,8 @@ build:
 build-release:
 	go build -o bin/main -ldflags "-s -w" main.go
 
-generate:
-	go generate ./...
-
 format:
 	go fmt ./...
-
-g:
-	watchexec --restart --exts edgeql -- make generate
 
 r:
 	watchexec --restart --exts go -- make run
@@ -25,8 +19,17 @@ b:
 f:
 	watchexec --restart --exts go -- make format
 
-# migrate:
-	# swift run App migrate
+prismagen:
+	go run github.com/steebchen/prisma-client-go generate
 
-# revert:
-	# swift run App migrate --revert
+prismapush:
+	go run github.com/steebchen/prisma-client-go db push
+
+prismapull:
+	go run github.com/steebchen/prisma-client-go db pull
+
+prismadev:
+	go run github.com/steebchen/prisma-client-go migrate dev
+
+prismadeploy:
+	go run github.com/steebchen/prisma-client-go migrate deploy
