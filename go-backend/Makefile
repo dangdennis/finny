@@ -1,5 +1,5 @@
 run:
-	go run main.go
+	go run .
 
 build:
 	go build -o bin/main main.go
@@ -7,20 +7,23 @@ build:
 build-release:
 	go build -o bin/main -ldflags "-s -w" main.go
 
+generate:
+	go generate ./...
+
 format:
 	go fmt ./...
 
 g:
-	watchexec --restart --exts edgeql -- go generate ./...
+	watchexec --restart --exts edgeql -- make generate
 
 r:
-	watchexec --restart --exts go -- go run main.go
+	watchexec --restart --exts go -- make run
 
 b:
-	watchexec --restart --exts go -- go build -o bin/main main.go
+	watchexec --restart --exts go -- make build
 
 f:
-	watchexec --restart --exts go -- go fmt ./...
+	watchexec --restart --exts go -- make format
 
 # migrate:
 	# swift run App migrate

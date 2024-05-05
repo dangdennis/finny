@@ -1,11 +1,10 @@
-//go:generate edgeql-go
-
 package main
 
 import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/danielgtaylor/huma/v2/adapters/humaecho"
@@ -36,7 +35,14 @@ func main() {
 		api := humaecho.New(e, huma.DefaultConfig("My API", "1.0.0"))
 
 		// Register GET /greeting/{name} handler.
-		huma.Get(api, "/greeting/{name}", func(ctx context.Context, input *struct {
+		huma.Register(api, huma.Operation{
+			OperationID: "get-greeting",
+			Method:      http.MethodGet,
+			Path:        "/greeting/{name}",
+			Summary:     "Get a greeting",
+			Description: "Get a greeting for a person by name.",
+			Tags:        []string{"Greetings"},
+		}, func(ctx context.Context, input *struct {
 			Name string `path:"name" maxLength:"30" example:"world" doc:"Name to greet"`
 		}) (*GreetingOutput, error) {
 			resp := &GreetingOutput{}
