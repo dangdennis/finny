@@ -54,7 +54,7 @@ extension Transaction {
                 .field("deleted_at", .datetime).create()
 
             try await (database as! SQLDatabase)
-                .create(index: "\(Transaction.schema)_account_id_index")
+                .create(index: "ix:\(Transaction.schema).account_id")
                 .on(Transaction.schema)
                 .column("account_id")
                 .run()

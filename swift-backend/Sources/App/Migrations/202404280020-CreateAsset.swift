@@ -37,7 +37,7 @@ extension Asset {
                 .field("deleted_at", .datetime).create()
 
             try await (database as! SQLDatabase)
-                .create(index: "\(Asset.schema)_user_id_index")
+                .create(index: "ix:\(Asset.schema).user_id")
                 .on(Asset.schema)
                 .column("user_id")
                 .run()

@@ -62,7 +62,7 @@ extension Account {
                 .field("deleted_at", .datetime).create()
 
             try await (database as! SQLDatabase)
-                .create(index: "\(Account.schema)_user_id_index")
+                .create(index: "ix:\(Account.schema).user_id")
                 .on(Account.schema)
                 .column("user_id")
                 .run()

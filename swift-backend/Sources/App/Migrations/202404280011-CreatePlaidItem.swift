@@ -44,7 +44,7 @@ extension PlaidItem {
                 .field("deleted_at", .datetime).create()
 
             try await (database as! SQLDatabase)
-                .create(index: "\(PlaidItem.schema)_user_id_index")
+                .create(index: "ix:\(PlaidItem.schema).user_id")
                 .on(PlaidItem.schema)
                 .column("user_id")
                 .run()

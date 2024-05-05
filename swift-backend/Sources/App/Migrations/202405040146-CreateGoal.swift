@@ -41,7 +41,7 @@ extension Goal {
                 .field("deleted_at", .datetime).create()
 
             try await (database as! SQLDatabase)
-                .create(index: "\(Goal.schema)_user_id_index")
+                .create(index: "ix:\(Goal.schema).user_id")
                 .on(Goal.schema)
                 .column("user_id")
                 .run()

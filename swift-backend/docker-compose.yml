@@ -28,6 +28,18 @@ x-shared_environment: &shared_environment
   DATABASE_PASSWORD: postgres
   
 services:
+  db:
+    image: postgres:16-alpine
+    volumes:
+      - db_data:/var/lib/postgresql/data/pgdata
+    environment:
+      PGDATA: /var/lib/postgresql/data/pgdata
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - '5432:5432'
+
   # timescaledb:
   #   image: timescale/timescaledb:latest-pg14
   #   container_name: timescaledb
@@ -40,8 +52,6 @@ services:
   #     - "5432:5432" # Exposes TimescaleDB on port 5432 on your local machine
   #   volumes:
       # - timescale-data:/var/lib/postgresql/data # Persists data across container restarts
-
-
   # app:
   #   image: backend:latest
   #   build:
@@ -76,14 +86,3 @@ services:
   #   command: ["migrate", "--revert", "--yes"]
   #   deploy:
   #     replicas: 0
-  db:
-    image: postgres:16-alpine
-    volumes:
-      - db_data:/var/lib/postgresql/data/pgdata
-    environment:
-      PGDATA: /var/lib/postgresql/data/pgdata
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: postgres
-    ports:
-      - '5432:5432'

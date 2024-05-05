@@ -44,7 +44,7 @@ extension PlaidLinkEvent {
                 .field("deleted_at", .datetime).create()
 
             try await (database as! SQLDatabase)
-                .create(index: "\(PlaidLinkEvent.schema)_user_id_index")
+                .create(index: "ix:\(PlaidLinkEvent.schema).user_id")
                 .on(PlaidLinkEvent.schema)
                 .column("user_id")
                 .run()

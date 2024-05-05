@@ -45,7 +45,7 @@ extension PlaidApiEvent {
                 .field("deleted_at", .datetime).create()
 
             try await (database as! SQLDatabase)
-                .create(index: "\(PlaidApiEvent.schema)_item_id_index")
+                .create(index: "ix:\(PlaidApiEvent.schema).item_id")
                 .on(PlaidApiEvent.schema)
                 .column("item_id")
                 .run()
