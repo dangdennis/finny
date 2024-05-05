@@ -5,7 +5,7 @@
     },
     "prioritizeKeepingFunctionOutputTogether": true,
     "respectsExistingLineBreaks": true,
-    "lineBreakBeforeControlFlowKeywords": true,
+    "lineBreakBeforeControlFlowKeywords": false,
     "lineBreakBeforeEachArgument": true,
     "lineBreakBeforeEachGenericRequirement": true,
     "spacesAroundRangeFormationOperators": true

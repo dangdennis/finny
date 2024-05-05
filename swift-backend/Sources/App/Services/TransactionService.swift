@@ -40,8 +40,7 @@ struct TransactionService {
                 existingTransaction.subcategory =
                     transaction.value2.personal_finance_category?.detailed
                 try await existingTransaction.save(on: db)
-            }
-            else {
+            } else {
                 let account = try await accountService.getByPlaidAccountID(
                     plaidAccountID: transaction.value1.account_id
                 )

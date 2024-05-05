@@ -5,8 +5,15 @@ extension User {
     struct Migration: AsyncMigration {
         func prepare(on database: Database) async throws {
             try await database.schema(User.schema)
-                .id()
-                .field("username", .string, .required).unique(on: "username")
+                .field(
+                    "id",
+                    .uuid,
+                    .identifier(auto: false),
+                    .required,
+                    .sql(.default(SQLFunction("uuid_generate_v4")))
+                )
+                .field("username", .string, .required)
+                .unique(on: "username")
                 .field("password_hash", .string, .required)
                 .field(
                     "created_at",

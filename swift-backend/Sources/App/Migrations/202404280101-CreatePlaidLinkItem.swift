@@ -5,7 +5,13 @@ extension PlaidLinkEvent {
     struct Migration: AsyncMigration {
         func prepare(on database: Database) async throws {
             try await database.schema(PlaidLinkEvent.schema)
-                .id()
+                .field(
+                    "id",
+                    .uuid,
+                    .identifier(auto: false),
+                    .required,
+                    .sql(.default(SQLFunction("uuid_generate_v4")))
+                )
                 .field(
                     "type",
                     .string,
@@ -36,6 +42,13 @@ extension PlaidLinkEvent {
                     .sql(.default(SQLFunction("now")))
                 )
                 .field("deleted_at", .datetime).create()
+
+            try await (database as! SQLDatabase)
+                .create(index: "\(PlaidLinkEvent.schema)_user_id_index")
+                .on(PlaidLinkEvent.schema)
+                .column("user_id")
+                .run()
+
         }
 
         func revert(on database: Database) async throws {

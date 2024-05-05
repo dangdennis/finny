@@ -38,8 +38,7 @@ struct AccountService {
                     existingAccount.currentBalance = 5
                     existingAccount.availableBalance = plaidAcct.balances.available ?? 0.0
                     try await existingAccount.save(on: db)
-                }
-                else {
+                } else {
                     let account = Account(
                         itemID: plaidItemID,
                         userID: plaidItem!.$user.id,
@@ -57,8 +56,7 @@ struct AccountService {
                     )
                     try await account.save(on: db)
                 }
-            }
-            catch { debugPrint("Error: \(error)") }
+            } catch { debugPrint("Error: \(error)") }
         }
     }
 }

@@ -62,8 +62,7 @@ struct SyncService {
                     cursor: cursor
                 )
 
-            }
-            catch { print("Failed to sync plaid: \(String(reflecting: error))") }
+            } catch { print("Failed to sync plaid: \(String(reflecting: error))") }
         }
     }
 }

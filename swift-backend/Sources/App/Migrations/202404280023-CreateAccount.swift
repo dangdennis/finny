@@ -5,7 +5,13 @@ extension Account {
     struct Migration: AsyncMigration {
         func prepare(on database: Database) async throws {
             try await database.schema(Account.schema)
-                .id()
+                .field(
+                    "id",
+                    .uuid,
+                    .identifier(auto: false),
+                    .required,
+                    .sql(.default(SQLFunction("uuid_generate_v4")))
+                )
                 .field(
                     "item_id",
                     .uuid,
@@ -54,6 +60,12 @@ extension Account {
                     .sql(.default(SQLFunction("now")))
                 )
                 .field("deleted_at", .datetime).create()
+
+            try await (database as! SQLDatabase)
+                .create(index: "\(Account.schema)_user_id_index")
+                .on(Account.schema)
+                .column("user_id")
+                .run()
         }
 
         func revert(on database: Database) async throws {
