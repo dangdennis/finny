@@ -3,12 +3,41 @@ import Plaid
 import Vapor
 
 func routes(_ app: Application) throws {
-    let plaidClientID = Environment.get("PLAID_CLIENT_ID")!
-    let plaidSecret = Environment.get("PLAID_SECRET_SANDBOX")!
+    guard let plaidEnv = Environment.get("PLAID_ENV") else {
+        fatalError("PLAID_ENV environment variable not set")
+    }
+    guard let plaidClientID = Environment.get("PLAID_CLIENT_ID") else {
+        fatalError("PLAID_CLIENT_ID environment variable not set")
+    }
+    var plaidSecret: String
+    var plaidEnvConfig: Plaid.PlaidClient.Environment
+    if plaidEnv == "sandbox" {
+        guard let plaidSecretSandbox = Environment.get("PLAID_SECRET_SANDBOX") else {
+            fatalError("PLAID_SECRET_SANDBOX environment variable not set")
+        }
+        plaidSecret = plaidSecretSandbox
+        plaidEnvConfig = .sandbox
+    } else if plaidEnv == "production" {
+        guard let plaidSecretProduction = Environment.get("PLAID_SECRET_PRODUCTION")
+        else {
+            fatalError("PLAID_SECRET_PRODUCTION environment variable not set")
+        }
+        plaidSecret = plaidSecretProduction
+        plaidEnvConfig = .production
+    } else if plaidEnv == "development" {
+        guard let plaidSecretDevelopment = Environment.get("PLAID_SECRET_DEVELOPMENT")
+        else {
+            fatalError("PLAID_SECRET_DEVELOPMENT environment variable not set")
+        }
+        plaidSecret = plaidSecretDevelopment
+        plaidEnvConfig = .development
+    } else {
+        fatalError("Invalid PLAID_ENV environment variable: \(plaidEnv)")
+    }
     let plaid = try PlaidClient(
         clientID: plaidClientID,
         secret: plaidSecret,
-        env: .sandbox
+        env: plaidEnvConfig
     )
 
     // Services
