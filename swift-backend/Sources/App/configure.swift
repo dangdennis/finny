@@ -10,7 +10,18 @@ public func configure(_ app: Application) async throws {
     // uncomment to serve files from /Public folder
     // app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
 
-    try applyDatabaseConfig(app: app)
+    guard let databaseUrl = Environment.get("DATABASE_URL") else {
+        fatalError("DATABASE_URL environment variable not set")
+    }
+
+    app.databases.use(
+        DatabaseConfigurationFactory.postgres(
+            configuration: try SQLPostgresConfiguration(
+                url: databaseUrl
+            )
+        ),
+        as: .psql
+    )
 
     app.migrations.add(PGExtensionMigration())
     app.migrations.add(User.Migration())

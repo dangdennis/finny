@@ -9,17 +9,23 @@ extension PowerSync {
                 -- Create publication for powersync
                 DO $$
                 BEGIN
-                    -- Check if the publication already exists
-                    IF NOT EXISTS (SELECT 1 FROM pg_publication WHERE pubname = 'powersync') THEN
-                        create publication if not exists powersync for table 
-                            public.\(unsafeRaw: Account.schema),
-                            public.\(unsafeRaw: Asset.schema),
-                            public.\(unsafeRaw: PlaidItem.schema),
-                            public.\(unsafeRaw: Transaction.schema),
-                            public.\(unsafeRaw: Goal.schema),
-                            public.\(unsafeRaw: User.schema);
-                    END IF;
-                END $$;
+                    IF NOT EXISTS (
+                        SELECT
+                            1
+                        FROM
+                            pg_publication
+                        WHERE
+                            pubname = 'powersync') THEN
+                    CREATE publication powersync FOR TABLE 
+                        public.\(unsafeRaw: Account.schema),
+                        public.\(unsafeRaw: Asset.schema),
+                        public.\(unsafeRaw: PlaidItem.schema),
+                        public.\(unsafeRaw: Transaction.schema),
+                        public.\(unsafeRaw: Goal.schema),
+                        public.\(unsafeRaw: User.schema);
+                END IF;
+                END
+                $$;
                 """
             ).run()
         }
