@@ -1,4 +1,4 @@
-@preconcurrency import Fluent
+import Fluent
 import Plaid
 import Vapor
 

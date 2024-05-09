@@ -1,4 +1,5 @@
-@preconcurrency import Fluent
+import Fluent
+import Vapor
 
 final class Goal: Model {
     static let schema = "goals"
