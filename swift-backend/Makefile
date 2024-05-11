@@ -30,3 +30,9 @@ migrate:
 
 revert:
 	swift run App migrate --revert
+
+db-up:
+	docker compose up
+
+db-down:
+	docker compose down --volumes
