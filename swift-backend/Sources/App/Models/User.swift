@@ -6,9 +6,11 @@ final class User: Model, Authenticatable {
 
     @ID(key: .id) var id: UUID?
 
-    @Field(key: "username") var username: String
+    @Field(key: "email") var email: String
 
-    @Field(key: "password_hash") var passwordHash: String
+    @OptionalField(key: "password_hash") var passwordHash: String?
+
+    @OptionalField(key: "apple_sub") var appleSub: String?
 
     @Timestamp(key: "created_at", on: .create) var createdAt: Date?
 
@@ -18,9 +20,15 @@ final class User: Model, Authenticatable {
 
     init() {}
 
-    init(id: UUID? = nil, username: String, passwordHash: String) {
+    init(id: UUID? = nil, email: String, passwordHash: String) {
         self.id = id
-        self.username = username
+        self.email = email
         self.passwordHash = passwordHash
+    }
+
+    init(id: UUID? = nil, email: String, appleSub: String) {
+        self.id = id
+        self.email = email
+        self.appleSub = appleSub
     }
 }

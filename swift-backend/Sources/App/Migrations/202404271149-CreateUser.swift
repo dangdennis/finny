@@ -12,9 +12,11 @@ extension User {
                     .required,
                     .sql(.default(SQLFunction("uuid_generate_v4")))
                 )
-                .field("username", .string, .required)
-                .unique(on: "username")
-                .field("password_hash", .string, .required)
+                .field("email", .string, .required)
+                .unique(on: "email")
+                .field("password_hash", .string)
+                .field("apple_sub", .string)
+                .unique(on: "apple_sub")
                 .field(
                     "created_at",
                     .datetime,

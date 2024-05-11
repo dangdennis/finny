@@ -23,6 +23,8 @@ public func configure(_ app: Application) async throws {
         as: .psql
     )
 
+    app.jwt.apple.applicationIdentifier = "6502538486"
+
     app.migrations.add(PGExtensionMigration())
     app.migrations.add(User.Migration())
     app.migrations.add(PlaidItem.Migration())

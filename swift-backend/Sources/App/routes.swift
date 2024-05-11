@@ -78,16 +78,16 @@ func routes(_ app: Application) throws {
     app.get { req async throws in try await req.view.render("index", ["title": "Finny"]) }
 
     app.group("api") { api in
-        let protectedApi = api.grouped(SessionToken.asyncAuthenticator())
-
         api.group("users") { users in
             users.post("register") { req async throws in
-                return try await userController.create(req: req)
+                return try await userController.register(req: req)
             }
             users.post("login") { req async throws in
                 return try await userController.login(req: req)
             }
         }
+
+        let protectedApi = api.grouped(SessionToken.asyncAuthenticator())
 
         protectedApi.group("plaid-items") { itemApi in
             itemApi.post("link") { req async throws in
@@ -119,6 +119,13 @@ func routes(_ app: Application) throws {
             linkApi.post("new") { req async throws in
                 return try await plaidLinkController.createLinkToken(req: req)
             }
+        }
+    }
+
+    app.group("webhooks") { webhooksApi in
+        webhooksApi.post("apple", "notifications") { req async throws -> HTTPStatus in
+            app.logger.info("Received Apple notification: \(req.body.string ?? "")")
+            return .ok
         }
     }
 }
