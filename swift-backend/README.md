@@ -11,3 +11,9 @@
 - `make r` to run the server
 
 See Makefile for all development aliases.
+
+## Deployment
+
+```
+fly deploy
+```
