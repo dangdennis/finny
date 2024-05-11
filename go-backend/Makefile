@@ -19,17 +19,17 @@ b:
 f:
 	watchexec --restart --exts go -- make format
 
-prismagen:
+ps-gen:
 	go run github.com/steebchen/prisma-client-go generate
 
-prismapush:
+ps-push:
 	go run github.com/steebchen/prisma-client-go db push
 
-prismapull:
+ps-pull:
 	go run github.com/steebchen/prisma-client-go db pull
 
-prismadev:
+ps-dev:
 	go run github.com/steebchen/prisma-client-go migrate dev
 
-prismadeploy:
+ps-deploy:
 	go run github.com/steebchen/prisma-client-go migrate deploy

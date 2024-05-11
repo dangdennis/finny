@@ -4,7 +4,7 @@ generator db {
 
 datasource db {
   provider = "postgresql"
-  url      = "postgresql://postgres:postgres@localhost:5432/postgres"
+  url      = env("DATABASE_URL")
 }
 
 model fluent_migrations {
@@ -18,7 +18,7 @@ model fluent_migrations {
 }
 
 model accounts {
-  id                       String         @id @db.Uuid
+  id                       String         @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   item_id                  String         @db.Uuid
   user_id                  String         @db.Uuid
   plaid_account_id         String         @unique(map: "uq:accounts.plaid_account_id")
@@ -37,10 +37,12 @@ model accounts {
   plaid_items              plaid_items    @relation(fields: [item_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   users                    users          @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   transactions             transactions[]
+
+  @@index([user_id], map: "ix:accounts.user_id")
 }
 
 model assets {
-  id          String    @id @db.Uuid
+  id          String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   user_id     String    @db.Uuid
   value       Float
   description String
@@ -48,10 +50,12 @@ model assets {
   updated_at  DateTime  @default(now()) @db.Timestamptz(6)
   deleted_at  DateTime? @db.Timestamptz(6)
   users       users     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([user_id], map: "ix:assets.user_id")
 }
 
 model goals {
-  id          String    @id @db.Uuid
+  id          String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   name        String
   amount      Float
   target_date DateTime  @db.Timestamptz(6)
@@ -61,10 +65,12 @@ model goals {
   updated_at  DateTime  @default(now()) @db.Timestamptz(6)
   deleted_at  DateTime? @db.Timestamptz(6)
   users       users     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([user_id], map: "ix:goals.user_id")
 }
 
 model plaid_api_events {
-  id           String      @id @db.Uuid
+  id           String      @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   item_id      String      @db.Uuid
   user_id      String      @db.Uuid
   plaid_method String
@@ -77,10 +83,12 @@ model plaid_api_events {
   deleted_at   DateTime?   @db.Timestamptz(6)
   plaid_items  plaid_items @relation(fields: [item_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   users        users       @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([item_id], map: "ix:plaid_api_events.item_id")
 }
 
 model plaid_items {
-  id                   String             @id @db.Uuid
+  id                   String             @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   user_id              String             @db.Uuid
   plaid_access_token   String             @unique(map: "uq:plaid_items.plaid_access_token")
   plaid_item_id        String             @unique(map: "uq:plaid_items.plaid_item_id")
@@ -93,10 +101,12 @@ model plaid_items {
   accounts             accounts[]
   plaid_api_events     plaid_api_events[]
   users                users              @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([user_id], map: "ix:plaid_items.user_id")
 }
 
 model plaid_link_events {
-  id              String    @id @db.Uuid
+  id              String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   type            String
   user_id         String    @db.Uuid
   link_session_id String?
@@ -108,10 +118,12 @@ model plaid_link_events {
   updated_at      DateTime  @default(now()) @db.Timestamptz(6)
   deleted_at      DateTime? @db.Timestamptz(6)
   users           users     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([user_id], map: "ix:plaid_link_events.user_id")
 }
 
 model transactions {
-  id                       String    @id @db.Uuid
+  id                       String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   account_id               String    @db.Uuid
   plaid_transaction_id     String    @unique(map: "uq:transactions.plaid_transaction_id")
   category                 String?
@@ -128,12 +140,15 @@ model transactions {
   updated_at               DateTime  @default(now()) @db.Timestamptz(6)
   deleted_at               DateTime? @db.Timestamptz(6)
   accounts                 accounts  @relation(fields: [account_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([account_id], map: "ix:transactions.account_id")
 }
 
 model users {
-  id                String              @id @db.Uuid
-  username          String              @unique(map: "uq:users.username")
-  password_hash     String
+  id                String              @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  email             String              @unique(map: "uq:users.email")
+  password_hash     String?
+  apple_sub         String?             @unique(map: "uq:users.apple_sub")
   created_at        DateTime            @default(now()) @db.Timestamptz(6)
   updated_at        DateTime            @default(now()) @db.Timestamptz(6)
   deleted_at        DateTime?           @db.Timestamptz(6)

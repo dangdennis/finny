@@ -5,16 +5,19 @@
 //  Created by Dennis Dang on 5/5/24.
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 @main
 struct FinnyApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
+            Item.self
         ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+        let modelConfiguration = ModelConfiguration(
+            schema: schema,
+            isStoredInMemoryOnly: false
+        )
 
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])

@@ -6,6 +6,7 @@
 //
 
 import XCTest
+
 @testable import Finny
 
 final class FinnyTests: XCTestCase {

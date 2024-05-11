@@ -25,10 +25,10 @@ f:
 l:
 	watchexec --restart --exts swift -- make lint
 
-migrate:
+db-migrate:
 	swift run App migrate
 
-revert:
+db-revert:
 	swift run App migrate --revert
 
 db-up:
