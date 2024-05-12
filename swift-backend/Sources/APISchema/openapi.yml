@@ -1,93 +1,339 @@
 openapi: 3.0.0
 info:
-  title: Sample JSON API
+  title: FinnyAPI
   version: 1.0.0
 servers:
   - url: 'https://http://finny-backend.fly.dev/api'
-    description: Main Production Server
+    description: Production
 paths:
-  /users:
+  /accounts/list:
     get:
-      summary: Retrieves a list of users
-      parameters:
-        - in: query
-          name: page
-          schema:
-            type: integer
-            default: 1
-          description: Page number of the user listing
-        - in: query
-          name: limit
-          schema:
-            type: integer
-            default: 10
-          description: Number of users per page
+      summary: Lists all accounts
       responses:
         '200':
-          description: Successful response
+          description: OK
           content:
-            application/vnd.api+json:
+            application/json:
               schema:
-                $ref: '#/components/schemas/UserList'
+                ref: '#/components/schemas/AccountsListResponse'
+  /plaid-items/link:
     post:
-      summary: Creates a new user
+      summary: Links a Plaid item
       requestBody:
         required: true
         content:
-          application/vnd.api+json:
+          application/json:
             schema:
-              $ref: '#/components/schemas/User'
+              ref: '#/components/schemas/PlaidItemsLinkRequest'
       responses:
         '201':
-          description: User created
+          description: OK
           content:
-            application/vnd.api+json:
+            application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/PlaidItem'
+  /plaid-items/list:
+    get:
+      summary: Lists all Plaid items
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlaidItemsListResponse'
+  /plaid-items/sync:
+    post:
+      summary: Syncs all Plaid items
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - itemID
+              properties:
+                itemID:
+                  type: string
+                  format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlaidItem'
+  /plaid-link/new:
+    post:
+      summary: Creates a new Plaid Link
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - linkToken
+                properties:
+                  linkToken:
+                    type: string
+                    description: Link token from Plaid Link
+  /transactions/list:
+    get:
+      summary: Lists all transactions
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionsListResponse'
+  /users/login:
+    post:
+      summary: Logs in the user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserLoginRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthSession'
+  /users/register:
+    post:
+      summary: Registers the user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegisterRequest'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthSession'
 components:
   schemas:
-    User:
+    Account:
       type: object
       required:
         - id
-        - type
-        - attributes
+        - itemID
+        - name
+        - currentBalance
+        - availableBalance
       properties:
         id:
           type: string
-          description: Unique identifier for the user
+          format: uuid
+          description: Unique identifier for the account
+        itemID:
+          type: string
+          format: uuid
+          description: Unique identifier for the associated Plaid item
+        name:
+          type: string
+          description: Name of the account
+        officialName:
+          type: string
+          description: Official name of the account
+        mask:
+          type: string
+          description: Mask of the account
+        currentBalance:
+          type: number
+          description: Current balance of the account
+        availableBalance:
+          type: number
+          description: Available balance of the account
+        isoCurrencyCode:
+          type: string
+          description: ISO currency code of the account
         type:
           type: string
-          default: 'user'
-        attributes:
-          type: object
-          required:
-            - username
-            - email
-          properties:
-            username:
-              type: string
-            email:
-              type: string
-    UserList:
+          description: Type of the account
+        subtype:
+          type: string
+          description: Subtype of the account
+    AuthMethod:
+      type: string
+      enum:
+        - password
+        - apple
+    AuthSession:
       type: object
+      required:
+        - id
+        - email
+        - sessionToken
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the user
+        sessionToken:
+          type: string
+          description: Session token of the user
+        email:
+          type: string
+          description: Email of the user
+    PlaidItem:
+      type: object
+      required:
+        - id
+        - institutionID
+        - status
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the Plaid item
+        institutionID:
+          type: string
+          description: Institution ID from Plaid Link
+        status:
+          type: string
+          description: Status of the Plaid item
+        createdAt:
+          type: string
+          format: date-time
+          description: Date and time when the Plaid item was created
+    Transaction:
+      type: object
+      required:
+        - id
+        - accountID
+        - plaidTransactionID
+        - type
+        - name
+        - amount
+        - date
+        - pending
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the transaction
+        accountID:
+          type: string
+          format: uuid
+          description: Unique identifier for the associated account
+        plaidTransactionID:
+          type: string
+          description: Plaid transaction ID
+        category:
+          type: string
+          description: Category of the transaction
+        subcategory:
+          type: string
+          description: Subcategory of the transaction
+        type:
+          type: string
+          description: Type of the transaction
+        name:
+          type: string
+          description: Name of the transaction
+        amount:
+          type: number
+          description: Amount of the transaction
+        isoCurrencyCode:
+          type: string
+          description: ISO currency code of the transaction
+        unofficialCurrencyCode:
+          type: string
+          description: Unofficial currency code of the transaction
+        date:
+          type: string
+          format: date-time
+          description: Date and time of the transaction
+        pending:  
+          type: boolean
+          description: Whether the transaction is pending
+        accountOwner:
+          type: string
+          description: Account owner of the transaction
+    AccountsListResponse:
+      type: object
+      required:
+        - data
       properties:
         data:
           type: array
           items:
-            $ref: '#/components/schemas/User'
-        links:
-          type: object
-          properties:
-            self:
-              type: string
-              description: Link to the current page of users
-            next:
-              type: string
-              description: Link to the next page of users
-        meta:
-          type: object
-          properties:
-            total:
-              type: integer
-              description: Total number of users
+            $ref: '#/components/schemas/Account'
+    PlaidItemsLinkRequest:
+      type: object
+      required:
+        - publicToken
+        - institutionID
+      properties:
+        publicToken:
+          type: string
+          description: Public token from Plaid Link
+        institutionID:
+          type: string
+          description: Institution ID from Plaid Link
+    PlaidItemsListResponse:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlaidItem'
+    TransactionsListResponse:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Transaction'
+    UserRegisterRequest:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          $ref: '#/components/schemas/AuthMethod'
+        email:
+          type: string
+          description: Email of the user
+        password:
+          type: string
+          description: Password of the user
+        confirmPassword:
+          type: string
+          description: Confirm password of the user
+        appleToken:
+          type: string
+          description: Apple token retrieved from Sign In With Apple
+    UserLoginRequest:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          $ref: '#/components/schemas/AuthMethod'
+        email:
+          type: string
+          description: Email of the user
+        password:
+          type: string
+          description: Password of the user
+        appleToken:
+          type: string
+          description: Apple token retrieved from Sign In With Apple

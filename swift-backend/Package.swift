@@ -30,6 +30,7 @@ let package = Package(
         ),
         .package(url: "https://github.com/apple/swift-openapi-urlsession", from: "1.0.0"),
         .package(url: "https://github.com/vapor/jwt.git", from: "4.0.0"),
+        .package(url: "https://github.com/swift-server/swift-openapi-vapor", from: "1.0.0"),
     ],
     targets: [
         .executableTarget(
@@ -46,6 +47,7 @@ let package = Package(
                     package: "swift-openapi-async-http-client"
                 ),
                 .target(name: "Plaid"),
+                .product(name: "OpenAPIVapor", package: "swift-openapi-vapor"),
             ],
             swiftSettings: swiftSettings
         ),
