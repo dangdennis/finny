@@ -1,0 +1,93 @@
+openapi: 3.0.0
+info:
+  title: Sample JSON API
+  version: 1.0.0
+servers:
+  - url: 'https://http://finny-backend.fly.dev/api'
+    description: Main Production Server
+paths:
+  /users:
+    get:
+      summary: Retrieves a list of users
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: Page number of the user listing
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+          description: Number of users per page
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/UserList'
+    post:
+      summary: Creates a new user
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '201':
+          description: User created
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/User'
+components:
+  schemas:
+    User:
+      type: object
+      required:
+        - id
+        - type
+        - attributes
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the user
+        type:
+          type: string
+          default: 'user'
+        attributes:
+          type: object
+          required:
+            - username
+            - email
+          properties:
+            username:
+              type: string
+            email:
+              type: string
+    UserList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        links:
+          type: object
+          properties:
+            self:
+              type: string
+              description: Link to the current page of users
+            next:
+              type: string
+              description: Link to the next page of users
+        meta:
+          type: object
+          properties:
+            total:
+              type: integer
+              description: Total number of users

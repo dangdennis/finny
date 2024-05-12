@@ -13,6 +13,7 @@ struct TransactionService {
                 on: \Transaction.$account.$id == \Account.$id
             )
             .filter(Account.self, \.$user.$id == userID)
+            .sort(\.$date, .descending)
             .all()
     }
 
