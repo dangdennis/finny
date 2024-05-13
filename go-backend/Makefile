@@ -19,6 +19,12 @@ b:
 f:
 	watchexec --restart --exts go -- make format
 
+db-up:
+	docker compose up
+
+db-down:
+	docker compose down --volumes
+
 ps-gen:
 	go run github.com/steebchen/prisma-client-go generate
 
