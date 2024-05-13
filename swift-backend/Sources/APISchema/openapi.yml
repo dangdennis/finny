@@ -3,11 +3,14 @@ info:
   title: FinnyAPI
   version: 1.0.0
 servers:
-  - url: 'https://http://finny-backend.fly.dev/api'
+  - url: 'https://http://finny-backend.fly.dev'
     description: Production
+  - url: 'http://localhost:8080'
+    description: Development
 paths:
   /accounts/list:
     get:
+      operationId: accountsListGet
       summary: Lists all accounts
       responses:
         '200':
@@ -15,16 +18,17 @@ paths:
           content:
             application/json:
               schema:
-                ref: '#/components/schemas/AccountsListResponse'
+                $ref: '#/components/schemas/AccountsListResponse'
   /plaid-items/link:
     post:
+      operationId: plaidItemsLinkPost
       summary: Links a Plaid item
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              ref: '#/components/schemas/PlaidItemsLinkRequest'
+              $ref: '#/components/schemas/PlaidItemsLinkRequest'
       responses:
         '201':
           description: OK
@@ -34,6 +38,7 @@ paths:
                 $ref: '#/components/schemas/PlaidItem'
   /plaid-items/list:
     get:
+      operationId: plaidItemsListGet
       summary: Lists all Plaid items
       responses:
         '200':
@@ -44,6 +49,7 @@ paths:
                 $ref: '#/components/schemas/PlaidItemsListResponse'
   /plaid-items/sync:
     post:
+      operationId: plaidItemsSyncPost
       summary: Syncs all Plaid items
       requestBody:
         required: true
@@ -66,6 +72,7 @@ paths:
                 $ref: '#/components/schemas/PlaidItem'
   /plaid-link/new:
     post:
+      operationId: plaidLinkNewPost
       summary: Creates a new Plaid Link
       responses:
         '200':
@@ -82,6 +89,7 @@ paths:
                     description: Link token from Plaid Link
   /transactions/list:
     get:
+      operationId: transactionsListGet
       summary: Lists all transactions
       responses:
         '200':
@@ -92,6 +100,7 @@ paths:
                 $ref: '#/components/schemas/TransactionsListResponse'
   /users/login:
     post:
+      operationId: usersLoginPost
       summary: Logs in the user
       requestBody:
         required: true
@@ -108,6 +117,7 @@ paths:
                 $ref: '#/components/schemas/AuthSession'
   /users/register:
     post:
+      operationId: usersRegisterPost
       summary: Registers the user
       requestBody:
         required: true
