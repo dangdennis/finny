@@ -29,12 +29,23 @@ if config_env() == :prod do
       """
 
   maybe_ipv6 = if System.get_env("ECTO_IPV6") in ~w(true 1), do: [:inet6], else: []
+  %URI{host: database_host} = URI.parse(database_url)
 
   config :elixir_backend, ElixirBackend.Repo,
-    # ssl: true,
     url: database_url,
     pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10"),
-    socket_options: maybe_ipv6
+    socket_options: maybe_ipv6,
+    ssl: true,
+    ssl_opts: [
+      # This is the default location for the CA certificate bundle on Debian/Ubuntu
+      cacertfile: "/etc/ssl/certs/ca-certificates.crt",
+      verify: :verify_peer,
+      server_name_indication: to_charlist(database_host),
+      customize_hostname_check: [
+        # Our hosting provider uses a wildcard certificate. By default, Erlang does not support wildcard certificates. This function supports validating wildcard hosts
+        match_fun: :public_key.pkix_verify_hostname_match_fun(:https)
+      ]
+    ]
 
   # The secret key base is used to sign/encrypt cookies and other secrets.
   # A default value is used in config/dev.exs and config/test.exs but you
