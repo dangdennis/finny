@@ -1,6 +1,11 @@
 import Fluent
 import Vapor
 
+enum PlaidLinkStatus: String {
+    case success = "success"
+    case error = "error"
+}
+
 final class PlaidLinkEvent: Model {
     static let schema = "plaid_link_events"
 

@@ -41,10 +41,12 @@ func routes(_ app: Application) throws {
     )
 
     // Services
-    let plaidLinkService = PlaidLinkService(db: app.db)
-    let plaidLinkController = PlaidLinkController(
-        plaidLinkService: plaidLinkService,
+    let plaidLinkService = PlaidLinkService(
+        db: app.db,
         plaid: plaid
+    )
+    let plaidLinkController = PlaidLinkController(
+        plaidLinkService: plaidLinkService
     )
     let plaidItemService = PlaidItemService(db: app.db)
     let accountService = AccountService(db: app.db, plaidItemService: plaidItemService)
@@ -118,6 +120,10 @@ func routes(_ app: Application) throws {
         protectedApi.group("plaid-link") { linkApi in
             linkApi.post("new") { req async throws in
                 return try await plaidLinkController.createLinkToken(req: req)
+            }
+
+            linkApi.post("event") { req async throws in
+                return try await plaidLinkController.createLinkEvent(req: req)
             }
         }
     }

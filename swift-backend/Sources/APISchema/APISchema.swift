@@ -249,3 +249,17 @@ public struct LoginResponse: Content {
         self.sessionToken = sessionToken
     }
 }
+
+public struct PlaidLinkEventCreateRequest: Content {
+    public let type: String
+    public let linkSessionID: String?
+    public let requestID: String?
+    public let errorType: String?
+    public let errorCode: String?
+    public let status: String?
+}
+
+public enum PlaidLinkStatus: String, Content {
+    case success = "success"
+    case error = "error"
+}
