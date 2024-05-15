@@ -48,6 +48,7 @@ let package = Package(
                 ),
                 .target(name: "Plaid"),
                 .product(name: "OpenAPIVapor", package: "swift-openapi-vapor"),
+                .target(name: "APISchema"),
             ],
             swiftSettings: swiftSettings
         ),
@@ -76,6 +77,7 @@ let package = Package(
             name: "APISchema",
             dependencies: [
                 .product(name: "OpenAPIRuntime", package: "swift-openapi-runtime"),
+                .product(name: "Vapor", package: "vapor"),
                 // .product(name: "OpenAPIURLSession", package: "swift-openapi-urlsession"),
             ],
             plugins: [

@@ -1,3 +1,4 @@
+import APISchema
 @preconcurrency import Fluent
 import Vapor
 
@@ -8,7 +9,7 @@ struct UserController: Sendable {
     func register(req: Request) async throws -> RegisterResponse {
         let registerReq = try req.content.decode(RegisterRequest.self)
 
-        switch registerReq.type {
+        switch registerReq.method {
         case .password:
             return try await registerPassword(req: req)
         case .apple:
@@ -31,7 +32,7 @@ struct UserController: Sendable {
 
         let sessionToken = try SessionToken(user: user)
 
-        return try RegisterResponse(
+        return try .init(
             id: user.id!,
             email: user.email,
             sessionToken: req.jwt.sign(sessionToken)
@@ -54,7 +55,7 @@ struct UserController: Sendable {
 
         let sessionToken = try SessionToken(user: user)
 
-        return try RegisterResponse(
+        return try .init(
             id: user.id!,
             email: user.email,
             sessionToken: req.jwt.sign(sessionToken)
@@ -66,7 +67,7 @@ struct UserController: Sendable {
 
         let payload = try req.content.decode(LoginRequest.self)
 
-        switch payload.type {
+        switch payload.method {
         case .password:
             return try await loginPassword(req: req)
         case .apple:
@@ -94,7 +95,7 @@ struct UserController: Sendable {
 
         let sessionToken = try SessionToken(user: user)
 
-        return try LoginResponse(
+        return try .init(
             email: user.email,
             sessionToken: req.jwt.sign(sessionToken)
         )
@@ -112,7 +113,7 @@ struct UserController: Sendable {
 
         let sessionToken = try SessionToken(user: user)
 
-        return try LoginResponse(
+        return try .init(
             email: user.email,
             sessionToken: req.jwt.sign(sessionToken)
         )
@@ -127,36 +128,10 @@ struct UserController: Sendable {
 }
 
 extension UserController {
-    enum AuthMethod: String, Codable {
-        case password = "password"
-        case apple = "apple"
-    }
-
-    struct RegisterRequest: Content {
-        let type: AuthMethod
-        let email: String?
-        let password: String?
-        let confirmPassword: String?
-        let appleToken: String?
-    }
-
     struct RegisterPasswordRequest: Content {
         let email: String
         let password: String
         let confirmPassword: String
-    }
-
-    struct RegisterResponse: Content {
-        let id: UUID
-        let email: String
-        let sessionToken: String
-    }
-
-    struct LoginRequest: Content {
-        let type: AuthMethod
-        let email: String?
-        let password: String?
-        let appleToken: String?
     }
 
     struct LoginPasswordRequest: Content {
@@ -174,14 +149,14 @@ extension UserController {
     }
 }
 
-extension UserController.LoginRequest: Validatable {
-    static func validations(_ validations: inout Validations) {
+extension APISchema.LoginRequest: Validatable {
+    public static func validations(_ validations: inout Validations) {
         validations.add(
             "type",
             as: String.self,
             is: .in(
-                UserController.AuthMethod.apple.rawValue,
-                UserController.AuthMethod.password.rawValue
+                AuthMethod.apple.rawValue,
+                AuthMethod.password.rawValue
             )
         )
     }
@@ -194,14 +169,14 @@ extension UserController.LoginPasswordRequest: Validatable {
     }
 }
 
-extension UserController.RegisterRequest: Validatable {
-    static func validations(_ validations: inout Validations) {
+extension APISchema.RegisterRequest: Validatable {
+    public static func validations(_ validations: inout Validations) {
         validations.add(
             "type",
             as: String.self,
             is: .in(
-                UserController.AuthMethod.apple.rawValue,
-                UserController.AuthMethod.password.rawValue
+                AuthMethod.apple.rawValue,
+                AuthMethod.password.rawValue
             )
         )
     }

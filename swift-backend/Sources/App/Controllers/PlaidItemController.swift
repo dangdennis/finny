@@ -1,3 +1,4 @@
+import APISchema
 @preconcurrency import Fluent
 import Plaid
 import Vapor
@@ -40,7 +41,7 @@ struct PlaidItemController: Sendable {
 
         return .init(
             data: .init(
-                id: try newItem.requireID(),
+                id: itemID,
                 institutionID: newItem.plaidInstitutionID,
                 status: newItem.status,
                 createdAt: newItem.createdAt!
@@ -51,10 +52,10 @@ struct PlaidItemController: Sendable {
     func listItems(req: Request) async throws -> ListItemsResponse {
         let sessionToken = try req.auth.require(SessionToken.self)
         let userID = UUID(uuidString: sessionToken.sub.value)!
-        let items = try await plaidItemService.listItems(userID: userID)
-        return try ListItemsResponse(
+        let items: [PlaidItem] = try await plaidItemService.listItems(userID: userID)
+        return try .init(
             data: items.map { item in
-                PlaidItem.DTO(
+                .init(
                     id: try item.requireID(),
                     institutionID: item.plaidInstitutionID,
                     status: item.status,
@@ -79,40 +80,15 @@ struct PlaidItemController: Sendable {
     }
 }
 
-extension PlaidItem {
-    struct DTO: Content {
-        let id: UUID
-        let institutionID: String
-        let status: String
-        let createdAt: Date
-    }
-}
-
-extension PlaidItemController {
-
-    struct ListItemsResponse: DataContaining { let data: [PlaidItem.DTO] }
-
-    struct CreateItemRequest: Content {
-        let publicToken: String
-        let institutionID: String
-    }
-
-    struct CreateItemResponse: DataContaining { let data: PlaidItem.DTO }
-
-    struct SyncItemRequest: Content { let itemID: UUID }
-
-    struct SyncItemResponse: DataContaining { let data: PlaidItem.DTO }
-}
-
-extension PlaidItemController.CreateItemRequest: Validatable {
-    static func validations(_ validations: inout Validations) {
+extension APISchema.CreateItemRequest: Validatable {
+    public static func validations(_ validations: inout Validations) {
         validations.add("publicToken", as: String.self, is: !.empty)
         validations.add("institutionID", as: String.self, is: !.empty)
     }
 }
 
-extension PlaidItemController.SyncItemRequest: Validatable {
-    static func validations(_ validations: inout Validations) {
+extension APISchema.SyncItemRequest: Validatable {
+    public static func validations(_ validations: inout Validations) {
         validations.add("itemID", as: UUID.self, is: .valid)
     }
 }
