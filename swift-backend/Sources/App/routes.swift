@@ -122,7 +122,7 @@ func routes(_ app: Application) throws {
                 return try await plaidLinkController.createLinkToken(req: req)
             }
 
-            linkApi.post("event") { req async throws in
+            linkApi.post("events") { req async throws in
                 return try await plaidLinkController.createLinkEvent(req: req)
             }
         }
@@ -133,5 +133,11 @@ func routes(_ app: Application) throws {
             app.logger.info("Received Apple notification: \(req.body.string ?? "")")
             return .ok
         }
+
+        webhooksApi.post("plaid", "notifications") { req async throws -> HTTPStatus in
+            app.logger.info("Received Plaid webhook: \(req.body.string ?? "")")
+            return .ok
+        }
     }
+
 }
