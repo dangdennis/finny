@@ -7,8 +7,20 @@ struct PlaidLinkController: Sendable {
 
     func createLinkToken(req: Request) async throws -> LinkTokenResponse {
         let userID = try Auth.getUserID(from: req)
-        let linkToken = try await plaidLinkService.createLinkToken(userID: userID)
-        return .init(data: .init(linkToken: linkToken.link_token))
+        do {
+
+            let linkToken = try await plaidLinkService.createLinkToken(userID: userID)
+            debugPrint("Link token: \(linkToken)")
+            return .init(
+                data: .init(
+                    linkToken: linkToken.link_token,
+                    hostedLinkUrl: linkToken.hosted_link_url
+                )
+            )
+        } catch {
+            debugPrint("Error: \(error)")
+            throw Abort(.internalServerError)
+        }
     }
 
     func createLinkEvent(req: Request) async throws -> HTTPStatus {
@@ -34,7 +46,7 @@ struct PlaidLinkController: Sendable {
 extension APISchema.PlaidLinkEventCreateRequest: Validatable {
     public static func validations(_ validations: inout Validations) {
         validations.add(
-            "type",
+            "status",
             as: String.self,
             is: .in(
                 PlaidLinkStatus.success.rawValue,

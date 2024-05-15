@@ -152,7 +152,7 @@ extension UserController {
 extension APISchema.LoginRequest: Validatable {
     public static func validations(_ validations: inout Validations) {
         validations.add(
-            "type",
+            "method",
             as: String.self,
             is: .in(
                 AuthMethod.apple.rawValue,
@@ -172,7 +172,7 @@ extension UserController.LoginPasswordRequest: Validatable {
 extension APISchema.RegisterRequest: Validatable {
     public static func validations(_ validations: inout Validations) {
         validations.add(
-            "type",
+            "method",
             as: String.self,
             is: .in(
                 AuthMethod.apple.rawValue,

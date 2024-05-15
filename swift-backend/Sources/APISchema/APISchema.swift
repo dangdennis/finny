@@ -114,9 +114,11 @@ public struct PlaidItemDTO: Content {
 
 public struct LinkTokenDTO: Content {
     public let linkToken: String
+    public let hostedLinkUrl: String?
 
-    public init(linkToken: String) {
+    public init(linkToken: String, hostedLinkUrl: String?) {
         self.linkToken = linkToken
+        self.hostedLinkUrl = hostedLinkUrl
     }
 }
 

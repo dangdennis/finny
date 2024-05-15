@@ -57,12 +57,16 @@ public struct PlaidClient: Sendable {
             Operations.linkTokenCreate.Input(
                 body: .json(
                     Components.Schemas.LinkTokenCreateRequest(
+                        client_id: self.plaidClientID,
+                        secret: self.plaidSecret,
                         client_name: "Finny",
                         language: "en",
                         country_codes: [Components.Schemas.CountryCode.US],
                         user: Components.Schemas.LinkTokenCreateRequestUser(
                             client_user_id: userID.uuidString
-                        )
+                        ),
+                        products: [.transactions],
+                        redirect_uri:"https://http://finny-backend.fly.dev/oauth-link"
                     )
                 )
             )
@@ -82,11 +86,12 @@ public struct PlaidClient: Sendable {
                         client_id: self.plaidClientID,
                         secret: self.plaidSecret,
                         access_token: accessToken
-
                     )
                 )
             )
         )
+        
+        debugPrint(response)
 
         return try response.ok.body.json
     }
