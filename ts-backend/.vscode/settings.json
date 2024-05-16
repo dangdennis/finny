@@ -1,7 +1,0 @@
-{
-  "deno.enablePaths": [
-    "./"
-  ],
-  "deno.lint": true,
-  "deno.unstable": true
-}
