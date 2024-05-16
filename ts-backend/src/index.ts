@@ -1,5 +1,5 @@
 import { Elysia } from "elysia";
-import { Database } from '../drizzle/db'
+import { Database } from './db'
 import { sql } from "drizzle-orm";
 
 async function main() {
@@ -10,7 +10,7 @@ async function main() {
     .decorate("db", database.db)
     .get("/", async ({ db
     }) => {
-      const { rows: [row] } = await db.execute<{ total: number }>(sql`select 5 + 5 as total`)
+      const { rows: [row] } = await db.execute<{ total: number }>(sql`select 5 + 20 as total`)
       return `Hello Elysia: ${row.total}`
     })
     .listen(8080);
