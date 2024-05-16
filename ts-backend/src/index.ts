@@ -13,7 +13,10 @@ async function main() {
       const { rows: [row] } = await db.execute<{ total: number }>(sql`select 5 + 20 as total`)
       return `Hello Elysia: ${row.total}`
     })
-    .listen(8080);
+    .listen({
+      hostname: "0.0.0.0",
+      port: 8080
+    });
 
   console.log(
     `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`,
