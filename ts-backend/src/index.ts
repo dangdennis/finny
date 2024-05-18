@@ -2,25 +2,14 @@ import bearer from "@elysiajs/bearer";
 import elysiaJwt from "@elysiajs/jwt";
 import { sql } from "drizzle-orm";
 import { Elysia, t } from "elysia";
-import { Configuration, CountryCode, PlaidApi, PlaidEnvironments } from "plaid";
+import { CountryCode, Products } from "plaid";
 import { z } from "zod";
 import { Database } from "./db";
 import { users } from "./schema";
-
-const configuration = new Configuration({
-  basePath: PlaidEnvironments.sandbox,
-  baseOptions: {
-    headers: {
-      "PLAID-CLIENT-ID": process.env.PLAID_CLIENT_ID,
-      "PLAID-SECRET": process.env.PLAID_SECRET_SANDBOX,
-      "Plaid-Version": "2020-09-14",
-    },
-  },
-});
+import { isAxiosError } from "axios";
+import { plaidClient } from "./plaid";
 
 const encoder = new TextEncoder();
-
-const plaidClient = new PlaidApi(configuration);
 
 const AuthMethod = z.enum(["email", "apple"]);
 
@@ -52,7 +41,7 @@ async function main() {
           message: "Not found",
         };
       } else if (code === "INTERNAL_SERVER_ERROR") {
-        console.error(code, error);
+        console.error(code, error.message ?? error.toString());
         set.status = 500;
         return {
           message: "Internal server error",
@@ -68,7 +57,7 @@ async function main() {
           message: "Failed to parse request",
         };
       } else if (code === "UNKNOWN") {
-        console.error(code, error);
+        console.error(code, error.message ?? error.toString());
         set.status = 500;
         return {
           message: "Unknown error",
@@ -78,7 +67,7 @@ async function main() {
         return error.toResponse();
       }
 
-      console.error(code, error);
+      console.error("unknown error", code, error);
 
       return {
         message: "Unknown error",
@@ -206,94 +195,113 @@ async function main() {
               },
             );
         })
-        .guard(
-          {
-            async beforeHandle({ bearer, set, jwt }) {
-              if (!bearer) {
-                set.status = 400;
-                set.headers["WWW-Authenticate"] =
-                  `Bearer realm='sign', error="invalid_request"`;
+        .derive(async ({ bearer, jwt, set, db }) => {
+          if (!bearer) {
+            set.status = 400;
+            set.headers["WWW-Authenticate"] =
+              `Bearer realm='sign', error="invalid_request"`;
 
-                return "Unauthorized";
-              }
+            throw new Error("Unauthorized");
+          }
 
-              const verified = await jwt.verify(bearer);
-              if (!verified) {
-                set.status = 401;
-                return "Unauthorized";
-              }
-            },
-          },
-          (protectedApiR) => {
-            return protectedApiR
-              .derive(async ({ bearer, jwt, set, db }) => {
-                if (!bearer) {
-                  set.status = 400;
-                  set.headers["WWW-Authenticate"] =
-                    `Bearer realm='sign', error="invalid_request"`;
+          const verified = await jwt.verify(bearer);
+          if (!verified) {
+            set.status = 401;
+            throw new Error("Unauthorized");
+          }
 
-                  throw new Error("Unauthorized");
-                }
+          if (verified.sub === undefined) {
+            throw new Error("Invalid token");
+          }
 
-                const verified = await jwt.verify(bearer);
-                if (!verified) {
-                  set.status = 401;
-                  throw new Error("Unauthorized");
-                }
+          const user = await db.query.users.findFirst({
+            where: (users, { eq }) => eq(users.id, verified.sub!),
+          });
 
-                if (verified.sub === undefined) {
-                  throw new Error("Invalid token");
-                }
+          if (!user) {
+            throw new Error("User not found");
+          }
 
-                const user = await db.query.users.findFirst({
-                  where: (users, { eq }) => eq(users.id, verified.sub!),
-                });
-
-                if (!user) {
-                  throw new Error("User not found");
-                }
-
-                return {
-                  userId: user.id,
-                };
-              })
-              .group("plaid-items", (plaidItemsR) => {
-                return plaidItemsR.post(
-                  "link",
-                  async ({ db, userId, body: { public_token } }) => {
-                    const tokenResponse =
-                      await plaidClient.itemPublicTokenExchange({
-                        public_token: public_token,
-                      });
-
-                    console.log("tokenResponse", tokenResponse.data);
-
-                    const item = await plaidClient.itemGet({
-                      access_token: tokenResponse.data.access_token,
-                    });
-
-                    console.log(item.data);
-
-                    const institution = await plaidClient.institutionsGetById({
-                      institution_id: item.data.item.institution_id!,
-                      country_codes: [CountryCode.Us],
-                    });
-
-                    console.log(institution.data);
-
-                    return {
-                      data: {},
-                    };
-                  },
+          return {
+            userId: user.id,
+          };
+        })
+        .group("plaid-items", (plaidItemsR) => {
+          return plaidItemsR.post(
+            "link",
+            async ({ body: { public_token } }) => {
+              try {
+                const tokenResponse = await plaidClient.itemPublicTokenExchange(
                   {
-                    body: t.Object({
-                      public_token: t.String(),
-                    }),
+                    public_token: public_token,
                   },
                 );
+
+                console.log("tokenResponse", tokenResponse.data);
+
+                const item = await plaidClient.itemGet({
+                  access_token: tokenResponse.data.access_token,
+                });
+
+                console.log(item.data);
+
+                const institution = await plaidClient.institutionsGetById({
+                  institution_id: item.data.item.institution_id!,
+                  country_codes: [CountryCode.Us],
+                });
+
+                console.log(institution.data);
+
+                return {
+                  data: {},
+                };
+              } catch (error) {
+                if (isAxiosError(error)) {
+                  console.log(error.response?.data);
+                  throw new Error(JSON.stringify(error.response?.data));
+                } else {
+                  throw error;
+                }
+              }
+            },
+            {
+              body: t.Object({
+                public_token: t.String(),
+              }),
+            },
+          );
+        })
+        .group("plaid-links", (plaidLinksR) => {
+          return plaidLinksR.post("create", async ({ userId }) => {
+            try {
+              const linkTokenResponse = await plaidClient.linkTokenCreate({
+                user: {
+                  client_user_id: userId,
+                },
+                client_name: "Elysia",
+                products: [
+                  Products.Transactions,
+                  Products.Investments,
+                  Products.Liabilities,
+                ],
+                country_codes: [CountryCode.Us],
+                language: "en",
               });
-          },
-        );
+
+              return {
+                data: {
+                  link_token: linkTokenResponse.data.link_token,
+                },
+              };
+            } catch (error) {
+              if (isAxiosError(error)) {
+                throw new Error(JSON.stringify(error.response?.data));
+              } else {
+                throw error;
+              }
+            }
+          });
+        });
     })
     .listen({
       hostname: "0.0.0.0",
