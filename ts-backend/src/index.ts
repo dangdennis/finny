@@ -1,17 +1,19 @@
 import bearer from "@elysiajs/bearer";
 import elysiaJwt from "@elysiajs/jwt";
+import { isAxiosError } from "axios";
 import { sql } from "drizzle-orm";
 import { Elysia, t } from "elysia";
 import { CountryCode, Products } from "plaid";
 import { z } from "zod";
 import { Database } from "./db";
-import { users } from "./schema";
-import { isAxiosError } from "axios";
 import { plaidClient } from "./plaid";
+import { plaidItems, users } from "./schema";
+import { ItemId, SyncService } from "./sync_service";
 
 const encoder = new TextEncoder();
 
 const AuthMethod = z.enum(["email", "apple"]);
+const PlaidItemStatus = z.enum(["success", "error"]);
 
 function makeJWTPayload(userId: string) {
   return {
@@ -129,7 +131,7 @@ async function main() {
 
                   return {
                     data: {
-                      user_id: user.id,
+                      id: user.id,
                       session_token: accessToken,
                     },
                   };
@@ -176,7 +178,7 @@ async function main() {
 
                   return {
                     data: {
-                      user_id: user.id,
+                      id: user.id,
                       session_token: accessToken,
                     },
                   };
@@ -229,7 +231,7 @@ async function main() {
         .group("plaid-items", (plaidItemsR) => {
           return plaidItemsR.post(
             "link",
-            async ({ body: { public_token } }) => {
+            async ({ db, userId, body: { public_token } }) => {
               try {
                 const tokenResponse = await plaidClient.itemPublicTokenExchange(
                   {
@@ -237,23 +239,37 @@ async function main() {
                   },
                 );
 
-                console.log("tokenResponse", tokenResponse.data);
-
                 const item = await plaidClient.itemGet({
                   access_token: tokenResponse.data.access_token,
                 });
 
-                console.log(item.data);
+                const [itemDb] = await db
+                  .insert(plaidItems)
+                  .values({
+                    plaid_access_token: tokenResponse.data.access_token,
+                    plaid_item_id: item.data.item.item_id,
+                    plaid_institution_id: z
+                      .string()
+                      .parse(item.data.item.institution_id),
+                    status: PlaidItemStatus.Enum.success,
+                    user_id: userId,
+                  })
+                  .returning()
+                  .execute();
 
-                const institution = await plaidClient.institutionsGetById({
-                  institution_id: item.data.item.institution_id!,
-                  country_codes: [CountryCode.Us],
-                });
-
-                console.log(institution.data);
+                SyncService.syncAccountsAndTransactions(
+                  db,
+                  plaidClient,
+                  ItemId(itemDb.id),
+                );
 
                 return {
-                  data: {},
+                  data: {
+                    id: itemDb.id,
+                    status: itemDb.status,
+                    institution_id: itemDb.plaid_institution_id,
+                    plaid_item_id: itemDb.plaid_item_id,
+                  },
                 };
               } catch (error) {
                 if (isAxiosError(error)) {
