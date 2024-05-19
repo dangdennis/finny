@@ -12,8 +12,7 @@ export const usersTable = authSchema.table("users", {
 })
 
 export const profilesTable = pgTable("profiles", {
-    id: uuid('id').primaryKey(),
-    user_id: uuid('user_id').notNull().references(() => usersTable.id),
+    id: uuid('id').references(() => usersTable.id).primaryKey(),
     first_name: text('first_name').notNull(),
     last_name: text('last_name').notNull(),
     created_at: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
@@ -22,7 +21,7 @@ export const profilesTable = pgTable("profiles", {
 },
     (table) => {
         return {
-            ixUserId: index("ix:profiles.user_id").on(table.user_id),
+            ixUserId: index("ix:profiles.id").on(table.id),
         }
     });
 
@@ -241,7 +240,7 @@ export const goalsRelations = relations(goalsTable, ({ one }) => ({
 
 export const profilesRelations = relations(profilesTable, ({ one }) => ({
     user: one(usersTable, {
-        fields: [profilesTable.user_id],
+        fields: [profilesTable.id],
         references: [usersTable.id]
     }),
 }))

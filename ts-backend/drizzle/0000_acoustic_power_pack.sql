@@ -108,7 +108,6 @@ alter table plaid_link_events enable row level security;
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "profiles" (
 	"id" uuid PRIMARY KEY NOT NULL,
-	"user_id" uuid NOT NULL,
 	"first_name" text NOT NULL,
 	"last_name" text NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
@@ -118,23 +117,50 @@ CREATE TABLE IF NOT EXISTS "profiles" (
 
 alter table profiles enable row level security;
 
--- inserts a row into public.profiles
-create function public.handle_new_user()
-returns trigger
-language plpgsql
-security definer set search_path = ''
-as $$
-begin
-  insert into public.profiles (id, first_name, last_name)
-  values (new.id, new.raw_user_meta_data ->> 'first_name', new.raw_user_meta_data ->> 'last_name');
-  return new;
-end;
-$$;
+DO $$
+BEGIN
+    -- Check if the function already exists
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_proc
+        WHERE proname = 'handle_new_user'
+        AND pg_function_is_visible(oid)
+    ) THEN
+        -- Create the function if it does not exist
+        EXECUTE 'CREATE FUNCTION public.handle_new_user() 
+        RETURNS trigger 
+        LANGUAGE plpgsql 
+        SECURITY DEFINER 
+        SET search_path = '''' 
+        AS $func$ 
+        BEGIN 
+            INSERT INTO public.profiles (id, first_name, last_name) 
+            VALUES (NEW.id, NEW.raw_user_meta_data ->> ''first_name'', NEW.raw_user_meta_data ->> ''last_name''); 
+            RETURN NEW; 
+        END; 
+        $func$;';
+    END IF;
+END $$;
+
 
 -- trigger the function every time a user is created
-create trigger on_auth_user_created
-  after insert on auth.users
-  for each row execute procedure public.handle_new_user();
+DO $$
+BEGIN
+    -- Check if the trigger already exists
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_trigger
+        WHERE tgname = 'on_auth_user_created'
+    ) THEN
+        -- Create the trigger if it does not exist
+        EXECUTE '
+        CREATE TRIGGER on_auth_user_created
+        AFTER INSERT ON auth.users
+        FOR EACH ROW
+        EXECUTE FUNCTION public.handle_new_user();';
+    END IF;
+END $$;
+
 
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "transactions" (
@@ -219,7 +245,7 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "profiles" ADD CONSTRAINT "profiles_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "auth"."users"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "profiles" ADD CONSTRAINT "profiles_id_users_id_fk" FOREIGN KEY ("id") REFERENCES "auth"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -236,5 +262,5 @@ CREATE INDEX IF NOT EXISTS "ix:goals.user_id" ON "goals" ("user_id");--> stateme
 CREATE INDEX IF NOT EXISTS "ix:plaid_api_events.item_id" ON "plaid_api_events" ("item_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "ix:plaid_items.user_id" ON "plaid_items" ("user_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "ix:plaid_link_events.user_id" ON "plaid_link_events" ("user_id");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "ix:profiles.user_id" ON "profiles" ("user_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "ix:profiles.id" ON "profiles" ("id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "ix:transactions.account_id" ON "transactions" ("account_id");
