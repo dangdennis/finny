@@ -1,7 +1,7 @@
 import { relations } from "drizzle-orm/relations";
 import { pgTable, unique, uuid, text, timestamp, index, doublePrecision, date, boolean } from "drizzle-orm/pg-core"
 
-export const users = pgTable("users", {
+export const usersTable = pgTable("users", {
     id: uuid("id").defaultRandom().primaryKey().notNull(),
     email: text("email").notNull(),
     password_hash: text("password_hash"),
@@ -17,9 +17,9 @@ export const users = pgTable("users", {
         }
     });
 
-export const plaidItems = pgTable("plaid_items", {
+export const plaidItemsTable = pgTable("plaid_items", {
     id: uuid("id").defaultRandom().primaryKey().notNull(),
-    user_id: uuid("user_id").notNull().references(() => users.id),
+    user_id: uuid("user_id").notNull().references(() => usersTable.id),
     plaid_access_token: text("plaid_access_token").notNull(),
     plaid_item_id: text("plaid_item_id").notNull(),
     plaid_institution_id: text("plaid_institution_id").notNull(),
@@ -37,9 +37,9 @@ export const plaidItems = pgTable("plaid_items", {
         }
     });
 
-export const assets = pgTable("assets", {
+export const assetsTable = pgTable("assets", {
     id: uuid("id").defaultRandom().primaryKey().notNull(),
-    user_id: uuid("user_id").notNull().references(() => users.id),
+    user_id: uuid("user_id").notNull().references(() => usersTable.id),
     value: doublePrecision("value").notNull(),
     description: text("description").notNull(),
     created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
@@ -52,10 +52,10 @@ export const assets = pgTable("assets", {
         }
     });
 
-export const accounts = pgTable("accounts", {
+export const accountsTable = pgTable("accounts", {
     id: uuid("id").defaultRandom().primaryKey().notNull(),
-    item_id: uuid("item_id").notNull().references(() => plaidItems.id),
-    user_id: uuid("user_id").notNull().references(() => users.id),
+    item_id: uuid("item_id").notNull().references(() => plaidItemsTable.id),
+    user_id: uuid("user_id").notNull().references(() => usersTable.id),
     plaid_account_id: text("plaid_account_id").notNull(),
     name: text("name").notNull(),
     mask: text("mask"),
@@ -77,9 +77,9 @@ export const accounts = pgTable("accounts", {
         }
     });
 
-export const transactions = pgTable("transactions", {
+export const transactionsTable = pgTable("transactions", {
     id: uuid("id").defaultRandom().primaryKey().notNull(),
-    account_id: uuid("account_id").notNull().references(() => accounts.id),
+    account_id: uuid("account_id").notNull().references(() => accountsTable.id),
     plaid_transaction_id: text("plaid_transaction_id").notNull(),
     category: text("category"),
     subcategory: text("subcategory"),
@@ -102,10 +102,10 @@ export const transactions = pgTable("transactions", {
         }
     });
 
-export const plaidLinkEvents = pgTable("plaid_link_events", {
+export const plaidLinkEventsTable = pgTable("plaid_link_events", {
     id: uuid("id").defaultRandom().primaryKey().notNull(),
     type: text("type").notNull(),
-    user_id: uuid("user_id").notNull().references(() => users.id),
+    user_id: uuid("user_id").notNull().references(() => usersTable.id),
     link_session_id: text("link_session_id"),
     request_id: text("request_id"),
     error_type: text("error_type"),
@@ -122,10 +122,10 @@ export const plaidLinkEvents = pgTable("plaid_link_events", {
         }
     });
 
-export const plaidApiEvents = pgTable("plaid_api_events", {
+export const plaidApiEventsTable = pgTable("plaid_api_events", {
     id: uuid("id").defaultRandom().primaryKey().notNull(),
-    item_id: uuid("item_id").notNull().references(() => plaidItems.id),
-    user_id: uuid("user_id").notNull().references(() => users.id),
+    item_id: uuid("item_id").notNull().references(() => plaidItemsTable.id),
+    user_id: uuid("user_id").notNull().references(() => usersTable.id),
     plaid_method: text("plaid_method").notNull(),
     arguments: text("arguments"),
     request_id: text("request_id"),
@@ -142,12 +142,12 @@ export const plaidApiEvents = pgTable("plaid_api_events", {
         }
     });
 
-export const goals = pgTable("goals", {
+export const goalsTable = pgTable("goals", {
     id: uuid("id").defaultRandom().primaryKey().notNull(),
     name: text("name").notNull(),
     amount: doublePrecision("amount").notNull(),
     target_date: timestamp("target_date", { withTimezone: true }).notNull(),
-    user_id: uuid("user_id").notNull().references(() => users.id),
+    user_id: uuid("user_id").notNull().references(() => usersTable.id),
     progress: doublePrecision("progress").notNull(),
     created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
@@ -161,71 +161,71 @@ export const goals = pgTable("goals", {
 
 
 
-export const plaidItemsRelations = relations(plaidItems, ({ one, many }) => ({
-    user: one(users, {
-        fields: [plaidItems.user_id],
-        references: [users.id]
+export const plaidItemsRelations = relations(plaidItemsTable, ({ one, many }) => ({
+    user: one(usersTable, {
+        fields: [plaidItemsTable.user_id],
+        references: [usersTable.id]
     }),
-    accounts: many(accounts),
-    plaid_api_events: many(plaidApiEvents),
+    accounts: many(accountsTable),
+    plaid_api_events: many(plaidApiEventsTable),
 }));
 
-export const usersRelations = relations(users, ({ many }) => ({
-    plaid_items: many(plaidItems),
-    assets: many(assets),
-    accounts: many(accounts),
-    plaid_link_events: many(plaidLinkEvents),
-    plaid_api_events: many(plaidApiEvents),
-    goals: many(goals),
+export const usersRelations = relations(usersTable, ({ many }) => ({
+    plaid_items: many(plaidItemsTable),
+    assets: many(assetsTable),
+    accounts: many(accountsTable),
+    plaid_link_events: many(plaidLinkEventsTable),
+    plaid_api_events: many(plaidApiEventsTable),
+    goals: many(goalsTable),
 }));
 
-export const assetsRelations = relations(assets, ({ one }) => ({
-    user: one(users, {
-        fields: [assets.user_id],
-        references: [users.id]
-    }),
-}));
-
-export const accountsRelations = relations(accounts, ({ one, many }) => ({
-    plaid_item: one(plaidItems, {
-        fields: [accounts.item_id],
-        references: [plaidItems.id]
-    }),
-    user: one(users, {
-        fields: [accounts.user_id],
-        references: [users.id]
-    }),
-    transactions: many(transactions),
-}));
-
-export const transactionsRelations = relations(transactions, ({ one }) => ({
-    account: one(accounts, {
-        fields: [transactions.account_id],
-        references: [accounts.id]
+export const assetsRelations = relations(assetsTable, ({ one }) => ({
+    user: one(usersTable, {
+        fields: [assetsTable.user_id],
+        references: [usersTable.id]
     }),
 }));
 
-export const plaidLinkEventsRelations = relations(plaidLinkEvents, ({ one }) => ({
-    user: one(users, {
-        fields: [plaidLinkEvents.user_id],
-        references: [users.id]
+export const accountsRelations = relations(accountsTable, ({ one, many }) => ({
+    plaid_item: one(plaidItemsTable, {
+        fields: [accountsTable.item_id],
+        references: [plaidItemsTable.id]
+    }),
+    user: one(usersTable, {
+        fields: [accountsTable.user_id],
+        references: [usersTable.id]
+    }),
+    transactions: many(transactionsTable),
+}));
+
+export const transactionsRelations = relations(transactionsTable, ({ one }) => ({
+    account: one(accountsTable, {
+        fields: [transactionsTable.account_id],
+        references: [accountsTable.id]
     }),
 }));
 
-export const plaidApiEventsRelations = relations(plaidApiEvents, ({ one }) => ({
-    plaid_item: one(plaidItems, {
-        fields: [plaidApiEvents.item_id],
-        references: [plaidItems.id]
-    }),
-    user: one(users, {
-        fields: [plaidApiEvents.user_id],
-        references: [users.id]
+export const plaidLinkEventsRelations = relations(plaidLinkEventsTable, ({ one }) => ({
+    user: one(usersTable, {
+        fields: [plaidLinkEventsTable.user_id],
+        references: [usersTable.id]
     }),
 }));
 
-export const goalsRelations = relations(goals, ({ one }) => ({
-    user: one(users, {
-        fields: [goals.user_id],
-        references: [users.id]
+export const plaidApiEventsRelations = relations(plaidApiEventsTable, ({ one }) => ({
+    plaid_item: one(plaidItemsTable, {
+        fields: [plaidApiEventsTable.item_id],
+        references: [plaidItemsTable.id]
+    }),
+    user: one(usersTable, {
+        fields: [plaidApiEventsTable.user_id],
+        references: [usersTable.id]
+    }),
+}));
+
+export const goalsRelations = relations(goalsTable, ({ one }) => ({
+    user: one(usersTable, {
+        fields: [goalsTable.user_id],
+        references: [usersTable.id]
     }),
 }));

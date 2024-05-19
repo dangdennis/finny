@@ -7,7 +7,7 @@ import { CountryCode, Products } from "plaid";
 import { z } from "zod";
 import { Database } from "./db";
 import { plaidClient } from "./plaid";
-import { plaidItems, users } from "./schema";
+import { plaidItemsTable, usersTable } from "./schema";
 import { ItemId, SyncService } from "./sync_service";
 
 const encoder = new TextEncoder();
@@ -86,9 +86,8 @@ async function main() {
 
       return new Response(Bun.gzipSync(encoder.encode(text)), {
         headers: {
-          "Content-Type": `${
-            isJson ? "application/json" : "text/plain"
-          }; charset=utf-8`,
+          "Content-Type": `${isJson ? "application/json" : "text/plain"
+            }; charset=utf-8`,
         },
       });
     })
@@ -107,8 +106,8 @@ async function main() {
               "register",
               async ({ db, jwt, body: { email, password, method } }) => {
                 if (method === "email") {
-                  let existing = await db.query.users.findFirst({
-                    where: (users, { eq }) => eq(users.email, email),
+                  let existing = await db.query.usersTable.findFirst({
+                    where: (usersTable, { eq }) => eq(usersTable.email, email),
                   });
 
                   if (existing) {
@@ -118,13 +117,13 @@ async function main() {
                   const passwordHash = await Bun.password.hash(password);
 
                   const [user] = await db
-                    .insert(users)
+                    .insert(usersTable)
                     .values({
                       email,
                       password_hash: passwordHash,
                     })
                     .returning({
-                      id: users.id,
+                      id: usersTable.id,
                     });
 
                   const accessToken = await jwt.sign(makeJWTPayload(user.id));
@@ -153,8 +152,8 @@ async function main() {
               "login",
               async ({ db, jwt, body: { email, password, method } }) => {
                 if (method === "email") {
-                  const user = await db.query.users.findFirst({
-                    where: (users, { eq }) => eq(users.email, email),
+                  const user = await db.query.usersTable.findFirst({
+                    where: (usersTable, { eq }) => eq(usersTable.email, email),
                   });
 
                   if (!user) {
@@ -216,8 +215,8 @@ async function main() {
             throw new Error("Invalid token");
           }
 
-          const user = await db.query.users.findFirst({
-            where: (users, { eq }) => eq(users.id, verified.sub!),
+          const user = await db.query.usersTable.findFirst({
+            where: (usersTable, { eq }) => eq(usersTable.id, verified.sub!),
           });
 
           if (!user) {
@@ -244,7 +243,7 @@ async function main() {
                 });
 
                 const [itemDb] = await db
-                  .insert(plaidItems)
+                  .insert(plaidItemsTable)
                   .values({
                     plaid_access_token: tokenResponse.data.access_token,
                     plaid_item_id: item.data.item.item_id,
@@ -253,6 +252,13 @@ async function main() {
                       .parse(item.data.item.institution_id),
                     status: PlaidItemStatus.Enum.success,
                     user_id: userId,
+                  })
+                  .onConflictDoUpdate({
+                    target: plaidItemsTable.plaid_item_id,
+                    set: {
+                      plaid_access_token: tokenResponse.data.access_token,
+                      status: PlaidItemStatus.Enum.success,
+                    }
                   })
                   .returning()
                   .execute();
@@ -302,6 +308,7 @@ async function main() {
                 ],
                 country_codes: [CountryCode.Us],
                 language: "en",
+                webhook: "https://finny-backend.fly.dev/webhook/plaid",
               });
 
               return {
