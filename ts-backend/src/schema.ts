@@ -1,19 +1,28 @@
 import { relations } from "drizzle-orm/relations";
-import { pgTable, unique, uuid, text, timestamp, index, doublePrecision, date, boolean } from "drizzle-orm/pg-core"
+import { unique, uuid, text, timestamp, index, doublePrecision, date, boolean, pgSchema, pgTable } from "drizzle-orm/pg-core"
 
-export const usersTable = pgTable("users", {
-    id: uuid("id").defaultRandom().primaryKey().notNull(),
-    email: text("email").notNull(),
-    password_hash: text("password_hash"),
-    apple_sub: text("apple_sub"),
-    created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-    updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
-    deleted_at: timestamp("deleted_at", { withTimezone: true }),
+export const authSchema = pgSchema("auth");
+
+export const usersTable = authSchema.table("users", {
+    id: uuid('id').primaryKey(),
+    email: text('email'),
+    phone: text('phone').unique(),
+    phone_confirmed_at: timestamp('phone_confirmed_at', { withTimezone: true }),
+    email_confirmed_at: timestamp('email_confirmed_at', { withTimezone: true }),
+})
+
+export const profilesTable = pgTable("profiles", {
+    id: uuid('id').primaryKey(),
+    user_id: uuid('user_id').notNull().references(() => usersTable.id),
+    first_name: text('first_name').notNull(),
+    last_name: text('last_name').notNull(),
+    created_at: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updated_at: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+    deleted_at: timestamp('deleted_at', { withTimezone: true }),
 },
     (table) => {
         return {
-            ixEmail: unique("ix:users.email").on(table.email),
-            uqAppleSub: unique("uq:users.apple_sub").on(table.apple_sub),
+            ixUserId: index("ix:profiles.user_id").on(table.user_id),
         }
     });
 
@@ -229,3 +238,10 @@ export const goalsRelations = relations(goalsTable, ({ one }) => ({
         references: [usersTable.id]
     }),
 }));
+
+export const profilesRelations = relations(profilesTable, ({ one }) => ({
+    user: one(usersTable, {
+        fields: [profilesTable.user_id],
+        references: [usersTable.id]
+    }),
+}))

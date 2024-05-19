@@ -1,3 +1,6 @@
+CREATE SCHEMA if not exists "auth";
+
+--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "accounts" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"item_id" uuid NOT NULL,
@@ -18,8 +21,7 @@ CREATE TABLE IF NOT EXISTS "accounts" (
 	CONSTRAINT "uq:accounts.plaid_account_id" UNIQUE("plaid_account_id")
 );
 
-ALTER TABLE
-	"accounts" ENABLE ROW LEVEL SECURITY;
+alter table accounts enable row level security;
 
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "assets" (
@@ -32,8 +34,7 @@ CREATE TABLE IF NOT EXISTS "assets" (
 	"deleted_at" timestamp with time zone
 );
 
-ALTER TABLE
-	"assets" ENABLE ROW LEVEL SECURITY;
+alter table assets enable row level security;
 
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "goals" (
@@ -48,8 +49,7 @@ CREATE TABLE IF NOT EXISTS "goals" (
 	"deleted_at" timestamp with time zone
 );
 
-ALTER TABLE
-	"goals" ENABLE ROW LEVEL SECURITY;
+alter table goals enable row level security;
 
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "plaid_api_events" (
@@ -67,8 +67,7 @@ CREATE TABLE IF NOT EXISTS "plaid_api_events" (
 	CONSTRAINT "uq:plaid_api_events.request_id" UNIQUE("request_id")
 );
 
-ALTER TABLE
-	"plaid_api_events" ENABLE ROW LEVEL SECURITY;
+alter table plaid_api_events enable row level security;
 
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "plaid_items" (
@@ -86,8 +85,7 @@ CREATE TABLE IF NOT EXISTS "plaid_items" (
 	CONSTRAINT "uq:plaid_items.plaid_item_id" UNIQUE("plaid_item_id")
 );
 
-ALTER TABLE
-	"plaid_items" ENABLE ROW LEVEL SECURITY;
+alter table plaid_items enable row level security;
 
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "plaid_link_events" (
@@ -105,8 +103,38 @@ CREATE TABLE IF NOT EXISTS "plaid_link_events" (
 	CONSTRAINT "uq:plaid_link_events.request_id" UNIQUE("request_id")
 );
 
-ALTER TABLE
-	"plaid_link_events" ENABLE ROW LEVEL SECURITY;
+alter table plaid_link_events enable row level security;
+
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "profiles" (
+	"id" uuid PRIMARY KEY NOT NULL,
+	"user_id" uuid NOT NULL,
+	"first_name" text NOT NULL,
+	"last_name" text NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"deleted_at" timestamp with time zone
+);
+
+alter table profiles enable row level security;
+
+-- inserts a row into public.profiles
+create function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer set search_path = ''
+as $$
+begin
+  insert into public.profiles (id, first_name, last_name)
+  values (new.id, new.raw_user_meta_data ->> 'first_name', new.raw_user_meta_data ->> 'last_name');
+  return new;
+end;
+$$;
+
+-- trigger the function every time a user is created
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute procedure public.handle_new_user();
 
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "transactions" (
@@ -129,150 +157,84 @@ CREATE TABLE IF NOT EXISTS "transactions" (
 	CONSTRAINT "uq:transactions.plaid_transaction_id" UNIQUE("plaid_transaction_id")
 );
 
-ALTER TABLE
-	"transactions" ENABLE ROW LEVEL SECURITY;
+alter table transactions enable row level security;
 
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "users" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"email" text NOT NULL,
-	"password_hash" text,
-	"apple_sub" text,
-	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"deleted_at" timestamp with time zone,
-	CONSTRAINT "ix:users.email" UNIQUE("email"),
-	CONSTRAINT "uq:users.apple_sub" UNIQUE("apple_sub")
+CREATE TABLE IF NOT EXISTS "auth"."users" (
+	"id" uuid PRIMARY KEY NOT NULL,
+	"email" text,
+	"phone" text,
+	"phone_confirmed_at" timestamp with time zone,
+	"email_confirmed_at" timestamp with time zone,
+	CONSTRAINT "users_phone_unique" UNIQUE("phone")
 );
 
-ALTER TABLE
-	"users" ENABLE ROW LEVEL SECURITY;
-
 --> statement-breakpoint
 DO $$ BEGIN
-ALTER TABLE
-	"accounts"
-ADD
-	CONSTRAINT "accounts_item_id_plaid_items_id_fk" FOREIGN KEY ("item_id") REFERENCES "public"."plaid_items"("id") ON DELETE no action ON UPDATE no action;
-
+ ALTER TABLE "accounts" ADD CONSTRAINT "accounts_item_id_plaid_items_id_fk" FOREIGN KEY ("item_id") REFERENCES "public"."plaid_items"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
-WHEN duplicate_object THEN null;
-
+ WHEN duplicate_object THEN null;
 END $$;
-
 --> statement-breakpoint
 DO $$ BEGIN
-ALTER TABLE
-	"accounts"
-ADD
-	CONSTRAINT "accounts_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
-
+ ALTER TABLE "accounts" ADD CONSTRAINT "accounts_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "auth"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
-WHEN duplicate_object THEN null;
-
+ WHEN duplicate_object THEN null;
 END $$;
-
 --> statement-breakpoint
 DO $$ BEGIN
-ALTER TABLE
-	"assets"
-ADD
-	CONSTRAINT "assets_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
-
+ ALTER TABLE "assets" ADD CONSTRAINT "assets_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "auth"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
-WHEN duplicate_object THEN null;
-
+ WHEN duplicate_object THEN null;
 END $$;
-
 --> statement-breakpoint
 DO $$ BEGIN
-ALTER TABLE
-	"goals"
-ADD
-	CONSTRAINT "goals_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
-
+ ALTER TABLE "goals" ADD CONSTRAINT "goals_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "auth"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
-WHEN duplicate_object THEN null;
-
+ WHEN duplicate_object THEN null;
 END $$;
-
 --> statement-breakpoint
 DO $$ BEGIN
-ALTER TABLE
-	"plaid_api_events"
-ADD
-	CONSTRAINT "plaid_api_events_item_id_plaid_items_id_fk" FOREIGN KEY ("item_id") REFERENCES "public"."plaid_items"("id") ON DELETE no action ON UPDATE no action;
-
+ ALTER TABLE "plaid_api_events" ADD CONSTRAINT "plaid_api_events_item_id_plaid_items_id_fk" FOREIGN KEY ("item_id") REFERENCES "public"."plaid_items"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
-WHEN duplicate_object THEN null;
-
+ WHEN duplicate_object THEN null;
 END $$;
-
 --> statement-breakpoint
 DO $$ BEGIN
-ALTER TABLE
-	"plaid_api_events"
-ADD
-	CONSTRAINT "plaid_api_events_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
-
+ ALTER TABLE "plaid_api_events" ADD CONSTRAINT "plaid_api_events_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "auth"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
-WHEN duplicate_object THEN null;
-
+ WHEN duplicate_object THEN null;
 END $$;
-
 --> statement-breakpoint
 DO $$ BEGIN
-ALTER TABLE
-	"plaid_items"
-ADD
-	CONSTRAINT "plaid_items_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
-
+ ALTER TABLE "plaid_items" ADD CONSTRAINT "plaid_items_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "auth"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
-WHEN duplicate_object THEN null;
-
+ WHEN duplicate_object THEN null;
 END $$;
-
 --> statement-breakpoint
 DO $$ BEGIN
-ALTER TABLE
-	"plaid_link_events"
-ADD
-	CONSTRAINT "plaid_link_events_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
-
+ ALTER TABLE "plaid_link_events" ADD CONSTRAINT "plaid_link_events_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "auth"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
-WHEN duplicate_object THEN null;
-
+ WHEN duplicate_object THEN null;
 END $$;
-
 --> statement-breakpoint
 DO $$ BEGIN
-ALTER TABLE
-	"transactions"
-ADD
-	CONSTRAINT "transactions_account_id_accounts_id_fk" FOREIGN KEY ("account_id") REFERENCES "public"."accounts"("id") ON DELETE no action ON UPDATE no action;
-
+ ALTER TABLE "profiles" ADD CONSTRAINT "profiles_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "auth"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
-WHEN duplicate_object THEN null;
-
+ WHEN duplicate_object THEN null;
 END $$;
-
 --> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "ix:accounts.user_id" ON "accounts" ("user_id");
-
+DO $$ BEGIN
+ ALTER TABLE "transactions" ADD CONSTRAINT "transactions_account_id_accounts_id_fk" FOREIGN KEY ("account_id") REFERENCES "public"."accounts"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
 --> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "ix:assets.user_id" ON "assets" ("user_id");
-
---> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "ix:goals.user_id" ON "goals" ("user_id");
-
---> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "ix:plaid_api_events.item_id" ON "plaid_api_events" ("item_id");
-
---> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "ix:plaid_items.user_id" ON "plaid_items" ("user_id");
-
---> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "ix:plaid_link_events.user_id" ON "plaid_link_events" ("user_id");
-
---> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "ix:accounts.user_id" ON "accounts" ("user_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "ix:assets.user_id" ON "assets" ("user_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "ix:goals.user_id" ON "goals" ("user_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "ix:plaid_api_events.item_id" ON "plaid_api_events" ("item_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "ix:plaid_items.user_id" ON "plaid_items" ("user_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "ix:plaid_link_events.user_id" ON "plaid_link_events" ("user_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "ix:profiles.user_id" ON "profiles" ("user_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "ix:transactions.account_id" ON "transactions" ("account_id");

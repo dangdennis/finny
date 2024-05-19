@@ -1,5 +1,5 @@
 {
-  "id": "49bd6f00-3d50-4932-a2ed-c51e3cd56612",
+  "id": "c79ea023-1cd8-4d3e-afce-27c3ab07c6cc",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "6",
   "dialect": "postgresql",
@@ -135,6 +135,7 @@
           "name": "accounts_user_id_users_id_fk",
           "tableFrom": "accounts",
           "tableTo": "users",
+          "schemaTo": "auth",
           "columnsFrom": [
             "user_id"
           ],
@@ -220,6 +221,7 @@
           "name": "assets_user_id_users_id_fk",
           "tableFrom": "assets",
           "tableTo": "users",
+          "schemaTo": "auth",
           "columnsFrom": [
             "user_id"
           ],
@@ -309,6 +311,7 @@
           "name": "goals_user_id_users_id_fk",
           "tableFrom": "goals",
           "tableTo": "users",
+          "schemaTo": "auth",
           "columnsFrom": [
             "user_id"
           ],
@@ -423,6 +426,7 @@
           "name": "plaid_api_events_user_id_users_id_fk",
           "tableFrom": "plaid_api_events",
           "tableTo": "users",
+          "schemaTo": "auth",
           "columnsFrom": [
             "user_id"
           ],
@@ -526,6 +530,7 @@
           "name": "plaid_items_user_id_users_id_fk",
           "tableFrom": "plaid_items",
           "tableTo": "users",
+          "schemaTo": "auth",
           "columnsFrom": [
             "user_id"
           ],
@@ -642,6 +647,7 @@
           "name": "plaid_link_events_user_id_users_id_fk",
           "tableFrom": "plaid_link_events",
           "tableTo": "users",
+          "schemaTo": "auth",
           "columnsFrom": [
             "user_id"
           ],
@@ -662,6 +668,83 @@
           ]
         }
       }
+    },
+    "public.profiles": {
+      "name": "profiles",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "first_name": {
+          "name": "first_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "last_name": {
+          "name": "last_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "ix:profiles.user_id": {
+          "name": "ix:profiles.user_id",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "profiles_user_id_users_id_fk": {
+          "name": "profiles_user_id_users_id_fk",
+          "tableFrom": "profiles",
+          "tableTo": "users",
+          "schemaTo": "auth",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
     },
     "public.transactions": {
       "name": "transactions",
@@ -802,51 +885,36 @@
         }
       }
     },
-    "public.users": {
+    "auth.users": {
       "name": "users",
-      "schema": "",
+      "schema": "auth",
       "columns": {
         "id": {
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "email": {
           "name": "email",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
-        "password_hash": {
-          "name": "password_hash",
+        "phone": {
+          "name": "phone",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
-        "apple_sub": {
-          "name": "apple_sub",
-          "type": "text",
+        "phone_confirmed_at": {
+          "name": "phone_confirmed_at",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
         },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "deleted_at": {
-          "name": "deleted_at",
+        "email_confirmed_at": {
+          "name": "email_confirmed_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
@@ -856,25 +924,20 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "ix:users.email": {
-          "name": "ix:users.email",
+        "users_phone_unique": {
+          "name": "users_phone_unique",
           "nullsNotDistinct": false,
           "columns": [
-            "email"
-          ]
-        },
-        "uq:users.apple_sub": {
-          "name": "uq:users.apple_sub",
-          "nullsNotDistinct": false,
-          "columns": [
-            "apple_sub"
+            "phone"
           ]
         }
       }
     }
   },
   "enums": {},
-  "schemas": {},
+  "schemas": {
+    "auth": "auth"
+  },
   "_meta": {
     "columns": {},
     "schemas": {},

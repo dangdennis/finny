@@ -1,10 +1,12 @@
 import { defineConfig } from "drizzle-kit";
+import { z } from "zod";
 
 export default defineConfig({
+    schemaFilter: ["public"],
     dialect: "postgresql",
-    schema: "./drizzle/schema.ts",
+    schema: "./src/schema.ts",
     out: "./drizzle",
     dbCredentials: {
-        url: "postgresql://postgres:postgres@127.0.0.1:54322/postgres",
+        url: z.string().parse(process.env.DATABASE_URL),
     }
 });

@@ -12,7 +12,6 @@ import { ItemId, SyncService } from "./sync_service";
 
 const encoder = new TextEncoder();
 
-const AuthMethod = z.enum(["email", "apple"]);
 const PlaidItemStatus = z.enum(["success", "error"]);
 
 function makeJWTPayload(userId: string) {
@@ -32,7 +31,7 @@ async function main() {
     .use(
       elysiaJwt({
         name: "jwt",
-        secret: "Dennis von Baron Whaler",
+        secret: z.string().parse(process.env.SUPABASE_JWT),
         exp: "7d",
       }),
     )
@@ -100,102 +99,6 @@ async function main() {
     })
     .group("api", (apiR) => {
       return apiR
-        .group("users", (usersR) => {
-          return usersR
-            .post(
-              "register",
-              async ({ db, jwt, body: { email, password, method } }) => {
-                if (method === "email") {
-                  let existing = await db.query.usersTable.findFirst({
-                    where: (usersTable, { eq }) => eq(usersTable.email, email),
-                  });
-
-                  if (existing) {
-                    throw new Error("Email already exists");
-                  }
-
-                  const passwordHash = await Bun.password.hash(password);
-
-                  const [user] = await db
-                    .insert(usersTable)
-                    .values({
-                      email,
-                      password_hash: passwordHash,
-                    })
-                    .returning({
-                      id: usersTable.id,
-                    });
-
-                  const accessToken = await jwt.sign(makeJWTPayload(user.id));
-
-                  return {
-                    data: {
-                      id: user.id,
-                      session_token: accessToken,
-                    },
-                  };
-                } else if (method === "apple") {
-                  throw new Error("Not implemented");
-                } else {
-                  throw new Error("Invalid method");
-                }
-              },
-              {
-                body: t.Object({
-                  method: t.Enum(AuthMethod.Values),
-                  email: t.String(),
-                  password: t.String(),
-                }),
-              },
-            )
-            .post(
-              "login",
-              async ({ db, jwt, body: { email, password, method } }) => {
-                if (method === "email") {
-                  const user = await db.query.usersTable.findFirst({
-                    where: (usersTable, { eq }) => eq(usersTable.email, email),
-                  });
-
-                  if (!user) {
-                    throw new Error("User not found");
-                  }
-
-                  if (!user.password_hash) {
-                    throw new Error("User has no password");
-                  }
-
-                  const valid = await Bun.password.verify(
-                    password,
-                    user.password_hash,
-                  );
-
-                  if (!valid) {
-                    throw new Error("Invalid password");
-                  }
-
-                  const accessToken = await jwt.sign(makeJWTPayload(user.id));
-
-                  return {
-                    data: {
-                      id: user.id,
-                      session_token: accessToken,
-                    },
-                  };
-                } else if (method === "apple") {
-                  throw new Error("Not implemented");
-                } else {
-                  throw new Error("Invalid method");
-                }
-              },
-              {
-                body: t.Object({
-                  method: t.Enum(AuthMethod.Values),
-                  email: t.String(),
-                  password: t.String(),
-                }),
-              },
-            );
-        })
         .derive(async ({ bearer, jwt, set, db }) => {
           if (!bearer) {
             set.status = 400;
@@ -226,6 +129,38 @@ async function main() {
           return {
             userId: user.id,
           };
+        })
+        .group("users", (usersR) => {
+          return usersR
+            .get(
+              "profile",
+              async ({ db, jwt, userId }) => {
+                const profile = await db.query.profilesTable.findFirst({
+                  where: (usersTable, { eq }) => eq(usersTable.id, userId),
+                  with: {
+                    user: {
+                      columns: {
+                        id: true,
+                        email: true,
+                        phone: true,
+                      }
+                    }
+                  }
+                });
+
+                if (!profile) {
+                  throw new Error("Profile not found");
+                }
+
+                return {
+                  data: {
+                    id: profile.user.id,
+                    email: profile.user.email,
+                    phone: profile.user.phone,
+                  },
+                };
+              },
+            );
         })
         .group("plaid-items", (plaidItemsR) => {
           return plaidItemsR.post(
