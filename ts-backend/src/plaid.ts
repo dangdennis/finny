@@ -8,17 +8,21 @@ const PLAID_ENV = plaidEnvSchema.parse(process.env.PLAID_ENV);
 
 let PLAID_SECRET: string;
 let plaidBasePath: string;
+export let PLAID_REDIRECT_URI: string;
 switch (PLAID_ENV) {
   case "sandbox":
     PLAID_SECRET = z.string().parse(process.env.PLAID_SECRET_SANDBOX);
+    PLAID_REDIRECT_URI = z.string().parse(process.env.PLAID_SANDBOX_REDIRECT_URI);
     plaidBasePath = PlaidEnvironments.sandbox;
     break;
   case "development":
     PLAID_SECRET = z.string().parse(process.env.PLAID_SECRET_DEVELOPMENT);
+    PLAID_REDIRECT_URI = z.string().parse(process.env.PLAID_DEVELOPMENT_REDIRECT_URI);
     plaidBasePath = PlaidEnvironments.development;
     break;
   case "production":
     PLAID_SECRET = z.string().parse(process.env.PLAID_SECRET_PRODUCTION);
+    PLAID_REDIRECT_URI = z.string().parse(process.env.PLAID_DEVELOPMENT_REDIRECT_URI);
     plaidBasePath = PlaidEnvironments.production;
     break;
 }

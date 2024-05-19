@@ -6,7 +6,7 @@ import { Elysia, t } from "elysia";
 import { CountryCode, Products } from "plaid";
 import { z } from "zod";
 import { Database } from "./db";
-import { plaidClient } from "./plaid";
+import { PLAID_REDIRECT_URI, plaidClient } from "./plaid";
 import { plaidItemsTable, usersTable } from "./schema";
 import { ItemId, SyncService } from "./sync_service";
 
@@ -309,6 +309,7 @@ async function main() {
                 country_codes: [CountryCode.Us],
                 language: "en",
                 webhook: "https://finny-backend.fly.dev/webhook/plaid",
+                redirect_uri: PLAID_REDIRECT_URI,
               });
 
               return {
