@@ -13,8 +13,8 @@ export const usersTable = authSchema.table("users", {
 
 export const profilesTable = pgTable("profiles", {
     id: uuid('id').references(() => usersTable.id).primaryKey(),
-    first_name: text('first_name').notNull(),
-    last_name: text('last_name').notNull(),
+    first_name: text('first_name'),
+    last_name: text('last_name'),
     created_at: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updated_at: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
     deleted_at: timestamp('deleted_at', { withTimezone: true }),

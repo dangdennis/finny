@@ -108,8 +108,8 @@ alter table plaid_link_events enable row level security;
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "profiles" (
 	"id" uuid PRIMARY KEY NOT NULL,
-	"first_name" text NOT NULL,
-	"last_name" text NOT NULL,
+	"first_name" text,
+	"last_name" text,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"deleted_at" timestamp with time zone
@@ -134,8 +134,9 @@ BEGIN
         SET search_path = '''' 
         AS $func$ 
         BEGIN 
-            INSERT INTO public.profiles (id, first_name, last_name) 
-            VALUES (NEW.id, NEW.raw_user_meta_data ->> ''first_name'', NEW.raw_user_meta_data ->> ''last_name''); 
+            INSERT INTO public.profiles (id) 
+            -- VALUES (NEW.id, NEW.raw_user_meta_data ->> ''first_name'', NEW.raw_user_meta_data ->> ''last_name''); 
+            VALUES (NEW.id); 
             RETURN NEW; 
         END; 
         $func$;';
