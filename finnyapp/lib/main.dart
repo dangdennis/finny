@@ -6,9 +6,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> main() async {
   await Supabase.initialize(
-    url: 'https://ogagpskctstoizavqalo.supabase.co',
+    url: 'https://tqonkxhrucymdyndpjzf.supabase.co',
+    debug: true,
     anonKey:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9nYWdwc2tjdHN0b2l6YXZxYWxvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTU4MzIzMTYsImV4cCI6MjAzMTQwODMxNn0.RPp3l6grS9iAcWcsfwv_hEw0Wb_7wWQK0W4Q0Ouj-98',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxb25reGhydWN5bWR5bmRwanpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTYxNzk4MTAsImV4cCI6MjAzMTc1NTgxMH0.rGtsQPBxLHHatZaBs1JPxsp-E8chFQL11lFHfryKAxc',
   );
   runApp(const Finny());
 }

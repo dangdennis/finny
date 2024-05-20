@@ -7,7 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Performs Apple sign in on iOS or macOS
 Future<AuthResponse> signInWithApple() async {
-  final rawNonce = generateNonce();
+  final rawNonce = supabase.auth.generateRawNonce();
   final hashedNonce = sha256.convert(utf8.encode(rawNonce)).toString();
 
   final credential = await SignInWithApple.getAppleIDCredential(
