@@ -14,14 +14,6 @@ const encoder = new TextEncoder();
 
 const PlaidItemStatus = z.enum(["success", "error"]);
 
-function makeJWTPayload(userId: string) {
-  return {
-    sub: userId,
-    aud: "finny",
-    iat: Date.now(),
-  };
-}
-
 async function main() {
   const database = new Database();
   await database.connect();
