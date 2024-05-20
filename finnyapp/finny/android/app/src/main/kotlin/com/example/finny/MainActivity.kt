@@ -1,4 +1,4 @@
-package com.example.finny
+package com.belmont.finny
 
 import io.flutter.embedding.android.FlutterActivity
 
