@@ -1,5 +1,5 @@
 use ratatui::{
-    layout::Alignment,
+    layout::{Alignment, Constraint, Direction, Layout},
     style::{Color, Style},
     widgets::{Block, BorderType, Paragraph},
     Frame,
@@ -13,6 +13,11 @@ pub fn render(app: &mut App, frame: &mut Frame) {
     // See the following resources:
     // - https://docs.rs/ratatui/latest/ratatui/widgets/index.html
     // - https://github.com/ratatui-org/ratatui/tree/master/examples
+    let layout = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints(vec![Constraint::Percentage(50), Constraint::Percentage(50)])
+        .split(frame.size());
+
     frame.render_widget(
         Paragraph::new(format!(
             "This is a tui template.\n\
@@ -28,7 +33,28 @@ pub fn render(app: &mut App, frame: &mut Frame) {
                 .border_type(BorderType::Rounded),
         )
         .style(Style::default().fg(Color::Cyan).bg(Color::Black))
-        .centered(),
-        frame.size(),
-    )
+        .centered()
+        .block(Block::default())
+        .style(Style::default().fg(Color::Yellow).bg(Color::Black)),
+        layout[0],
+    );
+
+    let institution_names = app
+        .institutions
+        .iter()
+        .map(|institution| institution.name.clone())
+        .collect::<Vec<String>>()
+        .join("\n");
+
+    frame.render_widget(
+        Paragraph::new(institution_names)
+            .block(
+                Block::default()
+                    .title("Items")
+                    .title_alignment(Alignment::Center)
+                    .border_type(BorderType::Rounded),
+            )
+            .style(Style::default().fg(Color::Yellow).bg(Color::Black)),
+        layout[1],
+    );
 }

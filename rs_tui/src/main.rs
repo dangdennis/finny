@@ -1,10 +1,10 @@
+use ratatui::backend::CrosstermBackend;
+use ratatui::Terminal;
 use rs_tui::app::{App, AppResult};
 use rs_tui::event::{Event, EventHandler};
 use rs_tui::handler::handle_key_events;
 use rs_tui::tui::Tui;
 use std::io;
-use ratatui::backend::CrosstermBackend;
-use ratatui::Terminal;
 
 #[tokio::main]
 async fn main() -> AppResult<()> {
@@ -25,7 +25,7 @@ async fn main() -> AppResult<()> {
         // Handle events.
         match tui.events.next().await? {
             Event::Tick => app.tick(),
-            Event::Key(key_event) => handle_key_events(key_event, &mut app)?,
+            Event::Key(key_event) => handle_key_events(key_event, &mut app).await?,
             Event::Mouse(_) => {}
             Event::Resize(_, _) => {}
         }
