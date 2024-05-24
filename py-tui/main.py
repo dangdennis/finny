@@ -5,6 +5,7 @@ from schema import schema
 import plaid
 from plaid.api import plaid_api
 from plaid.model.item_public_token_exchange_request import ItemPublicTokenExchangeRequest
+from plaid.model.item_public_token_exchange_response import ItemPublicTokenExchangeResponse
 from dotenv import load_dotenv
 import os
 import certifi
@@ -25,9 +26,9 @@ def main() -> None:
         },
     ))
     client = plaid_api.PlaidApi(api_client)
-    exchange_request = client.item_public_token_exchange(
+    exchange_request: ItemPublicTokenExchangeResponse = client.item_public_token_exchange(
         ItemPublicTokenExchangeRequest(
-            public_token="public-sandbox-e71f3b04-6697-44de-bd50-fb538bc2c8ea"
+            public_token="public-sandbox-e71f3b04-6697-44de-bd50-fb538bc2c8ea",
         )
     )
     print(f"access_token {exchange_request.access_token}")
