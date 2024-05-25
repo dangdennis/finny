@@ -12,6 +12,10 @@ function App() {
     setGreetMsg(await invoke("greet", { name }));
   }
 
+  async function runQuery() {
+    await invoke("run_query");
+  }
+
   return (
     <div className="container">
       <h1>Welcome to Tauri!</h1>
@@ -28,7 +32,7 @@ function App() {
         </a>
       </div>
 
-      <p>Click on the Tauri, Vite, and React logos to learn more.</p>
+      <p>Click on the Tauri, Vite, and React logos to learn more. </p>
 
       <form
         className="row"
@@ -43,6 +47,12 @@ function App() {
           placeholder="Enter a name..."
         />
         <button type="submit">Greet</button>
+      </form>
+
+      <form>
+        <button type="button" onClick={runQuery}>
+          Run Query
+        </button>
       </form>
 
       <p>{greetMsg}</p>
