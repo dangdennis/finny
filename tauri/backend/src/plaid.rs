@@ -3,8 +3,20 @@ use plaid::{PlaidAuth, PlaidClient};
 
 use crate::errors::AppError;
 
-pub fn new_client() -> PlaidClient {
-    let plaid_env = "sandbox";
+pub enum Environment {
+    Sandbox,
+    Development,
+    Production,
+}
+
+pub fn new_client(env: Environment) -> PlaidClient {
+    let plaid_env = {
+        match env {
+            Environment::Sandbox => "sandbox",
+            Environment::Development => "development",
+            Environment::Production => "production",
+        }
+    };
     let url = format!("https://{plaid_env}.plaid.com");
     let client = httpclient::Client::new().base_url(&url);
 
@@ -19,7 +31,7 @@ pub fn new_client() -> PlaidClient {
 }
 
 pub async fn get_plaid_transactions() -> Result<(), AppError> {
-    let client = new_client();
+    let client = new_client(Environment::Sandbox);
     let response = client
         .transactions_sync("access-sandbox-09f74ffe-8b6a-433e-a5f3-883d7fe2ef76")
         .await;
