@@ -2,5 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() -> Result<(), tauri::Error> {
-    finny_lib::run()
+    finny_lib::run().unwrap();
+
+    Ok(())
 }

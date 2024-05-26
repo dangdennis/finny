@@ -1,17 +1,23 @@
-use duckdb::Connection;
+use errors::AppError;
+use sea_orm::DatabaseConnection;
 use std::sync::Arc;
 use tauri::{async_runtime::Mutex, State};
 
 mod db;
+mod entities;
 mod errors;
+mod log;
 mod plaid;
 
 pub struct DbConnection {
-    pub db: Arc<Mutex<Connection>>,
+    pub db: Arc<Mutex<DatabaseConnection>>,
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
-pub fn run() -> Result<(), tauri::Error> {
+pub fn run() -> Result<(), AppError> {
+    log::init_tracing();
+
+    // generates typesecript bindings for the tauri commands
     let invoke_handler = {
         let builder = tauri_specta::ts::builder().commands(tauri_specta::collect_commands![
             greet,
@@ -26,8 +32,7 @@ pub fn run() -> Result<(), tauri::Error> {
         builder.build().unwrap()
     };
 
-    let db_conn = duckdb::Connection::open_in_memory().expect("Failed to open DuckDB connection");
-    db::init_db_schema(&db_conn).expect("Failed to initialize database schema");
+    let db_conn = tauri::async_runtime::block_on(db::init_connection(None))?;
 
     tauri::Builder::default()
         .invoke_handler(invoke_handler)

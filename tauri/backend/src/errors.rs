@@ -7,4 +7,10 @@ pub enum AppError {
 
     #[error("Plaid error: {0}")]
     PlaidError(#[from] plaid::Error),
+
+    #[error("SeaORM error: {0}")]
+    SeaORMError(#[from] sea_orm::error::DbErr),
+
+    #[error("Tauri error: {0}")]
+    TauriError(#[from] tauri::Error),
 }
