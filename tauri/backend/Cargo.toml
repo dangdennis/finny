@@ -25,7 +25,4 @@ anyhow = "1.0.86"
 thiserror = "1.0.61"
 log = "0.4.21"
 specta = "=2.0.0-rc.12"
-tauri-specta = { version = "=2.0.0-rc.10", features = [
-    "javascript",
-    "typescript",
-] }
+tauri-specta = { version = "=2.0.0-rc.10", features = ["typescript"] }

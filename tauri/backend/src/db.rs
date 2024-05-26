@@ -38,7 +38,7 @@ pub fn create_user(conn: &duckdb::Connection) -> Result<(), AppError> {
     };
 
     conn.execute(
-        "INSERT INTO person (name, data) VALUES (?, ?)",
+        "INSERT INTO users (name, data) VALUES (?, ?)",
         params![me.name, me.data],
     )?;
 
@@ -46,7 +46,7 @@ pub fn create_user(conn: &duckdb::Connection) -> Result<(), AppError> {
 }
 
 pub fn get_users(conn: &duckdb::Connection) -> Result<(), AppError> {
-    let mut stmt = conn.prepare("SELECT id, name, data FROM person")?;
+    let mut stmt = conn.prepare("SELECT id, name, data FROM users")?;
     let user_iter = stmt.query_map([], |row| {
         Ok(User {
             id: row.get(0)?,

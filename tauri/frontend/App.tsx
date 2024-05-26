@@ -1,7 +1,7 @@
 import { useState } from "react";
 import reactLogo from "./assets/react.svg";
-import { invoke } from "@tauri-apps/api/core";
 import "./App.css";
+import { commands } from "./bindings";
 
 function App() {
   const [greetMsg, setGreetMsg] = useState("");
@@ -9,11 +9,7 @@ function App() {
 
   async function greet() {
     // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-    setGreetMsg(await invoke("greet", { name }));
-  }
-
-  async function runQuery() {
-    await invoke("run_query");
+    setGreetMsg(await commands.greet(name));
   }
 
   return (
@@ -50,8 +46,22 @@ function App() {
       </form>
 
       <form>
-        <button type="button" onClick={runQuery}>
-          Run Query
+        <button
+          type="button"
+          style={{ marginTop: 4 }}
+          onClick={commands.getUsers}
+        >
+          Print Users
+        </button>
+      </form>
+
+      <form>
+        <button
+          type="button"
+          style={{ marginTop: 4 }}
+          onClick={commands.createUser}
+        >
+          Create User
         </button>
       </form>
 
