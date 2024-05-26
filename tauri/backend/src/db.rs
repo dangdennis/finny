@@ -1,7 +1,7 @@
+use crate::errors::AppError;
 use anyhow::Result;
 use duckdb::{params, Connection};
-
-use crate::errors::AppError;
+use log::info;
 
 #[derive(Debug)]
 struct User {

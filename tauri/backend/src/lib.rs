@@ -16,7 +16,8 @@ pub fn run() -> Result<(), tauri::Error> {
         let builder = tauri_specta::ts::builder().commands(tauri_specta::collect_commands![
             greet,
             get_users,
-            create_user
+            create_user,
+            get_transactions
         ]);
 
         #[cfg(debug_assertions)] // <- Only export on non-release builds
@@ -35,7 +36,12 @@ pub fn run() -> Result<(), tauri::Error> {
         })
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_store::Builder::new().build())
-        .invoke_handler(tauri::generate_handler![greet, get_users, create_user])
+        .invoke_handler(tauri::generate_handler![
+            greet,
+            get_users,
+            create_user,
+            get_transactions
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 
@@ -47,6 +53,14 @@ pub fn run() -> Result<(), tauri::Error> {
 #[specta::specta]
 fn greet(name: &str) -> String {
     format!("Hello, {}! You've been greeted from Rust!", name)
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn get_transactions() -> () {
+    plaid::get_plaid_transactions().await.unwrap();
+
+    ()
 }
 
 #[tauri::command]

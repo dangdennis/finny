@@ -19,6 +19,9 @@ try {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
 }
+},
+async getTransactions() : Promise<null> {
+return await TAURI_INVOKE("get_transactions");
 }
 }
 

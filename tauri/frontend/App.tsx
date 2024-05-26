@@ -45,6 +45,8 @@ function App() {
         <button type="submit">Greet</button>
       </form>
 
+      <p>{greetMsg}</p>
+
       <form>
         <button
           type="button"
@@ -65,7 +67,15 @@ function App() {
         </button>
       </form>
 
-      <p>{greetMsg}</p>
+      <form>
+        <button
+          type="button"
+          style={{ marginTop: 4 }}
+          onClick={commands.getTransactions}
+        >
+          Print transactions
+        </button>
+      </form>
     </div>
   );
 }
