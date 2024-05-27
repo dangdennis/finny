@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     email TEXT UNIQUE,
     password_hash TEXT,
     apple_sub TEXT UNIQUE,
@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 
 CREATE TABLE IF NOT EXISTS plaid_items (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     user_id TEXT NOT NULL,
     plaid_access_token TEXT NOT NULL UNIQUE,
     plaid_item_id TEXT NOT NULL UNIQUE,
@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS plaid_items (
 CREATE INDEX IF NOT EXISTS ix_plaid_items_user_id ON plaid_items(user_id);
 
 CREATE TABLE IF NOT EXISTS accounts (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     item_id TEXT NOT NULL,
     user_id TEXT NOT NULL,
     plaid_account_id TEXT NOT NULL UNIQUE,
@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS accounts (
 CREATE INDEX IF NOT EXISTS ix_accounts_user_id ON accounts(user_id);
 
 CREATE TABLE IF NOT EXISTS assets (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     user_id TEXT NOT NULL,
     value REAL NOT NULL,
     description TEXT NOT NULL,
@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS assets (
 CREATE INDEX IF NOT EXISTS ix_assets_user_id ON assets(user_id);
 
 CREATE TABLE IF NOT EXISTS goals (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     amount REAL NOT NULL,
     target_date TIMESTAMP NOT NULL,
@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS goals (
 CREATE INDEX IF NOT EXISTS ix_goals_user_id ON goals(user_id);
 
 CREATE TABLE IF NOT EXISTS transactions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     account_id TEXT NOT NULL,
     plaid_transaction_id TEXT NOT NULL UNIQUE,
     category TEXT,
@@ -99,7 +99,7 @@ CREATE TABLE IF NOT EXISTS transactions (
 CREATE INDEX IF NOT EXISTS ix_transactions_account_id ON transactions(account_id);
 
 CREATE TABLE IF NOT EXISTS plaid_api_events (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     item_id TEXT NOT NULL,
     user_id TEXT NOT NULL,
     plaid_method TEXT NOT NULL,
@@ -117,7 +117,7 @@ CREATE TABLE IF NOT EXISTS plaid_api_events (
 CREATE INDEX IF NOT EXISTS ix_plaid_api_events_item_id ON plaid_api_events(item_id);
 
 CREATE TABLE IF NOT EXISTS plaid_link_events (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     type TEXT NOT NULL,
     user_id TEXT NOT NULL,
     link_session_id TEXT,
