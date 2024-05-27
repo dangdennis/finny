@@ -1,7 +1,6 @@
 use crate::errors::AppError;
 use anyhow::Result;
 use log::info;
-use sea_orm::{ConnectionTrait, Statement};
 // use tauri::path::BaseDirectory::Data;
 // use std::path::PathBuf;
 

@@ -1,4 +1,4 @@
-use plaid::model::*;
+// use plaid::model::*;
 use plaid::{PlaidAuth, PlaidClient};
 
 use crate::errors::AppError;
