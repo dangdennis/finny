@@ -2,6 +2,7 @@ use crate::errors::AppError;
 use anyhow::Result;
 use log::info;
 use sea_orm::{ConnectionTrait, Statement};
+// use tauri::path::BaseDirectory::Data;
 // use std::path::PathBuf;
 
 // fn get_database_path() -> PathBuf {
@@ -27,8 +28,7 @@ pub async fn init_connection(
             }
             None => {
                 let mut path = std::path::PathBuf::new();
-                path.push("my_app");
-                path.push("database.sqlite");
+                path.push("sqlite::memory:");
                 path
             }
         }

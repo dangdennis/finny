@@ -1,4 +1,5 @@
 use errors::AppError;
+use migration::{Migrator, MigratorTrait};
 use sea_orm::DatabaseConnection;
 use std::sync::Arc;
 use tauri::{async_runtime::Mutex, State};
@@ -33,6 +34,7 @@ pub fn run() -> Result<(), AppError> {
     };
 
     let db_conn = tauri::async_runtime::block_on(db::init_connection(None))?;
+    tauri::async_runtime::block_on(Migrator::up(&db_conn, None))?;
 
     tauri::Builder::default()
         .invoke_handler(invoke_handler)
