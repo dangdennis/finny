@@ -5,10 +5,10 @@ use std::sync::Arc;
 use tauri::{async_runtime::Mutex, State};
 
 mod db;
-mod entities;
 mod errors;
 mod log;
 mod plaid;
+mod user_repo;
 
 pub struct DbConnection {
     pub db: Arc<Mutex<DatabaseConnection>>,
@@ -74,10 +74,10 @@ async fn get_transactions() -> () {
 #[specta::specta]
 async fn create_user(state: State<'_, DbConnection>) -> Result<(), ()> {
     println!("run query");
-    let conn = state.db.lock().await;
-    db::create_user(&conn).unwrap_or_else(|error| {
-        println!("Error: {:?}", error);
-    });
+    let db = state.db.lock().await;
+    let user = user_repo::create_user(&db).await.unwrap();
+
+    println!("User: {:?}", user);
 
     Ok(())
 }
@@ -85,8 +85,8 @@ async fn create_user(state: State<'_, DbConnection>) -> Result<(), ()> {
 #[tauri::command]
 #[specta::specta]
 async fn get_users(state: State<'_, DbConnection>) -> Result<(), ()> {
-    let conn = state.db.lock().await;
-    db::get_users(&conn).unwrap();
-
+    let db = state.db.lock().await;
+    let users = user_repo::get_users(&db).await.unwrap();
+    println!("Users: {:?}", users);
     Ok(())
 }

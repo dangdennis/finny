@@ -14,9 +14,7 @@ use sea_orm::{ConnectionTrait, Statement};
 //     db_path
 // }
 
-pub async fn init_connection(
-    app_data_dir: Option<&str>,
-) -> Result<sea_orm::DatabaseConnection, AppError> {
+pub async fn init_connection(app_data_dir: Option<&str>) -> Result<sea_orm::DbConn, AppError> {
     let db_path = {
         match app_data_dir {
             Some(dir) => {
@@ -41,7 +39,7 @@ pub async fn init_connection(
     Ok(db)
 }
 
-pub fn init_db_schema(conn: &sea_orm::DatabaseConnection) -> Result<(), AppError> {
+pub fn init_db_schema(conn: &sea_orm::DbConn) -> Result<(), AppError> {
     // conn.execute(
     //     r"
     //     CREATE SEQUENCE IF NOT EXISTS users_id_seq;",
@@ -61,7 +59,7 @@ pub fn init_db_schema(conn: &sea_orm::DatabaseConnection) -> Result<(), AppError
     Ok(())
 }
 
-pub fn create_user(conn: &sea_orm::DatabaseConnection) -> Result<(), AppError> {
+pub fn create_user(conn: &sea_orm::DbConn) -> Result<(), AppError> {
     // let me = User {
     //     id: 0,
     //     name: "Alice".to_string(),
@@ -78,7 +76,7 @@ pub fn create_user(conn: &sea_orm::DatabaseConnection) -> Result<(), AppError> {
     Ok(())
 }
 
-pub fn get_users(conn: &sea_orm::DatabaseConnection) -> Result<(), AppError> {
+pub fn get_users(conn: &sea_orm::DbConn) -> Result<(), AppError> {
     // let mut stmt = conn.prepare("SELECT id, name, data FROM users")?;
     // let user_iter = stmt.query_map([], |row| {
     //     Ok(User {
