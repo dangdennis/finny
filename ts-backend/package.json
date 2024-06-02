@@ -1,0 +1,28 @@
+{
+  "name": "app",
+  "version": "1.0.50",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "bun run --watch src/index.ts",
+    "tsw": "bunx tsc --watch",
+    "generate": "drizzle-kit generate",
+    "migrate": "drizzle-kit migrate"
+  },
+  "dependencies": {
+    "@elysiajs/bearer": "1.0.2",
+    "@elysiajs/jwt": "1.0.2",
+    "drizzle-orm": "0.30.10",
+    "effect": "3.1.5",
+    "elysia": "1.0.20",
+    "pg": "8.11.5",
+    "plaid": "23.0.0",
+    "postgres": "3.4.4",
+    "zod": "3.23.8"
+  },
+  "devDependencies": {
+    "@types/pg": "8.11.6",
+    "bun-types": "latest",
+    "drizzle-kit": "0.21.2"
+  },
+  "module": "src/index.js"
+}
