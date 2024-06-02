@@ -11,10 +11,10 @@ format:
 	go fmt ./...
 
 r:
-	watchexec --restart --exts go -- make run
+	watchexec --exts go -- make run
 
 b:
-	watchexec --restart --exts go -- make build
+	watchexec --exts go -- make build
 
 f:
-	watchexec --restart --exts go -- make format
+	watchexec --exts go -- make format

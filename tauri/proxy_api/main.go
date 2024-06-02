@@ -1,8 +1,6 @@
 package main
 
 import (
-	"context"
-	"database/sql"
 	"flag"
 	"fmt"
 	"log"
@@ -10,15 +8,13 @@ import (
 	"os"
 	"time"
 
-	// "github.com/joho/godotenv"
-	"github.com/golang-jwt/jwt"
 	"github.com/jmoiron/sqlx"
-	"github.com/plaid/plaid-go/v25/plaid"
-
+	"github.com/joho/godotenv"
+	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-
 	_ "github.com/lib/pq"
+	"github.com/plaid/plaid-go/v25/plaid"
 )
 
 // Options for the CLI. Pass `--port` or set the `SERVICE_PORT` env var.
@@ -26,7 +22,7 @@ type Options struct {
 	Port int `help:"Port to listen on" short:"p" default:"4000"`
 }
 
-type RequestBody struct {
+type TransactionsSyncRequestBody struct {
 	AccessToken string `json:"access_token"`
 }
 
@@ -40,10 +36,6 @@ CREATE TABLE IF NOT EXISTS sync_statuses (
 CREATE INDEX IF NOT EXISTS "ix:sync_statuses.id" ON sync_statuses(user_id uuid_ops);
 `
 
-const DATABASE_URL = "user=postgres.tqonkxhrucymdyndpjzf password=I07R6V4POCTi5wd4 host=aws-0-us-east-1.pooler.supabase.com port=6543 dbname=postgres"
-
-const SUPABASE_JWT_SECRET = "09sUFObcLZHvtRvj5LBqtQomVPuVqOAa/LW2hcdQqyxCwpH9JDOGPwmn6XHMpaxqUPfRWkxTgiB9i4rb1Vwxwg=="
-
 type SyncStatus struct {
 	UserID   string    `db:"user_id"`
 	SyncSeq  int32     `db:"sync_seq"`
@@ -56,44 +48,39 @@ type SyncStatusDto struct {
 	LastSync time.Time `json:"last_sync"`
 }
 
-type User struct {
-	ID    string `db:"id"`
-	Email string `db:"email"`
-}
-
 func main() {
 	port := flag.Int("p", 8080, "Port to listen on")
 	flag.Parse()
-	// err := godotenv.Load()
-	// if err != nil {
-	// 	log.Fatal("Error loading .env file")
-	// }
 
-	// plaidClientID := os.Getenv("PLAID_CLIENT_ID")
-	// plaidEnv := os.Getenv("PLAID_ENV")
-	plaidClientID := "661ac9375307a3001ba2ea46"
-	plaidEnv := "sandbox"
-
-	var plaidSecretString string
-	switch plaidEnv {
-	case "sandbox":
-		// plaidSecretString = os.Getenv("PLAID_SECRET_SANDBOX")
-		plaidSecretString = "57ebac97c0bcf92f35878135d68793"
-	case "development":
-		plaidSecretString = os.Getenv("PLAID_SECRET_DEVELOPMENT")
-	case "production":
-		plaidSecretString = os.Getenv("PLAID_SECRET_PRODUCTION")
+	appEnv := os.Getenv("APP_ENV")
+	if appEnv == "" || appEnv == "development" {
+		err := godotenv.Load(".env")
+		if err != nil {
+			log.Fatal("Error loading .env file")
+		}
 	}
-	if len(plaidClientID) == 0 || len(plaidSecretString) == 0 {
-		log.Fatal("Plaid credentials not set")
+
+	databaseURL := os.Getenv("DATABASE_URL")
+	if databaseURL == "" {
+		log.Fatal("DATABASE_URL env var is required")
+	}
+
+	supabaseJWTSecret := os.Getenv("SUPABASE_JWT_SECRET")
+	if supabaseJWTSecret == "" {
+		log.Fatal("SUPABASE_JWT_SECRET env var is required")
+	}
+
+	plaidCreds, err := GetPlaidCreds()
+	if err != nil {
+		log.Fatal("Error creating Plaid client: ", err)
 	}
 
 	configuration := plaid.NewConfiguration()
-	configuration.AddDefaultHeader("PLAID-CLIENT-ID", plaidClientID)
-	configuration.AddDefaultHeader("PLAID-SECRET", plaidSecretString)
-	configuration.UseEnvironment(plaid.Sandbox)
+	configuration.AddDefaultHeader("PLAID-CLIENT-ID", plaidCreds.ClientID)
+	configuration.AddDefaultHeader("PLAID-SECRET", plaidCreds.Secret)
+	configuration.UseEnvironment(plaidCreds.Env)
 
-	db, err := sqlx.Connect("postgres", DATABASE_URL)
+	db, err := sqlx.Connect("postgres", databaseURL)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -104,53 +91,25 @@ func main() {
 
 	e := echo.New()
 	e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
+	e.Use(echojwt.WithConfig(echojwt.Config{
+		SigningKey: []byte(supabaseJWTSecret),
+	}))
 
 	e.GET("/internal/sync/status", func(c echo.Context) error {
-		token, err := jwt.Parse("eyJhbGciOiJIUzI1NiIsImtpZCI6IlFtdEZUekozSEd4T3ZzL1giLCJ0eXAiOiJKV1QifQ.eyJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzE3MzU5NDkzLCJpYXQiOjE3MTcyNzMwOTMsImlzcyI6Imh0dHBzOi8vdHFvbmt4aHJ1Y3ltZHluZHBqemYuc3VwYWJhc2UuY28vYXV0aC92MSIsInN1YiI6IjNiOTI0ZjM2LTk0ODEtNGVmOC1iNWVlLTM2OGJkYjIyNmUxNCIsImVtYWlsIjoiZGFuZ2dnZGVubmlzQGdtYWlsLmNvbSIsInBob25lIjoiIiwiYXBwX21ldGFkYXRhIjp7InByb3ZpZGVyIjoiZW1haWwiLCJwcm92aWRlcnMiOlsiZW1haWwiXX0sInVzZXJfbWV0YWRhdGEiOnt9LCJyb2xlIjoiYXV0aGVudGljYXRlZCIsImFhbCI6ImFhbDEiLCJhbXIiOlt7Im1ldGhvZCI6Im90cCIsInRpbWVzdGFtcCI6MTcxNzI3MzA5M31dLCJzZXNzaW9uX2lkIjoiMmJjZGY1NmUtNDkyYy00OGNmLTgxYmMtNGMxYmEwOWU4MzgzIiwiaXNfYW5vbnltb3VzIjpmYWxzZX0.myfAyjddlcIe_RtwYVzf0jYXvfehC7b_AVa0Rzn1IRI&expires_at=1717359493&expires_in=86400&refresh_token=UIQFTV-fSMT0IvWgySutkQ&token_type=bearer&type=magiclink", func(token *jwt.Token) (interface{}, error) {
-			// Validate the algorithm used to sign the token matches the expected algorithm
-			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-			}
-			return SUPABASE_JWT_SECRET, nil
-		})
-
-		fmt.Println(token)
-
-		email := token.Claims.(jwt.MapClaims)["email"]
-
-		fmt.Println("email", email)
-
-		user := User{}
-		err = db.Get(&user, "SELECT id, email FROM auth.users WHERE email=$1", email)
+		user, err := GetUserFromCtx(c, db)
 		if err != nil {
-			if err == sql.ErrNoRows {
-				return c.JSON(http.StatusNotFound,
-					map[string]string{"error": "User not found"},
-				)
-			}
 			log.Println(err)
 			return c.JSON(http.StatusBadRequest,
 				map[string]string{"error": "Failed to fetch user"},
 			)
 		}
 
-		fmt.Println("User: ", user)
-
-		syncStatus := SyncStatus{}
-		err = db.Get(&syncStatus, "SELECT user_id, sync_seq, last_sync FROM sync_statuses WHERE user_id=$1", user.ID)
+		syncStatus, err := GetSyncStatus(user, db)
 		if err != nil {
-			if err == sql.ErrNoRows {
-				db.Exec("INSERT INTO sync_statuses (user_id, sync_seq, last_sync) VALUES ($1, 0, $2)", user.ID, time.Now())
-
-				return c.JSON(http.StatusNotFound,
-					map[string]string{"error": "Sync status not found"},
-				)
-			} else {
-				log.Println(err)
-				return c.JSON(http.StatusBadRequest,
-					map[string]string{"error": "Failed to fetch sync status"},
-				)
-			}
+			return c.JSON(http.StatusBadRequest,
+				map[string]string{"error": "Failed to fetch sync status"},
+			)
 		}
 
 		syncStatusDto := SyncStatusDto{
@@ -164,12 +123,25 @@ func main() {
 		return c.JSON(200, syncStatusDto)
 	})
 
-	e.POST("/transactions/sync", func(c echo.Context) error {
-		ctx := context.Background()
+	e.POST("/proxy/transactions/sync", func(c echo.Context) error {
+		user, err := GetUserFromCtx(c, db)
+		if err != nil {
+			log.Println(err)
+			return c.JSON(http.StatusBadRequest,
+				map[string]string{"error": "Failed to fetch user"},
+			)
+		}
 
-		reqBody := new(RequestBody)
-		if err := c.Bind(reqBody); err != nil {
+		reqBody := TransactionsSyncRequestBody{}
+		if err := c.Bind(&reqBody); err != nil {
 			return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request body"})
+		}
+
+		err = IncrementSyncStatus(user, db)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError,
+				map[string]string{"error": "Failed to increment sync status"},
+			)
 		}
 
 		request := plaid.NewTransactionsSyncRequest(
@@ -177,7 +149,7 @@ func main() {
 		)
 
 		transactions, _, err := plaidClient.PlaidApi.
-			TransactionsSync(ctx).
+			TransactionsSync(c.Request().Context()).
 			TransactionsSyncRequest(*request).
 			Execute()
 		if err != nil {

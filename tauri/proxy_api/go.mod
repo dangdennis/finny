@@ -8,10 +8,17 @@ require (
 )
 
 require (
+	github.com/golang-jwt/jwt/v5 v5.0.0 // indirect
+	github.com/joho/godotenv v1.5.1 // indirect
+	github.com/plaid/plaid-go v1.10.0 // indirect
+)
+
+require (
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/jmoiron/sqlx v1.4.0 // indirect
+	github.com/labstack/echo-jwt/v4 v4.2.0
 	github.com/labstack/gommon v0.4.2 // indirect
 	github.com/lib/pq v1.10.9
 	github.com/mattn/go-colorable v0.1.13 // indirect
