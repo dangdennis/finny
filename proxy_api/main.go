@@ -96,6 +96,10 @@ func main() {
 		SigningKey: []byte(supabaseJWTSecret),
 	}))
 
+	e.GET("/", func(c echo.Context) error {
+		return c.String(http.StatusOK, "Hello from Finny! Let's take you back to your app now.")
+	})
+
 	e.GET("/internal/sync/status", func(c echo.Context) error {
 		user, err := GetUserFromCtx(c, db)
 		if err != nil {
