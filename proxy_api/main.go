@@ -22,7 +22,7 @@ type Options struct {
 	Port int `help:"Port to listen on" short:"p" default:"4000"`
 }
 
-type TransactionsSyncRequestBody struct {
+type PlaidAccessTokenRequestBody struct {
 	AccessToken string `json:"access_token"`
 }
 
@@ -132,7 +132,7 @@ func main() {
 			)
 		}
 
-		reqBody := TransactionsSyncRequestBody{}
+		reqBody := PlaidAccessTokenRequestBody{}
 		if err := c.Bind(&reqBody); err != nil {
 			return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request body"})
 		}
@@ -160,6 +160,30 @@ func main() {
 		}
 
 		return c.JSON(200, transactions)
+	})
+
+	e.POST("/proxy/accounts/get", func(c echo.Context) error {
+		reqBody := PlaidAccessTokenRequestBody{}
+		if err := c.Bind(&reqBody); err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request body"})
+		}
+
+		request := plaid.NewAccountsGetRequest(
+			reqBody.AccessToken,
+		)
+
+		accounts, _, err := plaidClient.PlaidApi.
+			AccountsGet(c.Request().Context()).
+			AccountsGetRequest(*request).
+			Execute()
+		if err != nil {
+			log.Println(err)
+			return c.JSON(http.StatusInternalServerError,
+				map[string]string{"error": "Failed to fetch accounts"},
+			)
+		}
+
+		return c.JSON(200, accounts)
 	})
 
 	e.Logger.Fatal(e.Start(fmt.Sprintf("0.0.0.0:%d", *port)))
