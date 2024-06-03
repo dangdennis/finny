@@ -23,7 +23,9 @@ type Options struct {
 }
 
 type PlaidAccessTokenRequestBody struct {
-	AccessToken string `json:"access_token"`
+	AccessToken string  `json:"access_token"`
+	Count       *int32  `json:"count"`
+	Cursor      *string `json:"cursor"`
 }
 
 const SYNC_STATUS_TABLE = `
@@ -34,6 +36,10 @@ CREATE TABLE IF NOT EXISTS sync_statuses (
 );
 
 CREATE INDEX IF NOT EXISTS "ix:sync_statuses.id" ON sync_statuses(user_id uuid_ops);
+`
+
+const PLAID_ITEMS_TABLE = `
+
 `
 
 type SyncStatus struct {
@@ -86,6 +92,7 @@ func main() {
 	}
 
 	db.MustExec(SYNC_STATUS_TABLE)
+	db.MustExec(PLAID_ITEMS_TABLE)
 
 	plaidClient := plaid.NewAPIClient(configuration)
 
@@ -152,6 +159,14 @@ func main() {
 			reqBody.AccessToken,
 		)
 
+		if reqBody.Count != nil {
+			request.SetCount(*reqBody.Count)
+		}
+
+		if reqBody.Cursor != nil {
+			request.SetCursor(*reqBody.Cursor)
+		}
+
 		transactions, _, err := plaidClient.PlaidApi.
 			TransactionsSync(c.Request().Context()).
 			TransactionsSyncRequest(*request).
@@ -189,6 +204,13 @@ func main() {
 
 		return c.JSON(200, accounts)
 	})
+
+	// /proxy/item/get
+	// /proxy/item/remove
+	// /proxy/item/public_token/exchange
+	// /proxy/link/token/create
+	// /proxy/item/public_token/exchange
+	// /proxy/accounts/get
 
 	e.Logger.Fatal(e.Start(fmt.Sprintf("0.0.0.0:%d", *port)))
 }
