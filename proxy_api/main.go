@@ -39,7 +39,16 @@ CREATE INDEX IF NOT EXISTS "ix:sync_statuses.id" ON sync_statuses(user_id uuid_o
 `
 
 const PLAID_ITEMS_TABLE = `
+CREATE TABLE IF NOT EXISTS plaid_items (
+	plaid_item_id text PRIMARY KEY,
+	user_id uuid REFERENCES auth.users(id) not null,
+	access_token text not null,
+	status text not null,
+	created_at timestamp not null default now(),
+	updated_at timestamp not null default now()
+)
 
+CREATE INDEX IF NOT EXISTS "ix:plaid_items.user_id" ON plaid_items(user_id uuid_ops);
 `
 
 type SyncStatus struct {
