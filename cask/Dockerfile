@@ -1,8 +1,6 @@
 # First stage: build dependencies
-# FROM hseeberger/scala-sbt:11.0.13_1.5.5_2.13.7 as builder
 FROM sbtscala/scala-sbt:eclipse-temurin-jammy-17.0.10_7_1.10.0_3.4.2 as builder
 
-# Set the working directory inside the container.
 WORKDIR /app
 
 # Copy the build definition files
@@ -17,14 +15,12 @@ RUN curl -L https://github.com/com-lihaoyi/mill/releases/download/0.11.6/0.11.6 
 # Build the dependencies first to cache them
 RUN mill app.compile
 
-# Second stage: build the application
-# FROM hseeberger/scala-sbt:11.0.13_1.5.5_2.13.7
+# Second stage: package the application into a single JAR
 FROM sbtscala/scala-sbt:eclipse-temurin-jammy-17.0.10_7_1.10.0_3.4.2 as assembly
 
-# Set the working directory inside the container.
 WORKDIR /app
 
-# Copy the build definition files again
+# Copy the build definition files
 COPY build.sc ./
 COPY mill ./mill
 COPY app ./app
@@ -36,9 +32,10 @@ COPY --from=builder /app/out /app/out
 RUN curl -L https://github.com/com-lihaoyi/mill/releases/download/0.11.6/0.11.6 > /usr/local/bin/mill && \
     chmod +x /usr/local/bin/mill
 
-# Build the application
+# Package the application into a single JAR
 RUN mill app.assembly
-
+    
+# Third stage: run the application in a minimal image
 FROM azul/zulu-openjdk-alpine:22-jre-headless as runner
 
 WORKDIR /app
