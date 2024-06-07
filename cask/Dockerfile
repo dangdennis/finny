@@ -39,7 +39,7 @@ RUN curl -L https://github.com/com-lihaoyi/mill/releases/download/0.11.6/0.11.6 
 # Build the application
 RUN mill app.assembly
 
-FROM eclipse-temurin:22.0.1_8-jre as runner
+FROM azul/zulu-openjdk-alpine:22-jre-headless as runner
 
 WORKDIR /app
 
