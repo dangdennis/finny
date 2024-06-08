@@ -25,3 +25,13 @@ sbt run # run the application (Main)
 * [tapir github](https://github.com/softwaremill/tapir)
 * [bootzooka: template microservice using tapir](https://softwaremill.github.io/bootzooka/)
 * [sbtx wrapper](https://github.com/dwijnand/sbt-extras#installation)
+
+## Troubleshooting
+
+```
+# If mill can't build due to incorrect java version
+
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/temurin-21.jdk/Contents/Home
+export PATH=$JAVA_HOME/bin:$PATH
+
+```

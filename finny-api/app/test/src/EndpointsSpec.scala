@@ -1,6 +1,7 @@
-package com.belmont
 
-import com.belmont.Endpoints.{*, given}
+package app
+
+import app.Endpoints.{*, given}
 import org.scalatest.EitherValues
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -21,7 +22,7 @@ class EndpointsSpec extends AnyFlatSpec with Matchers with EitherValues:
 
     // when
     val response = basicRequest
-      .get(uri"http://test.com/hello?name=adam")
+      .get(uri"http://test.com/hello333?name=adam")
       .send(backendStub)
 
     // then

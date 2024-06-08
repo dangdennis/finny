@@ -1,4 +1,4 @@
-package com.belmont
+package app
 
 import sttp.tapir.*
 
