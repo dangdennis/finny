@@ -12,19 +12,21 @@ object Main {
     var appEnv = sys.env.getOrElse("APP_ENV", "development")
     val port = sys.env.get("HTTP_PORT").flatMap(_.toIntOption).getOrElse(8080)
 
-    appEnv match {
-      case "development" =>
-        println(s"Running in development mode.")
-      case "production" =>
-        println(s"Running in production mode.")
-      case _ =>
-        println(s"Running in unknown mode.")
-    }
-
     supervised {
       val binding = useInScope(NettySyncServer(serverOptions).host("0.0.0.0").port(port).addEndpoints(Endpoints.all).start())(_.stop())
-      println(s"Go to http://localhost:${binding.port}/docs to open SwaggerUI.")
-      never
+      println(s"Go to http://0.0.0.0:${binding.port}/docs to open SwaggerUI.")
+
+      appEnv match
+        case "development" =>
+          println(s"Running in development mode.")
+          println(s"Press Enter to stop the server.")
+          scala.io.StdIn.readLine()
+        case "production" =>
+          println(s"Running in production mode.")
+          never
+        case _ =>
+          println(s"Running in unknown mode.")
+      
     }
   }
 

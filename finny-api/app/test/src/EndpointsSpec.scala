@@ -22,7 +22,7 @@ class EndpointsSpec extends AnyFlatSpec with Matchers with EitherValues:
 
     // when
     val response = basicRequest
-      .get(uri"http://test.com/hello333?name=adam")
+      .get(uri"http://test.com/hello?name=adam")
       .send(backendStub)
 
     // then

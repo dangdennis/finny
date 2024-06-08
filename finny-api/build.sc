@@ -12,7 +12,7 @@ object app extends ScalaModule {
     ivy"com.plaid:plaid-java:23.0.0"
   )
 
-  object test extends ScalaTests with TestModule.Utest {
+  object test extends ScalaTests with TestModule.ScalaTest {
     def ivyDeps = Agg(
       ivy"com.softwaremill.sttp.tapir::tapir-sttp-stub-server:1.10.6",
       ivy"org.scalatest::scalatest:3.2.18",
