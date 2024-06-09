@@ -2,10 +2,10 @@ run:
 	go run . -p 8000
 
 build:
-	go build -o bin/main main.go
+	go build -o bin/main .
 
 build-release:
-	go build -o bin/main -ldflags "-s -w" main.go
+	go build -o bin/main -ldflags "-s -w" .
 
 format:
 	go fmt ./...
