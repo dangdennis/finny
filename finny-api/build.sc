@@ -4,7 +4,7 @@ object app extends ScalaModule {
   def scalaVersion = "3.4.2"
 
   def ivyDeps = Agg(
-    ivy"com.softwaremill.sttp.tapir::tapir-netty-server:1.10.6",
+    ivy"com.softwaremill.sttp.tapir::tapir-netty-server-sync:1.10.6",
     ivy"com.softwaremill.sttp.tapir::tapir-prometheus-metrics:1.10.6",
     ivy"com.softwaremill.sttp.tapir::tapir-swagger-ui-bundle:1.10.6",
     ivy"com.softwaremill.sttp.tapir::tapir-json-upickle:1.10.6",

@@ -1,27 +1,34 @@
 package app
 
-import sttp.tapir.server.netty.{NettyFutureServer, NettyFutureServerOptions}
-
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, ExecutionContext, Future}
+import ox.*
+import sttp.tapir.server.netty.sync.{NettySyncServer, NettySyncServerOptions}
 import scala.io.StdIn
-import ExecutionContext.Implicits.global
 
-@main def run(): Unit =
+object Main {
+  def main(args: Array[String]): Unit = {
+    val serverOptions = NettySyncServerOptions.customiseInterceptors
+      .metricsInterceptor(Endpoints.prometheusMetrics.metricsInterceptor())
+      .options
 
-  val serverOptions = NettyFutureServerOptions.customiseInterceptors
-    .metricsInterceptor(Endpoints.prometheusMetrics.metricsInterceptor())
-    .options
+    var appEnv = sys.env.getOrElse("APP_ENV", "development")
+    val port = sys.env.get("HTTP_PORT").flatMap(_.toIntOption).getOrElse(8080)
 
-  val port = sys.env.get("HTTP_PORT").flatMap(_.toIntOption).getOrElse(8080)
-  val program =
-    for
-      binding <- NettyFutureServer(serverOptions).port(port).addEndpoints(Endpoints.all).start()
-      _ <- Future {
-        println(s"Go to http://localhost:${binding.port}/docs to open SwaggerUI. Press ENTER key to exit.")
-        StdIn.readLine()
-      }
-      stop <- binding.stop()
-    yield stop
+    supervised {
+      val binding = useInScope(NettySyncServer(serverOptions).host("0.0.0.0").port(port).addEndpoints(Endpoints.all).start())(_.stop())
+      println(s"Go to http://0.0.0.0:${binding.port}/docs to open SwaggerUI.")
 
-  Await.result(program, Duration.Inf)
+      appEnv match
+        case "development" =>
+          println(s"Running in development mode.")
+          println("Press Enter to stop the server.")
+          StdIn.readLine()
+        case "production" =>
+          println(s"Running in production mode.")
+          never
+        case _ =>
+          println(s"Running in unknown mode.")
+          never
+    }
+  }
+
+}
