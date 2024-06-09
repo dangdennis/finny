@@ -3,11 +3,11 @@ package app
 import sttp.tapir.*
 
 import Library.*
+import sttp.shared.Identity
 import sttp.tapir.generic.auto.*
 import sttp.tapir.json.upickle.*
 import sttp.tapir.server.ServerEndpoint
 import sttp.tapir.server.metrics.prometheus.PrometheusMetrics
-import sttp.tapir.server.netty.sync.Id
 import sttp.tapir.swagger.bundle.SwaggerInterpreter
 import upickle.default.*
 import scala.concurrent.Future
@@ -54,21 +54,8 @@ object Endpoints:
     .in("")
     .out(stringBody)
 
-  var indexServerEndpoint: ServerEndpoint[Any, Id] = indexEndpoint.serverLogic(_ =>
+  var indexServerEndpoint: ServerEndpoint[Any, Identity] = indexEndpoint.serverLogic(_ =>
     val () = UserRepository.getUsers()
-
-    // val futureResponse = Future {
-    //   val plaidClient = makePlaidClient()
-
-    //   val institutionsReq = plaidClient.institutionsGet(
-    //     new InstitutionsGetRequest()
-    //       .count(500)
-    //       .addCountryCodesItem(CountryCode.US)
-    //       .offset(0)
-    //   )
-
-    //   institutionsReq.execute()
-    // }
 
     Right("Hello, world!")
   )
@@ -77,22 +64,22 @@ object Endpoints:
     .in("hello")
     .in(query[User]("name"))
     .out(stringBody)
-  val helloServerEndpoint: ServerEndpoint[Any, Id] = helloEndpoint.serverLogicSuccess(user => s"Hello ${user.name}")
+  val helloServerEndpoint: ServerEndpoint[Any, Identity] = helloEndpoint.serverLogicSuccess(user => s"Hello ${user.name}")
 
   val booksListing: PublicEndpoint[Unit, Unit, List[Book], Any] = endpoint.get
     .in("books" / "list" / "all")
     .out(jsonBody[List[Book]])
-  val booksListingServerEndpoint: ServerEndpoint[Any, Id] = booksListing.serverLogicSuccess(_ => (Library.books))
+  val booksListingServerEndpoint: ServerEndpoint[Any, Identity] = booksListing.serverLogicSuccess(_ => (Library.books))
 
-  val apiEndpoints: List[ServerEndpoint[Any, Id]] = List(helloServerEndpoint, booksListingServerEndpoint, indexServerEndpoint)
+  val apiEndpoints: List[ServerEndpoint[Any, Identity]] = List(helloServerEndpoint, booksListingServerEndpoint, indexServerEndpoint)
 
-  val docEndpoints: List[ServerEndpoint[Any, Id]] = SwaggerInterpreter()
-    .fromServerEndpoints[Id](apiEndpoints, "finny-api", "1.0.0")
+  val docEndpoints: List[ServerEndpoint[Any, Identity]] = SwaggerInterpreter()
+    .fromServerEndpoints[Identity](apiEndpoints, "finny-api", "1.0.0")
 
-  val prometheusMetrics: PrometheusMetrics[Id] = PrometheusMetrics.default[Id]()
-  val metricsEndpoint: ServerEndpoint[Any, Id] = prometheusMetrics.metricsEndpoint
+  val prometheusMetrics: PrometheusMetrics[Identity] = PrometheusMetrics.default[Identity]()
+  val metricsEndpoint: ServerEndpoint[Any, Identity] = prometheusMetrics.metricsEndpoint
 
-  val all: List[ServerEndpoint[Any, Id]] = apiEndpoints ++ docEndpoints ++ List(metricsEndpoint)
+  val all: List[ServerEndpoint[Any, Identity]] = apiEndpoints ++ docEndpoints ++ List(metricsEndpoint)
 
 object Library:
   case class Author(name: String)
