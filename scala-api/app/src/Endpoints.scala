@@ -1,7 +1,7 @@
 package app
 
-import app.handlers._
 import app.dtos._
+import app.handlers._
 import com.plaid.client.ApiClient
 import com.plaid.client.request.PlaidApi
 import sttp.shared.Identity

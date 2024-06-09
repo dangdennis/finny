@@ -1,13 +1,19 @@
 package app.services
 
 import com.plaid.client.ApiClient
-import com.plaid.client.model.Institution
+import com.plaid.client.model.CountryCode
+import com.plaid.client.model.LinkTokenCreateRequest
+import com.plaid.client.model.Products
 import com.plaid.client.request.PlaidApi
-import upickle.default._
 
 import scala.collection.JavaConverters._
+import scala.util.Failure
+import scala.util.Success
+import scala.util.Try
 
 object PlaidService:
+  lazy val client = makePlaidClient()
+
   def makePlaidClient() =
     val apiClient = new ApiClient(
       Map(
@@ -16,19 +22,16 @@ object PlaidService:
         "plaidVersion" -> "2020-09-14"
       ).asJava
     )
-
     apiClient.setPlaidAdapter(ApiClient.Sandbox)
-
     apiClient.createService(classOf[PlaidApi])
 
-  case class InstitutionWrapper(id: String, name: String, url: Option[String])
-
-  object InstitutionWrapper:
-    implicit val rw: ReadWriter[InstitutionWrapper] = macroRW
-
-    def fromPlaidInstitution(inst: Institution): InstitutionWrapper =
-      InstitutionWrapper(
-        id = inst.getInstitutionId,
-        name = inst.getName,
-        url = Option(inst.getUrl)
+  def createLinkToken(): Try[String] =
+    val req = LinkTokenCreateRequest()
+      .products(
+        List(Products.TRANSACTIONS, Products.INVESTMENTS, Products.RECURRING_TRANSACTIONS, Products.BALANCE).asJava
       )
+      .countryCodes(List(CountryCode.US).asJava)
+    val response = client.linkTokenCreate(req).execute()
+    response.isSuccessful() match
+      case true  => Success(response.body().getLinkToken())
+      case false => Failure(new Exception(response.errorBody().string()))
