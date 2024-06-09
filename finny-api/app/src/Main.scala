@@ -1,11 +1,9 @@
 package app
 
-import scala.io.StdIn
+import app.database.Database
 import io.helidon.webserver.WebServer
 import sttp.tapir._
-import sttp.shared.Identity
 import sttp.tapir.server.nima.NimaServerInterpreter
-import app.database.Database
 
 object Main {
   def main(args: Array[String]): Unit = {

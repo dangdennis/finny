@@ -1,25 +1,21 @@
 package app
 
-import sttp.tapir.*
-
-import Library.*
+import app.repositories.UserRepository
+import com.plaid.client.ApiClient
+import com.plaid.client.model.Institution
+import com.plaid.client.request.PlaidApi
 import sttp.shared.Identity
-import sttp.tapir.generic.auto.*
-import sttp.tapir.json.upickle.*
+import sttp.tapir._
+import sttp.tapir.generic.auto._
+import sttp.tapir.json.upickle._
 import sttp.tapir.server.ServerEndpoint
 import sttp.tapir.server.metrics.prometheus.PrometheusMetrics
 import sttp.tapir.swagger.bundle.SwaggerInterpreter
-import upickle.default.*
-import scala.concurrent.Future
-import com.plaid.client.ApiClient
-import scala.collection.JavaConverters._
-import com.plaid.client.request.PlaidApi
 import upickle.default._
-import com.plaid.client.model.Institution
-import com.plaid.client.model.InstitutionsGetRequest
-import com.plaid.client.model.CountryCode
-import scala.concurrent.ExecutionContext.Implicits.global
-import app.repositories.UserRepository
+
+import scala.collection.JavaConverters._
+
+import Library._
 
 def makePlaidClient() = {
   val apiClient = new ApiClient(

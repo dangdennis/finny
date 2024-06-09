@@ -1,10 +1,11 @@
 package app.services
 
 import com.plaid.client.ApiClient
-import scala.collection.JavaConverters._
-import com.plaid.client.request.PlaidApi
-import upickle.default.*
 import com.plaid.client.model.Institution
+import com.plaid.client.request.PlaidApi
+import upickle.default._
+
+import scala.collection.JavaConverters._
 
 def makePlaidClient() = {
   val apiClient = new ApiClient(

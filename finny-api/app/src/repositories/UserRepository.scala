@@ -1,7 +1,7 @@
 package app.repositories
 
-import scalikejdbc._
 import app.models.User
+import scalikejdbc._
 
 object UserRepository {
   def getUsers(): Unit = {

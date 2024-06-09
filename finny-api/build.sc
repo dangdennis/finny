@@ -1,6 +1,8 @@
 import mill._, scalalib._
+import $ivy.`com.goyeau::mill-scalafix::0.4.0`
+import com.goyeau.mill.scalafix.ScalafixModule
 
-object app extends ScalaModule {
+object app extends ScalaModule with ScalafixModule {
   def scalaVersion = "3.4.2"
 
   def ivyDeps = Agg(
@@ -17,10 +19,17 @@ object app extends ScalaModule {
     ivy"org.scalikejdbc::scalikejdbc:4.3.0"
   )
 
-  object test extends ScalaTests with TestModule.ScalaTest {
+  object test extends ScalaTests with TestModule.ScalaTest with ScalafixModule {
     def ivyDeps = Agg(
       ivy"com.softwaremill.sttp.tapir::tapir-sttp-stub-server:1.10.8",
       ivy"org.scalatest::scalatest:3.2.18"
+    )
+  }
+
+  // Add Scala compiler options
+  def scalacOptions = T {
+    super.scalacOptions() ++ Seq(
+      "-Wunused:imports" // For Scala 2.13 and 3.4+
     )
   }
 

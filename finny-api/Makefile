@@ -10,6 +10,9 @@ assembly:
 test:
 	./mill app.test
 
+fix:
+	./mill app.fix
+
 r:
 	./mill -w app.run
 
