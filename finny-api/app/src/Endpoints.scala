@@ -2,7 +2,6 @@ package app
 
 import app.repositories.UserRepository
 import com.plaid.client.ApiClient
-import com.plaid.client.model.Institution
 import com.plaid.client.request.PlaidApi
 import sttp.shared.Identity
 import sttp.tapir._
@@ -17,7 +16,7 @@ import scala.collection.JavaConverters._
 
 import Library._
 
-def makePlaidClient() = {
+def makePlaidClient() =
   val apiClient = new ApiClient(
     Map(
       "clientId" -> "661ac9375307a3001ba2ea46",
@@ -29,20 +28,6 @@ def makePlaidClient() = {
   apiClient.setPlaidAdapter(ApiClient.Sandbox)
 
   apiClient.createService(classOf[PlaidApi])
-}
-
-case class InstitutionWrapper(id: String, name: String, url: Option[String])
-object InstitutionWrapper {
-  implicit val rw: ReadWriter[InstitutionWrapper] = macroRW
-
-  def fromPlaidInstitution(inst: Institution): InstitutionWrapper = {
-    InstitutionWrapper(
-      id = inst.getInstitutionId,
-      name = inst.getName,
-      url = Option(inst.getUrl)
-    )
-  }
-}
 
 object Endpoints:
   case class User(name: String) extends AnyVal
