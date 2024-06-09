@@ -21,14 +21,17 @@ object Main {
       case _ =>
         println(s"Running in unknown mode.")
 
-    WebServer
+    val server = WebServer
       .builder()
       .routing { builder =>
         builder.any(handler)
         ()
       }
+      .host("0.0.0.0")
       .port(port)
       .build()
       .start()
+
+    println(s"Server started at: http://0.0.0.0:${server.port()}")
   }
 }

@@ -29,7 +29,7 @@ object app extends ScalaModule with ScalafixModule {
   // Add Scala compiler options
   def scalacOptions = T {
     super.scalacOptions() ++ Seq(
-      "-Wunused:imports" // For Scala 2.13 and 3.4+
+      "-Wunused:imports"
     )
   }
 
