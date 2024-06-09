@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS plaid_items (
 	status text not null,
 	created_at timestamp not null default now(),
 	updated_at timestamp not null default now()
-)
+);
 
 CREATE INDEX IF NOT EXISTS "ix:plaid_items.user_id" ON plaid_items(user_id uuid_ops);
 `
@@ -117,7 +117,7 @@ func main() {
 	})
 
 	e.GET("/internal/sync/status", func(c echo.Context) error {
-		user, err := GetUserFromCtx(c, db)
+		user, err := GetContextUser(c, db)
 		if err != nil {
 			log.Println(err)
 			return c.JSON(http.StatusBadRequest,
@@ -144,7 +144,7 @@ func main() {
 	})
 
 	e.POST("/proxy/transactions/sync", func(c echo.Context) error {
-		user, err := GetUserFromCtx(c, db)
+		user, err := GetContextUser(c, db)
 		if err != nil {
 			log.Println(err)
 			return c.JSON(http.StatusBadRequest,

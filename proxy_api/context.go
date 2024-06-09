@@ -8,7 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func GetUserFromCtx(c echo.Context, db *sqlx.DB) (*User, error) {
+func GetContextUser(c echo.Context, db *sqlx.DB) (*User, error) {
 	token, ok := c.Get("user").(*jwt.Token)
 	if !ok {
 		return nil, errors.New("failed to cast token as jwt.Token")
