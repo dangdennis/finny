@@ -3,5 +3,5 @@ package app.handlers
 
 
 object IndexHandler:
-  def handler(): Either[Unit, String] =
+  def handleIndex(): Either[Unit, String] =
     Right("Hello world!")

@@ -1,10 +1,12 @@
 package app
 
 import app.handlers._
+import app.dtos._
 import com.plaid.client.ApiClient
 import com.plaid.client.request.PlaidApi
 import sttp.shared.Identity
 import sttp.tapir._
+import sttp.tapir.json.upickle._
 import sttp.tapir.server.ServerEndpoint
 import sttp.tapir.server.metrics.prometheus.PrometheusMetrics
 import sttp.tapir.swagger.bundle.SwaggerInterpreter
@@ -29,9 +31,24 @@ object Endpoints:
     .in("")
     .out(stringBody)
 
-  val indexServerEndpoint: ServerEndpoint[Any, Identity] = indexEndpoint.handle(_ => IndexHandler.handler())
+  val indexServerEndpoint = indexEndpoint.handle(_ => IndexHandler.handleIndex())
 
-  val apiEndpoints: List[ServerEndpoint[Any, Identity]] = List(indexServerEndpoint)
+  val plaidItemLinkEndpoint = endpoint.post
+    .in("plaid-item" / "create")
+    .in(jsonBody[DTOs.PlaidItemCreateRequest])
+    .out(jsonBody[DTOs.PlaidItemCreateResponse])
+
+  val plaidItemCreateServerEndpoint = plaidItemLinkEndpoint.handle(_ => PlaidItemHandler.handlePlaidItemCreate())
+
+  val plaidLinkCreateEndpoint = endpoint.post
+    .in("plaid-link" / "create")
+    .in(jsonBody[DTOs.PlaidLinkCreateRequest])
+    .out(jsonBody[DTOs.PlaidLinkCreateResponse])
+
+  val plaidLinkCreateServerEndpoint = plaidLinkCreateEndpoint.handle(_ => PlaidLinkHandler.handler())
+
+  val apiEndpoints: List[ServerEndpoint[Any, Identity]] =
+    List(indexServerEndpoint, plaidItemCreateServerEndpoint, plaidLinkCreateServerEndpoint)
   val docEndpoints: List[ServerEndpoint[Any, Identity]] = SwaggerInterpreter()
     .fromServerEndpoints[Identity](apiEndpoints, "finny-api", "1.0.0")
   val prometheusMetrics: PrometheusMetrics[Identity] = PrometheusMetrics.default[Identity]()
