@@ -1,3 +1,6 @@
+# application specific entries
+.env
+
 # common IDEs to be ignored
 .idea/
 .metals/
