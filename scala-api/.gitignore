@@ -9,3 +9,6 @@ target
 metals.sbt
 project/project
 out/
+
+# node/npm specific entries
+node_modules/

@@ -1,5 +1,9 @@
 ## Quick start
 
+## Installation
+1. Install [scala](https://www.scala-lang.org/download/)
+2. Install [bun](https://bun.sh)
+
 If you don't have [sbt](https://www.scala-sbt.org) installed already, you can use the provided wrapper script:
 
 ```shell

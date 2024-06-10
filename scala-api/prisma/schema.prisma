@@ -1,0 +1,172 @@
+generator db {
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["public", "auth"]
+}
+
+model accounts {
+  id                       String         @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  item_id                  String         @db.Uuid
+  user_id                  String         @db.Uuid
+  plaid_account_id         String         @unique(map: "uq:accounts.plaid_account_id")
+  name                     String
+  mask                     String?
+  official_name            String?
+  current_balance          Float          @default(0)
+  available_balance        Float          @default(0)
+  iso_currency_code        String?
+  unofficial_currency_code String?
+  type                     String?
+  subtype                  String?
+  created_at               DateTime       @default(now()) @db.Timestamptz(6)
+  updated_at               DateTime       @default(now()) @db.Timestamptz(6)
+  deleted_at               DateTime?      @db.Timestamptz(6)
+  plaid_items              plaid_items    @relation(fields: [item_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users                    users          @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  transactions             transactions[]
+
+  @@index([user_id], map: "ix:accounts.user_id")
+  @@schema("public")
+}
+
+model assets {
+  id          String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  user_id     String    @db.Uuid
+  value       Float
+  description String
+  created_at  DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime  @default(now()) @db.Timestamptz(6)
+  deleted_at  DateTime? @db.Timestamptz(6)
+  users       users     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([user_id], map: "ix:assets.user_id")
+  @@schema("public")
+}
+
+model goals {
+  id          String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name        String
+  amount      Float
+  target_date DateTime  @db.Timestamptz(6)
+  user_id     String    @db.Uuid
+  progress    Float     @default(0)
+  created_at  DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime  @default(now()) @db.Timestamptz(6)
+  deleted_at  DateTime? @db.Timestamptz(6)
+  users       users     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([user_id], map: "ix:goals.user_id")
+  @@schema("public")
+}
+
+model plaid_api_events {
+  id           String      @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  item_id      String      @db.Uuid
+  user_id      String      @db.Uuid
+  plaid_method String
+  arguments    String?
+  request_id   String?     @unique(map: "uq:plaid_api_events.request_id")
+  error_type   String?
+  error_code   String?
+  created_at   DateTime    @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime    @default(now()) @db.Timestamptz(6)
+  deleted_at   DateTime?   @db.Timestamptz(6)
+  plaid_items  plaid_items @relation(fields: [item_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users        users       @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([item_id], map: "ix:plaid_api_events.item_id")
+  @@schema("public")
+}
+
+model plaid_items {
+  id                   String             @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  user_id              String             @db.Uuid
+  plaid_access_token   String             @unique(map: "uq:plaid_items.plaid_access_token")
+  plaid_item_id        String             @unique(map: "uq:plaid_items.plaid_item_id")
+  plaid_institution_id String
+  status               String
+  transactions_cursor  String?
+  created_at           DateTime           @default(now()) @db.Timestamptz(6)
+  updated_at           DateTime           @default(now()) @db.Timestamptz(6)
+  deleted_at           DateTime?          @db.Timestamptz(6)
+  accounts             accounts[]
+  plaid_api_events     plaid_api_events[]
+  users                users              @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([user_id], map: "ix:plaid_items.user_id")
+  @@schema("public")
+}
+
+model plaid_link_events {
+  id              String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  type            String
+  user_id         String    @db.Uuid
+  link_session_id String?
+  request_id      String?   @unique(map: "uq:plaid_link_events.request_id")
+  error_type      String?
+  error_code      String?
+  status          String?
+  created_at      DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime  @default(now()) @db.Timestamptz(6)
+  deleted_at      DateTime? @db.Timestamptz(6)
+  users           users     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([user_id], map: "ix:plaid_link_events.user_id")
+  @@schema("public")
+}
+
+model transactions {
+  id                       String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  account_id               String    @db.Uuid
+  plaid_transaction_id     String    @unique(map: "uq:transactions.plaid_transaction_id")
+  category                 String?
+  subcategory              String?
+  type                     String
+  name                     String
+  amount                   Float
+  iso_currency_code        String?
+  unofficial_currency_code String?
+  date                     DateTime  @db.Date
+  pending                  Boolean
+  account_owner            String?
+  created_at               DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at               DateTime  @default(now()) @db.Timestamptz(6)
+  deleted_at               DateTime? @db.Timestamptz(6)
+  accounts                 accounts  @relation(fields: [account_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([account_id], map: "ix:transactions.account_id")
+  @@schema("public")
+}
+
+model users {
+  id                   String              @id @default(uuid())
+  aud                  String
+  role                 String
+  email                String              @unique
+  encrypted_password   String?
+  email_confirmed_at   DateTime?
+  invited_at           DateTime?
+  confirmation_token   String?
+  confirmation_sent_at DateTime?
+  recovery_token       String?
+  recovery_sent_at     DateTime?
+  last_sign_in_at      DateTime?
+  raw_app_meta_data    Json
+  raw_user_meta_data   Json
+  created_at           DateTime            @default(now())
+  updated_at           DateTime            @updatedAt
+  accounts             accounts[]
+  assets               assets[]
+  goals                goals[]
+  plaid_api_events     plaid_api_events[]
+  plaid_items          plaid_items[]
+  plaid_link_events    plaid_link_events[]
+
+  @@map("users")
+  @@schema("auth")
+}
