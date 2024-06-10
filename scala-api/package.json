@@ -9,5 +9,5 @@
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
-  "dependencies": {}
+  "dependencies": { "@prisma/client": "5.15.0" }
 }
