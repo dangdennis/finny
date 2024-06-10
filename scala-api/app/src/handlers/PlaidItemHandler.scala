@@ -1,9 +1,10 @@
 package app.handlers
 
 import app.dtos._
+import app.models._
 
 object PlaidItemHandler:
-  def handlePlaidItemCreate(): Either[Unit, DTOs.PlaidItemCreateResponse] = Right(
+  def handlePlaidItemCreate(user: User): Either[AuthenticationError, DTOs.PlaidItemCreateResponse] = Right(
     DTOs.PlaidItemCreateResponse(
       itemId = "123456",
       institutionId = "ins_123456",

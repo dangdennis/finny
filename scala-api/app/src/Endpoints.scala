@@ -2,8 +2,7 @@ package app
 
 import app.dtos._
 import app.handlers._
-import com.plaid.client.ApiClient
-import com.plaid.client.request.PlaidApi
+import app.models._
 import sttp.shared.Identity
 import sttp.tapir._
 import sttp.tapir.json.upickle._
@@ -13,45 +12,45 @@ import sttp.tapir.swagger.bundle.SwaggerInterpreter
 
 import scala.collection.JavaConverters._
 
-def makePlaidClient() =
-  val apiClient = new ApiClient(
-    Map(
-      "clientId" -> "661ac9375307a3001ba2ea46",
-      "secret" -> "57ebac97c0bcf92f35878135d68793",
-      "plaidVersion" -> "2020-09-14"
-    ).asJava
-  )
-
-  apiClient.setPlaidAdapter(ApiClient.Sandbox)
-
-  apiClient.createService(classOf[PlaidApi])
-
 object Endpoints:
-  val indexEndpoint = endpoint.get
+  def authenticate(token: AuthenticationToken): Either[AuthenticationError, User] =
+    // todo: decode JWT here and return user
+    if (token.value == "berries") Right(User(id = "Papa Smurf"))
+    else if (token.value == "smurf") Right(User(id = "Gargamel"))
+    else Left(AuthenticationError(404))
+
+  val base = endpoint.in("api").tag("Finny API")
+
+  val secureEndpoint = base
+    .securityIn(auth.bearer[String]().mapTo[AuthenticationToken])
+    .errorOut(plainBody[Int].mapTo[AuthenticationError])
+    .handleSecurity(authenticate)
+
+  val indexEndpoint = base.get
     .in("")
     .out(stringBody)
 
   val indexServerEndpoint = indexEndpoint.handle(_ => IndexHandler.handleIndex())
 
-  val plaidItemLinkEndpoint = endpoint.post
-    .in("plaid-item" / "create")
+  val plaidItemLinkEndpoint = secureEndpoint.post
+    .in("plaid-items" / "create")
     .in(jsonBody[DTOs.PlaidItemCreateRequest])
     .out(jsonBody[DTOs.PlaidItemCreateResponse])
 
-  val plaidItemCreateServerEndpoint = plaidItemLinkEndpoint.handle(_ => PlaidItemHandler.handlePlaidItemCreate())
+  val plaidItemCreateServerEndpoint = plaidItemLinkEndpoint
+    .handle(user => _ => PlaidItemHandler.handlePlaidItemCreate(user))
 
-  val plaidLinkCreateEndpoint = endpoint.post
-    .in("plaid-link" / "create")
+  val plaidLinkCreateEndpoint = secureEndpoint.post
+    .in("plaid-links" / "create")
     .in(jsonBody[DTOs.PlaidLinkCreateRequest])
     .out(jsonBody[DTOs.PlaidLinkCreateResponse])
 
-  val plaidLinkCreateServerEndpoint = plaidLinkCreateEndpoint.handle(_ => PlaidLinkHandler.handler())
+  val plaidLinkCreateServerEndpoint = plaidLinkCreateEndpoint.handle(p1 => p2 => PlaidLinkHandler.handler())
 
-  val apiEndpoints: List[ServerEndpoint[Any, Identity]] =
-    List(indexServerEndpoint, plaidItemCreateServerEndpoint, plaidLinkCreateServerEndpoint)
-  val docEndpoints: List[ServerEndpoint[Any, Identity]] = SwaggerInterpreter()
-    .fromServerEndpoints[Identity](apiEndpoints, "finny-api", "1.0.0")
-  val prometheusMetrics: PrometheusMetrics[Identity] = PrometheusMetrics.default[Identity]()
-  val metricsEndpoint: ServerEndpoint[Any, Identity] = prometheusMetrics.metricsEndpoint
+  val secureServerEndpoints = List(plaidItemCreateServerEndpoint, plaidLinkCreateServerEndpoint)
+  val serverEndpoints = List(indexServerEndpoint) ++ secureServerEndpoints
+  val docEndpoints = SwaggerInterpreter()
+    .fromServerEndpoints[Identity](serverEndpoints, "finny-api", "1.0.0")
+  val metricsEndpoint: ServerEndpoint[Any, Identity] = PrometheusMetrics.default[Identity]().metricsEndpoint
 
-  val all: List[ServerEndpoint[Any, Identity]] = apiEndpoints ++ docEndpoints ++ List(metricsEndpoint)
+  val all = serverEndpoints ++ docEndpoints ++ List(metricsEndpoint)
