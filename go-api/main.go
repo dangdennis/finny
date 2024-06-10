@@ -1,20 +1,22 @@
 package main
 
 import (
-	"flag"
+	"context"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
-	"time"
 
-	"github.com/jmoiron/sqlx"
+	"github.com/finny/backend/prisma/db"
 	"github.com/joho/godotenv"
-	echojwt "github.com/labstack/echo-jwt/v4"
+	"github.com/plaid/plaid-go/v25/plaid"
+
+	"github.com/danielgtaylor/huma/v2"
+	"github.com/danielgtaylor/huma/v2/adapters/humaecho"
+	_ "github.com/danielgtaylor/huma/v2/formats/cbor"
+	"github.com/danielgtaylor/huma/v2/humacli"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	_ "github.com/lib/pq"
-	"github.com/plaid/plaid-go/v25/plaid"
 )
 
 // Options for the CLI. Pass `--port` or set the `SERVICE_PORT` env var.
@@ -28,45 +30,19 @@ type PlaidAccessTokenRequestBody struct {
 	Cursor      *string `json:"cursor"`
 }
 
-const SYNC_STATUS_TABLE = `
-CREATE TABLE IF NOT EXISTS sync_statuses (
-    user_id uuid REFERENCES auth.users(id) PRIMARY KEY,
-    sync_seq int not null default 0,
-    last_sync timestamp
-);
-
-CREATE INDEX IF NOT EXISTS "ix:sync_statuses.id" ON sync_statuses(user_id uuid_ops);
-`
-
-const PLAID_ITEMS_TABLE = `
-CREATE TABLE IF NOT EXISTS plaid_items (
-	plaid_item_id text PRIMARY KEY,
-	user_id uuid REFERENCES auth.users(id) not null,
-	access_token text not null,
-	status text not null,
-	created_at timestamp not null default now(),
-	updated_at timestamp not null default now()
-);
-
-CREATE INDEX IF NOT EXISTS "ix:plaid_items.user_id" ON plaid_items(user_id uuid_ops);
-`
-
-type SyncStatus struct {
-	UserID   string    `db:"user_id"`
-	SyncSeq  int32     `db:"sync_seq"`
-	LastSync time.Time `db:"last_sync"`
+type PlaidLinkCreateOutput struct {
+	Body struct {
+		LinkToken string `json:"link_token"`
+	}
 }
 
-type SyncStatusDto struct {
-	UserID   string    `json:"user_id"`
-	SyncSeq  int32     `json:"sync_seq" `
-	LastSync time.Time `json:"last_sync"`
+type PlaidItemCreateOutput struct {
+	Body struct {
+		PlaidItemID string `json:"plaid_item_id"`
+	}
 }
 
 func main() {
-	port := flag.Int("p", 8080, "Port to listen on")
-	flag.Parse()
-
 	appEnv := os.Getenv("APP_ENV")
 	if appEnv == "" || appEnv == "development" {
 		err := godotenv.Load(".env")
@@ -94,132 +70,164 @@ func main() {
 	configuration.AddDefaultHeader("PLAID-CLIENT-ID", plaidCreds.ClientID)
 	configuration.AddDefaultHeader("PLAID-SECRET", plaidCreds.Secret)
 	configuration.UseEnvironment(plaidCreds.Env)
-
-	db, err := sqlx.Connect("postgres", databaseURL)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	db.MustExec(SYNC_STATUS_TABLE)
-	db.MustExec(PLAID_ITEMS_TABLE)
-
 	plaidClient := plaid.NewAPIClient(configuration)
 
-	e := echo.New()
-	e.Use(middleware.Logger())
-	e.Use(middleware.Recover())
-	e.Use(echojwt.WithConfig(echojwt.Config{
-		SigningKey: []byte(supabaseJWTSecret),
-	}))
+	prisma := db.NewClient()
+	if err := prisma.Prisma.Connect(); err != nil {
+		panic(err)
+	}
 
-	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Hello from Finny! Let's take you back to your app now.")
+	defer func() {
+		if err := prisma.Prisma.Disconnect(); err != nil {
+			panic(err)
+		}
+	}()
+
+	cli := humacli.New(func(hooks humacli.Hooks, options *Options) {
+		e := echo.New()
+		e.Use(middleware.Logger())
+		api := humaecho.New(e, huma.DefaultConfig("My API", "1.0.0"))
+
+		huma.Register(api, huma.Operation{
+			OperationID: "link-item",
+			Method:      http.MethodPost,
+			Path:        "/api/plaid-items/create",
+			Summary:     "Link a Plaid item",
+		}, func(ctx context.Context, input *struct {
+			Body struct {
+				PublicToken   string `json:"publicToken"`
+				InstitutionID string `json:"institutionID"`
+			}
+		}) (*PlaidItemCreateOutput, error) {
+			resp := &PlaidItemCreateOutput{}
+
+			fmt.Println("public token input", input.Body.PublicToken)
+
+			exchangePublicTokenReq := plaid.NewItemPublicTokenExchangeRequest(input.Body.PublicToken)
+			exchangePublicTokenResp, net, err := plaidClient.PlaidApi.ItemPublicTokenExchange(ctx).ItemPublicTokenExchangeRequest(
+				*exchangePublicTokenReq,
+			).Execute()
+			if err != nil {
+				fmt.Println(net)
+				fmt.Println(err)
+				return nil, huma.Error404NotFound("thing not found")
+			}
+
+			itemDb, err := prisma.PlaidItems.CreateOne(
+				db.PlaidItems.PlaidAccessToken.Set(exchangePublicTokenResp.GetAccessToken()),
+				db.PlaidItems.PlaidItemID.Set(exchangePublicTokenResp.GetItemId()),
+				db.PlaidItems.PlaidInstitutionID.Set("soomething"),
+				db.PlaidItems.Status.Set("good"),
+				db.PlaidItems.Users.Link(
+					db.Users.ID.Equals("2be19323-7a1d-4504-8de9-70f06e90f66f"),
+				),
+			).Exec(ctx)
+
+			go func(itemId string, plaidClient *plaid.APIClient) {
+				ctx := context.Background()
+
+				itemDb, err := prisma.PlaidItems.FindFirst(
+					db.PlaidItems.ID.Equals(itemId),
+				).Exec(ctx)
+				if err != nil {
+					log.Println(err)
+					return
+				}
+
+				request := plaid.NewTransactionsSyncRequest(
+					itemDb.PlaidAccessToken,
+				)
+				transactionsResp, _, err := plaidClient.PlaidApi.TransactionsSync(ctx).TransactionsSyncRequest(*request).Execute()
+				if err != nil {
+					log.Println(err)
+					return
+				}
+
+				for _, account := range transactionsResp.GetAccounts() {
+					_, err := prisma.Accounts.CreateOne(
+						db.Accounts.PlaidAccountID.Set(account.AccountId),
+						db.Accounts.Name.Set(account.Name),
+						db.Accounts.PlaidItems.Link(
+							db.PlaidItems.ID.Equals(itemDb.ID),
+						),
+						db.Accounts.Users.Link(
+							db.Users.ID.Equals("2be19323-7a1d-4504-8de9-70f06e90f66f"),
+						),
+						db.Accounts.Name.Set(account.Name),
+						db.Accounts.OfficialName.SetIfPresent(account.OfficialName.Get()),
+						db.Accounts.Mask.SetIfPresent(account.Mask.Get()),
+						db.Accounts.CurrentBalance.SetIfPresent(account.Balances.Current.Get()),
+						db.Accounts.AvailableBalance.SetIfPresent(account.Balances.Available.Get()),
+						db.Accounts.IsoCurrencyCode.SetIfPresent(account.Balances.IsoCurrencyCode.Get()),
+						db.Accounts.UnofficialCurrencyCode.SetIfPresent(account.Balances.UnofficialCurrencyCode.Get()),
+						db.Accounts.Type.Set(string(account.GetType())),
+						db.Accounts.Subtype.Set(string(account.GetSubtype())),
+					).Exec(ctx)
+					if err != nil {
+						log.Println(err)
+						continue
+					}
+				}
+
+				// for _, transaction := range transactionsResp.GetAdded() {
+				// 	prisma.Transactions.CreateOne(
+				// 		db.Transactions.AccountID.Set(transaction.AccountId),
+				// 		db.Transactions.PlaidTransactionID.Set(transaction.TransactionId),
+				// 		db.Transactions.Category.Set(transaction.GetPersonalFinanceCategory().Primary)),
+				// 		db.Transactions.Subcategory.Set(transaction.GetPersonalFinanceCategory().Secondary)),
+
+				// 	).Exec(ctx)
+				// }
+
+			}(itemDb.ID, plaidClient)
+
+			resp.Body.PlaidItemID = itemDb.PlaidItemID
+
+			return resp, nil
+		})
+
+		huma.Register(api, huma.Operation{
+			OperationID: "new-link-token",
+			Method:      http.MethodPost,
+			Path:        "/api/plaid-link/create",
+			Summary:     "Create a new Link token",
+		}, func(ctx context.Context, input *struct {
+			PublicToken   string `path:"public_token"`
+			InstitutionID string `path:"institution_id"`
+		}) (*PlaidLinkCreateOutput, error) {
+			resp := &PlaidLinkCreateOutput{}
+
+			user := plaid.LinkTokenCreateRequestUser{
+				ClientUserId: "some-user-id",
+			}
+			request := plaid.NewLinkTokenCreateRequest(
+				"Finny",
+				"en",
+				[]plaid.CountryCode{plaid.COUNTRYCODE_US},
+				user,
+			)
+			// request.SetProducts([]plaid.Products{plaid.PRODUCTS_AUTH})
+			// request.SetLinkCustomizationName("default")
+			// request.SetWebhook("https://webhook-uri.com")
+			// request.SetRedirectUri("https://domainname.com/oauth-page.html")
+			// request.SetAccountFilters(plaid.LinkTokenAccountFilters{
+			// 	Depository: &plaid.DepositoryFilter{
+			// 		AccountSubtypes:
+			// 	},
+			// })
+			linkTokenRes, _, err := plaidClient.PlaidApi.LinkTokenCreate(ctx).LinkTokenCreateRequest(*request).Execute()
+			if err != nil {
+				return nil, huma.Error404NotFound("thing not found")
+			}
+
+			resp.Body.LinkToken = linkTokenRes.GetLinkToken()
+
+			return resp, nil
+		})
+
+		fmt.Printf("Server listening on port http://localhost:%d", options.Port)
+		e.Logger.Fatal(e.Start(fmt.Sprintf("0.0.0.0:%d", options.Port)))
 	})
 
-	e.GET("/internal/sync/status", func(c echo.Context) error {
-		user, err := GetContextUser(c, db)
-		if err != nil {
-			log.Println(err)
-			return c.JSON(http.StatusBadRequest,
-				map[string]string{"error": "Failed to fetch user"},
-			)
-		}
-
-		syncStatus, err := GetSyncStatus(user, db)
-		if err != nil {
-			return c.JSON(http.StatusBadRequest,
-				map[string]string{"error": "Failed to fetch sync status"},
-			)
-		}
-
-		syncStatusDto := SyncStatusDto{
-			UserID:   syncStatus.UserID,
-			SyncSeq:  syncStatus.SyncSeq,
-			LastSync: syncStatus.LastSync,
-		}
-
-		fmt.Printf("%#v\n", syncStatusDto)
-
-		return c.JSON(200, syncStatusDto)
-	})
-
-	e.POST("/proxy/transactions/sync", func(c echo.Context) error {
-		user, err := GetContextUser(c, db)
-		if err != nil {
-			log.Println(err)
-			return c.JSON(http.StatusBadRequest,
-				map[string]string{"error": "Failed to fetch user"},
-			)
-		}
-
-		reqBody := PlaidAccessTokenRequestBody{}
-		if err := c.Bind(&reqBody); err != nil {
-			return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request body"})
-		}
-
-		err = IncrementSyncStatus(user, db)
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError,
-				map[string]string{"error": "Failed to increment sync status"},
-			)
-		}
-
-		request := plaid.NewTransactionsSyncRequest(
-			reqBody.AccessToken,
-		)
-
-		if reqBody.Count != nil {
-			request.SetCount(*reqBody.Count)
-		}
-
-		if reqBody.Cursor != nil {
-			request.SetCursor(*reqBody.Cursor)
-		}
-
-		transactions, _, err := plaidClient.PlaidApi.
-			TransactionsSync(c.Request().Context()).
-			TransactionsSyncRequest(*request).
-			Execute()
-		if err != nil {
-			log.Println(err)
-			return c.JSON(http.StatusInternalServerError,
-				map[string]string{"error": "Failed to fetch transactions"},
-			)
-		}
-
-		return c.JSON(200, transactions)
-	})
-
-	e.POST("/proxy/accounts/get", func(c echo.Context) error {
-		reqBody := PlaidAccessTokenRequestBody{}
-		if err := c.Bind(&reqBody); err != nil {
-			return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request body"})
-		}
-
-		request := plaid.NewAccountsGetRequest(
-			reqBody.AccessToken,
-		)
-
-		accounts, _, err := plaidClient.PlaidApi.
-			AccountsGet(c.Request().Context()).
-			AccountsGetRequest(*request).
-			Execute()
-		if err != nil {
-			log.Println(err)
-			return c.JSON(http.StatusInternalServerError,
-				map[string]string{"error": "Failed to fetch accounts"},
-			)
-		}
-
-		return c.JSON(200, accounts)
-	})
-
-	// /proxy/item/get
-	// /proxy/item/remove
-	// /proxy/item/public_token/exchange
-	// /proxy/link/token/create
-	// /proxy/item/public_token/exchange
-	// /proxy/accounts/get
-
-	e.Logger.Fatal(e.Start(fmt.Sprintf("0.0.0.0:%d", *port)))
+	cli.Run()
 }
