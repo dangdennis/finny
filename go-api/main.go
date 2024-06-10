@@ -170,13 +170,19 @@ func main() {
 				}
 
 				// for _, transaction := range transactionsResp.GetAdded() {
-				// 	prisma.Transactions.CreateOne(
-				// 		db.Transactions.AccountID.Set(transaction.AccountId),
+				// 	_, err := prisma.Transactions.CreateOne(
+				// 		db.Transactions.Type.Set(transaction.GetPaymentChannel()),
+				// 		db.Transactions.Name.Set(transaction.GetName()),
+				// 		db.Transactions.Amount.Set(transaction.GetAmount()),
+				// 		db.Transactions.Accounts.Set(transaction.AccountId),
 				// 		db.Transactions.PlaidTransactionID.Set(transaction.TransactionId),
-				// 		db.Transactions.Category.Set(transaction.GetPersonalFinanceCategory().Primary)),
-				// 		db.Transactions.Subcategory.Set(transaction.GetPersonalFinanceCategory().Secondary)),
-
+				// 		db.Transactions.Category.Set(transaction.GetPersonalFinanceCategory().Primary),
+				// 		db.Transactions.Subcategory.Set(transaction.GetPersonalFinanceCategory().Detailed),
 				// 	).Exec(ctx)
+				// 	if err != nil {
+				// 		log.Println(err)
+				// 		continue
+				// 	}
 				// }
 
 			}(itemDb.ID, plaidClient)
