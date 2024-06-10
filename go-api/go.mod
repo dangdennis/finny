@@ -1,29 +1,34 @@
-module github.com/finny/tauri/proxy_api
+module github.com/finny/backend
 
 go 1.22.2
 
 require (
+	github.com/danielgtaylor/huma/v2 v2.18.0
+	github.com/golang-jwt/jwt/v5 v5.0.0
+	github.com/joho/godotenv v1.5.1
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/plaid/plaid-go/v25 v25.0.0-20240510203804-4a710efa41b7
+	github.com/shopspring/decimal v1.4.0
+	github.com/steebchen/prisma-client-go v0.37.0
 )
 
 require (
-	github.com/golang-jwt/jwt/v5 v5.0.0 // indirect
-	github.com/joho/godotenv v1.5.1 // indirect
-	github.com/plaid/plaid-go v1.10.0 // indirect
+	github.com/fxamacker/cbor/v2 v2.6.0 // indirect
+	github.com/inconshreveable/mousetrap v1.1.0 // indirect
+	github.com/spf13/cobra v1.8.0 // indirect
+	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/x448/float16 v0.8.4 // indirect
 )
 
 require (
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/google/go-cmp v0.6.0 // indirect
-	github.com/jmoiron/sqlx v1.4.0 // indirect
+	github.com/jmoiron/sqlx v1.4.0
 	github.com/labstack/echo-jwt/v4 v4.2.0
 	github.com/labstack/gommon v0.4.2 // indirect
 	github.com/lib/pq v1.10.9
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
-	github.com/stretchr/testify v1.9.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	golang.org/x/crypto v0.22.0 // indirect
