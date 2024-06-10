@@ -4,7 +4,6 @@ import app.models.PlaidItem
 import app.models.User
 import scalikejdbc._
 
-import java.util.UUID
 import scala.util.Try
 
 object PlaidItemRepository:
@@ -20,9 +19,7 @@ object PlaidItemRepository:
     )
     val result = Try(DB autoCommit { implicit session =>
       sql"""insert into plaid_items (user_id, plaid_access_token, plaid_item_id, plaid_institution_id, status, transactions_cursor)
-              values (${UUID.fromString(
-          user.id
-        )}, ${testItem.plaidAccessToken}, ${testItem.plaidItemId}, ${testItem.plaidInstitutionId}, ${testItem.status}, ${testItem.transactionsCursor});
+              values (${user.id}, ${testItem.plaidAccessToken}, ${testItem.plaidItemId}, ${testItem.plaidInstitutionId}, ${testItem.status}, ${testItem.transactionsCursor});
         """.execute
         .apply()
     })

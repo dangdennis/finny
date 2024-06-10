@@ -13,6 +13,7 @@ import sttp.tapir.server.ServerEndpoint
 import sttp.tapir.server.metrics.prometheus.PrometheusMetrics
 import sttp.tapir.swagger.bundle.SwaggerInterpreter
 
+import java.util.UUID
 import scala.collection.JavaConverters._
 import scala.util.Try
 
@@ -25,7 +26,7 @@ object Endpoints:
     val verifier = JWT.require(algorithm).withIssuer("https://tqonkxhrucymdyndpjzf.supabase.co/auth/v1").build();
     val decodedJwt = Try(verifier.verify(token.value))
     decodedJwt match
-      case scala.util.Success(jwt) => Right(User(id = jwt.getSubject()))
+      case scala.util.Success(jwt) => Right(User(id = UUID.fromString(jwt.getSubject())))
       case scala.util.Failure(error) =>
         logger.error(s"Error decoding JWT: ${error.getMessage()}")
         Left(AuthenticationError(404))
