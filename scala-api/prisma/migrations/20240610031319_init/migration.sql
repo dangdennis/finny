@@ -205,11 +205,11 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
 
-enable row level security on public.accounts;
-enable row level security on public.assets;
-enable row level security on public.goals;
-enable row level security on public.plaid_api_events;
-enable row level security on public.plaid_items;
-enable row level security on public.plaid_link_events;
-enable row level security on public.transactions;
-enable row level security on public.profiles;
+alter table public.accounts enable row level security;
+alter table public.assets enable row level security;
+alter table public.goals enable row level security;
+alter table public.plaid_api_events enable row level security;
+alter table public.plaid_items enable row level security;
+alter table public.plaid_link_events enable row level security;
+alter table public.transactions enable row level security;
+alter table public.profiles enable row level security;
