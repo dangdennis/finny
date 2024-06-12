@@ -12,6 +12,7 @@ import sttp.tapir.server.nima.NimaServerInterpreter
 
   var appEnv = sys.env.getOrElse("APP_ENV", "development")
   val port = sys.env.get("HTTP_PORT").flatMap(_.toIntOption).getOrElse(8080)
+
   appEnv match
     case "development" =>
       println(s"Running in development mode.")

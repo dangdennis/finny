@@ -14,7 +14,7 @@ fix:
 	./mill app.fix
 
 r:
-	./mill -w app.run
+	./mill -w app.runBackground
 
 c:
 	./mill -w app.compile

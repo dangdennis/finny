@@ -13,6 +13,10 @@ object PlaidItemHandler:
 
     println(s"user $user")
 
+    // exchange public token for access token
+    // create item in database
+    // sync transactions and accounts
+
     PlaidItemRepository.createItem(user = user) match
       case Failure(error) => Left(AuthenticationError(400))
       case Success(_) =>
