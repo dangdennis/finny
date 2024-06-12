@@ -1,10 +1,11 @@
 package app.repositories
 
-import app.models.{PlaidItem, PlaidItemStatus}
+import app.models.PlaidItem
+import app.models.PlaidItemStatus
 import scalikejdbc._
 
-import scala.util.Try
 import java.util.UUID
+import scala.util.Try
 
 object PlaidItemRepository:
   case class CreateItemInput(

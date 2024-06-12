@@ -2,7 +2,12 @@ package app.services
 
 import com.plaid.client.ApiClient
 import com.plaid.client.model.CountryCode
+import com.plaid.client.model.ItemGetRequest
+import com.plaid.client.model.ItemGetResponse
+import com.plaid.client.model.ItemPublicTokenExchangeRequest
+import com.plaid.client.model.ItemPublicTokenExchangeResponse
 import com.plaid.client.model.LinkTokenCreateRequest
+import com.plaid.client.model.LinkTokenCreateResponse
 import com.plaid.client.model.Products
 import com.plaid.client.request.PlaidApi
 
@@ -12,9 +17,9 @@ import scala.util.Success
 import scala.util.Try
 
 object PlaidService:
-  lazy val client = makePlaidClient()
+  private lazy val client = makePlaidClient()
 
-  def makePlaidClient() =
+  private def makePlaidClient() =
     val apiClient = new ApiClient(
       Map(
         "clientId" -> "661ac9375307a3001ba2ea46",
@@ -25,7 +30,7 @@ object PlaidService:
     apiClient.setPlaidAdapter(ApiClient.Sandbox)
     apiClient.createService(classOf[PlaidApi])
 
-  def createLinkToken(): Try[String] =
+  def createLinkToken(): Try[LinkTokenCreateResponse] =
     val req = LinkTokenCreateRequest()
       .products(
         List(Products.TRANSACTIONS, Products.INVESTMENTS, Products.RECURRING_TRANSACTIONS, Products.BALANCE).asJava
@@ -33,5 +38,25 @@ object PlaidService:
       .countryCodes(List(CountryCode.US).asJava)
     val response = client.linkTokenCreate(req).execute()
     response.isSuccessful() match
-      case true  => Success(response.body().getLinkToken())
+      case true  => Success(response.body())
       case false => Failure(new Exception(response.errorBody().string()))
+
+  def exchangePublicToken(publicToken: String): Try[ItemPublicTokenExchangeResponse] =
+    val req = ItemPublicTokenExchangeRequest().publicToken(publicToken)
+    val response = Try(client.itemPublicTokenExchange(req).execute())
+    response match
+      case Failure(e) => Failure(e)
+      case Success(response) =>
+        response.isSuccessful() match
+          case true  => Success(response.body())
+          case false => Failure(new Exception(response.errorBody().string()))
+
+  def getItem(accessToken: String): Try[ItemGetResponse] =
+    val req = ItemGetRequest().accessToken(accessToken)
+    val response = Try(client.itemGet(req).execute())
+    response match
+      case Failure(e) => Failure(e)
+      case Success(response) =>
+        response.isSuccessful() match
+          case true  => Success(response.body())
+          case false => Failure(new Exception(response.errorBody().string()))

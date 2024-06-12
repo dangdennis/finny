@@ -1,13 +1,14 @@
 package app.handlers
 
+import app.dtos.DTOs.PlaidItemCreateRequest
 import app.dtos._
 import app.models._
 import app.repositories.PlaidItemRepository
+import app.repositories.PlaidItemRepository.CreateItemInput
+import app.services.PlaidService
 
 import scala.util.Failure
 import scala.util.Success
-import app.repositories.PlaidItemRepository.CreateItemInput
-import app.dtos.DTOs.PlaidItemCreateRequest
 
 object PlaidItemHandler:
   def handlePlaidItemCreate(user: User, input: PlaidItemCreateRequest): Either[AuthenticationError, DTOs.PlaidItemCreateResponse] =
@@ -15,15 +16,15 @@ object PlaidItemHandler:
 
     println(s"user $user")
 
-    // exchange public token for access token
-    // fetch institution id
+    val pubTokenExchangeResp = PlaidService.exchangePublicToken(input.publicToken)
+    val itemGetResp = PlaidService.getItem(pubTokenExchangeResp.get.getAccessToken())
 
     val item = PlaidItemRepository.createItem(
       input = CreateItemInput(
         userId = user.id,
-        plaidAccessToken = "access-token",
-        plaidItemId = "item-id",
-        plaidInstitutionId = "institution-id",
+        plaidAccessToken = pubTokenExchangeResp.get.getAccessToken(),
+        plaidItemId = pubTokenExchangeResp.get.getItemId(),
+        plaidInstitutionId = itemGetResp.get.getItem().getInstitutionId(),
         status = PlaidItemStatus.Good,
         transactionsCursor = None
       )
