@@ -31,28 +31,31 @@ object Endpoints:
         logger.error(s"Error decoding JWT: ${error.getMessage()}")
         Left(AuthenticationError(404))
 
-  val rootEndpoint = endpoint.get.out(stringBody)
-  val rootApiEndpoint = endpoint.in("api").tag("Finny API")
-  val secureApiEndpoint = rootApiEndpoint
-    .securityIn(auth.bearer[String]().mapTo[AuthenticationToken])
-    .errorOut(plainBody[Int].mapTo[AuthenticationError])
-    .handleSecurity(authenticate)
+  def createEndpoints() =
+    val rootEndpoint = endpoint.get.in("").out(stringBody)
+    val rootApiEndpoint = endpoint.in("api").tag("Finny API")
+    val secureApiEndpoint = rootApiEndpoint
+      .securityIn(auth.bearer[String]().mapTo[AuthenticationToken])
+      .errorOut(plainBody[Int].mapTo[AuthenticationError])
+      .handleSecurity(authenticate)
 
-  val indexServerEndpoint = rootEndpoint.handle(_ => IndexHandler.handleIndex())
-  val plaidItemCreateEndpoint = secureApiEndpoint.post
-    .in("plaid-items" / "create")
-    .in(jsonBody[DTOs.PlaidItemCreateRequest])
-    .out(jsonBody[DTOs.PlaidItemCreateResponse])
-  val plaidItemCreateServerEndpoint = plaidItemCreateEndpoint
-    .handle(user => _ => PlaidItemHandler.handlePlaidItemCreate(user))
-  val plaidLinkCreateEndpoint = secureApiEndpoint.post
-    .in("plaid-links" / "create")
-    .out(jsonBody[DTOs.PlaidLinkCreateResponse])
-  val plaidLinkCreateServerEndpoint = plaidLinkCreateEndpoint.handle(p1 => p2 => PlaidLinkHandler.handler())
+    val indexServerEndpoint = rootEndpoint.handle(_ => IndexHandler.handleIndex())
+    val plaidItemCreateEndpoint = secureApiEndpoint.post
+      .in("plaid-items" / "create")
+      .in(jsonBody[DTOs.PlaidItemCreateRequest])
+      .out(jsonBody[DTOs.PlaidItemCreateResponse])
+    val plaidItemCreateServerEndpoint = plaidItemCreateEndpoint
+      .handle(user => input => PlaidItemHandler.handlePlaidItemCreate(user, input))
+    val plaidLinkCreateEndpoint = secureApiEndpoint.post
+      .in("plaid-links" / "create")
+      .out(jsonBody[DTOs.PlaidLinkCreateResponse])
+    val plaidLinkCreateServerEndpoint = plaidLinkCreateEndpoint.handle(p1 => p2 => PlaidLinkHandler.handler())
 
-  val secureServerEndpoints = List(plaidItemCreateServerEndpoint, plaidLinkCreateServerEndpoint)
-  val serverEndpoints = List(indexServerEndpoint) ++ secureServerEndpoints
-  val docEndpoints = SwaggerInterpreter()
-    .fromServerEndpoints[Identity](serverEndpoints, "finny-api", "1.0.0")
-  val metricsEndpoint: ServerEndpoint[Any, Identity] = PrometheusMetrics.default[Identity]().metricsEndpoint
-  val all = serverEndpoints ++ docEndpoints ++ List(metricsEndpoint)
+    val secureServerEndpoints = List(plaidItemCreateServerEndpoint, plaidLinkCreateServerEndpoint)
+    val serverEndpoints = List(indexServerEndpoint) ++ secureServerEndpoints
+    val docEndpoints = SwaggerInterpreter()
+      .fromServerEndpoints[Identity](serverEndpoints, "finny-api", "1.0.0")
+    val metricsEndpoint: ServerEndpoint[Any, Identity] = PrometheusMetrics.default[Identity]().metricsEndpoint
+    val all = serverEndpoints ++ docEndpoints ++ List(metricsEndpoint)
+
+    all

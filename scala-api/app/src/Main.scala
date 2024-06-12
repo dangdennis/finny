@@ -8,8 +8,7 @@ import sttp.tapir.server.nima.NimaServerInterpreter
 @main def main: Unit =
   Database.init()
 
-  val handler = NimaServerInterpreter().toHandler(Endpoints.all)
-
+  val handler = NimaServerInterpreter().toHandler(Endpoints.createEndpoints())
   var appEnv = sys.env.getOrElse("APP_ENV", "development")
   val port = sys.env.get("HTTP_PORT").flatMap(_.toIntOption).getOrElse(8080)
 
