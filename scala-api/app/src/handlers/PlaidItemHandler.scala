@@ -9,32 +9,36 @@ import app.services.PlaidService
 
 import scala.util.Failure
 import scala.util.Success
+import ox._
 
 object PlaidItemHandler:
   def handlePlaidItemCreate(user: User, input: PlaidItemCreateRequest): Either[AuthenticationError, DTOs.PlaidItemCreateResponse] =
-    println("Handling Plaid item create")
-
-    println(s"user $user")
-
-    val pubTokenExchangeResp = PlaidService.exchangePublicToken(input.publicToken)
-    val itemGetResp = PlaidService.getItem(pubTokenExchangeResp.get.getAccessToken())
-
-    val item = PlaidItemRepository.createItem(
-      input = CreateItemInput(
-        userId = user.id,
-        plaidAccessToken = pubTokenExchangeResp.get.getAccessToken(),
-        plaidItemId = pubTokenExchangeResp.get.getItemId(),
-        plaidInstitutionId = itemGetResp.get.getItem().getInstitutionId(),
-        status = PlaidItemStatus.Good,
-        transactionsCursor = None
+    val result = for
+      pubTokenData <- PlaidService.exchangePublicToken(input.publicToken)
+      itemData <- PlaidService.getItem(pubTokenData.getAccessToken())
+      item <- PlaidItemRepository.createItem(
+        input = CreateItemInput(
+          userId = user.id,
+          plaidAccessToken = pubTokenData.getAccessToken(),
+          plaidItemId = pubTokenData.getItemId(),
+          plaidInstitutionId = itemData.getItem().getInstitutionId(),
+          status = PlaidItemStatus.Good,
+          transactionsCursor = None
+        )
       )
-    )
+    yield item
 
     // sync transactions and accounts in a task
 
-    item match
+    result match
       case Failure(error) => Left(AuthenticationError(400))
       case Success(item) =>
+        supervised {
+          fork {
+            println("syncing transactions")
+          }
+        }
+
         Right(
           DTOs.PlaidItemCreateResponse(
             itemId = item.id,
