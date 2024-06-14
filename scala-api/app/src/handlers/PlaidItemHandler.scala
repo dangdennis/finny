@@ -6,10 +6,10 @@ import app.models._
 import app.repositories.PlaidItemRepository
 import app.repositories.PlaidItemRepository.CreateItemInput
 import app.services.PlaidService
+import app.services.PlaidSyncService
 
 import scala.util.Failure
 import scala.util.Success
-import ox._
 
 object PlaidItemHandler:
   def handlePlaidItemCreate(user: User, input: PlaidItemCreateRequest): Either[AuthenticationError, DTOs.PlaidItemCreateResponse] =
@@ -28,20 +28,16 @@ object PlaidItemHandler:
       )
     yield item
 
-    // sync transactions and accounts in a task
-
     result match
-      case Failure(error) => Left(AuthenticationError(400))
+      case Failure(error) =>
+        println(s"error creating item: $error")
+        Left(AuthenticationError(400))
       case Success(item) =>
-        supervised {
-          fork {
-            println("syncing transactions")
-          }
-        }
+        PlaidSyncService.syncTransactionsAndAccounts(item.id)
 
         Right(
           DTOs.PlaidItemCreateResponse(
-            itemId = item.id,
+            itemId = item.id.toString(),
             institutionId = item.plaidInstitutionId,
             status = item.status.toString(),
             createdAt = item.createdAt.toString()

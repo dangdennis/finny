@@ -1,0 +1,20 @@
+package app.models
+
+import java.time.Instant
+import java.util.UUID
+
+case class Account(
+    id: UUID,
+    userId: UUID,
+    plaidAccountId: UUID,
+    name: String,
+    mask: Option[String],
+    officialName: Option[String],
+    currentBalance: Double,
+    availableBalance: Double,
+    isoCurrencyCode: Option[String],
+    unofficialCurrencyCode: Option[String],
+    accountType: Option[String],
+    accountSubtype: Option[String],
+    createdAt: Instant
+)

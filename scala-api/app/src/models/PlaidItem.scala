@@ -1,6 +1,7 @@
 package app.models
 
 import java.time.Instant
+import java.util.UUID
 
 enum PlaidItemStatus:
   case Good, Bad, Unknown
@@ -19,8 +20,8 @@ object PlaidItemStatus:
       case "unknown" => PlaidItemStatus.Unknown
 
 case class PlaidItem(
-    id: String,
-    userId: String,
+    id: UUID,
+    userId: UUID,
     plaidAccessToken: String,
     plaidItemId: String,
     plaidInstitutionId: String,

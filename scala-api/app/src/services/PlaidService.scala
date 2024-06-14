@@ -9,6 +9,8 @@ import com.plaid.client.model.ItemPublicTokenExchangeResponse
 import com.plaid.client.model.LinkTokenCreateRequest
 import com.plaid.client.model.LinkTokenCreateResponse
 import com.plaid.client.model.Products
+import com.plaid.client.model.TransactionsSyncRequest
+import com.plaid.client.model.TransactionsSyncResponse
 import com.plaid.client.request.PlaidApi
 
 import scala.collection.JavaConverters._
@@ -29,6 +31,16 @@ object PlaidService:
     )
     apiClient.setPlaidAdapter(ApiClient.Sandbox)
     apiClient.createService(classOf[PlaidApi])
+
+  def getTransactionsSync(accessToken: String): Try[TransactionsSyncResponse] =
+    val req = TransactionsSyncRequest().accessToken(accessToken)
+    val response = Try(client.transactionsSync(req).execute())
+    response match
+      case Failure(e) => Failure(e)
+      case Success(response) =>
+        response.isSuccessful() match
+          case true  => Success(response.body())
+          case false => Failure(new Exception(response.errorBody().string()))
 
   def createLinkToken(): Try[LinkTokenCreateResponse] =
     val req = LinkTokenCreateRequest()

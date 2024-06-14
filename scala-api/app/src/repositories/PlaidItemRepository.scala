@@ -17,6 +17,26 @@ object PlaidItemRepository:
       transactionsCursor: Option[String]
   )
 
+  def getItem(itemId: UUID): Try[PlaidItem] =
+    Try(DB readOnly { implicit session =>
+      sql"""select id, user_id, plaid_access_token, plaid_item_id, plaid_institution_id, status, transactions_cursor, created_at from plaid_items where id = ${itemId}"""
+        .map(rs =>
+          PlaidItem(
+            id = UUID.fromString(rs.string("id")),
+            userId = UUID.fromString(rs.string("user_id")),
+            plaidAccessToken = rs.string("plaid_access_token"),
+            plaidItemId = rs.string("plaid_item_id"),
+            plaidInstitutionId = rs.string("plaid_institution_id"),
+            status = PlaidItemStatus.fromString(rs.string("status")),
+            transactionsCursor = rs.stringOpt("transactions_cursor"),
+            createdAt = rs.timestamp("created_at").toInstant
+          )
+        )
+        .single
+        .apply()
+        .get
+    })
+
   def createItem(input: CreateItemInput): Try[PlaidItem] =
     val item = Try(DB autoCommit { implicit session =>
       val id = sql"""insert into plaid_items (user_id, plaid_access_token, plaid_item_id, plaid_institution_id, status, transactions_cursor)
@@ -31,8 +51,8 @@ object PlaidItemRepository:
       sql"""select id, user_id, plaid_access_token, plaid_item_id, plaid_institution_id, status, transactions_cursor, created_at from plaid_items where id = ${id}"""
         .map(rs =>
           PlaidItem(
-            id = rs.string("id"),
-            userId = rs.string("user_id"),
+            id = UUID.fromString(rs.string("id")),
+            userId = UUID.fromString(rs.string("user_id")),
             plaidAccessToken = rs.string("plaid_access_token"),
             plaidItemId = rs.string("plaid_item_id"),
             plaidInstitutionId = rs.string("plaid_institution_id"),
