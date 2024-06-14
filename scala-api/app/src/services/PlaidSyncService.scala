@@ -12,43 +12,32 @@ import scala.util.Success
 object PlaidSyncService:
   def syncTransactionsAndAccounts(itemId: UUID): Unit =
     val item = PlaidItemRepository.getItem(itemId).get
+    val transactions = PlaidService.getTransactionsSync(accessToken = item.plaidAccessToken)
 
-    supervised {
-      fork {
-        println("syncing transactions")
-        val transactions = PlaidService.getTransactionsSync(accessToken = item.plaidAccessToken)
-
-        transactions match
-          case Failure(error) =>
-            println(s"error syncing transactions: $error")
-          case Success(response) =>
-            println(s"transactions: $response")
-            val accounts = response.getAccounts()
-
-            supervised:
-              for account <- accounts.asScala do
-                println(s"account input: $account")
-                fork:
-                  val newAcct = AccountRepository.upsertAccount(
-                    AccountRepository.CreateAccountInput(
-                      userId = item.userId,
-                      plaidAccountId = account.getAccountId(),
-                      name = account.getName(),
-                      mask = Option(account.getMask()),
-                      officialName = Option(account.getOfficialName()),
-                      currentBalance = account.getBalances().getCurrent(),
-                      availableBalance = account.getBalances().getAvailable(),
-                      isoCurrencyCode = Option(account.getBalances().getIsoCurrencyCode()),
-                      unofficialCurrencyCode = Option(account.getBalances().getUnofficialCurrencyCode()),
-                      accountType = Option(account.getType().getValue()),
-                      accountSubtype = Option(account.getSubtype().getValue())
-                    )
-                  )
-                  println("inserted account")
-
-            // val transactions = response.getTransactions()
-            println(s"accounts: $accounts")
-          // println(s"transactions: $transactions")
-
-      }
-    }
+    transactions match
+      case Failure(error) =>
+        println(s"error syncing transactions: $error")
+      case Success(response) =>
+        val accounts = response.getAccounts().asScala
+        println(s"accounts length: ${accounts.length}")
+        for account <- accounts do
+          val newAcct = AccountRepository.upsertAccount(
+            AccountRepository.UpsertAccountInput(
+              itemId = item.id,
+              userId = item.userId,
+              plaidAccountId = account.getAccountId(),
+              name = account.getName(),
+              mask = Option(account.getMask()),
+              officialName = Option(account.getOfficialName()),
+              currentBalance = account.getBalances().getCurrent(),
+              availableBalance = account.getBalances().getAvailable(),
+              isoCurrencyCode = Option(account.getBalances().getIsoCurrencyCode()),
+              unofficialCurrencyCode = Option(account.getBalances().getUnofficialCurrencyCode()),
+              accountType = Option(account.getType().getValue()),
+              accountSubtype = Option(account.getSubtype().getValue())
+            )
+          ) match
+            case Failure(error) =>
+              println(s"error upserting account: $error")
+            case Success(accountId) =>
+              println(s"upserted account: ${accountId}")

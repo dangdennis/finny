@@ -32,7 +32,8 @@ object PlaidItemHandler:
       case Failure(error) =>
         println(s"error creating item: $error")
         Left(AuthenticationError(400))
-      case Success(item) =>
+      case Success(id) =>
+        val item = PlaidItemRepository.getItem(id).get
         PlaidSyncService.syncTransactionsAndAccounts(item.id)
 
         Right(
