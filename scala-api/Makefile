@@ -21,3 +21,6 @@ c:
 
 t:
 	./mill -w app.test
+
+db-migrate:
+	bunx prisma migrate deploy
