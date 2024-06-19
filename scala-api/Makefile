@@ -13,6 +13,9 @@ test:
 fix:
 	./mill app.fix
 
+clean:
+	./mill clean
+
 r:
 	./mill -w app.runBackground
 

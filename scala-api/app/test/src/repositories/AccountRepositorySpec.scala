@@ -15,7 +15,7 @@ class AccountRepositorySpec extends AnyFlatSpec with Matchers with EitherValues 
   override protected def beforeAll(): Unit =
     TestHelper.beforeAll()
 
-  it should "create accounts" in {
+  it should "upsert accounts" in {
     // given
     val user = UserRepositoryHelper.createUser()
     val item = PlaidItemRepository
@@ -68,7 +68,7 @@ class AccountRepositorySpec extends AnyFlatSpec with Matchers with EitherValues 
 
     // then
     val accounts = AccountRepository.getAccounts(userId = user.id).get
-    accounts.length shouldBe 1
+    accounts.size shouldBe 1
     accounts.head.availableBalance shouldBe 200.0
     accounts.head.currentBalance shouldBe 150.0
   }

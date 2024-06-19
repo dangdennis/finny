@@ -11,9 +11,9 @@ import scala.util.Success
 object PlaidSyncService:
   def syncTransactionsAndAccounts(itemId: UUID): Unit =
     val item = PlaidItemRepository.getItem(itemId).get
-    val transactions = PlaidService.getTransactionsSync(accessToken = item.plaidAccessToken)
+    val transactionsSyncResp = PlaidService.getTransactionsSync(accessToken = item.plaidAccessToken)
 
-    transactions match
+    transactionsSyncResp match
       case Failure(error) =>
         println(s"error syncing transactions: $error")
       case Success(response) =>
@@ -40,3 +40,6 @@ object PlaidSyncService:
               println(s"error upserting account: $error")
             case Success(accountId) =>
               println(s"upserted account: ${accountId}")
+
+        val added_or_modified = response.getAdded().asScala ++ response.getModified().asScala
+        val removed = response.getRemoved().asScala
