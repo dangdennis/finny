@@ -1,11 +1,13 @@
 package app
 
 import app.database.Database
+import app.utils.logger.LogConfig
 import io.helidon.webserver.WebServer
 import sttp.tapir._
 import sttp.tapir.server.nima.NimaServerInterpreter
 
 @main def main: Unit =
+  LogConfig.configureLogging()
   Database.init()
 
   val handler = NimaServerInterpreter().toHandler(Endpoints.createEndpoints())

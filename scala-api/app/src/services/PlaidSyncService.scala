@@ -2,7 +2,6 @@ package app.services
 
 import app.repositories.AccountRepository
 import app.repositories.PlaidItemRepository
-import ox._
 
 import java.util.UUID
 import scala.collection.JavaConverters._

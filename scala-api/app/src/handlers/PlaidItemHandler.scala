@@ -10,10 +10,11 @@ import app.services.PlaidSyncService
 
 import scala.util.Failure
 import scala.util.Success
+import scala.util.Try
 
 object PlaidItemHandler:
   def handlePlaidItemCreate(user: User, input: PlaidItemCreateRequest): Either[AuthenticationError, DTOs.PlaidItemCreateResponse] =
-    val result = for
+    val result: Try[PlaidItem] = for
       pubTokenData <- PlaidService.exchangePublicToken(input.publicToken)
       itemData <- PlaidService.getItem(pubTokenData.getAccessToken())
       item <- PlaidItemRepository.createItem(
@@ -32,8 +33,7 @@ object PlaidItemHandler:
       case Failure(error) =>
         println(s"error creating item: $error")
         Left(AuthenticationError(400))
-      case Success(id) =>
-        val item = PlaidItemRepository.getItem(id).get
+      case Success(item) =>
         PlaidSyncService.syncTransactionsAndAccounts(item.id)
 
         Right(

@@ -4,10 +4,11 @@ import app.models.User
 import scalikejdbc._
 
 import java.util.UUID
+import scala.util.Try
 
-object UserRepository:
-  def getUsers(): Unit =
-    val users: List[User] = DB readOnly { implicit session =>
+object UserProfileRepository:
+  def getUsers(): Try[List[User]] =
+    Try(DB readOnly { implicit session =>
       sql"select id from users"
         .map(rs =>
           User(
@@ -16,8 +17,4 @@ object UserRepository:
         )
         .list
         .apply()
-    }
-
-    println(s"get users start $users")
-
-    ()
+    })

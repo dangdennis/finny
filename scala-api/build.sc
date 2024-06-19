@@ -23,7 +23,8 @@ object app extends ScalaModule with ScalafixModule {
   object test extends ScalaTests with TestModule.ScalaTest with ScalafixModule {
     def ivyDeps = Agg(
       ivy"com.softwaremill.sttp.tapir::tapir-sttp-stub-server:1.10.8",
-      ivy"org.scalatest::scalatest:3.2.18"
+      ivy"org.scalatest::scalatest:3.2.18",
+      ivy"org.testcontainers:testcontainers:1.19.8"
     )
   }
 

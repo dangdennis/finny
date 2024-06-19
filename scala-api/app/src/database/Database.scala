@@ -9,3 +9,11 @@ object Database:
       "postgres.tqonkxhrucymdyndpjzf",
       "I07R6V4POCTi5wd4"
     )
+
+  // yes I'm lazy to use env vars'
+  def initForTests(): Unit =
+    ConnectionPool.singleton(
+      "jdbc:postgresql://127.0.0.1:54322/postgres",
+      "postgres",
+      "postgres"
+    )

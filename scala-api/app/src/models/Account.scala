@@ -5,8 +5,9 @@ import java.util.UUID
 
 case class Account(
     id: UUID,
+    itemId: UUID,
     userId: UUID,
-    plaidAccountId: UUID,
+    plaidAccountId: String,
     name: String,
     mask: Option[String],
     officialName: Option[String],
