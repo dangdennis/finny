@@ -14,10 +14,14 @@ import test.helpers._
 import scalikejdbc._
 import app.repositories.TransactionRepository
 import app.repositories.TransactionRepository.UpsertTransactionInput
+import org.scalatest.BeforeAndAfterEach
 
-class TransactionRepositoryspec extends AnyFlatSpec with Matchers with EitherValues with BeforeAndAfterAll:
+class TransactionRepositoryspec extends AnyFlatSpec with Matchers with EitherValues with BeforeAndAfterAll with BeforeAndAfterEach:
   override protected def beforeAll(): Unit =
     TestHelper.beforeAll()
+
+  override protected def beforeEach(): Unit =
+    TestHelper.beforeEach()
 
   it should "upsert transactions" in {
     // given
@@ -106,6 +110,23 @@ class TransactionRepositoryspec extends AnyFlatSpec with Matchers with EitherVal
       )
     )
 
+    TransactionRepository.upsertTransaction(
+      input = UpsertTransactionInput(
+        accountId = accountId,
+        plaidTransactionId = "somePlaidTransactionId2",
+        category = Some("someOtherCategory"),
+        subcategory = Some("someOtherSubcategory"),
+        transactionType = "someType",
+        name = "someName",
+        amount = 100.0,
+        isoCurrencyCode = Some("USD"),
+        unofficialCurrencyCode = Some("USD"),
+        date = java.time.Instant.now(),
+        pending = false,
+        accountOwner = Some("Dennis")
+      )
+    )
+
     // then
     val transactions = DB.readOnly { implicit session =>
       sql"SELECT * FROM transactions"
@@ -114,7 +135,7 @@ class TransactionRepositoryspec extends AnyFlatSpec with Matchers with EitherVal
         .apply()
     }
 
-    transactions.size should be(1)
+    transactions.size should be(2)
 
     val transaction = transactions.head
     transaction.accountId should be(accountId)
@@ -128,4 +149,22 @@ class TransactionRepositoryspec extends AnyFlatSpec with Matchers with EitherVal
     transaction.unofficialCurrencyCode should be(Some("USD"))
     transaction.pending should be(false)
     transaction.accountOwner should be(Some("Alice"))
+
+    TransactionRepository.delete(List(transaction.plaidTransactionId))
+
+    val transactionsAfterDelete = DB.readOnly { implicit session =>
+      sql"SELECT * FROM transactions"
+        .map(TransactionRepository.toModel)
+        .list
+        .apply()
+    }
+
+    transactionsAfterDelete.size should be(1)
+
+    val transactionAfterDelete = transactionsAfterDelete.head
+    transactionAfterDelete.plaidTransactionId should be("somePlaidTransactionId2")
+
+    PlaidItemRepository.updateTransactionCursor(item.id, Some("someCursor"))
+    val updatedItem = PlaidItemRepository.getById(item.id).get
+    updatedItem.transactionsCursor should be(Some("someCursor"))
   }

@@ -20,13 +20,13 @@ import scala.util.Try
 object Endpoints:
   private val logger = LoggerFactory.getLogger(this.getClass)
 
-  def authenticate(token: AuthenticationToken): Either[AuthenticationError, User] =
+  def authenticate(token: AuthenticationToken): Either[AuthenticationError, Profile] =
     val jwtSecret = "09sUFObcLZHvtRvj5LBqtQomVPuVqOAa/LW2hcdQqyxCwpH9JDOGPwmn6XHMpaxqUPfRWkxTgiB9i4rb1Vwxwg=="
     val algorithm = Algorithm.HMAC256(jwtSecret);
     val verifier = JWT.require(algorithm).withIssuer("https://tqonkxhrucymdyndpjzf.supabase.co/auth/v1").build();
     val decodedJwt = Try(verifier.verify(token.value))
     decodedJwt match
-      case scala.util.Success(jwt) => Right(User(id = UUID.fromString(jwt.getSubject())))
+      case scala.util.Success(jwt) => Right(Profile(id = UUID.fromString(jwt.getSubject())))
       case scala.util.Failure(error) =>
         logger.error(s"Error decoding JWT: ${error.getMessage()}")
         Left(AuthenticationError(404))

@@ -17,7 +17,7 @@ object PlaidItemRepository:
       transactionsCursor: Option[String]
   )
 
-  def getItem(itemId: UUID): Try[PlaidItem] =
+  def getById(itemId: UUID): Try[PlaidItem] =
     Try(DB readOnly { implicit session =>
       sql"""select id, user_id, plaid_access_token, plaid_item_id, plaid_institution_id, status, transactions_cursor, created_at from plaid_items where id = ${itemId}"""
         .map(rs =>
@@ -62,3 +62,9 @@ object PlaidItemRepository:
         .single
         .apply()
     }).map(item => item.get)
+
+  def updateTransactionCursor(itemId: UUID, cursor: Option[String]): Try[Unit] =
+    Try(DB autoCommit { implicit session =>
+      sql"""UPDATE plaid_items SET transactions_cursor = ${cursor} WHERE id = ${itemId}""".update
+        .apply()
+    })

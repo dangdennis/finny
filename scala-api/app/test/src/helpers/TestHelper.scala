@@ -7,4 +7,6 @@ object TestHelper:
   def beforeAll(): Unit =
     Database.initForTests()
     LogConfig.configureLogging()
+
+  def beforeEach(): Unit =
     DatabaseHelper.truncateTables()

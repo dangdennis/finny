@@ -2,6 +2,6 @@ package app.models
 
 import java.util.UUID
 
-case class User(
+case class Profile(
     id: UUID
 )

@@ -4,6 +4,7 @@ import java.time.Instant
 import java.util.UUID
 
 case class Transaction(
+    id: UUID,
     accountId: UUID,
     plaidTransactionId: String,
     category: Option[String],

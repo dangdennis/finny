@@ -13,7 +13,7 @@ import scala.util.Success
 import scala.util.Try
 
 object PlaidItemHandler:
-  def handlePlaidItemCreate(user: User, input: PlaidItemCreateRequest): Either[AuthenticationError, DTOs.PlaidItemCreateResponse] =
+  def handlePlaidItemCreate(user: Profile, input: PlaidItemCreateRequest): Either[AuthenticationError, DTOs.PlaidItemCreateResponse] =
     val result: Try[PlaidItem] = for
       pubTokenData <- PlaidService.exchangePublicToken(input.publicToken)
       itemData <- PlaidService.getItem(pubTokenData.getAccessToken())

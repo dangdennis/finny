@@ -1,17 +1,17 @@
 package app.repositories
 
-import app.models.User
+import app.models.Profile
 import scalikejdbc._
 
 import java.util.UUID
 import scala.util.Try
 
-object UserProfileRepository:
-  def getUsers(): Try[List[User]] =
+object ProfileRepository:
+  def getUsers(): Try[List[Profile]] =
     Try(DB readOnly { implicit session =>
-      sql"select id from users"
+      sql"select id from profiles"
         .map(rs =>
-          User(
+          Profile(
             id = UUID.fromString(rs.string("id"))
           )
         )

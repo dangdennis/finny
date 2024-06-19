@@ -73,9 +73,19 @@ object TransactionRepository {
         .get
     }))
 
+  def delete(plaidTransactionIds: List[String]): Try[Unit] =
+    Try(DB.autoCommit(implicit session => {
+      sql"""
+            DELETE FROM transactions
+            WHERE plaid_transaction_id IN ($plaidTransactionIds)
+        """.execute
+        .apply()
+    }))
+
   def toModel(rs: WrappedResultSet): Transaction =
     Transaction(
-      accountId = UUID.fromString(rs.get("account_id")),
+      id = UUID.fromString(rs.string("id")),
+      accountId = UUID.fromString(rs.string("account_id")),
       plaidTransactionId = rs.string("plaid_transaction_id"),
       category = rs.stringOpt("category"),
       subcategory = rs.stringOpt("subcategory"),

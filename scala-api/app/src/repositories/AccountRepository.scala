@@ -1,6 +1,6 @@
 package app.repositories
 
-import app.models.Account
+import app.models.{Account, AccountSimple}
 import scalikejdbc._
 
 import java.util.UUID
@@ -21,6 +21,24 @@ object AccountRepository:
       accountType: Option[String],
       accountSubtype: Option[String]
   )
+
+  def getByPlaidAccountId(itemId: UUID, plaidAccountId: String): Try[AccountSimple] =
+    Try(DB readOnly { implicit session =>
+      sql"""
+        SELECT id, item_id, user_id, plaid_account_id FROM accounts WHERE item_id = $itemId and plaid_account_id = $plaidAccountId;
+        """
+        .map(rs =>
+          AccountSimple(
+            id = UUID.fromString(rs.string("id")),
+            itemId = UUID.fromString(rs.string("item_id")),
+            plaidAccountId = rs.string("plaid_account_id"),
+            userId = UUID.fromString(rs.string("user_id"))
+          )
+        )
+        .single
+        .apply()
+        .get
+    })
 
   def upsertAccount(input: UpsertAccountInput): Try[UUID] =
     Try(DB autoCommit { implicit session =>

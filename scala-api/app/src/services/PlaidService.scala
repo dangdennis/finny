@@ -32,8 +32,8 @@ object PlaidService:
     apiClient.setPlaidAdapter(ApiClient.Sandbox)
     apiClient.createService(classOf[PlaidApi])
 
-  def getTransactionsSync(accessToken: String): Try[TransactionsSyncResponse] =
-    val req = TransactionsSyncRequest().accessToken(accessToken)
+  def getTransactionsSync(accessToken: String, cursor: Option[String]): Try[TransactionsSyncResponse] =
+    val req = TransactionsSyncRequest().accessToken(accessToken).cursor(cursor.orNull)
     val response = Try(client.transactionsSync(req).execute())
     response match
       case Failure(e) => Failure(e)

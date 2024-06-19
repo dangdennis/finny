@@ -1,6 +1,5 @@
 package test.repositories
 
-import org.scalatest.EitherValues
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import app.repositories.AccountRepository
@@ -10,10 +9,14 @@ import app.repositories.PlaidItemRepository
 import app.repositories.PlaidItemRepository.CreateItemInput
 import app.models.PlaidItemStatus
 import test.helpers._
+import org.scalatest.BeforeAndAfterEach
 
-class AccountRepositorySpec extends AnyFlatSpec with Matchers with EitherValues with BeforeAndAfterAll:
+class AccountRepositorySpec extends AnyFlatSpec with Matchers with BeforeAndAfterAll with BeforeAndAfterEach:
   override protected def beforeAll(): Unit =
     TestHelper.beforeAll()
+
+  override protected def beforeEach(): Unit =
+    TestHelper.beforeEach()
 
   it should "upsert accounts" in {
     // given
@@ -68,7 +71,7 @@ class AccountRepositorySpec extends AnyFlatSpec with Matchers with EitherValues 
 
     // then
     val accounts = AccountRepository.getAccounts(userId = user.id).get
-    accounts.size shouldBe 1
-    accounts.head.availableBalance shouldBe 200.0
-    accounts.head.currentBalance shouldBe 150.0
+    accounts.size should be(1)
+    accounts.head.availableBalance should be(200.0)
+    accounts.head.currentBalance should be(150.0)
   }
