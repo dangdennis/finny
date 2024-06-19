@@ -2,7 +2,7 @@ run:
 	./mill app.run
 
 compile:
-	./mill app.compile
+	./mill app.test.compile app.compile
 
 assembly:
 	./mill app.assembly
@@ -17,7 +17,7 @@ r:
 	./mill -w app.runBackground
 
 c:
-	./mill -w app.compile
+	./mill -w app.test.compile app.compile
 
 t:
 	./mill -w app.test

@@ -1,7 +1,7 @@
 package test.helpers
 
 import app.database.Database
-import utils.logger.LogConfig
+import app.utils.logger.LogConfig
 
 object TestHelper:
   def beforeAll(): Unit =

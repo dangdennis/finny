@@ -30,6 +30,8 @@ class AccountRepositorySpec extends AnyFlatSpec with Matchers with EitherValues 
         )
       )
       .get
+
+    // when
     AccountRepository.upsertAccount(
       UpsertAccountInput(
         itemId = item.id,
@@ -47,7 +49,26 @@ class AccountRepositorySpec extends AnyFlatSpec with Matchers with EitherValues 
       )
     )
 
-    // when
+    AccountRepository.upsertAccount(
+      UpsertAccountInput(
+        itemId = item.id,
+        userId = user.id,
+        accountSubtype = Some("checking"),
+        accountType = Some("depository"),
+        availableBalance = 200.0,
+        currentBalance = 150.0,
+        isoCurrencyCode = Some("USD"),
+        mask = Some("1234"),
+        name = "Alice",
+        officialName = Some("Alice's Checking"),
+        plaidAccountId = "somePlaidAccountId",
+        unofficialCurrencyCode = Some("USD")
+      )
+    )
+
+    // then
     val accounts = AccountRepository.getAccounts(userId = user.id).get
     accounts.length shouldBe 1
+    accounts.head.availableBalance shouldBe 200.0
+    accounts.head.currentBalance shouldBe 150.0
   }
