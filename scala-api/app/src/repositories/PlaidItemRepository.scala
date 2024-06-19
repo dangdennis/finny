@@ -8,15 +8,6 @@ import java.util.UUID
 import scala.util.Try
 
 object PlaidItemRepository:
-  case class CreateItemInput(
-      userId: UUID,
-      plaidAccessToken: String,
-      plaidItemId: String,
-      plaidInstitutionId: String,
-      status: PlaidItemStatus,
-      transactionsCursor: Option[String]
-  )
-
   def getById(itemId: UUID): Try[PlaidItem] =
     Try(DB readOnly { implicit session =>
       sql"""select id, user_id, plaid_access_token, plaid_item_id, plaid_institution_id, status, transactions_cursor, created_at from plaid_items where id = ${itemId}"""
@@ -37,16 +28,27 @@ object PlaidItemRepository:
         .get
     })
 
+  case class CreateItemInput(
+      userId: UUID,
+      plaidAccessToken: String,
+      plaidItemId: String,
+      plaidInstitutionId: String,
+      status: PlaidItemStatus,
+      transactionsCursor: Option[String]
+  )
+
   def createItem(input: CreateItemInput): Try[PlaidItem] =
     Try(DB autoCommit { implicit session =>
-      sql"""INSERT INTO plaid_items (user_id, plaid_access_token, plaid_item_id, plaid_institution_id, status, transactions_cursor)
+      val query =
+        sql"""INSERT INTO plaid_items (user_id, plaid_access_token, plaid_item_id, plaid_institution_id, status, transactions_cursor)
         VALUES (${input.userId}, ${input.plaidAccessToken}, ${input.plaidItemId}, ${input.plaidInstitutionId}, ${input.status
-          .toString()}, ${input.transactionsCursor})
+            .toString()}, ${input.transactionsCursor})
         ON CONFLICT (plaid_item_id) DO UPDATE SET
           status = EXCLUDED.status,
           plaid_access_token = EXCLUDED.plaid_access_token
         RETURNING id, user_id, plaid_access_token, plaid_item_id, plaid_institution_id, status, transactions_cursor, created_at;
         """
+      query
         .map(rs =>
           PlaidItem(
             id = UUID.fromString(rs.string("id")),

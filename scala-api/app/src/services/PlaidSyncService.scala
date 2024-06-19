@@ -1,15 +1,15 @@
 package app.services
 
+import app.models.PlaidItem
 import app.repositories.AccountRepository
 import app.repositories.PlaidItemRepository
+import app.repositories.TransactionRepository
+import com.plaid.client.model.TransactionsSyncResponse
 
 import java.util.UUID
 import scala.collection.JavaConverters._
 import scala.util.Failure
 import scala.util.Success
-import app.repositories.TransactionRepository
-import com.plaid.client.model.TransactionsSyncResponse
-import app.models.PlaidItem
 
 object PlaidSyncService:
   def syncTransactionsAndAccounts(itemId: UUID): Unit =
@@ -57,7 +57,7 @@ object PlaidSyncService:
     println(s"removed length: ${removed.size}")
 
     for transaction <- added_or_modified do
-      AccountRepository.getByPlaidAccountId(itemId = item.id, plaidAccountId = transaction.getTransactionId()) match
+      AccountRepository.getByPlaidAccountId(itemId = item.id, plaidAccountId = transaction.getAccountId()) match
         case Failure(error) =>
           println(s"failed to upsert transaction ${transaction.getTransactionId()} due to missing account: $error")
         case Success(account) =>

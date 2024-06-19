@@ -77,7 +77,7 @@ object TransactionRepository {
     Try(DB.autoCommit(implicit session => {
       sql"""
             DELETE FROM transactions
-            WHERE plaid_transaction_id IN ($plaidTransactionIds)
+            WHERE plaid_transaction_id IN $plaidTransactionIds
         """.execute
         .apply()
     }))

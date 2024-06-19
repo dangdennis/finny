@@ -21,9 +21,11 @@ object Endpoints:
   private val logger = LoggerFactory.getLogger(this.getClass)
 
   def authenticate(token: AuthenticationToken): Either[AuthenticationError, Profile] =
-    val jwtSecret = "09sUFObcLZHvtRvj5LBqtQomVPuVqOAa/LW2hcdQqyxCwpH9JDOGPwmn6XHMpaxqUPfRWkxTgiB9i4rb1Vwxwg=="
+    // val jwtSecret = "09sUFObcLZHvtRvj5LBqtQomVPuVqOAa/LW2hcdQqyxCwpH9JDOGPwmn6XHMpaxqUPfRWkxTgiB9i4rb1Vwxwg=="
+    val jwtSecret = "super-secret-jwt-token-with-at-least-32-characters-long"
     val algorithm = Algorithm.HMAC256(jwtSecret);
-    val verifier = JWT.require(algorithm).withIssuer("https://tqonkxhrucymdyndpjzf.supabase.co/auth/v1").build();
+    // val verifier = JWT.require(algorithm).withIssuer("https://tqonkxhrucymdyndpjzf.supabase.co/auth/v1").build();
+    val verifier = JWT.require(algorithm).withIssuer("http://127.0.0.1:54321/auth/v1").build();
     val decodedJwt = Try(verifier.verify(token.value))
     decodedJwt match
       case scala.util.Success(jwt) => Right(Profile(id = UUID.fromString(jwt.getSubject())))
