@@ -1,13 +1,13 @@
 package app.database
 
 import app.utils.Environment
-import scalikejdbc._
+import app.utils.Environment.DatabaseConfig
+import scalikejdbc.*
 
 object Database:
-  def init(): Unit =
-    val databaseConfigs = Environment.getDatabaseConfig.getOrElse(sys.error("Database config not found"))
+  def init(configs: DatabaseConfig): Unit =
     ConnectionPool.singleton(
-      databaseConfigs.url,
-      databaseConfigs.user,
-      databaseConfigs.password,
+      configs.url,
+      configs.user,
+      configs.password,
     )

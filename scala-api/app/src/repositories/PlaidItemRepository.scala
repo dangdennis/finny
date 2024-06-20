@@ -2,7 +2,7 @@ package app.repositories
 
 import app.models.PlaidItem
 import app.models.PlaidItemStatus
-import scalikejdbc._
+import scalikejdbc.*
 
 import java.util.UUID
 import scala.util.Try

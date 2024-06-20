@@ -5,22 +5,26 @@ import app.utils.Environment
 import app.utils.Environment.AppEnv
 import app.utils.logger.LogConfig
 import io.helidon.webserver.WebServer
-import sttp.tapir._
+import sttp.tapir.*
 import sttp.tapir.server.nima.NimaServerInterpreter
 
 @main def main: Unit =
-  LogConfig.configureLogging()
-  Database.init()
-
-  val handler = NimaServerInterpreter().toHandler(Endpoints.createEndpoints())
   val appEnv = Environment.getAppEnv
   val port = Environment.getPort
+  val jwtIssue = Environment.getJwtIssue
+  val jwtSecret = Environment.getJwtSecret
+  val databaseConfig = Environment.getDatabaseConfig
 
   appEnv match
     case AppEnv.Development =>
       println(s"Running in development mode.")
     case AppEnv.Production =>
       println(s"Running in production mode.")
+
+  LogConfig.configureLogging()
+  Database.init(configs = databaseConfig)
+
+  val handler = NimaServerInterpreter().toHandler(Endpoints.createEndpoints(Endpoints.AuthConfig(jwtSecret, jwtIssue)))
 
   val server = WebServer
     .builder()

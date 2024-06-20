@@ -7,7 +7,7 @@ import app.repositories.TransactionRepository
 import com.plaid.client.model.TransactionsSyncResponse
 
 import java.util.UUID
-import scala.collection.JavaConverters._
+import scala.collection.JavaConverters.*
 import scala.util.Failure
 import scala.util.Success
 

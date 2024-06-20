@@ -1,46 +1,47 @@
 package app
 
-import app.dtos._
-import app.handlers._
-import app.models._
-import app.utils.Environment
-import com.auth0.jwt._
+import app.dtos.*
+import app.handlers.*
+import app.models.*
+import com.auth0.jwt.*
 import com.auth0.jwt.algorithms.Algorithm
 import org.slf4j.LoggerFactory
 import sttp.shared.Identity
-import sttp.tapir._
-import sttp.tapir.json.upickle._
+import sttp.tapir.*
+import sttp.tapir.json.upickle.*
 import sttp.tapir.server.ServerEndpoint
 import sttp.tapir.server.metrics.prometheus.PrometheusMetrics
 import sttp.tapir.swagger.bundle.SwaggerInterpreter
 
 import java.util.UUID
-import scala.collection.JavaConverters._
+import scala.collection.JavaConverters.*
 import scala.util.Try
 
 object Endpoints:
   private val logger = LoggerFactory.getLogger(this.getClass)
-  lazy private val jwtSecret = Environment.getJwtSecret
-  lazy private val algorithm = Algorithm.HMAC256(jwtSecret);
-  lazy private val jwtIssue = Environment.getJwtIssue
 
-  def authenticate(token: AuthenticationToken): Either[AuthenticationError, Profile] =
 
-    val verifier = JWT.require(algorithm).withIssuer(jwtIssue).build();
-    val decodedJwt = Try(verifier.verify(token.value))
-    decodedJwt match
-      case scala.util.Success(jwt) => Right(Profile(id = UUID.fromString(jwt.getSubject())))
-      case scala.util.Failure(error) =>
-        logger.error(s"Error decoding JWT: ${error.getMessage()}")
-        Left(AuthenticationError(404))
+  case class AuthConfig(jwtSecret: String, jwtIssuer: String)
 
-  def createEndpoints() =
+  def makeAuthenticator(authConfig: AuthConfig): AuthenticationToken => Either[AuthenticationError, Profile] =
+    val algorithm = Algorithm.HMAC256(authConfig.jwtSecret);
+  
+    (token: AuthenticationToken) =>
+      val verifier = JWT.require(algorithm).withIssuer(authConfig.jwtIssuer).build();
+      val decodedJwt = Try(verifier.verify(token.value))
+      decodedJwt match
+        case scala.util.Success(jwt) => Right(Profile(id = UUID.fromString(jwt.getSubject())))
+        case scala.util.Failure(error) =>
+          logger.error(s"Error decoding JWT: ${error.getMessage()}")
+          Left(AuthenticationError(404))
+
+  def createEndpoints(authConfig: AuthConfig) =
     val rootEndpoint = endpoint.get.in("").out(stringBody)
     val rootApiEndpoint = endpoint.in("api").tag("Finny API")
     val secureApiEndpoint = rootApiEndpoint
       .securityIn(auth.bearer[String]().mapTo[AuthenticationToken])
       .errorOut(plainBody[Int].mapTo[AuthenticationError])
-      .handleSecurity(authenticate)
+      .handleSecurity(makeAuthenticator(authConfig))
 
     val indexServerEndpoint = rootEndpoint.handle(_ => IndexHandler.handleIndex())
     val plaidItemCreateEndpoint = secureApiEndpoint.post

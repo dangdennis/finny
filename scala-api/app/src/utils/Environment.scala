@@ -23,14 +23,14 @@ object Environment:
 
   case class DatabaseConfig(url: String, user: String, password: String)
 
-  def getDatabaseConfig: Option[DatabaseConfig] =
+  def getDatabaseConfig: DatabaseConfig =
     val pattern = """jdbc:postgresql://([^:]+):([^@]+)@([^/]+/[^?]+)""".r
 
     getDatabaseUrl match
       case pattern(username, password, restUrl) =>
-        Some(DatabaseConfig(url = s"jdbc:postgresql://$restUrl", user = username, password = password))
+        DatabaseConfig(url = s"jdbc:postgresql://$restUrl", user = username, password = password)
       case _ =>
-        None
+        sys.error("Invalid database URL format. Expected: jdbc:postgresql://username:password@host:port/database")
 
   def getJwtSecret: String =
     getEnv("JWT_SECRET", "super-secret-jwt-token-with-at-least-32-characters-long")
@@ -46,8 +46,6 @@ object Environment:
   
 
     // val jwtSecret = "09sUFObcLZHvtRvj5LBqtQomVPuVqOAa/LW2hcdQqyxCwpH9JDOGPwmn6XHMpaxqUPfRWkxTgiB9i4rb1Vwxwg=="
-
-
     // ConnectionPool.singleton(
     //   "jdbc:postgresql://aws-0-us-east-1.pooler.supabase.com:6543/postgres",
     //   "postgres.tqonkxhrucymdyndpjzf",

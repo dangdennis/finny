@@ -1,7 +1,7 @@
 package app.handlers
 
-import app.dtos._
-import app.models._
+import app.dtos.*
+import app.models.*
 
 object PlaidLinkHandler:
   def handler(): Either[AuthenticationError, DTOs.PlaidLinkCreateResponse] = Right(

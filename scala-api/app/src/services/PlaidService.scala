@@ -13,7 +13,7 @@ import com.plaid.client.model.TransactionsSyncRequest
 import com.plaid.client.model.TransactionsSyncResponse
 import com.plaid.client.request.PlaidApi
 
-import scala.collection.JavaConverters._
+import scala.collection.JavaConverters.*
 import scala.util.Failure
 import scala.util.Success
 import scala.util.Try

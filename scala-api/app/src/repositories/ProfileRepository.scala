@@ -1,7 +1,7 @@
 package app.repositories
 
 import app.models.Profile
-import scalikejdbc._
+import scalikejdbc.*
 
 import java.util.UUID
 import scala.util.Try

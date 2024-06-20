@@ -1,8 +1,8 @@
 package app.handlers
 
+import app.dtos.*
 import app.dtos.DTOs.PlaidItemCreateRequest
-import app.dtos._
-import app.models._
+import app.models.*
 import app.repositories.PlaidItemRepository
 import app.repositories.PlaidItemRepository.CreateItemInput
 import app.services.PlaidService

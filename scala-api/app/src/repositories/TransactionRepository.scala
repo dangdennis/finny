@@ -1,7 +1,7 @@
 package app.repositories
 
 import app.models.Transaction
-import scalikejdbc._
+import scalikejdbc.*
 
 import java.time.Instant
 import java.util.UUID
