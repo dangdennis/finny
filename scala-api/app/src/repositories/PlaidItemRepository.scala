@@ -8,9 +8,29 @@ import java.util.UUID
 import scala.util.Try
 
 object PlaidItemRepository:
-  def getById(itemId: UUID): Try[PlaidItem] =
+  def getById(id: UUID): Try[PlaidItem] =
     Try(DB readOnly { implicit session =>
-      sql"""select id, user_id, plaid_access_token, plaid_item_id, plaid_institution_id, status, transactions_cursor, created_at from plaid_items where id = ${itemId}"""
+      sql"""select id, user_id, plaid_access_token, plaid_item_id, plaid_institution_id, status, transactions_cursor, created_at from plaid_items where id = ${id}"""
+        .map(rs =>
+          PlaidItem(
+            id = UUID.fromString(rs.string("id")),
+            userId = UUID.fromString(rs.string("user_id")),
+            plaidAccessToken = rs.string("plaid_access_token"),
+            plaidItemId = rs.string("plaid_item_id"),
+            plaidInstitutionId = rs.string("plaid_institution_id"),
+            status = PlaidItemStatus.fromString(rs.string("status")),
+            transactionsCursor = rs.stringOpt("transactions_cursor"),
+            createdAt = rs.timestamp("created_at").toInstant
+          )
+        )
+        .single
+        .apply()
+        .get
+    })
+
+  def getByItemId(itemId: String): Try[PlaidItem] =
+    Try(DB readOnly { implicit session =>
+      sql"""select id, user_id, plaid_access_token, plaid_item_id, plaid_institution_id, status, transactions_cursor, created_at from plaid_items where plaid_item_id = ${itemId}"""
         .map(rs =>
           PlaidItem(
             id = UUID.fromString(rs.string("id")),

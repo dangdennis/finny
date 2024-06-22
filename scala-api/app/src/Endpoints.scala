@@ -20,12 +20,11 @@ import scala.util.Try
 object Endpoints:
   private val logger = LoggerFactory.getLogger(this.getClass)
 
-
   case class AuthConfig(jwtSecret: String, jwtIssuer: String)
 
   def makeAuthenticator(authConfig: AuthConfig): AuthenticationToken => Either[AuthenticationError, Profile] =
     val algorithm = Algorithm.HMAC256(authConfig.jwtSecret);
-  
+
     (token: AuthenticationToken) =>
       val verifier = JWT.require(algorithm).withIssuer(authConfig.jwtIssuer).build();
       val decodedJwt = Try(verifier.verify(token.value))
@@ -54,6 +53,12 @@ object Endpoints:
       .in("plaid-links" / "create")
       .out(jsonBody[DTOs.PlaidLinkCreateResponse])
     val plaidLinkCreateServerEndpoint = plaidLinkCreateEndpoint.handle(p1 => p2 => PlaidLinkHandler.handler())
+    
+    val webhookEndpoint = endpoint.post
+      .in("webhook" / "plaid")
+      .in(stringJsonBody)
+      .out(stringBody)
+      .handle(rawJson => PlaidWebhookHandler.handleWebhook(rawJson))
 
     val secureServerEndpoints = List(plaidItemCreateServerEndpoint, plaidLinkCreateServerEndpoint)
     val serverEndpoints = List(indexServerEndpoint) ++ secureServerEndpoints

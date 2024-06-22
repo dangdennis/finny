@@ -13,18 +13,23 @@ import scala.util.Success
 
 object PlaidSyncService:
   def syncTransactionsAndAccounts(itemId: UUID): Unit =
-    val item = PlaidItemRepository.getById(itemId).get
-    var cursor = item.transactionsCursor
-    var hasMore = true
-    while hasMore do
-      var transactionsSyncResp = PlaidService.getTransactionsSync(accessToken = item.plaidAccessToken, cursor = cursor)
-      transactionsSyncResp match
-        case Failure(error) =>
-          println(s"error syncing transactions: $error")
-        case Success(response) =>
-          sync(item, response)
-          hasMore = response.getHasMore().booleanValue()
-          cursor = Option(response.getNextCursor())
+    val item = PlaidItemRepository.getById(itemId)
+    item match
+      case Failure(exception) =>
+        // todo: print and log exception to sentry
+        println(f"Failed to get item of itemId ${itemId}. err=${exception}")
+      case Success(item) =>
+        var cursor = item.transactionsCursor
+        var hasMore = true
+        while hasMore do
+          var transactionsSyncResp = PlaidService.getTransactionsSync(accessToken = item.plaidAccessToken, cursor = cursor)
+          transactionsSyncResp match
+            case Failure(error) =>
+              println(s"error syncing transactions: $error")
+            case Success(response) =>
+              sync(item, response)
+              hasMore = response.getHasMore().booleanValue()
+              cursor = Option(response.getNextCursor())
 
   private def sync(item: PlaidItem, response: TransactionsSyncResponse): Unit =
     val accounts = response.getAccounts().asScala
