@@ -163,3 +163,20 @@ model profiles {
   @@map("profiles")
   @@schema("public")
 }
+
+model jobs {
+  id                String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  status            String    @default("PENDING")
+  type              String
+  payload           Json
+  created_at        DateTime  @default(now())
+  updated_at        DateTime  @updatedAt
+  retry_attempts    Int       @default(0)
+  last_attempted_at DateTime?
+  error_message     String?
+  idempotency_key   String?   @unique
+
+
+  @@map("jobs")
+  @@schema("public")
+}
