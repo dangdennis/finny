@@ -195,18 +195,6 @@ ALTER TABLE "public"."plaid_link_events" ADD CONSTRAINT "plaid_link_events_user_
 -- AddForeignKey
 ALTER TABLE "public"."transactions" ADD CONSTRAINT "transactions_account_id_fkey" FOREIGN KEY ("account_id") REFERENCES "public"."accounts"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
-create function public.handle_new_user()
-returns trigger as $$
-begin
-  insert into public."profiles" (id)
-  values (new.id);
-  return new;
-end;
-$$ language plpgsql security definer;
-create trigger on_auth_user_created
-  after insert on auth.users
-  for each row execute procedure public.handle_new_user();
-
 alter table public.accounts enable row level security;
 alter table public.assets enable row level security;
 alter table public.goals enable row level security;
