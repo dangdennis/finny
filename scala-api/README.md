@@ -39,3 +39,8 @@ export JAVA_HOME=/Library/Java/JavaVirtualMachines/temurin-21.jdk/Contents/Home
 export PATH=$JAVA_HOME/bin:$PATH
 
 ```
+
+## Infrastructure
+* [LavinMQ](https://lavinmq.com/documentation/installation-guide) - `brew install cloudamqp/cloudamqp/lavinmq`
+* [Supabase](https://supabase.com/docs/guides/cli/getting-started) `brew install supabase/tap/supabase`
+* [Fly](https://fly.io)

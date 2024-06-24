@@ -1,11 +1,9 @@
 package app.utils
 
-
-
 object Environment:
   enum AppEnv:
     case Development, Production
-  
+
   private def getEnv(key: String, default: String): String =
     sys.env.getOrElse(key, default)
 
@@ -15,8 +13,8 @@ object Environment:
   def getAppEnv: AppEnv =
     getEnv("APP_ENV", "development") match
       case "development" => AppEnv.Development
-      case "production" => AppEnv.Production
-      case _ => sys.error("Invalid APP_ENV. Expected: development or production")
+      case "production"  => AppEnv.Production
+      case _             => sys.error("Invalid APP_ENV. Expected: development or production")
 
   def getPort: Int =
     getEnv("HTTP_PORT").flatMap(_.toIntOption).getOrElse(8080)
@@ -32,13 +30,16 @@ object Environment:
       case _ =>
         sys.error("Invalid database URL format. Expected: jdbc:postgresql://username:password@host:port/database")
 
+  private def getDatabaseUrl: String =
+    getEnv("DATABASE_URL", "jdbc:postgresql://postgres:postgres@127.0.0.1:54322/postgres")
+
   def getJwtSecret: String =
     getEnv("JWT_SECRET", "super-secret-jwt-token-with-at-least-32-characters-long")
 
   def getJwtIssue: String =
     getAppEnv match
       case AppEnv.Development => "http://127.0.0.1:54321/auth/v1"
-      case AppEnv.Production => "https://tqonkxhrucymdyndpjzf.supabase.co/auth/v1"
+      case AppEnv.Production  => "https://tqonkxhrucymdyndpjzf.supabase.co/auth/v1"
 
-  private def getDatabaseUrl: String =
-    getEnv("DATABASE_URL", "jdbc:postgresql://postgres:postgres@127.0.0.1:54322/postgres")
+  def getLavinMQUrl: String =
+    getEnv("LAVIN_MQ_URL", "amqp://guest:guest@localhost:5672")

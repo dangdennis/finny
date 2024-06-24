@@ -17,7 +17,8 @@ object app extends ScalaModule with ScalafixModule {
     ivy"ch.qos.logback:logback-classic:1.5.6",
     ivy"org.postgresql:postgresql::42.2.18",
     ivy"org.scalikejdbc::scalikejdbc:4.3.0",
-    ivy"com.auth0:java-jwt:4.4.0"
+    ivy"com.auth0:java-jwt:4.4.0",
+    ivy"com.rabbitmq:amqp-client:5.21.0",
   )
 
   object test extends ScalaTests with TestModule.ScalaTest with ScalafixModule {
