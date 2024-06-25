@@ -2,6 +2,7 @@ package app.handlers
 
 import app.repositories.PlaidItemRepository
 import app.services.PlaidSyncService
+import app.utils.logger.Logger
 import ox.*
 import upickle.default.ReadWriter
 import upickle.default.read
@@ -22,13 +23,13 @@ object PlaidWebhookHandler:
     val webhookType = json("webhook_type").strOpt
     val webhookCode = json("webhook_code").strOpt
 
-    println(s"Raw JSON: $rawJson")
-    println(f"Webhook type: $webhookType")
-    println(f"Webhook code: $webhookCode")
+    Logger.root.info(s"Raw JSON: $rawJson")
+    Logger.root.info(f"Webhook type: $webhookType")
+    Logger.root.info(f"Webhook code: $webhookCode")
 
     (webhookType, webhookCode) match
       case (Some("TRANSACTIONS"), Some("SYNC_UPDATES_AVAILABLE")) =>
-        println("Received Plaid webhook for transactions")
+        Logger.root.info("Received Plaid webhook for transactions")
 
         supervised {
           forkUser {
@@ -41,5 +42,5 @@ object PlaidWebhookHandler:
 
         Right("Received Plaid webhook for transactions")
       case _ =>
-        println(f"Not handling Plaid webhook: $webhookType, $webhookCode")
+        Logger.root.warn(f"Not handling Plaid webhook: $webhookType, $webhookCode")
         Right("Not handling Plaid webhook")

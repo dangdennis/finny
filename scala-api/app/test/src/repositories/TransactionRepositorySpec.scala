@@ -25,7 +25,7 @@ class TransactionRepositoryspec extends AnyFlatSpec with Matchers with EitherVal
 
   it should "upsert transactions" in {
     // given
-    val user = UserRepositoryHelper.createUser()
+    val user = AuthUserRepositoryHelper.createUser()
     val item = PlaidItemRepository
       .createItem(
         CreateItemInput(

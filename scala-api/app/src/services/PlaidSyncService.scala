@@ -4,6 +4,7 @@ import app.models.PlaidItem
 import app.repositories.AccountRepository
 import app.repositories.PlaidItemRepository
 import app.repositories.TransactionRepository
+import app.utils.logger.Logger
 import com.plaid.client.model.TransactionsSyncResponse
 
 import java.util.UUID
@@ -16,24 +17,23 @@ object PlaidSyncService:
     val item = PlaidItemRepository.getById(itemId)
     item match
       case Failure(exception) => 
-          // todo: print and log exception to sentry
-          println(f"Failed to get item of itemId ${itemId}. err=${exception}")
+          Logger.root.error(f"Error getting item: $exception")
       case Success(item) => 
         var cursor = item.transactionsCursor
         var hasMore = true
         while hasMore do
           var transactionsSyncResp = PlaidService.getTransactionsSync(item)
           transactionsSyncResp match
-            case Left(value) =>
-              println(s"error syncing transactions: $value")
-            case Right(value) =>
-              sync(item, value)
-              hasMore = value.getHasMore().booleanValue()
-              cursor = Option(value.getNextCursor())
+            case Left(error) =>
+              Logger.root.error(s"Error syncing transactions: $error")
+            case Right(resp) =>
+              sync(item, resp)
+              hasMore = resp.getHasMore().booleanValue()
+              cursor = Option(resp.getNextCursor())
 
   private def sync(item: PlaidItem, response: TransactionsSyncResponse): Unit =
     val accounts = response.getAccounts().asScala
-    println(s"accounts length: ${accounts.length}")
+    Logger.root.info(s"Got number of accounts: ${accounts.size}")
     for account <- accounts do
       val newAcct = AccountRepository.upsertAccount(
         AccountRepository.UpsertAccountInput(
@@ -52,19 +52,19 @@ object PlaidSyncService:
         )
       ) match
         case Failure(error) =>
-          println(s"error upserting account: $error")
+          Logger.root.error(s"Error upserting account: $error")
         case Success(accountId) =>
-          println(s"upserted account: ${accountId}")
+          Logger.root.error(s"Upserted account: ${accountId}")
 
     val added_or_modified = response.getAdded().asScala ++ response.getModified().asScala
-    println(s"added_or_modified length: ${added_or_modified.size}")
+    Logger.root.info(s"added_or_modified length: ${added_or_modified.size}")
     val removed = response.getRemoved().asScala
-    println(s"removed length: ${removed.size}")
+    Logger.root.info(s"removed length: ${removed.size}")
 
     for transaction <- added_or_modified do
       AccountRepository.getByPlaidAccountId(itemId = item.id, plaidAccountId = transaction.getAccountId()) match
         case Failure(error) =>
-          println(s"failed to upsert transaction ${transaction.getTransactionId()} due to missing account: $error")
+          Logger.root.error(s"Failed to upsert transaction ${transaction.getTransactionId()} due to missing account: $error")
         case Success(account) =>
           val _ = TransactionRepository.upsertTransaction(
             TransactionRepository.UpsertTransactionInput(

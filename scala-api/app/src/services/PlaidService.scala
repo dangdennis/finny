@@ -1,7 +1,6 @@
 package app.services
 
 import app.models.PlaidItem
-import app.models.Profile
 import app.repositories.PlaidApiEventRepository
 import app.repositories.PlaidApiEventRepository.PlaidApiEventCreateInput
 import app.repositories.PlaidItemRepository
@@ -207,12 +206,11 @@ object PlaidService:
           )
     )
 
-  case class EventInput(
-      user: Profile,
-      item: PlaidItem,
-      plaidMethod: String,
-      arguments: Map[String, String]
-  )
+  case class PlaidError(requestId: String, errorType: String, errorCode: String, errorMessage: String)
+
+  object PlaidError {
+    def fromJson(json: String): Either[io.circe.Error, PlaidError] = decode[PlaidError](json)
+  }
 
   private def handleResponse[T: ClassTag](
       responseTry: Try[Response[T]],
@@ -228,7 +226,6 @@ object PlaidService:
         }
         Right(body)
       case Success(response) =>
-        // Read the error body and parse it into a PlaidError
         val errorBody = response.errorBody().string()
         val plaidError = PlaidError.fromJson(errorBody) match {
           case Right(plaidError) => Left(plaidError)
@@ -241,14 +238,7 @@ object PlaidService:
         }
         plaidError
       case Failure(exception) =>
-        // Handle unexpected exceptions and convert them to a PlaidError
         val plaidError = PlaidError("unknown_request_id", "API_ERROR", "UNKNOWN_ERROR", exception.getMessage)
         Left(plaidError)
     }
   }
-
-case class PlaidError(requestId: String, errorType: String, errorCode: String, errorMessage: String)
-
-object PlaidError {
-  def fromJson(json: String): Either[io.circe.Error, PlaidError] = decode[PlaidError](json)
-}

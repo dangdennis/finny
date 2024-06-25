@@ -16,7 +16,7 @@ object Logger:
 
   def db: Logger =
     LoggerFactory.getLogger("db").asInstanceOf[Logger]
-  
+
   def configureLogging(): Unit =
     Sentry.init(options =>
       options.setDsn(Environment.getSentryDsn)
@@ -38,7 +38,6 @@ object Logger:
     consoleAppender.setContext(loggerContext)
     val encoder = new PatternLayoutEncoder()
     encoder.setContext(loggerContext)
-    encoder.setPattern("%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n")
     encoder.start()
     consoleAppender.setEncoder(encoder)
     consoleAppender.start()
@@ -51,6 +50,8 @@ object Logger:
     // Set the root logger level to INFO
     val rootLogger = loggerContext.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME).asInstanceOf[Logger]
     rootLogger.setLevel(Level.INFO)
+    rootLogger.addAppender(consoleAppender)
+    rootLogger.addAppender(sentryAppender)
 
     // Set the db logger level to WARN
     val dbLogger = loggerContext.getLogger("db").asInstanceOf[Logger]

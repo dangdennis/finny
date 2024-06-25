@@ -45,4 +45,4 @@ object Environment:
     getEnv("LAVIN_MQ_URL", "amqp://guest:guest@localhost:5672")
 
   def getSentryDsn: String =
-    getEnv("SENTRY_DSN", "sntrys_eyJpYXQiOjE3MTkzNDc5MjcuNDk1MTQsInVybCI6Imh0dHBzOi8vc2VudHJ5LmlvIiwicmVnaW9uX3VybCI6Imh0dHBzOi8vdXMuc2VudHJ5LmlvIiwib3JnIjoiZmlubnktaHYifQ")
+    getEnv("SENTRY_DSN", "https://411fd1489713d981f19699e49abc5c6a@o4507494754746368.ingest.us.sentry.io/4507494821003264")

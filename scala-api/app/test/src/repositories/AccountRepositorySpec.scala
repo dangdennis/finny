@@ -21,7 +21,7 @@ class AccountRepositorySpec extends AnyFlatSpec with Matchers with EitherValues 
 
   it should "upsert accounts" in {
     // given
-    val user = UserRepositoryHelper.createUser()
+    val user = AuthUserRepositoryHelper.createUser()
     val item = PlaidItemRepository
       .createItem(
         CreateItemInput(

@@ -17,9 +17,9 @@ import sttp.tapir.server.nima.NimaServerInterpreter
 
   appEnv match
     case AppEnv.Development =>
-      println(s"Running in development mode.")
+      Logger.root.info(s"Running in development mode.")
     case AppEnv.Production =>
-      println(s"Running in production mode.")
+      Logger.root.info(s"Running in production mode.")
 
   Logger.configureLogging()
   Database.init(configs = databaseConfig)
@@ -37,4 +37,4 @@ import sttp.tapir.server.nima.NimaServerInterpreter
     .build()
     .start()
 
-  println(s"Server started at: http://0.0.0.0:${server.port()}")
+  Logger.root.info(s"Server started at: http://0.0.0.0:${server.port()}")
