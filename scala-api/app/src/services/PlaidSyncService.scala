@@ -18,18 +18,18 @@ import scala.util.Failure
 import scala.util.Success
 
 object PlaidSyncService:
-  def syncTransactionsAndAccountsWithRetry(itemId: UUID): Unit =
+  def syncTransactionsAndAccounts(itemId: UUID): Unit =
     retry(
       RetryPolicy(
         onRetry = (error, _) => Logger.root.error(s"Error syncing transactions and accounts: $error"),
         schedule = Schedule.Backoff(
           initialDelay = FiniteDuration(1, TimeUnit.SECONDS),
-          maxRetries = 5,
+          maxRetries = 5
         )
       )
-    )(() => syncTransactionsAndAccounts(itemId))
+    )(() => syncTransactionsAndAccountsInternal(itemId))
 
-  def syncTransactionsAndAccounts(itemId: UUID): Unit =
+  private def syncTransactionsAndAccountsInternal(itemId: UUID): Unit =
     val item = PlaidItemRepository.getById(itemId)
     item match
       case Failure(exception) =>
