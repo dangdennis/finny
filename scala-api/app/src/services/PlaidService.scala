@@ -1,5 +1,10 @@
 package app.services
 
+import app.models.PlaidItem
+import app.models.Profile
+import app.repositories.PlaidApiEventRepository
+import app.repositories.PlaidApiEventRepository.PlaidApiEventCreateInput
+import app.repositories.PlaidItemRepository
 import com.plaid.client.ApiClient
 import com.plaid.client.model.CountryCode
 import com.plaid.client.model.ItemGetRequest
@@ -7,6 +12,7 @@ import com.plaid.client.model.ItemGetResponse
 import com.plaid.client.model.ItemPublicTokenExchangeRequest
 import com.plaid.client.model.ItemPublicTokenExchangeResponse
 import com.plaid.client.model.LinkTokenCreateRequest
+import com.plaid.client.model.LinkTokenCreateRequestUser
 import com.plaid.client.model.LinkTokenCreateResponse
 import com.plaid.client.model.Products
 import com.plaid.client.model.TransactionsSyncRequest
@@ -14,21 +20,15 @@ import com.plaid.client.model.TransactionsSyncResponse
 import com.plaid.client.request.PlaidApi
 import io.circe.generic.auto.*
 import io.circe.parser.decode
+import ox.*
 import retrofit2.Response
 
+import java.util.UUID
 import scala.collection.JavaConverters.*
 import scala.reflect.ClassTag
 import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
-import ox.*
-import app.repositories.PlaidApiEventRepository
-import app.models.PlaidItem
-import app.repositories.PlaidApiEventRepository.PlaidApiEventCreateInput
-import app.models.Profile
-import com.plaid.client.model.LinkTokenCreateRequestUser
-import java.util.UUID
-import app.repositories.PlaidItemRepository
 
 object PlaidService:
   private lazy val client = makePlaidClient()
@@ -65,9 +65,6 @@ object PlaidService:
                   errorCode = Some(error.errorCode)
                 )
               )
-              .left
-              .map(error => println(s"Error creating Plaid API event: $error"))
-              .map(_ => ())
           )
           .map(body =>
             PlaidApiEventRepository
@@ -82,9 +79,6 @@ object PlaidService:
                   errorCode = None
                 )
               )
-              .left
-              .map(error => println(s"Error creating Plaid API event: $error"))
-              .map(_ => ())
           )
     )
 
@@ -116,9 +110,6 @@ object PlaidService:
                   errorCode = Some(error.errorCode)
                 )
               )
-              .left
-              .map(error => println(s"Error creating Plaid API event: $error"))
-              .map(_ => ())
           )
           .map(body =>
             PlaidApiEventRepository
@@ -137,9 +128,6 @@ object PlaidService:
                   errorCode = None
                 )
               )
-              .left
-              .map(error => println(s"Error creating Plaid API event: $error"))
-              .map(_ => ())
           )
     )
 
@@ -162,9 +150,6 @@ object PlaidService:
                   errorCode = Some(error.errorCode)
                 )
               )
-              .left
-              .map(error => println(s"Error creating Plaid API event: $error"))
-              .map(_ => ())
           )
           .map(body =>
             PlaidApiEventRepository
@@ -179,9 +164,6 @@ object PlaidService:
                   errorCode = None
                 )
               )
-              .left
-              .map(error => println(s"Error creating Plaid API event: $error"))
-              .map(_ => ())
           )
     )
 
@@ -204,9 +186,6 @@ object PlaidService:
                   errorCode = Some(error.errorCode)
                 )
               )
-              .left
-              .map(error => println(s"Error creating Plaid API event: $error"))
-              .map(_ => ())
           )
           .map(body =>
             PlaidItemRepository
@@ -224,9 +203,6 @@ object PlaidService:
                       errorCode = None
                     )
                   )
-                  .left
-                  .map(error => println(s"Error creating Plaid API event: $error"))
-                  .map(_ => ())
               )
           )
     )

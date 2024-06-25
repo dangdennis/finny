@@ -1,14 +1,14 @@
 package app.utils.logger
 
+import app.utils.Environment
 import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.Logger
-import org.slf4j.LoggerFactory
-import io.sentry.Sentry
-import app.utils.Environment
-import ch.qos.logback.core.ConsoleAppender
-import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder
+import ch.qos.logback.classic.spi.ILoggingEvent
+import ch.qos.logback.core.ConsoleAppender
+import io.sentry.Sentry
 import io.sentry.logback.SentryAppender
+import org.slf4j.LoggerFactory
 
 object Logger:
   def root: Logger =

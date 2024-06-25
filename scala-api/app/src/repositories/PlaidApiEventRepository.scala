@@ -1,5 +1,6 @@
 package app.repositories
 
+import app.utils.logger.Logger
 import io.circe.generic.auto.*
 import io.circe.syntax.*
 import scalikejdbc.*
@@ -26,4 +27,7 @@ object PlaidApiEventRepository:
           """
       query.execute
         .apply()
-    }).toEither.left.map(exception => RepositoryError.DatabaseError(exception.getMessage))
+    }).toEither.left.map(exception =>
+      Logger.root.error(s"Error creating Plaid API event: ${exception.getMessage}")
+      RepositoryError.DatabaseError(exception.getMessage)
+    )
