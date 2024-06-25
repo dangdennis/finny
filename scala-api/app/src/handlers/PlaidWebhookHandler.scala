@@ -23,6 +23,7 @@ object PlaidWebhookHandler:
     val webhookType = json("webhook_type").strOpt
     val webhookCode = json("webhook_code").strOpt
 
+    Logger.root.warn("Not verifying Plaid webhook signature")
     Logger.root.info(s"Raw JSON: $rawJson")
     Logger.root.info(f"Webhook type: $webhookType")
     Logger.root.info(f"Webhook code: $webhookCode")
