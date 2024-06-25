@@ -1,8 +1,8 @@
 package app.repositories
 
-import scalikejdbc.*
-import io.circe.syntax.*
 import io.circe.generic.auto.*
+import io.circe.syntax.*
+import scalikejdbc.*
 
 import java.util.UUID
 import scala.util.Try

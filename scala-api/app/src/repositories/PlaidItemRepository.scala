@@ -57,7 +57,7 @@ object PlaidItemRepository:
       transactionsCursor: Option[String]
   )
 
-  def createItem(input: CreateItemInput): Try[PlaidItem] =
+  def createItem(input: CreateItemInput) =
     Try(DB autoCommit { implicit session =>
       val query =
         sql"""INSERT INTO plaid_items (user_id, plaid_access_token, plaid_item_id, plaid_institution_id, status, transactions_cursor)
@@ -83,7 +83,7 @@ object PlaidItemRepository:
         )
         .single
         .apply()
-    }).map(item => item.get)
+    }).map(item => item.get).toEither
 
   def updateTransactionCursor(itemId: UUID, cursor: Option[String]): Try[Unit] =
     Try(DB autoCommit { implicit session =>

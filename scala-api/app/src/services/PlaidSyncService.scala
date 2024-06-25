@@ -24,13 +24,12 @@ object PlaidSyncService:
         while hasMore do
           var transactionsSyncResp = PlaidService.getTransactionsSync(accessToken = item.plaidAccessToken, cursor = cursor)
           transactionsSyncResp match
-            case Failure(error) =>
-              println(s"error syncing transactions: $error")
-            case Success(response) =>
-              sync(item, response)
-              hasMore = response.getHasMore().booleanValue()
-              cursor = Option(response.getNextCursor())
-      
+            case Left(value) =>
+              println(s"error syncing transactions: $value")
+            case Right(value) =>
+              sync(item, value)
+              hasMore = value.getHasMore().booleanValue()
+              cursor = Option(value.getNextCursor())
 
   private def sync(item: PlaidItem, response: TransactionsSyncResponse): Unit =
     val accounts = response.getAccounts().asScala

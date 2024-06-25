@@ -1,7 +1,8 @@
 package utils.job
 
-import com.rabbitmq.client.*;
 import app.utils.Environment
+import com.rabbitmq.client.*
+
 import scala.util.Try
 
 object Job:
