@@ -256,6 +256,11 @@ end;
 $function$
 ;
 
+CREATE TRIGGER trigger_handle_new_user
+AFTER INSERT ON auth.users
+FOR EACH ROW
+EXECUTE FUNCTION public.handle_new_user();
+
 grant delete on table "public"."accounts" to "anon";
 
 grant insert on table "public"."accounts" to "anon";

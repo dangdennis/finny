@@ -36,8 +36,7 @@ class TransactionRepositoryspec extends AnyFlatSpec with Matchers with EitherVal
           status = PlaidItemStatus.Bad,
           transactionsCursor = None
         )
-      )
-      .get
+      ).value
 
     // when
     AccountRepository.upsertAccount(

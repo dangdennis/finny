@@ -10,8 +10,9 @@ import app.repositories.PlaidItemRepository.CreateItemInput
 import app.models.PlaidItemStatus
 import test.helpers._
 import org.scalatest.BeforeAndAfterEach
+import org.scalatest.EitherValues
 
-class AccountRepositorySpec extends AnyFlatSpec with Matchers with BeforeAndAfterAll with BeforeAndAfterEach:
+class AccountRepositorySpec extends AnyFlatSpec with Matchers with EitherValues with BeforeAndAfterAll with BeforeAndAfterEach:
   override protected def beforeAll(): Unit =
     TestHelper.beforeAll()
 
@@ -31,8 +32,7 @@ class AccountRepositorySpec extends AnyFlatSpec with Matchers with BeforeAndAfte
           status = PlaidItemStatus.Bad,
           transactionsCursor = None
         )
-      )
-      .get
+      ).value
 
     // when
     AccountRepository.upsertAccount(
