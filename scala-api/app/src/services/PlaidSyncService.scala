@@ -22,7 +22,7 @@ object PlaidSyncService:
         var cursor = item.transactionsCursor
         var hasMore = true
         while hasMore do
-          var transactionsSyncResp = PlaidService.getTransactionsSync(accessToken = item.plaidAccessToken, cursor = cursor)
+          var transactionsSyncResp = PlaidService.getTransactionsSync(item)
           transactionsSyncResp match
             case Left(value) =>
               println(s"error syncing transactions: $value")

@@ -64,8 +64,8 @@ create table "public"."jobs" (
 
 create table "public"."plaid_api_events" (
     "id" uuid not null default uuid_generate_v4(),
-    "item_id" uuid not null,
-    "user_id" uuid not null,
+    "item_id" uuid,
+    "user_id" uuid,
     "plaid_method" text not null,
     "arguments" text,
     "request_id" text,
@@ -154,6 +154,8 @@ CREATE INDEX "ix:assets.user_id" ON public.assets USING btree (user_id);
 CREATE INDEX "ix:goals.user_id" ON public.goals USING btree (user_id);
 
 CREATE INDEX "ix:plaid_api_events.item_id" ON public.plaid_api_events USING btree (item_id);
+
+CREATE INDEX "ix:plaid_api_events.user_id" ON public.plaid_api_events USING btree (user_id);
 
 CREATE INDEX "ix:plaid_items.user_id" ON public.plaid_items USING btree (user_id);
 

@@ -10,8 +10,8 @@ import app.repositories.PlaidItemRepository
 import app.repositories.PlaidItemRepository.CreateItemInput
 import app.models.PlaidItemStatus
 import app.models.Transaction
-import test.helpers._
-import scalikejdbc._
+import test.helpers.*
+import scalikejdbc.*
 import app.repositories.TransactionRepository
 import app.repositories.TransactionRepository.UpsertTransactionInput
 import org.scalatest.BeforeAndAfterEach

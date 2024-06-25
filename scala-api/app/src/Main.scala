@@ -3,7 +3,7 @@ package app
 import app.database.Database
 import app.utils.Environment
 import app.utils.Environment.AppEnv
-import app.utils.logger.LogConfig
+import app.utils.logger.Logger
 import io.helidon.webserver.WebServer
 import sttp.tapir.*
 import sttp.tapir.server.nima.NimaServerInterpreter
@@ -21,7 +21,7 @@ import sttp.tapir.server.nima.NimaServerInterpreter
     case AppEnv.Production =>
       println(s"Running in production mode.")
 
-  LogConfig.configureLogging()
+  Logger.configureLogging()
   Database.init(configs = databaseConfig)
 
   val handler = NimaServerInterpreter().toHandler(Endpoints.createEndpoints(Endpoints.AuthConfig(jwtSecret, jwtIssue)))

@@ -8,7 +8,7 @@ import org.scalatest.BeforeAndAfterAll
 import app.repositories.PlaidItemRepository
 import app.repositories.PlaidItemRepository.CreateItemInput
 import app.models.PlaidItemStatus
-import test.helpers._
+import test.helpers.*
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.EitherValues
 

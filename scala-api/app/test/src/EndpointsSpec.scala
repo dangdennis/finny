@@ -1,10 +1,10 @@
 // package app
 
-// import app.Endpoints._
+// import app.Endpoints.*
 // import org.scalatest.EitherValues
 // import org.scalatest.flatspec.AnyFlatSpec
 // import org.scalatest.matchers.should.Matchers
-// import sttp.client3._
+// import sttp.client3.*
 // import sttp.client3.testing.SttpBackendStub
 // import sttp.tapir.server.stub.TapirStubInterpreter
 

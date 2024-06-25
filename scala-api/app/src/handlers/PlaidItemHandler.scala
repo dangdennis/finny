@@ -11,8 +11,8 @@ import app.services.PlaidSyncService
 object PlaidItemHandler:
   def handlePlaidItemCreate(user: Profile, input: PlaidItemCreateRequest): Either[AuthenticationError, DTOs.PlaidItemCreateResponse] =
     val result = for
-      pubTokenData <- PlaidService.exchangePublicToken(input.publicToken)
-      itemData <- PlaidService.getItem(pubTokenData.getAccessToken())
+      pubTokenData <- PlaidService.exchangePublicToken(publicToken = input.publicToken, userId = user.id)
+      itemData <- PlaidService.getItem(accessToken = pubTokenData.getAccessToken(), userId = user.id)
       item <- PlaidItemRepository.createItem(
         input = CreateItemInput(
           userId = user.id,

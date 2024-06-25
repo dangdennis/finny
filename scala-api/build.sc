@@ -18,6 +18,9 @@ object app extends ScalaModule with ScalafixModule {
     ivy"org.postgresql:postgresql::42.2.18",
     ivy"org.scalikejdbc::scalikejdbc:4.3.0",
     ivy"com.auth0:java-jwt:4.4.0",
+    ivy"io.sentry:sentry-logback:8.0.0-alpha.1",
+
+    // Unused imports
     ivy"com.rabbitmq:amqp-client:5.21.0",
   )
 
