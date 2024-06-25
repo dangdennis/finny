@@ -84,7 +84,7 @@ object PlaidService:
   def createLinkToken(userId: UUID) =
     val req = LinkTokenCreateRequest()
       .products(
-        List(Products.TRANSACTIONS, Products.INVESTMENTS, Products.RECURRING_TRANSACTIONS, Products.BALANCE).asJava
+        List(Products.TRANSACTIONS, Products.INVESTMENTS, /*Products.RECURRING_TRANSACTIONS,*/ Products.BALANCE).asJava
       )
       .countryCodes(List(CountryCode.US).asJava)
       .user(LinkTokenCreateRequestUser().clientUserId(userId.toString))
