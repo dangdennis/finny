@@ -1,5 +1,5 @@
 create table "public"."accounts" (
-    "id" uuid not null default uuid_generate_v4(),
+    "id" uuid primary key default gen_random_uuid(),
     "item_id" uuid not null,
     "user_id" uuid not null,
     "plaid_account_id" text not null,
@@ -21,7 +21,7 @@ create table "public"."accounts" (
 alter table "public"."accounts" enable row level security;
 
 create table "public"."assets" (
-    "id" uuid not null default uuid_generate_v4(),
+    "id" uuid primary key default gen_random_uuid(),
     "user_id" uuid not null,
     "value" double precision not null,
     "description" text not null,
@@ -34,7 +34,7 @@ create table "public"."assets" (
 alter table "public"."assets" enable row level security;
 
 create table "public"."goals" (
-    "id" uuid not null default uuid_generate_v4(),
+    "id" uuid primary key default gen_random_uuid(),
     "name" text not null,
     "amount" double precision not null,
     "target_date" timestamp(6) with time zone not null,
@@ -49,7 +49,7 @@ create table "public"."goals" (
 alter table "public"."goals" enable row level security;
 
 create table "public"."jobs" (
-    "id" uuid not null default uuid_generate_v4(),
+    "id" uuid primary key default gen_random_uuid(),
     "status" text not null default 'PENDING'::text,
     "type" text not null,
     "payload" jsonb not null,
@@ -63,7 +63,7 @@ create table "public"."jobs" (
 
 
 create table "public"."plaid_api_events" (
-    "id" uuid not null default uuid_generate_v4(),
+    "id" uuid primary key default gen_random_uuid(),
     "item_id" uuid,
     "user_id" uuid,
     "plaid_method" text not null,
@@ -80,7 +80,7 @@ create table "public"."plaid_api_events" (
 alter table "public"."plaid_api_events" enable row level security;
 
 create table "public"."plaid_items" (
-    "id" uuid not null default uuid_generate_v4(),
+    "id" uuid primary key default gen_random_uuid(),
     "user_id" uuid not null,
     "plaid_access_token" text not null,
     "plaid_item_id" text not null,
@@ -96,7 +96,7 @@ create table "public"."plaid_items" (
 alter table "public"."plaid_items" enable row level security;
 
 create table "public"."plaid_link_events" (
-    "id" uuid not null default uuid_generate_v4(),
+    "id" uuid primary key default gen_random_uuid(),
     "type" text not null,
     "user_id" uuid not null,
     "link_session_id" text,
@@ -113,14 +113,14 @@ create table "public"."plaid_link_events" (
 alter table "public"."plaid_link_events" enable row level security;
 
 create table "public"."profiles" (
-    "id" uuid not null
+    "id" uuid primary key not null
 );
 
 
 alter table "public"."profiles" enable row level security;
 
 create table "public"."transactions" (
-    "id" uuid not null default uuid_generate_v4(),
+    "id" uuid primary key default gen_random_uuid(),
     "account_id" uuid not null,
     "plaid_transaction_id" text not null,
     "category" text,
@@ -141,12 +141,6 @@ create table "public"."transactions" (
 
 alter table "public"."transactions" enable row level security;
 
-CREATE UNIQUE INDEX accounts_pkey ON public.accounts USING btree (id);
-
-CREATE UNIQUE INDEX assets_pkey ON public.assets USING btree (id);
-
-CREATE UNIQUE INDEX goals_pkey ON public.goals USING btree (id);
-
 CREATE INDEX "ix:accounts.user_id" ON public.accounts USING btree (user_id);
 
 CREATE INDEX "ix:assets.user_id" ON public.assets USING btree (user_id);
@@ -165,18 +159,6 @@ CREATE INDEX "ix:transactions.account_id" ON public.transactions USING btree (ac
 
 CREATE UNIQUE INDEX jobs_idempotency_key_key ON public.jobs USING btree (idempotency_key);
 
-CREATE UNIQUE INDEX jobs_pkey ON public.jobs USING btree (id);
-
-CREATE UNIQUE INDEX plaid_api_events_pkey ON public.plaid_api_events USING btree (id);
-
-CREATE UNIQUE INDEX plaid_items_pkey ON public.plaid_items USING btree (id);
-
-CREATE UNIQUE INDEX plaid_link_events_pkey ON public.plaid_link_events USING btree (id);
-
-CREATE UNIQUE INDEX profiles_pkey ON public.profiles USING btree (id);
-
-CREATE UNIQUE INDEX transactions_pkey ON public.transactions USING btree (id);
-
 CREATE UNIQUE INDEX "uq:accounts.plaid_account_id" ON public.accounts USING btree (plaid_account_id);
 
 CREATE UNIQUE INDEX "uq:plaid_api_events.request_id" ON public.plaid_api_events USING btree (request_id);
@@ -188,24 +170,6 @@ CREATE UNIQUE INDEX "uq:plaid_items.plaid_item_id" ON public.plaid_items USING b
 CREATE UNIQUE INDEX "uq:plaid_link_events.request_id" ON public.plaid_link_events USING btree (request_id);
 
 CREATE UNIQUE INDEX "uq:transactions.plaid_transaction_id" ON public.transactions USING btree (plaid_transaction_id);
-
-alter table "public"."accounts" add constraint "accounts_pkey" PRIMARY KEY using index "accounts_pkey";
-
-alter table "public"."assets" add constraint "assets_pkey" PRIMARY KEY using index "assets_pkey";
-
-alter table "public"."goals" add constraint "goals_pkey" PRIMARY KEY using index "goals_pkey";
-
-alter table "public"."jobs" add constraint "jobs_pkey" PRIMARY KEY using index "jobs_pkey";
-
-alter table "public"."plaid_api_events" add constraint "plaid_api_events_pkey" PRIMARY KEY using index "plaid_api_events_pkey";
-
-alter table "public"."plaid_items" add constraint "plaid_items_pkey" PRIMARY KEY using index "plaid_items_pkey";
-
-alter table "public"."plaid_link_events" add constraint "plaid_link_events_pkey" PRIMARY KEY using index "plaid_link_events_pkey";
-
-alter table "public"."profiles" add constraint "profiles_pkey" PRIMARY KEY using index "profiles_pkey";
-
-alter table "public"."transactions" add constraint "transactions_pkey" PRIMARY KEY using index "transactions_pkey";
 
 alter table "public"."accounts" add constraint "accounts_item_id_fkey" FOREIGN KEY (item_id) REFERENCES plaid_items(id) not valid;
 
