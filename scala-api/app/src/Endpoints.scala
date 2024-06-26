@@ -53,9 +53,9 @@ object Endpoints:
       .in("plaid-links" / "create")
       .out(jsonBody[DTOs.PlaidLinkCreateResponse])
     val plaidLinkCreateServerEndpoint = plaidLinkCreateEndpoint.handle(p1 => p2 => PlaidLinkHandler.handler())
-    
+
     val webhookEndpoint = endpoint.post
-      .in("webhook" / "plaid")
+      .in("api" / "webhook" / "plaid")
       .in(stringJsonBody)
       .out(stringBody)
       .handle(rawJson => PlaidWebhookHandler.handleWebhook(rawJson))

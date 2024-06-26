@@ -88,6 +88,7 @@ object PlaidService:
       )
       .countryCodes(List(CountryCode.US).asJava)
       .user(LinkTokenCreateRequestUser().clientUserId(userId.toString))
+      .webhook("https://finny-backend.fly.dev/api/webhook/plaid")
     handleResponse(
       Try(client.linkTokenCreate(req).execute()),
       (respBody) =>
