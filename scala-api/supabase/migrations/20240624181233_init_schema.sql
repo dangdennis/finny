@@ -209,23 +209,23 @@ alter table "public"."transactions" validate constraint "transactions_account_id
 
 set check_function_bodies = off;
 
-CREATE OR REPLACE FUNCTION public.handle_new_user()
- RETURNS trigger
- LANGUAGE plpgsql
- SECURITY DEFINER
-AS $function$
+-- inserts a row into public.profiles
+create function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer set search_path = ''
+as $$
 begin
-  insert into public."profiles" (id)
+  insert into public.profiles (id)
   values (new.id);
   return new;
 end;
-$function$
-;
+$$;
 
-CREATE TRIGGER trigger_handle_new_user
-AFTER INSERT ON auth.users
-FOR EACH ROW
-EXECUTE FUNCTION public.handle_new_user();
+-- trigger the function every time a user is created
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute procedure public.handle_new_user();
 
 grant delete on table "public"."accounts" to "anon";
 
