@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
-import { StyleSheet, View, Alert } from 'react-native'
-import { Button, Input } from '@rneui/themed'
+import { StyleSheet, Alert, View } from 'react-native'
+import { Button, Text, } from '@rneui/themed';
 import { Session } from '@supabase/supabase-js'
 
 export default function HomeScreen({ session }: { session: Session }) {
@@ -41,15 +41,15 @@ export default function HomeScreen({ session }: { session: Session }) {
 
   return (
     <View style={styles.container}>
-      <View style={[styles.verticallySpaced, styles.mt20]}>
-        <Input label="Email" value={session?.user?.email} disabled />
-      </View>
-      <View style={styles.verticallySpaced}>
-        <Input label="Username" value={username || ''} onChangeText={(text) => setUserId(text)} />
-      </View>
-      <View style={styles.verticallySpaced}>
-        <Button title="Sign Out" onPress={() => supabase.auth.signOut()} />
-      </View>
+      <View><Text>You're logged in!</Text></View>
+
+
+      <Button
+        onPress={async () => {
+          console.log("get token link from api")
+        }}
+      ><Text>Connect Accounts</Text></Button>
+
     </View>
   )
 }
