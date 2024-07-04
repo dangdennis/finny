@@ -74,13 +74,15 @@ object TransactionRepository {
     }))
 
   def delete(plaidTransactionIds: List[String]): Try[Unit] =
-    Try(DB.autoCommit(implicit session => {
-      sql"""
+    if plaidTransactionIds.isEmpty then return Try(())
+    else
+      Try(DB.autoCommit(implicit session => {
+        sql"""
             DELETE FROM transactions
             WHERE plaid_transaction_id IN ($plaidTransactionIds)
         """.execute
-        .apply()
-    }))
+          .apply()
+      }))
 
   def toModel(rs: WrappedResultSet): Transaction =
     Transaction(

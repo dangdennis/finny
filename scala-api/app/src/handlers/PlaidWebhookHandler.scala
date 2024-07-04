@@ -3,9 +3,11 @@ package app.handlers
 import app.repositories.PlaidItemRepository
 import app.services.PlaidSyncService
 import app.utils.logger.Logger
-import ox.*
 import upickle.default.ReadWriter
 import upickle.default.read
+
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 
 case class PlaidTransactionsSyncUpdatesAvailable(
     webhook_type: String,
@@ -32,14 +34,14 @@ object PlaidWebhookHandler:
       case (Some("TRANSACTIONS"), Some("SYNC_UPDATES_AVAILABLE")) =>
         Logger.root.info("Received Plaid webhook for transactions")
 
-        supervised {
-          forkUser {
-            val event = read[PlaidTransactionsSyncUpdatesAvailable](json)
-            PlaidItemRepository
-              .getByItemId(itemId = event.item_id)
-              .map(plaidItem => PlaidSyncService.syncTransactionsAndAccounts(itemId = plaidItem.id))
-          }
-        }
+        Future {
+
+          val event = read[PlaidTransactionsSyncUpdatesAvailable](json)
+          PlaidItemRepository
+            .getByItemId(itemId = event.item_id)
+            .map(plaidItem => PlaidSyncService.syncTransactionsAndAccounts(itemId = plaidItem.id))
+
+        }(using ExecutionContext.global)
 
         Right("Received Plaid webhook for transactions")
       case _ =>

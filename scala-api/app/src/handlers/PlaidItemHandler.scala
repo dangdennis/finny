@@ -2,13 +2,14 @@ package app.handlers
 
 import app.dtos.*
 import app.dtos.DTOs.PlaidItemCreateRequest
+import app.dtos.DTOs.PlaidItemSyncRequest
 import app.models.*
 import app.repositories.PlaidItemRepository
 import app.repositories.PlaidItemRepository.CreateItemInput
 import app.services.PlaidService
 import app.services.PlaidSyncService
 import app.utils.logger.Logger
-import app.dtos.DTOs.PlaidItemSyncRequest
+
 import java.util.UUID
 
 object PlaidItemHandler:

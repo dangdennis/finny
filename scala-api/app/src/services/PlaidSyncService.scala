@@ -13,23 +13,35 @@ import ox.resilience.retry
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import scala.collection.JavaConverters.*
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
 import scala.util.Failure
 import scala.util.Success
 
 object PlaidSyncService:
   def syncTransactionsAndAccounts(itemId: UUID): Unit =
-    retry(
-      RetryPolicy(
-        onRetry = (error, _) => Logger.root.error(s"Error syncing transactions and accounts: $error"),
-        schedule = Schedule.Backoff(
-          initialDelay = FiniteDuration(1, TimeUnit.SECONDS),
-          maxRetries = 5
+    Future {
+      retry(
+        RetryPolicy(
+          onRetry = (attempt, result) =>
+            result.left
+              .map { error =>
+                Logger.root.error(s"Attempt $attempt failed: $error")
+              }
+              .map { _ =>
+                Logger.root.info(s"Attempt $attempt")
+              },
+          schedule = Schedule.Backoff(
+            initialDelay = FiniteDuration(1, TimeUnit.SECONDS),
+            maxRetries = 5
+          )
         )
-      )
-    )(() => syncTransactionsAndAccountsInternal(itemId))
+      )(syncTransactionsAndAccountsInternal(itemId))
+    }(using ExecutionContext.global)
 
   private def syncTransactionsAndAccountsInternal(itemId: UUID): Unit =
+    Logger.root.info(s"Syncing transactions and accounts for item: $itemId")
     val item = PlaidItemRepository.getById(itemId)
     item match
       case Failure(exception) =>
@@ -70,7 +82,7 @@ object PlaidSyncService:
         case Failure(error) =>
           Logger.root.error(s"Error upserting account: $error")
         case Success(accountId) =>
-          Logger.root.error(s"Upserted account: ${accountId}")
+          Logger.root.info(s"Upserted account: ${accountId}")
 
     val added_or_modified = response.getAdded().asScala ++ response.getModified().asScala
     Logger.root.info(s"added_or_modified length: ${added_or_modified.size}")

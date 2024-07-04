@@ -5,6 +5,7 @@ import app.repositories.PlaidApiEventRepository
 import app.repositories.PlaidApiEventRepository.PlaidApiEventCreateInput
 import app.repositories.PlaidItemRepository
 import app.utils.Environment
+import app.utils.logger.Logger
 import com.plaid.client.ApiClient
 import com.plaid.client.model.CountryCode
 import com.plaid.client.model.ItemGetRequest
@@ -20,16 +21,16 @@ import com.plaid.client.model.TransactionsSyncResponse
 import com.plaid.client.request.PlaidApi
 import io.circe.generic.auto.*
 import io.circe.parser.decode
-import ox.*
 import retrofit2.Response
 
 import java.util.UUID
 import scala.collection.JavaConverters.*
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 import scala.reflect.ClassTag
 import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
-import app.utils.logger.Logger
 
 object PlaidService:
   private lazy val client = makePlaidClient()
@@ -233,11 +234,10 @@ object PlaidService:
     responseTry match {
       case Success(response) if response.isSuccessful =>
         val body = response.body()
-        supervised {
-          forkUser {
-            recordEvent(Right(body))
-          }
-        }
+        Future {
+          recordEvent(Right(body))
+
+        }(using ExecutionContext.global)
         Right(body)
       case Success(response) =>
         val errorBody = response.errorBody().string()
@@ -246,11 +246,9 @@ object PlaidService:
           case Right(plaidError) => Left(plaidError)
           case Left(e)           => Left(PlaidError(None, "API_ERROR", "PARSE_ERROR", e.getMessage))
         }
-        supervised {
-          forkUser {
-            recordEvent(plaidError)
-          }
-        }
+        Future {
+          recordEvent(plaidError)
+        }(using ExecutionContext.global)
         plaidError
       case Failure(exception) =>
         Logger.root.error(s"Unexpected exception on plaid call: $exception")
