@@ -90,6 +90,7 @@ object PlaidSyncService:
     Logger.root.info(s"removed length: ${removed.size}")
 
     for transaction <- added_or_modified do
+      Logger.root.info(s"Upserting transaction: ${transaction}")
       AccountRepository.getByPlaidAccountId(itemId = item.id, plaidAccountId = transaction.getAccountId()) match
         case Failure(error) =>
           Logger.root.error(s"Failed to upsert transaction ${transaction.getTransactionId()} due to missing account: $error")

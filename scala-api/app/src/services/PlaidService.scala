@@ -31,6 +31,7 @@ import scala.reflect.ClassTag
 import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
+import com.plaid.client.model.LinkTokenTransactions
 
 object PlaidService:
   private lazy val client = makePlaidClient()
@@ -102,6 +103,7 @@ object PlaidService:
       .webhook(f"${Environment.getBaseUrl}/api/webhook/plaid")
       .language("en")
       .clientName("Finny")
+      .transactions(LinkTokenTransactions().daysRequested(360))
 
     handleResponse(
       Try(client.linkTokenCreate(req).execute()),
