@@ -33,9 +33,8 @@ object PlaidWebhookHandler:
     (webhookType, webhookCode) match
       case (Some("TRANSACTIONS"), Some("SYNC_UPDATES_AVAILABLE")) =>
         Logger.root.info("Received Plaid webhook for transactions")
-
+        
         Future {
-
           val event = read[PlaidTransactionsSyncUpdatesAvailable](json)
           PlaidItemRepository
             .getByItemId(itemId = event.item_id)
