@@ -8,6 +8,8 @@ import app.repositories.PlaidItemRepository.CreateItemInput
 import app.services.PlaidService
 import app.services.PlaidSyncService
 import app.utils.logger.Logger
+import app.dtos.DTOs.PlaidItemSyncRequest
+import java.util.UUID
 
 object PlaidItemHandler:
   def handlePlaidItemCreate(user: Profile, input: PlaidItemCreateRequest): Either[AuthenticationError, DTOs.PlaidItemCreateResponse] =
@@ -27,7 +29,7 @@ object PlaidItemHandler:
     yield item
 
     result match
-      case Left(error) => 
+      case Left(error) =>
         Logger.root.error(s"Error creating Plaid item: ${error}")
         Left(AuthenticationError(400))
       case Right(item) =>
@@ -41,3 +43,14 @@ object PlaidItemHandler:
             createdAt = item.createdAt.toString()
           )
         )
+
+  def handlePlaidItemSync(user: Profile, input: PlaidItemSyncRequest): Either[AuthenticationError, Unit] =
+    PlaidItemRepository
+      .getById(id = UUID.fromString(input.itemId))
+      .toEither
+      .left
+      .map(_ => AuthenticationError(404))
+      .map(item =>
+        PlaidSyncService.syncTransactionsAndAccounts(item.id)
+        Right(())
+      )

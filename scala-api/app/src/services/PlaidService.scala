@@ -4,6 +4,7 @@ import app.models.PlaidItem
 import app.repositories.PlaidApiEventRepository
 import app.repositories.PlaidApiEventRepository.PlaidApiEventCreateInput
 import app.repositories.PlaidItemRepository
+import app.utils.Environment
 import com.plaid.client.ApiClient
 import com.plaid.client.model.CountryCode
 import com.plaid.client.model.ItemGetRequest
@@ -28,7 +29,7 @@ import scala.reflect.ClassTag
 import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
-import app.utils.Environment
+import app.utils.logger.Logger
 
 object PlaidService:
   private lazy val client = makePlaidClient()
@@ -36,12 +37,16 @@ object PlaidService:
   private def makePlaidClient() =
     val apiClient = new ApiClient(
       Map(
-        "clientId" -> "661ac9375307a3001ba2ea46",
-        "secret" -> "57ebac97c0bcf92f35878135d68793",
+        "clientId" -> Environment.getPlaidClientId,
+        "secret" -> Environment.getPlaidSecret,
         "plaidVersion" -> "2020-09-14"
       ).asJava
     )
-    apiClient.setPlaidAdapter(ApiClient.Sandbox)
+
+    Environment.getAppEnv match
+      case Environment.AppEnv.Production  => apiClient.setPlaidAdapter(ApiClient.Production)
+      case Environment.AppEnv.Development => apiClient.setPlaidAdapter(ApiClient.Sandbox)
+
     apiClient.createService(classOf[PlaidApi])
 
   def getTransactionsSync(item: PlaidItem) =
@@ -74,7 +79,7 @@ object PlaidService:
                   itemId = Some(item.id),
                   plaidMethod = "transactionsSync",
                   arguments = Map("cursor" -> item.transactionsCursor.getOrElse("")),
-                  requestId = body.getRequestId(),
+                  requestId = Some(body.getRequestId()),
                   errorType = None,
                   errorCode = None
                 )
@@ -95,6 +100,7 @@ object PlaidService:
       .user(LinkTokenCreateRequestUser().clientUserId(userId.toString))
       .webhook(f"${Environment.getBaseUrl}/api/webhook/plaid")
       .language("en")
+      .clientName("Finny")
 
     handleResponse(
       Try(client.linkTokenCreate(req).execute()),
@@ -130,7 +136,7 @@ object PlaidService:
                     "products" -> req.getProducts.asScala.mkString(","),
                     "countryCodes" -> req.getCountryCodes.asScala.mkString(",")
                   ),
-                  requestId = body.getRequestId(),
+                  requestId = Some(body.getRequestId()),
                   errorType = None,
                   errorCode = None
                 )
@@ -166,7 +172,7 @@ object PlaidService:
                   itemId = None,
                   plaidMethod = "itemPublicTokenExchange",
                   arguments = Map(),
-                  requestId = body.getRequestId(),
+                  requestId = Some(body.getRequestId()),
                   errorType = None,
                   errorCode = None
                 )
@@ -205,7 +211,7 @@ object PlaidService:
                       itemId = Some(plaidItem.id),
                       plaidMethod = "getItem",
                       arguments = Map(),
-                      requestId = body.getRequestId(),
+                      requestId = Some(body.getRequestId()),
                       errorType = None,
                       errorCode = None
                     )
@@ -214,7 +220,7 @@ object PlaidService:
           )
     )
 
-  case class PlaidError(requestId: String, errorType: String, errorCode: String, errorMessage: String)
+  case class PlaidError(requestId: Option[String], errorType: String, errorCode: String, errorMessage: String)
 
   object PlaidError {
     def fromJson(json: String): Either[io.circe.Error, PlaidError] = decode[PlaidError](json)
@@ -235,9 +241,10 @@ object PlaidService:
         Right(body)
       case Success(response) =>
         val errorBody = response.errorBody().string()
+        Logger.root.error(s"Plaid API error: $errorBody")
         val plaidError = PlaidError.fromJson(errorBody) match {
           case Right(plaidError) => Left(plaidError)
-          case Left(e)           => Left(PlaidError("unknown_request_id", "API_ERROR", "PARSE_ERROR", e.getMessage))
+          case Left(e)           => Left(PlaidError(None, "API_ERROR", "PARSE_ERROR", e.getMessage))
         }
         supervised {
           forkUser {
@@ -246,7 +253,8 @@ object PlaidService:
         }
         plaidError
       case Failure(exception) =>
-        val plaidError = PlaidError("unknown_request_id", "API_ERROR", "UNKNOWN_ERROR", exception.getMessage)
+        Logger.root.error(s"Unexpected exception on plaid call: $exception")
+        val plaidError = PlaidError(None, "API_ERROR", "UNKNOWN_ERROR", exception.getMessage)
         Left(plaidError)
     }
   }

@@ -3,6 +3,7 @@ package app
 import app.dtos.*
 import app.handlers.*
 import app.models.*
+import app.utils.logger.Logger
 import com.auth0.jwt.*
 import com.auth0.jwt.algorithms.Algorithm
 import sttp.shared.Identity
@@ -15,7 +16,6 @@ import sttp.tapir.swagger.bundle.SwaggerInterpreter
 import java.util.UUID
 import scala.collection.JavaConverters.*
 import scala.util.Try
-import app.utils.logger.Logger
 
 object Routes:
   def makeAuthenticator(authConfig: AuthConfig): AuthenticationToken => Either[AuthenticationError, Profile] =
@@ -47,6 +47,13 @@ object Routes:
 
     val plaidItemCreateServerEndpoint = plaidItemCreateRoute
       .handle(user => input => PlaidItemHandler.handlePlaidItemCreate(user, input))
+
+    val plaidItemSyncRoute = protectedApiRouteGroup.post
+      .in("plaid-items" / "sync")
+      .in(jsonBody[DTOs.PlaidItemSyncRequest])
+    
+    val plaidItemSyncServerEndpoint = plaidItemSyncRoute
+      .handle(user => input => PlaidItemHandler.handlePlaidItemSync(user, input))
 
     val plaidLinkCreateEndpoint = protectedApiRouteGroup.post
       .in("plaid-links" / "create")

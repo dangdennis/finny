@@ -3,16 +3,19 @@ package app.handlers
 import app.dtos.*
 import app.models.*
 import app.services.PlaidService
+import app.utils.logger.Logger
+
 import java.util.UUID
 
 object PlaidLinkHandler:
   def handler(userId: UUID): Either[AuthenticationError, DTOs.PlaidLinkCreateResponse] =
     PlaidService.createLinkToken(userId = userId) match
-      case Left(error) => Left(AuthenticationError(500))
+      case Left(error) => 
+        Logger.root.error(s"Error creating Plaid link token: $error")
+        Left(AuthenticationError(400))
       case Right(response) =>
         Right(
           DTOs.PlaidLinkCreateResponse(
-            token = "123456",
-            hostedLinkUrl = "https://sandbox.plaid.com/link/token/create"
+            token = response.getLinkToken(),
           )
         )

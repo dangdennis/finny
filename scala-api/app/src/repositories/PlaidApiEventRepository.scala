@@ -14,7 +14,7 @@ object PlaidApiEventRepository:
       itemId: Option[UUID],
       plaidMethod: String,
       arguments: Map[String, String],
-      requestId: String,
+      requestId: Option[String],
       errorType: Option[String],
       errorCode: Option[String]
   )

@@ -50,3 +50,9 @@ object Environment:
   def getBaseUrl: String =
     getAppEnv match
       case _ => "https://finny-backend.fly.dev"
+
+  def getPlaidClientId: String =
+    getEnv("PLAID_CLIENT_ID", "661ac9375307a3001ba2ea46")
+
+  def getPlaidSecret: String =
+    getEnv("PLAID_SECRET", "57ebac97c0bcf92f35878135d68793")
