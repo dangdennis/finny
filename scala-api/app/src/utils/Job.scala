@@ -1,4 +1,4 @@
-package utils.job
+package app.utils.job
 
 import app.utils.Environment
 import com.rabbitmq.client.*

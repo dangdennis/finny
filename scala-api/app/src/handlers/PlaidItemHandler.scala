@@ -7,6 +7,7 @@ import app.repositories.PlaidItemRepository
 import app.repositories.PlaidItemRepository.CreateItemInput
 import app.services.PlaidService
 import app.services.PlaidSyncService
+import app.utils.logger.Logger
 
 object PlaidItemHandler:
   def handlePlaidItemCreate(user: Profile, input: PlaidItemCreateRequest): Either[AuthenticationError, DTOs.PlaidItemCreateResponse] =
@@ -26,7 +27,9 @@ object PlaidItemHandler:
     yield item
 
     result match
-      case Left(value) => Left(AuthenticationError(400))
+      case Left(error) => 
+        Logger.root.error(s"Error creating Plaid item: ${error}")
+        Left(AuthenticationError(400))
       case Right(item) =>
         PlaidSyncService.syncTransactionsAndAccounts(item.id)
 

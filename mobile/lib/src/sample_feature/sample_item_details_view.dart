@@ -26,10 +26,7 @@ class SampleItemDetailsView extends StatelessWidget {
           children: [
             Center(
               child: ElevatedButton(
-                  onPressed: () {
-                    print("Button Pressed");
-                    _openPlaidLink();
-                  },
+                  onPressed: _openPlaidLink,
                   child: const Text("Press Me")),
             ),
             const Center(

@@ -46,3 +46,7 @@ object Environment:
 
   def getSentryDsn: String =
     getEnv("SENTRY_DSN", "https://411fd1489713d981f19699e49abc5c6a@o4507494754746368.ingest.us.sentry.io/4507494821003264")
+
+  def getBaseUrl: String =
+    getAppEnv match
+      case _ => "https://finny-backend.fly.dev"

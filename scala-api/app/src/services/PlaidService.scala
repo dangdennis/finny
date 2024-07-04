@@ -28,6 +28,7 @@ import scala.reflect.ClassTag
 import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
+import app.utils.Environment
 
 object PlaidService:
   private lazy val client = makePlaidClient()
@@ -84,11 +85,17 @@ object PlaidService:
   def createLinkToken(userId: UUID) =
     val req = LinkTokenCreateRequest()
       .products(
-        List(Products.TRANSACTIONS, Products.INVESTMENTS, /*Products.RECURRING_TRANSACTIONS,*/ Products.BALANCE).asJava
+        List(
+          Products.TRANSACTIONS,
+          Products.INVESTMENTS
+          // Products.RECURRING_TRANSACTIONS
+        ).asJava
       )
       .countryCodes(List(CountryCode.US).asJava)
       .user(LinkTokenCreateRequestUser().clientUserId(userId.toString))
-      .webhook("https://finny-backend.fly.dev/api/webhook/plaid")
+      .webhook(f"${Environment.getBaseUrl}/api/webhook/plaid")
+      .language("en")
+
     handleResponse(
       Try(client.linkTokenCreate(req).execute()),
       (respBody) =>

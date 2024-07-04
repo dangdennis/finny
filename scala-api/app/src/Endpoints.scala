@@ -52,7 +52,7 @@ object Endpoints:
     val plaidLinkCreateEndpoint = secureApiEndpoint.post
       .in("plaid-links" / "create")
       .out(jsonBody[DTOs.PlaidLinkCreateResponse])
-    val plaidLinkCreateServerEndpoint = plaidLinkCreateEndpoint.handle(p1 => p2 => PlaidLinkHandler.handler())
+    val plaidLinkCreateServerEndpoint = plaidLinkCreateEndpoint.handle(profile => _ => PlaidLinkHandler.handler(userId = profile.id))
 
     val webhookEndpoint = endpoint.post
       .in("api" / "webhook" / "plaid")
