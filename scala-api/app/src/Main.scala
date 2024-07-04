@@ -24,7 +24,7 @@ import sttp.tapir.server.nima.NimaServerInterpreter
   Logger.configureLogging()
   Database.init(configs = databaseConfig)
 
-  val handler = NimaServerInterpreter().toHandler(Endpoints.createEndpoints(Endpoints.AuthConfig(jwtSecret, jwtIssue)))
+  val handler = NimaServerInterpreter().toHandler(Routes.createRoutes(Routes.AuthConfig(jwtSecret, jwtIssue)))
 
   val server = WebServer
     .builder()
