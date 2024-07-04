@@ -71,7 +71,7 @@ object Routes:
     val docEndpoints = SwaggerInterpreter()
       .fromServerEndpoints[Identity](serverEndpoints, "finny-api", "1.0.0")
     val metricsEndpoint: ServerEndpoint[Any, Identity] = PrometheusMetrics.default[Identity]().metricsEndpoint
-    val all = serverEndpoints ++ docEndpoints ++ List(metricsEndpoint, webhookEndpoint)
+    val all = serverEndpoints ++ docEndpoints ++ List(metricsEndpoint, webhookEndpoint, plaidItemSyncServerEndpoint)
 
     all
 
