@@ -14,6 +14,7 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
+  http: ^1.1.0
   plaid_flutter: 3.1.8
   powersync: ^1.5.1
 
