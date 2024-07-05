@@ -14,10 +14,12 @@ class MyApp extends StatelessWidget {
     super.key,
     required this.settingsController,
     required this.authController,
+    required this.isLoggedIn,
   });
 
   final SettingsController settingsController;
   final AuthController authController;
+  final bool isLoggedIn;
 
   @override
   Widget build(BuildContext context) {
@@ -64,6 +66,9 @@ class MyApp extends StatelessWidget {
           theme: ThemeData(),
           darkTheme: ThemeData.dark(),
           themeMode: settingsController.themeMode,
+          home: isLoggedIn
+              ? const SampleItemListView()
+              : LoginView(authController: authController),
 
           // Define a function to handle named routes in order to support
           // Flutter web url navigation and deep linking.

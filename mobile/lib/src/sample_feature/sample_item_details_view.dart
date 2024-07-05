@@ -4,6 +4,9 @@ import 'package:finny/src/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:plaid_flutter/plaid_flutter.dart';
 import 'package:http/http.dart' as http;
+import 'package:powersync/sqlite3.dart';
+
+import '../powersync.dart';
 
 /// Displays detailed information about a SampleItem.
 class SampleItemDetailsView extends StatelessWidget {
@@ -32,6 +35,13 @@ class SampleItemDetailsView extends StatelessWidget {
     });
 
     PlaidLink.open(configuration: configuration);
+  }
+
+  /// Get all list IDs
+  Future<List<String>> getLists() async {
+    ResultSet results = await db.getAll('SELECT * FROM accounts;');
+    print("accounts list $results");
+    return List<String>.empty();
   }
 
   Future<void> _sendPostRequest(String publicToken) async {
@@ -70,6 +80,15 @@ class SampleItemDetailsView extends StatelessWidget {
       body: Container(
         child: Column(
           children: [
+            Center(
+              child: ElevatedButton(
+                onPressed: () {
+                  // Get all list IDs
+                  getLists();
+                },
+                child: const Text('Get Lists'),
+              ),
+            ),
             Center(
               child: ElevatedButton(
                   onPressed: _openPlaidLink, child: const Text("Press Me")),
