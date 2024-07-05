@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:finny/src/context_extension.dart';
-import 'package:finny/src/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'auth_service.dart';
@@ -20,14 +19,14 @@ class AuthController {
     _authStateSubscription.cancel();
   }
 
-  void initAuthListener(BuildContext context) {
+  void initAuthListener(BuildContext context, void Function() onAuthenticated) {
     _authStateSubscription = authService.authStateChanges.listen(
       (data) {
         if (_redirecting) return;
         final session = data.session;
         if (session != null) {
           _redirecting = true;
-          Navigator.pushNamed(context, Routes.home);
+          onAuthenticated();
         }
       },
       onError: (error) {
