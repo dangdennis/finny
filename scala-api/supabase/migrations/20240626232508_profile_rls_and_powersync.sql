@@ -6,3 +6,10 @@ SELECT
                 auth.uid()
         ) = id
     );
+
+CREATE publication powersync FOR TABLE 
+	public.accounts, 
+	public.assets, 
+	public.goals, 
+	public.profiles, 
+	public.transactions;
