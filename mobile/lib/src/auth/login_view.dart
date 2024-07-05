@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 class LoginView extends StatefulWidget {
   const LoginView({super.key, required this.authController});
 
-  static const routeName = '/settings';
+  static const routeName = Routes.login;
 
   final AuthController authController;
 

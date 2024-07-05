@@ -1,4 +1,5 @@
 import 'package:finny/src/auth/auth_controller.dart';
+import 'package:finny/src/auth/login_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
@@ -71,8 +72,12 @@ class MyApp extends StatelessWidget {
               settings: routeSettings,
               builder: (BuildContext context) {
                 switch (routeSettings.name) {
+                  case LoginView.routeName:
+                    return LoginView(
+                      authController: authController,
+                    );
                   case SettingsView.routeName:
-                    return SettingsView(controller: settingsController);
+                    return SettingsView(settingsController: settingsController);
                   case SampleItemDetailsView.routeName:
                     return const SampleItemDetailsView();
                   case SampleItemListView.routeName:
