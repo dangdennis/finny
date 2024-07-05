@@ -39,8 +39,11 @@ class SampleItemDetailsView extends StatelessWidget {
 
   /// Get all list IDs
   Future<List<String>> getLists() async {
-    ResultSet results = await db.getAll('SELECT * FROM accounts;');
-    print("accounts list $results");
+    ResultSet accounts = await db.getAll('SELECT * FROM accounts;');
+    print("accounts list $accounts");
+
+    ResultSet transactions = await db.getAll('SELECT * FROM transactions;');
+    print("transactions list $transactions");
     return List<String>.empty();
   }
 

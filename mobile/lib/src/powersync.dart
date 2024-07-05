@@ -1,6 +1,6 @@
 // This file performs setup of the PowerSync database
 import 'package:finny/src/routes.dart';
-import 'package:finny/src/sample_feature/sample_item_list_view.dart';
+import 'package:finny/src/accounts/sample_item_list_view.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart';

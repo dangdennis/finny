@@ -4,7 +4,7 @@ import 'package:powersync/sqlite3.dart';
 
 import '../routes.dart';
 import '../settings/settings_view.dart';
-import 'sample_item.dart';
+import 'account.dart';
 import 'sample_item_details_view.dart';
 
 /// Displays a list of SampleItems.
@@ -12,16 +12,30 @@ class SampleItemListView extends StatelessWidget {
   const SampleItemListView({
     super.key,
     this.items = const [
-      SampleItem(1),
-      SampleItem(2),
-      SampleItem(3),
-      SampleItem(4)
+      Account(
+        id: '1',
+        itemId: '1',
+        userId: '1',
+        plaidAccountId: '1',
+        name: 'Checking',
+        mask: '0000',
+        officialName: 'Checking',
+        currentBalance: 100.0,
+        availableBalance: 100.0,
+        isoCurrencyCode: 'USD',
+        unofficialCurrencyCode: 'USD',
+        type: 'depository',
+        subtype: 'checking',
+        createdAt: '2021-06-01T00:00:00Z',
+        updatedAt: '2021-06-01T00:00:00Z',
+        deletedAt: null,
+      ),
     ],
   });
 
   static const routeName = Routes.home;
 
-  final List<SampleItem> items;
+  final List<Account> items;
 
   @override
   Widget build(BuildContext context) {
