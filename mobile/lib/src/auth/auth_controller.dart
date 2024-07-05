@@ -14,29 +14,30 @@ class AuthController {
   AuthController(this.authService);
 
   bool get isLoading => _isLoading;
+  bool get isLoggedIn => authService.isLoggedIn;
 
   void dispose() {
     _authStateSubscription.cancel();
   }
 
   void initAuthListener(BuildContext context, void Function() onAuthenticated) {
-    _authStateSubscription = authService.authStateChanges.listen(
-      (data) {
-        if (_redirecting) return;
-        final session = data.session;
-        if (session != null) {
-          _redirecting = true;
-          onAuthenticated();
-        }
-      },
-      onError: (error) {
-        if (error is AuthException) {
-          context.showSnackBar(error.message, isError: true);
-        } else {
-          context.showSnackBar('Unexpected error occurred', isError: true);
-        }
-      },
-    );
+    // _authStateSubscription = authService.authStateChanges.listen(
+    //   (data) {
+    //     if (_redirecting) return;
+    //     final session = data.session;
+    //     if (session != null) {
+    //       _redirecting = true;
+    //       onAuthenticated();
+    //     }
+    //   },
+    //   onError: (error) {
+    //     if (error is AuthException) {
+    //       context.showSnackBar(error.message, isError: true);
+    //     } else {
+    //       context.showSnackBar('Unexpected error occurred', isError: true);
+    //     }
+    //   },
+    // );
   }
 
   Future<void> signIn(String email, BuildContext context,

@@ -22,4 +22,6 @@ class AuthService {
   }
 
   Stream<AuthState> get authStateChanges => supabase.auth.onAuthStateChange;
+
+  bool get isLoggedIn => supabase.auth.currentSession?.accessToken != null;
 }

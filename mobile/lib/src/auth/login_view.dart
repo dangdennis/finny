@@ -20,8 +20,8 @@ class _LoginViewState extends State<LoginView> {
   @override
   void initState() {
     _emailController = TextEditingController();
-    widget.authController.initAuthListener(
-        context, () => Navigator.pushNamed(context, Routes.home));
+    // widget.authController.initAuthListener(
+    //     context, () => Navigator.pushNamed(context, Routes.home));
     super.initState();
   }
 
