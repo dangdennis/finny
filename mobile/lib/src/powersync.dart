@@ -148,6 +148,7 @@ Future<String> getDatabasePath() async {
   return join(dir.path, 'finny.db');
 }
 
+/// Initializes powersync database and connects to Supabase.
 Future<void> openDatabase() async {
   // Open the local database
   db = PowerSyncDatabase(
