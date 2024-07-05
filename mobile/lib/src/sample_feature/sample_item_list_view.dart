@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../routes.dart';
 import '../settings/settings_view.dart';
 import 'sample_item.dart';
 import 'sample_item_details_view.dart';
@@ -16,7 +17,7 @@ class SampleItemListView extends StatelessWidget {
     ],
   });
 
-  static const routeName = '/';
+  static const routeName = Routes.home;
 
   final List<SampleItem> items;
 

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:finny/src/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:plaid_flutter/plaid_flutter.dart';
 import 'package:http/http.dart' as http;
@@ -8,7 +9,7 @@ import 'package:http/http.dart' as http;
 class SampleItemDetailsView extends StatelessWidget {
   const SampleItemDetailsView({super.key});
 
-  static const routeName = '/sample_item';
+  static const routeName = Routes.sampleItem;
 
   void _openPlaidLink() {
     LinkConfiguration configuration = LinkTokenConfiguration(
@@ -16,7 +17,7 @@ class SampleItemDetailsView extends StatelessWidget {
     );
 
     PlaidLink.onSuccess.listen((LinkSuccess success) async {
-      print("Success: ${success}");
+      print("Success: $success");
       await _sendPostRequest(success.publicToken);
     });
 
@@ -27,7 +28,7 @@ class SampleItemDetailsView extends StatelessWidget {
 
     PlaidLink.onEvent.listen((LinkEvent event) {
       // Handle events (optional)
-      print('Event: ${event}');
+      print('Event: $event');
     });
 
     PlaidLink.open(configuration: configuration);

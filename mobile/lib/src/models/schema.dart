@@ -35,4 +35,4 @@ const schema = Schema([
     Column.text('updated_at'),
     Column.text('deleted_at')
   ])
-])
+]);
