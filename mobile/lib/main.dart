@@ -1,10 +1,8 @@
 import 'package:finny/src/auth/auth_controller.dart';
 import 'package:finny/src/auth/auth_service.dart';
-import 'package:finny/src/supabase.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'src/app.dart';
 import 'src/powersync.dart';

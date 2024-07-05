@@ -1,15 +1,13 @@
-import 'package:finny/src/powersync.dart';
 import 'package:flutter/material.dart';
-import 'package:powersync/sqlite3.dart';
 
 import '../routes.dart';
 import '../settings/settings_view.dart';
 import 'account.dart';
-import 'sample_item_details_view.dart';
+import 'account_details_view.dart';
 
 /// Displays a list of SampleItems.
-class SampleItemListView extends StatelessWidget {
-  const SampleItemListView({
+class AccountListView extends StatelessWidget {
+  const AccountListView({
     super.key,
     this.items = const [
       Account(
@@ -33,7 +31,7 @@ class SampleItemListView extends StatelessWidget {
     ],
   });
 
-  static const routeName = Routes.home;
+  static const routeName = Routes.accounts;
 
   final List<Account> items;
 
@@ -41,7 +39,7 @@ class SampleItemListView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Sample Items'),
+        title: const Text('Accounts'),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
@@ -65,7 +63,7 @@ class SampleItemListView extends StatelessWidget {
         // Providing a restorationId allows the ListView to restore the
         // scroll position when a user leaves and returns to the app after it
         // has been killed while running in the background.
-        restorationId: 'sampleItemListView',
+        restorationId: 'accountListView',
         itemCount: items.length,
         itemBuilder: (BuildContext context, int index) {
           final item = items[index];
@@ -82,7 +80,7 @@ class SampleItemListView extends StatelessWidget {
                 // background, the navigation stack is restored.
                 Navigator.restorablePushNamed(
                   context,
-                  SampleItemDetailsView.routeName,
+                  AccountDetailsView.routeName,
                 );
               });
         },

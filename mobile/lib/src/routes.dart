@@ -1,5 +1,7 @@
 class Routes {
   static const String login = '/login';
-  static const String home = '/';
-  static const String sampleItem = '/sample-item';
+  static const String accounts = '/accounts';
+  static const String accountDetails = '/accounts/:id';
+  static const String transactions = '/transactions';
+  static const String transactionDetails = '/transactions/:id';
 }

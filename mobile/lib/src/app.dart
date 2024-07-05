@@ -1,10 +1,11 @@
 import 'package:finny/src/auth/auth_controller.dart';
 import 'package:finny/src/auth/login_view.dart';
+import 'package:finny/src/transactions/transaction_list_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
-import 'accounts/sample_item_details_view.dart';
-import 'accounts/sample_item_list_view.dart';
+import 'accounts/account_details_view.dart';
+import 'accounts/account_list_view.dart';
 import 'settings/settings_controller.dart';
 import 'settings/settings_view.dart';
 
@@ -67,7 +68,9 @@ class MyApp extends StatelessWidget {
           darkTheme: ThemeData.dark(),
           themeMode: settingsController.themeMode,
           home: isLoggedIn
-              ? const SampleItemListView()
+              ? MainView(
+                  authController: authController,
+                  settingsController: settingsController)
               : LoginView(authController: authController),
 
           // Define a function to handle named routes in order to support
@@ -83,9 +86,9 @@ class MyApp extends StatelessWidget {
                     );
                   case SettingsView.routeName:
                     return SettingsView(settingsController: settingsController);
-                  case SampleItemDetailsView.routeName:
-                    return const SampleItemDetailsView();
-                  case SampleItemListView.routeName:
+                  case AccountDetailsView.routeName:
+                    return const AccountDetailsView();
+                  case AccountListView.routeName:
                   default:
                     return LoginView(authController: authController);
                 }
@@ -94,6 +97,64 @@ class MyApp extends StatelessWidget {
           },
         );
       },
+    );
+  }
+}
+
+class MainView extends StatefulWidget {
+  const MainView({
+    super.key,
+    required this.authController,
+    required this.settingsController,
+  });
+
+  final AuthController authController;
+  final SettingsController settingsController;
+
+  @override
+  State<MainView> createState() => _MainViewState();
+}
+
+class _MainViewState extends State<MainView> {
+  int _selectedIndex = 0;
+
+  late final List<Widget> _widgetOptions;
+
+  @override
+  void initState() {
+    super.initState();
+    _widgetOptions = <Widget>[
+      const AccountListView(),
+      const TransactionListView(),
+    ];
+  }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: _widgetOptions.elementAt(_selectedIndex),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.account_balance_wallet),
+            label: 'Accounts',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.list),
+            label: 'Transactions',
+          ),
+          // Add other BottomNavigationBarItem as needed
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: Colors.amber[800],
+        onTap: _onItemTapped,
+      ),
     );
   }
 }

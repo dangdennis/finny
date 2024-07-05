@@ -9,10 +9,10 @@ import 'package:powersync/sqlite3.dart';
 import '../powersync.dart';
 
 /// Displays detailed information about a SampleItem.
-class SampleItemDetailsView extends StatelessWidget {
-  const SampleItemDetailsView({super.key});
+class AccountDetailsView extends StatelessWidget {
+  const AccountDetailsView({super.key});
 
-  static const routeName = Routes.sampleItem;
+  static const routeName = Routes.accountDetails;
 
   void _openPlaidLink() {
     LinkConfiguration configuration = LinkTokenConfiguration(
@@ -42,8 +42,6 @@ class SampleItemDetailsView extends StatelessWidget {
     ResultSet accounts = await db.getAll('SELECT * FROM accounts;');
     print("accounts list $accounts");
 
-    ResultSet transactions = await db.getAll('SELECT * FROM transactions;');
-    print("transactions list $transactions");
     return List<String>.empty();
   }
 
