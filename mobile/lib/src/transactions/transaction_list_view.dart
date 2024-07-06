@@ -1,4 +1,6 @@
+import 'package:finny/src/common/string_utils.dart';
 import 'package:finny/src/transactions/transaction.dart';
+import 'package:finny/src/transactions/transactions_controller.dart';
 import 'package:flutter/material.dart';
 
 import '../routes.dart';
@@ -6,15 +8,34 @@ import '../settings/settings_view.dart';
 import 'transaction_details_view.dart';
 
 /// Displays a list of SampleItems.
-class TransactionListView extends StatelessWidget {
+class TransactionListView extends StatefulWidget {
   const TransactionListView({
     super.key,
-    this.items = const [],
+    required this.transactionsController,
   });
 
+  final TransactionsController transactionsController;
   static const routeName = Routes.transactions;
 
-  final List<Transaction> items;
+  @override
+  State<TransactionListView> createState() => _TransactionListViewState();
+}
+
+class _TransactionListViewState extends State<TransactionListView> {
+  List<Transaction> transactions = [];
+
+  @override
+  void initState() {
+    super.initState();
+    initTransactions();
+  }
+
+  void initTransactions() async {
+    transactions = await widget.transactionsController.getTransactions();
+    setState(() {
+      transactions = transactions;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,25 +66,55 @@ class TransactionListView extends StatelessWidget {
         // scroll position when a user leaves and returns to the app after it
         // has been killed while running in the background.
         restorationId: 'transactionListView',
-        itemCount: items.length,
+        itemCount: transactions.length,
         itemBuilder: (BuildContext context, int index) {
-          final item = items[index];
+          final transaction = transactions[index];
 
           return ListTile(
-              title: Text('SampleItem ${item.id}'),
+              title: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                          StringUtils.truncateWithEllipsis(
+                              transaction.name, 32),
+                          style: const TextStyle(
+                            fontSize: 12,
+                          )),
+                      const Spacer(),
+                      Text(
+                        '\$${transaction.amount * -1}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Text(
+                    transaction.date,
+                    style: const TextStyle(
+                      fontSize: 10,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ],
+              ),
               leading: const CircleAvatar(
                 // Display the Flutter Logo image asset.
                 foregroundImage: AssetImage('assets/images/flutter_logo.png'),
               ),
-              onTap: () {
-                // Navigate to the details page. If the user leaves and returns to
-                // the app after it has been killed while running in the
-                // background, the navigation stack is restored.
-                Navigator.restorablePushNamed(
-                  context,
-                  TransactionDetailsView.routeName,
-                );
-              });
+              // onTap: () {
+              //   // Navigate to the details page. If the user leaves and returns to
+              //   // the app after it has been killed while running in the
+              //   // background, the navigation stack is restored.
+              //   Navigator.restorablePushNamed(
+              //     context,
+              //     TransactionDetailsView.routeName,
+              //   );
+              // }
+              );
         },
       ),
     );

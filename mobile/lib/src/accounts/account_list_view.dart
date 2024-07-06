@@ -6,7 +6,6 @@ import '../settings/settings_view.dart';
 import 'account.dart';
 import 'account_details_view.dart';
 
-/// Displays a list of SampleItems.
 class AccountListView extends StatefulWidget {
   const AccountListView({
     super.key,
@@ -45,9 +44,6 @@ class _AccountListViewState extends State<AccountListView> {
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
-              // Navigate to the settings page. If the user leaves and returns
-              // to the app after it has been killed while running in the
-              // background, the navigation stack is restored.
               Navigator.restorablePushNamed(context, SettingsView.routeName);
             },
           ),

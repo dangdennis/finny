@@ -22,6 +22,12 @@ class _LoginViewState extends State<LoginView> {
     _emailController = TextEditingController();
     super.initState();
     widget.authController.initAuthStateListener(context);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.authController.isLoggedIn) {
+        Navigator.restorablePushNamed(context, Routes.accounts);
+      }
+    });
   }
 
   @override

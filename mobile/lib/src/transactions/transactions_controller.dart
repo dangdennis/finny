@@ -4,7 +4,7 @@ import 'package:powersync/sqlite3.dart';
 
 class TransactionsController {
   Future<List<Transaction>> getTransactions() async {
-    ResultSet transactions = await db.getAll('SELECT * FROM transactions;');
+    ResultSet transactions = await db.getAll('SELECT * FROM transactions order by DATE(date) desc;');
     print("transactions list $transactions");
     return transactions.map((row) {
       return Transaction(

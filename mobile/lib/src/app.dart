@@ -40,10 +40,6 @@ class MyApp extends StatelessWidget {
       listenable: settingsController,
       builder: (BuildContext context, Widget? child) {
         return MaterialApp(
-          // Providing a restorationScopeId allows the Navigator built by the
-          // MaterialApp to restore the navigation stack when a user leaves and
-          // returns to the app after it has been killed while running in the
-          // background.
           restorationScopeId: 'app',
 
           // Provide the generated AppLocalizations to the MaterialApp. This
@@ -79,7 +75,9 @@ class MyApp extends StatelessWidget {
               ? MainView(
                   accountsController: accountsController,
                   authController: authController,
-                  settingsController: settingsController)
+                  settingsController: settingsController,
+                  transactionsController: transactionsController,
+                )
               : LoginView(authController: authController),
 
           // Define a function to handle named routes in order to support
@@ -101,7 +99,9 @@ class MyApp extends StatelessWidget {
                   case AccountDetailsView.routeName:
                     return const AccountDetailsView();
                   case TransactionListView.routeName:
-                    return const TransactionListView();
+                    return TransactionListView(
+                      transactionsController: transactionsController,
+                    );
                   case TransactionDetailsView.routeName:
                     return const TransactionDetailsView();
                   default:
@@ -122,11 +122,13 @@ class MainView extends StatefulWidget {
     required this.authController,
     required this.settingsController,
     required this.accountsController,
+    required this.transactionsController,
   });
 
   final AuthController authController;
   final SettingsController settingsController;
   final AccountsController accountsController;
+  final TransactionsController transactionsController;
 
   @override
   State<MainView> createState() => _MainViewState();
@@ -144,7 +146,9 @@ class _MainViewState extends State<MainView> {
       AccountListView(
         accountsController: widget.accountsController,
       ),
-      const TransactionListView(),
+      TransactionListView(
+        transactionsController: widget.transactionsController,
+      ),
     ];
   }
 
