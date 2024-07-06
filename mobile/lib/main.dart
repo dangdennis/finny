@@ -1,5 +1,7 @@
+import 'package:finny/src/accounts/accounts_controller.dart';
 import 'package:finny/src/auth/auth_controller.dart';
 import 'package:finny/src/auth/auth_service.dart';
+import 'package:finny/src/transactions/transactions_controller.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
@@ -34,6 +36,8 @@ void main() async {
   // Flutter Widgets.
   final settingsController = SettingsController(SettingsService());
   final authController = AuthController(AuthService());
+  final accountsController = AccountsController();
+  final transactionsController = TransactionsController();
 
   // Load the user's preferred theme while the splash screen is displayed.
   // This prevents a sudden theme change when the app is first displayed.
@@ -45,6 +49,8 @@ void main() async {
   runApp(MyApp(
     settingsController: settingsController,
     authController: authController,
+    accountsController: accountsController,
+    transactionsController: transactionsController,
     isLoggedIn: authController.isLoggedIn,
   ));
 }
