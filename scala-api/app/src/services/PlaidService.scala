@@ -15,6 +15,7 @@ import com.plaid.client.model.ItemPublicTokenExchangeResponse
 import com.plaid.client.model.LinkTokenCreateRequest
 import com.plaid.client.model.LinkTokenCreateRequestUser
 import com.plaid.client.model.LinkTokenCreateResponse
+import com.plaid.client.model.LinkTokenTransactions
 import com.plaid.client.model.Products
 import com.plaid.client.model.TransactionsSyncRequest
 import com.plaid.client.model.TransactionsSyncResponse
@@ -31,7 +32,6 @@ import scala.reflect.ClassTag
 import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
-import com.plaid.client.model.LinkTokenTransactions
 
 object PlaidService:
   private lazy val client = makePlaidClient()

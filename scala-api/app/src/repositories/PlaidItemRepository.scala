@@ -20,7 +20,11 @@ object PlaidItemRepository:
             plaidInstitutionId = rs.string("plaid_institution_id"),
             status = PlaidItemStatus.fromString(rs.string("status")),
             transactionsCursor = rs.stringOpt("transactions_cursor"),
-            createdAt = rs.timestamp("created_at").toInstant
+            createdAt = rs.timestamp("created_at").toInstant,
+            lastSyncedAt = rs.timestampOpt("last_synced_at").map(_.toInstant),
+            lastSyncError = rs.stringOpt("last_sync_error"),
+            lastSyncErrorAt = rs.timestampOpt("last_sync_error_at").map(_.toInstant),
+            retryCount = rs.int("retry_count")
           )
         )
         .single
@@ -40,7 +44,11 @@ object PlaidItemRepository:
             plaidInstitutionId = rs.string("plaid_institution_id"),
             status = PlaidItemStatus.fromString(rs.string("status")),
             transactionsCursor = rs.stringOpt("transactions_cursor"),
-            createdAt = rs.timestamp("created_at").toInstant
+            createdAt = rs.timestamp("created_at").toInstant,
+            lastSyncedAt = rs.timestampOpt("last_synced_at").map(_.toInstant),
+            lastSyncError = rs.stringOpt("last_sync_error"),
+            lastSyncErrorAt = rs.timestampOpt("last_sync_error_at").map(_.toInstant),
+            retryCount = rs.int("retry_count")
           )
         )
         .single
@@ -78,7 +86,11 @@ object PlaidItemRepository:
             plaidItemId = rs.string("plaid_item_id"),
             status = PlaidItemStatus.fromString(rs.string("status")),
             transactionsCursor = rs.stringOpt("transactions_cursor"),
-            userId = UUID.fromString(rs.string("user_id"))
+            userId = UUID.fromString(rs.string("user_id")),
+            lastSyncedAt = rs.timestampOpt("last_synced_at").map(_.toInstant),
+            lastSyncError = rs.stringOpt("last_sync_error"),
+            lastSyncErrorAt = rs.timestampOpt("last_sync_error_at").map(_.toInstant),
+            retryCount = rs.int("retry_count")
           )
         )
         .single

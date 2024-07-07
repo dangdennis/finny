@@ -27,5 +27,9 @@ case class PlaidItem(
     plaidInstitutionId: String,
     status: PlaidItemStatus,
     transactionsCursor: Option[String],
-    createdAt: Instant
+    createdAt: Instant,
+    lastSyncedAt: Option[Instant],
+    lastSyncError: Option[String],
+    lastSyncErrorAt: Option[Instant],
+    retryCount: Int
 )
