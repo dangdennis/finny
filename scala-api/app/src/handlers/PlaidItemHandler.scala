@@ -34,7 +34,7 @@ object PlaidItemHandler:
         Logger.root.error(s"Error creating Plaid item: ${error}")
         Left(AuthenticationError(400))
       case Right(item) =>
-        PlaidSyncService.syncTransactionsAndAccounts(item.id)
+        PlaidSyncService.sync(item.id)
 
         Right(
           DTOs.PlaidItemCreateResponse(
@@ -52,6 +52,6 @@ object PlaidItemHandler:
       .left
       .map(_ => AuthenticationError(404))
       .map(item =>
-        PlaidSyncService.syncTransactionsAndAccounts(item.id)
+        PlaidSyncService.sync(item.id)
         Right(())
       )

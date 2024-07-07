@@ -20,7 +20,7 @@ import scala.util.Failure
 import scala.util.Success
 
 object PlaidSyncService:
-  def syncTransactionsAndAccounts(itemId: UUID): Unit =
+  def sync(itemId: UUID): Unit =
     Future {
       retry(
         RetryPolicy(
@@ -37,10 +37,10 @@ object PlaidSyncService:
             maxRetries = 5
           )
         )
-      )(syncTransactionsAndAccountsInternal(itemId))
+      )(_sync(itemId))
     }(using ExecutionContext.global)
 
-  private def syncTransactionsAndAccountsInternal(itemId: UUID): Unit =
+  private def _sync(itemId: UUID): Unit =
     Logger.root.info(s"Syncing transactions and accounts for item: $itemId")
     val item = PlaidItemRepository.getById(itemId)
     item match
@@ -54,11 +54,11 @@ object PlaidSyncService:
             case Left(error) =>
               Logger.root.error(s"Error syncing transactions: $error")
             case Right(resp) =>
-              sync(item, resp)
+              handleItemResponse(item, resp)
               hasMore = resp.getHasMore().booleanValue()
               cursor = Option(resp.getNextCursor())
 
-  private def sync(item: PlaidItem, response: TransactionsSyncResponse): Unit =
+  private def handleItemResponse(item: PlaidItem, response: TransactionsSyncResponse): Unit =
     val accounts = response.getAccounts.asScala
     Logger.root.info(s"Got number of accounts: ${accounts.size}")
     for account <- accounts do
@@ -117,8 +117,25 @@ object PlaidSyncService:
   
   def schedulePlaidSync(): Unit =
     Logger.root.info(s"Executing Plaid sync at ${java.time.Instant.now()}")
+//    query for all items that haven't had a successful sync in the past 6 hours
+//    for each item, call the sync 
 
   private def schedulePlaidSyncTask(itemId: UUID): Unit =
     Logger.root.info(s"Executing Plaid sync task for item: $itemId")
-    syncTransactionsAndAccounts(itemId)
+    sync(itemId)
     Logger.root.info(s"Finished Plaid sync task for item: $itemId")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    

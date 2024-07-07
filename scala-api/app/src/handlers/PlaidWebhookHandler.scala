@@ -38,7 +38,7 @@ object PlaidWebhookHandler:
           val event = read[PlaidTransactionsSyncUpdatesAvailable](json)
           PlaidItemRepository
             .getByItemId(itemId = event.item_id)
-            .map(plaidItem => PlaidSyncService.syncTransactionsAndAccounts(itemId = plaidItem.id))
+            .map(plaidItem => PlaidSyncService.sync(itemId = plaidItem.id))
 
         }(using ExecutionContext.global)
 

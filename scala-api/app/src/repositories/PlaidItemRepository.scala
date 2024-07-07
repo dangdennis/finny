@@ -4,13 +4,21 @@ import app.models.PlaidItem
 import app.models.PlaidItemStatus
 import scalikejdbc.*
 
+import java.time.Instant
 import java.util.UUID
 import scala.util.Try
 
 object PlaidItemRepository:
   def getById(id: UUID): Try[PlaidItem] =
     Try(DB readOnly { implicit session =>
-      sql"""select id, user_id, plaid_access_token, plaid_item_id, plaid_institution_id, status, transactions_cursor, created_at from plaid_items where id = ${id}"""
+      sql"""
+        select
+            id, user_id, plaid_access_token, plaid_item_id, plaid_institution_id, status, transactions_cursor, created_at
+            , last_synced_at, last_sync_error, last_sync_error_at, retry_count
+        from
+          plaid_items
+        where
+          id = ${id}"""
         .map(rs =>
           PlaidItem(
             id = UUID.fromString(rs.string("id")),
@@ -34,7 +42,14 @@ object PlaidItemRepository:
 
   def getByItemId(itemId: String): Try[PlaidItem] =
     Try(DB readOnly { implicit session =>
-      sql"""select id, user_id, plaid_access_token, plaid_item_id, plaid_institution_id, status, transactions_cursor, created_at from plaid_items where plaid_item_id = ${itemId}"""
+      sql"""
+          select
+              id, user_id, plaid_access_token, plaid_item_id, plaid_institution_id, status, transactions_cursor, created_at
+              , last_synced_at, last_sync_error, last_sync_error_at, retry_count
+          from
+              plaid_items
+          where
+              plaid_item_id = ${itemId}"""
         .map(rs =>
           PlaidItem(
             id = UUID.fromString(rs.string("id")),
@@ -65,7 +80,7 @@ object PlaidItemRepository:
       transactionsCursor: Option[String]
   )
 
-  def createItem(input: CreateItemInput) =
+  def createItem(input: CreateItemInput): Either[Throwable, PlaidItem] =
     Try(DB autoCommit { implicit session =>
       val query =
         sql"""INSERT INTO plaid_items (user_id, plaid_access_token, plaid_item_id, plaid_institution_id, status, transactions_cursor)
@@ -74,7 +89,7 @@ object PlaidItemRepository:
         ON CONFLICT (plaid_item_id) DO UPDATE SET
           status = EXCLUDED.status,
           plaid_access_token = EXCLUDED.plaid_access_token
-        RETURNING id, user_id, plaid_access_token, plaid_item_id, plaid_institution_id, status, transactions_cursor, created_at;
+        RETURNING id, user_id, plaid_access_token, plaid_item_id, plaid_institution_id, status, transactions_cursor, created_at, last_synced_at, last_sync_error, last_sync_error_at, retry_count;
         """
       query
         .map(rs =>
@@ -102,3 +117,30 @@ object PlaidItemRepository:
       sql"""UPDATE plaid_items SET transactions_cursor = ${cursor} WHERE id = ${itemId}""".update
         .apply()
     })
+
+  def updateSyncSuccess(itemId: UUID, currentTime: Instant): Either[Throwable, Int] =
+    Try(DB autoCommit { implicit session =>
+      sql"""
+           UPDATE plaid_items
+           SET
+              last_synced_at = ${currentTime},
+              last_sync_error = NULL,
+              last_sync_error_at = NULL,
+              retry_count = 0
+           WHERE
+              id = ${itemId}""".update
+        .apply()
+    }).toEither
+
+  def updateSyncError(itemId: UUID, error: String, currentTime: Instant): Either[Throwable, Int] =
+    Try(DB autoCommit { implicit session =>
+      sql"""
+           UPDATE plaid_items
+           SET
+              last_sync_error = ${error},
+              last_sync_error_at = ${currentTime},
+              retry_count = retry_count + 1
+           WHERE
+              id = ${itemId}""".update
+        .apply()
+    }).toEither
