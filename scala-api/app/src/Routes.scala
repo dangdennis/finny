@@ -18,7 +18,7 @@ import scala.collection.JavaConverters.*
 import scala.util.Try
 
 object Routes:
-  def makeAuthenticator(authConfig: AuthConfig): AuthenticationToken => Either[AuthenticationError, Profile] =
+  private def makeAuthenticator(authConfig: AuthConfig): AuthenticationToken => Either[AuthenticationError, Profile] =
     val algorithm = Algorithm.HMAC256(authConfig.jwtSecret);
     (token: AuthenticationToken) =>
       val verifier = JWT.require(algorithm).withIssuer(authConfig.jwtIssuer).build();
@@ -29,7 +29,7 @@ object Routes:
           Logger.root.error(s"Error decoding JWT: ${error.getMessage()}")
           Left(AuthenticationError(404))
 
-  def createRoutes(authConfig: AuthConfig) =
+  def createRoutes(authConfig: AuthConfig): List[ServerEndpoint[Any, Identity]] =
     val indexRoute = endpoint.get.in("").out(stringBody)
     val apiRoute = endpoint.in("api").tag("Finny API")
 
