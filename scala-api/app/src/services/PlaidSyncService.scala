@@ -60,6 +60,7 @@ object PlaidSyncService:
 
   private def handleItemResponse(item: PlaidItem, response: TransactionsSyncResponse): Unit =
     val accounts = response.getAccounts.asScala
+    var encounteredError = (false, "")
     Logger.root.info(s"Got number of accounts: ${accounts.size}")
     for account <- accounts do
       AccountRepository.upsertAccount(
@@ -79,7 +80,9 @@ object PlaidSyncService:
         )
       ) match
         case Failure(error) =>
-          Logger.root.error(s"Error upserting account: $error")
+          val msg = s"Error upserting account: $error"
+          Logger.root.error(msg)
+          encounteredError = (true, msg)
         case Success(accountId) =>
           Logger.root.info(s"Upserted account: $accountId")
 
@@ -92,7 +95,9 @@ object PlaidSyncService:
       Logger.root.info(s"Upserting transaction: $transaction")
       AccountRepository.getByPlaidAccountId(itemId = item.id, plaidAccountId = transaction.getAccountId) match
         case Failure(error) =>
-          Logger.root.error(s"Failed to upsert transaction ${transaction.getTransactionId} due to missing account: $error")
+          val msg = s"Failed to upsert transaction ${transaction.getTransactionId} due to missing account: $error"
+          encounteredError = (true, msg)
+          Logger.root.error(msg)
         case Success(account) =>
           val _ = TransactionRepository.upsertTransaction(
             TransactionRepository.UpsertTransactionInput(
@@ -113,12 +118,17 @@ object PlaidSyncService:
 
     TransactionRepository.delete(removed.map(_.getTransactionId()).toList)
 
-    PlaidItemRepository.updateTransactionCursor(itemId = item.id, cursor = Option(response.getNextCursor))
-  
+    encounteredError match
+      case (false, _) =>
+        PlaidItemRepository.updateSyncSuccess(itemId=item.id, currentTime = java.time.Instant.now())
+        PlaidItemRepository.updateTransactionCursor(itemId = item.id, cursor = Option(response.getNextCursor))
+      case (true, msg) =>
+        PlaidItemRepository.updateSyncError(itemId = item.id, error = msg, currentTime = java.time.Instant.now())
+
   def schedulePlaidSync(): Unit =
     Logger.root.info(s"Executing Plaid sync at ${java.time.Instant.now()}")
 //    query for all items that haven't had a successful sync in the past 6 hours
-//    for each item, call the sync 
+//    for each item, call the sync
 
   private def schedulePlaidSyncTask(itemId: UUID): Unit =
     Logger.root.info(s"Executing Plaid sync task for item: $itemId")
