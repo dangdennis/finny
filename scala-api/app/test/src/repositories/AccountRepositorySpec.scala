@@ -19,7 +19,8 @@ class AccountRepositorySpec extends AnyFlatSpec with Matchers with EitherValues 
   override protected def beforeEach(): Unit =
     TestHelper.beforeEach()
 
-  it should "upsert accounts" in {
+  
+  "upsertAccount" should "upsert accounts" in {
     // given
     val user = AuthUserRepositoryHelper.createUser()
     val item = PlaidItemRepository

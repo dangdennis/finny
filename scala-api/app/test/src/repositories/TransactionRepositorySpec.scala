@@ -23,7 +23,7 @@ class TransactionRepositorySpec extends AnyFlatSpec with Matchers with EitherVal
   override protected def beforeEach(): Unit =
     TestHelper.beforeEach()
 
-  it should "upsert transactions" in {
+  "upsertTransaction" should "upsert transactions" in {
     // given
     val user = AuthUserRepositoryHelper.createUser()
     val item = PlaidItemRepository

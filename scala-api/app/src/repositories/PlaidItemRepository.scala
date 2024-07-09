@@ -7,6 +7,7 @@ import scalikejdbc.*
 import java.time.Instant
 import java.util.UUID
 import scala.util.Try
+import java.time.Duration
 
 object PlaidItemRepository:
   def getById(id: UUID): Try[PlaidItem] =
@@ -100,9 +101,8 @@ object PlaidItemRepository:
         .apply()
     }).map(item => item.get).toEither
 
-  ///
   def getItemsPendingSync(now: Instant): Try[List[PlaidItem]] =
-    val threshold = now // - 12 hours
+    val threshold = now.minus(Duration.ofHours(12))
     Try(
       DB readOnly { implicit session =>
         sql"""

@@ -2,8 +2,6 @@ package test.repositories
 
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import app.repositories.AccountRepository
-import app.repositories.AccountRepository.UpsertAccountInput
 import org.scalatest.BeforeAndAfterAll
 import app.repositories.PlaidItemRepository
 import app.repositories.PlaidItemRepository.CreateItemInput
@@ -19,7 +17,7 @@ class PlaidItemRepositorySpec extends AnyFlatSpec with Matchers with EitherValue
   override protected def beforeEach(): Unit =
     TestHelper.beforeEach()
 
-  it should "update item sync success time" in {
+  "updateSyncSuccess" should "update item sync success time" in {
     // given
     val user = AuthUserRepositoryHelper.createUser()
     val item = PlaidItemRepository
@@ -32,21 +30,22 @@ class PlaidItemRepositorySpec extends AnyFlatSpec with Matchers with EitherValue
           status = PlaidItemStatus.Bad,
           transactionsCursor = None
         )
-      ).value
+      )
+      .value
     val currentTime = java.time.Instant.now()
 
     // when
     PlaidItemRepository.updateSyncSuccess(item.id, currentTime = currentTime)
 
     // then
-    val updatedItem = PlaidItemRepository.getById(id=item.id).get
+    val updatedItem = PlaidItemRepository.getById(id = item.id).get
     updatedItem.lastSyncedAt should be(Some(currentTime))
     updatedItem.lastSyncError should be(None)
     updatedItem.lastSyncErrorAt should be(None)
     updatedItem.retryCount should be(0)
   }
 
-  it should "update item sync error columns" in {
+  "updateSyncError" should "update item sync error columns" in {
     // given
     val user = AuthUserRepositoryHelper.createUser()
     val item = PlaidItemRepository
@@ -59,15 +58,16 @@ class PlaidItemRepositorySpec extends AnyFlatSpec with Matchers with EitherValue
           status = PlaidItemStatus.Bad,
           transactionsCursor = None
         )
-      ).value
+      )
+      .value
     val currentTime = java.time.Instant.now()
     val error = "got an error from plaid"
 
     // when
-    PlaidItemRepository.updateSyncError(item.id, error=error, currentTime = currentTime)
+    PlaidItemRepository.updateSyncError(item.id, error = error, currentTime = currentTime)
 
     // then
-    val updatedItem = PlaidItemRepository.getById(id=item.id).get
+    val updatedItem = PlaidItemRepository.getById(id = item.id).get
     updatedItem.lastSyncedAt should be(None)
     updatedItem.lastSyncError should be(Some(error))
     updatedItem.lastSyncErrorAt should be(Some(currentTime))
