@@ -45,25 +45,6 @@ object PlaidSyncService:
         case Success(_)  => Logger.root.info(s"Sync for item ${itemId} completed successfully.")
         case Failure(ex) => Logger.root.error(s"Sync for item ${itemId} failed.", ex)
       }
-
-      // todo: replace resilience4j with ox after i figure out ox
-      // with ox
-      // retry(
-      //   RetryPolicy(
-      //     onRetry = (attempt, result) =>
-      //       result.left
-      //         .map { error =>
-      //           Logger.root.error(s"Attempt $attempt failed", error)
-      //         }
-      //         .map { _ =>
-      //           Logger.root.info(s"Attempt $attempt")
-      //         },
-      //     schedule = Schedule.Backoff(
-      //       initialDelay = FiniteDuration(1, TimeUnit.SECONDS),
-      //       maxRetries = 5
-      //     )
-      //   )
-      // )(_sync(itemId))
     }
 
   // todo: simplify error logging

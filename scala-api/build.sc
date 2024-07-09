@@ -6,7 +6,6 @@ object app extends ScalaModule with ScalafixModule {
   def scalaVersion = "3.4.2"
 
   def ivyDeps = Agg(
-    ivy"com.softwaremill.ox::core:0.2.1",
     ivy"com.softwaremill.sttp.tapir::tapir-core:1.10.8",
     ivy"com.softwaremill.sttp.tapir::tapir-nima-server:1.10.8",
     ivy"com.softwaremill.sttp.tapir::tapir-prometheus-metrics:1.10.8",
