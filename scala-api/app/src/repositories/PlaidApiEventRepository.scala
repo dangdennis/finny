@@ -28,6 +28,6 @@ object PlaidApiEventRepository:
       query.execute
         .apply()
     }).toEither.left.map(exception =>
-      Logger.root.error(s"Error creating Plaid API event: ${exception.getMessage}")
+      Logger.root.error(s"Error creating Plaid API event", exception)
       RepositoryError.DatabaseError(exception.getMessage)
     )

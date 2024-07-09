@@ -6,40 +6,65 @@ import app.repositories.PlaidItemRepository
 import app.repositories.TransactionRepository
 import app.utils.logger.Logger
 import com.plaid.client.model.TransactionsSyncResponse
-import ox.resilience.RetryPolicy
-import ox.resilience.Schedule
-import ox.resilience.retry
+import io.github.resilience4j.ratelimiter.*
+import io.github.resilience4j.retry.*
 
 import java.util.UUID
-import java.util.concurrent.TimeUnit
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
-import scala.concurrent.duration.FiniteDuration
 import scala.jdk.CollectionConverters.*
 import scala.util.Failure
 import scala.util.Success
 
 object PlaidSyncService:
+  given ec: ExecutionContext = ExecutionContext.global
+
+  private val rateLimiterConfig = RateLimiterConfig
+    .custom()
+    .timeoutDuration(java.time.Duration.ofMillis(500))
+    .limitForPeriod(45)
+    .limitRefreshPeriod(java.time.Duration.ofMinutes(1))
+    .build()
+  private val rateLimiterRegistry = RateLimiterRegistry.of(rateLimiterConfig);
+  private val rateLimiter = rateLimiterRegistry
+    .rateLimiter("plaidSyncRateLimiter");
+  private val retryConfig = RetryConfig
+    .custom()
+    .maxAttempts(3)
+    .waitDuration(java.time.Duration.ofSeconds(20))
+    .build()
+  private val retryRegistry: RetryRegistry = RetryRegistry.of(retryConfig)
+  private val retry = retryRegistry.retry("PlaidSyncRetry")
+
   def sync(itemId: UUID): Unit =
     Future {
-      retry(
-        RetryPolicy(
-          onRetry = (attempt, result) =>
-            result.left
-              .map { error =>
-                Logger.root.error(s"Attempt $attempt failed: $error")
-              }
-              .map { _ =>
-                Logger.root.info(s"Attempt $attempt")
-              },
-          schedule = Schedule.Backoff(
-            initialDelay = FiniteDuration(1, TimeUnit.SECONDS),
-            maxRetries = 5
-          )
-        )
-      )(_sync(itemId))
-    }(using ExecutionContext.global)
+      val decoratedTask = RateLimiter.decorateRunnable(rateLimiter, Retry.decorateRunnable(retry, () => schedulePlaidSyncTask(itemId)))
+      Future {
+        decoratedTask.run()
+      }.onComplete {
+        case Success(_)  => Logger.root.info(s"Sync for item ${itemId} completed successfully.")
+        case Failure(ex) => Logger.root.error(s"Sync for item ${itemId} failed.", ex)
+      }
 
+      // todo: replace resilience4j with ox after i figure out ox
+      // with ox
+      // retry(
+      //   RetryPolicy(
+      //     onRetry = (attempt, result) =>
+      //       result.left
+      //         .map { error =>
+      //           Logger.root.error(s"Attempt $attempt failed", error)
+      //         }
+      //         .map { _ =>
+      //           Logger.root.info(s"Attempt $attempt")
+      //         },
+      //     schedule = Schedule.Backoff(
+      //       initialDelay = FiniteDuration(1, TimeUnit.SECONDS),
+      //       maxRetries = 5
+      //     )
+      //   )
+      // )(_sync(itemId))
+    }
 
   // todo: simplify error logging
   // 1. update error on any failed transaction or account upsert - done
@@ -49,7 +74,7 @@ object PlaidSyncService:
     val item = PlaidItemRepository.getById(itemId)
     item match
       case Failure(exception) =>
-        Logger.root.error(f"Error getting item: $exception")
+        Logger.root.error(f"Error getting item", exception)
         PlaidItemRepository.updateSyncError(itemId = itemId, error = exception.getMessage, currentTime = java.time.Instant.now())
       case Success(item) =>
         var cursor = item.transactionsCursor
@@ -57,7 +82,7 @@ object PlaidSyncService:
         while hasMore do
           PlaidService.getTransactionsSync(item) match
             case Left(error) =>
-              Logger.root.error(s"Error syncing transactions: $error")
+              Logger.root.error(s"Error syncing transactions", error)
               PlaidItemRepository.updateSyncError(itemId = item.id, error = error.errorMessage, currentTime = java.time.Instant.now())
             case Right(resp) =>
               handleItemResponse(item, resp)
@@ -131,10 +156,18 @@ object PlaidSyncService:
       case (true, msg) =>
         PlaidItemRepository.updateSyncError(itemId = item.id, error = msg, currentTime = java.time.Instant.now())
 
-  def schedulePlaidSync(): Unit =
-    Logger.root.info(s"Executing Plaid sync at ${java.time.Instant.now()}")
-//    query for all items that haven't had a successful sync in the past 6 hours
-//    for each item, call the sync
+  def runPlaidSyncPeriodically(): Unit =
+    while true do
+      val currentTime = java.time.Instant.now()
+      Logger.root.info(s"Executing Plaid sync at ${currentTime}")
+      PlaidItemRepository.getItemsPendingSync(now = currentTime).map { items =>
+        items.foreach { item =>
+          Future {
+            schedulePlaidSyncTask(item.id)
+          }
+        }
+      }
+      Thread.sleep(60000 * 10)
 
   private def schedulePlaidSyncTask(itemId: UUID): Unit =
     Logger.root.info(s"Executing Plaid sync task for item: $itemId")

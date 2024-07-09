@@ -253,7 +253,7 @@ object PlaidService:
         }(using ExecutionContext.global)
         plaidError
       case Failure(exception) =>
-        Logger.root.error(s"Unexpected exception on plaid call: $exception")
+        Logger.root.error(s"Unexpected exception on plaid call", exception)
         val plaidError = PlaidError(None, "API_ERROR", "UNKNOWN_ERROR", exception.getMessage)
         Left(plaidError)
     }

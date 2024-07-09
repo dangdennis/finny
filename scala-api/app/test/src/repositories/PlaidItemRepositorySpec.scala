@@ -14,8 +14,8 @@ class PlaidItemRepositorySpec extends AnyFlatSpec with Matchers with EitherValue
   override protected def beforeAll(): Unit =
     TestHelper.beforeAll()
 
-  override protected def beforeEach(): Unit =
-    TestHelper.beforeEach()
+  override protected def afterEach(): Unit =
+    TestHelper.afterEach()
 
   "updateSyncSuccess" should "update item sync success time" in {
     // given
@@ -84,7 +84,7 @@ class PlaidItemRepositorySpec extends AnyFlatSpec with Matchers with EitherValue
           plaidAccessToken = "somePlaid1",
           plaidInstitutionId = "institutionId",
           plaidItemId = "somePlaidItemId1",
-          status = PlaidItemStatus.Bad,
+          status = PlaidItemStatus.Good,
           transactionsCursor = None
         )
       )
@@ -96,7 +96,7 @@ class PlaidItemRepositorySpec extends AnyFlatSpec with Matchers with EitherValue
           plaidAccessToken = "somePlaid2",
           plaidInstitutionId = "institutionId",
           plaidItemId = "somePlaidItemId2",
-          status = PlaidItemStatus.Bad,
+          status = PlaidItemStatus.Good,
           transactionsCursor = None
         )
       )
@@ -108,7 +108,7 @@ class PlaidItemRepositorySpec extends AnyFlatSpec with Matchers with EitherValue
           plaidAccessToken = "somePlaid",
           plaidInstitutionId = "institutionId",
           plaidItemId = "somePlaidItemId3",
-          status = PlaidItemStatus.Bad,
+          status = PlaidItemStatus.Good,
           transactionsCursor = None
         )
       )

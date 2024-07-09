@@ -16,8 +16,8 @@ class AccountRepositorySpec extends AnyFlatSpec with Matchers with EitherValues 
   override protected def beforeAll(): Unit =
     TestHelper.beforeAll()
 
-  override protected def beforeEach(): Unit =
-    TestHelper.beforeEach()
+  override protected def afterEach(): Unit =
+    TestHelper.afterEach()
 
   
   "upsertAccount" should "upsert accounts" in {

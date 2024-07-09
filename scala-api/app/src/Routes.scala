@@ -26,7 +26,7 @@ object Routes:
       decodedJwt match
         case scala.util.Success(jwt) => Right(Profile(id = UUID.fromString(jwt.getSubject())))
         case scala.util.Failure(error) =>
-          Logger.root.error(s"Error decoding JWT: ${error.getMessage()}")
+          Logger.root.error(s"Error decoding JWT", error)
           Left(AuthenticationError(404))
 
   def createRoutes(authConfig: AuthConfig): List[ServerEndpoint[Any, Identity]] =

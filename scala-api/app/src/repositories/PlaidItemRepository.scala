@@ -123,7 +123,9 @@ object PlaidItemRepository:
             from
               plaid_items
             where
-		      last_synced_at is null or last_synced_at <= ${threshold};
+		      last_synced_at is null or last_synced_at <= ${threshold}
+		      and status = 'good'
+              and retry_count < 5
            """
           .map(dbToModel)
           .list

@@ -11,7 +11,7 @@ test:
 	./mill app.test
 
 fix:
-	./mill app.fix
+	make clean && ./mill app.fix
 
 clean:
 	./mill clean

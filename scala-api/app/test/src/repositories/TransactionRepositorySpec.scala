@@ -20,8 +20,8 @@ class TransactionRepositorySpec extends AnyFlatSpec with Matchers with EitherVal
   override protected def beforeAll(): Unit =
     TestHelper.beforeAll()
 
-  override protected def beforeEach(): Unit =
-    TestHelper.beforeEach()
+  override protected def afterEach(): Unit =
+    TestHelper.afterEach()
 
   "upsertTransaction" should "upsert transactions" in {
     // given

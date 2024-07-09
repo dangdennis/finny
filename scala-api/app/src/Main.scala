@@ -1,6 +1,7 @@
 package app
 
 import app.database.Database
+import app.services.PlaidSyncService
 import app.utils.Environment
 import app.utils.Environment.AppEnv
 import app.utils.logger.Logger
@@ -36,5 +37,7 @@ import sttp.tapir.server.nima.NimaServerInterpreter
     .port(port)
     .build()
     .start()
+
+  PlaidSyncService.runPlaidSyncPeriodically()
 
   Logger.root.info(s"Server started at: http://0.0.0.0:${server.port()}")

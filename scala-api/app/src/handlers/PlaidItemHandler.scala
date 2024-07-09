@@ -31,7 +31,7 @@ object PlaidItemHandler:
 
     result match
       case Left(error) =>
-        Logger.root.error(s"Error creating Plaid item: ${error}")
+        Logger.root.error(s"Error creating Plaid item", error)
         Left(AuthenticationError(400))
       case Right(item) =>
         PlaidSyncService.sync(item.id)

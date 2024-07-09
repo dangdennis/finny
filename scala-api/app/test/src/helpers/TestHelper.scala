@@ -9,5 +9,5 @@ object TestHelper:
     Database.init(configs = Environment.getDatabaseConfig)
     Logger.configureLogging()
 
-  def beforeEach(): Unit =
+  def afterEach(): Unit =
     DatabaseHelper.truncateTables()
