@@ -4,10 +4,10 @@ import app.models.PlaidItem
 import app.models.PlaidItemStatus
 import scalikejdbc.*
 
+import java.time.Duration
 import java.time.Instant
 import java.util.UUID
 import scala.util.Try
-import java.time.Duration
 
 object PlaidItemRepository:
   def getById(id: UUID): Try[PlaidItem] =
@@ -71,7 +71,7 @@ object PlaidItemRepository:
       transactionsCursor: Option[String]
   )
 
-  def createItem(input: CreateItemInput): Either[Throwable, PlaidItem] =
+  def getOrCreateItem(input: CreateItemInput): Either[Throwable, PlaidItem] =
     Try(DB autoCommit { implicit session =>
       val query =
         sql"""INSERT INTO plaid_items (user_id, plaid_access_token, plaid_item_id, plaid_institution_id, status, transactions_cursor)
@@ -101,6 +101,7 @@ object PlaidItemRepository:
         .apply()
     }).map(item => item.get).toEither
 
+  /// Returns items with sync times older than 12 hours
   def getItemsPendingSync(now: Instant): Try[List[PlaidItem]] =
     val threshold = now.minus(Duration.ofHours(12))
     Try(
@@ -122,7 +123,7 @@ object PlaidItemRepository:
             from
               plaid_items
             where
-		      last_synced_at is null or last_synced_at < ${threshold};
+		      last_synced_at is null or last_synced_at <= ${threshold};
            """
           .map(dbToModel)
           .list

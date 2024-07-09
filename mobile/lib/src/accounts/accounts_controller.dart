@@ -1,6 +1,5 @@
 import 'package:finny/src/accounts/account.dart';
 import 'package:finny/src/powersync.dart';
-import 'package:flutter/material.dart';
 import 'package:powersync/sqlite3.dart';
 
 class AccountsController {

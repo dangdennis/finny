@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 
 import '../routes.dart';
 import '../settings/settings_view.dart';
-import 'transaction_details_view.dart';
 
 /// Displays a list of SampleItems.
 class TransactionListView extends StatefulWidget {

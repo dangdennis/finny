@@ -21,7 +21,7 @@ class PlaidItemRepositorySpec extends AnyFlatSpec with Matchers with EitherValue
     // given
     val user = AuthUserRepositoryHelper.createUser()
     val item = PlaidItemRepository
-      .createItem(
+      .getOrCreateItem(
         CreateItemInput(
           userId = user.id,
           plaidAccessToken = "somePlaid",
@@ -49,7 +49,7 @@ class PlaidItemRepositorySpec extends AnyFlatSpec with Matchers with EitherValue
     // given
     val user = AuthUserRepositoryHelper.createUser()
     val item = PlaidItemRepository
-      .createItem(
+      .getOrCreateItem(
         CreateItemInput(
           userId = user.id,
           plaidAccessToken = "somePlaid",
@@ -72,4 +72,76 @@ class PlaidItemRepositorySpec extends AnyFlatSpec with Matchers with EitherValue
     updatedItem.lastSyncError should be(Some(error))
     updatedItem.lastSyncErrorAt should be(Some(currentTime))
     updatedItem.retryCount should be(1)
+  }
+
+  "getItemsPendingSync" should "only return items that need to be synced" in {
+    // given
+    val user = AuthUserRepositoryHelper.createUser()
+    val item1 = PlaidItemRepository
+      .getOrCreateItem(
+        CreateItemInput(
+          userId = user.id,
+          plaidAccessToken = "somePlaid1",
+          plaidInstitutionId = "institutionId",
+          plaidItemId = "somePlaidItemId1",
+          status = PlaidItemStatus.Bad,
+          transactionsCursor = None
+        )
+      )
+      .value
+    val item2 = PlaidItemRepository
+      .getOrCreateItem(
+        CreateItemInput(
+          userId = user.id,
+          plaidAccessToken = "somePlaid2",
+          plaidInstitutionId = "institutionId",
+          plaidItemId = "somePlaidItemId2",
+          status = PlaidItemStatus.Bad,
+          transactionsCursor = None
+        )
+      )
+      .value
+    val item3 = PlaidItemRepository
+      .getOrCreateItem(
+        CreateItemInput(
+          userId = user.id,
+          plaidAccessToken = "somePlaid",
+          plaidInstitutionId = "institutionId",
+          plaidItemId = "somePlaidItemId3",
+          status = PlaidItemStatus.Bad,
+          transactionsCursor = None
+        )
+      )
+      .value
+
+    val currentTime = java.time.Instant.now()
+
+    // alter last_synced_at times on items
+    // should be fetched
+    val lastSyncedExactly12HoursAgo = currentTime.minus(java.time.Duration.ofHours(12))
+    PlaidItemRepository.updateSyncSuccess(
+      item1.id,
+      currentTime = lastSyncedExactly12HoursAgo
+    )
+
+    // should not be fetched
+    val lastSyncedLess12HoursBy1Sec = currentTime.minus(java.time.Duration.ofHours(12)).plus(java.time.Duration.ofSeconds(1))
+    PlaidItemRepository.updateSyncSuccess(
+      item2.id,
+      currentTime = lastSyncedLess12HoursBy1Sec
+    )
+
+    // should be fetched
+    val lastSyncedGreater12HoursBy1Sec = currentTime.minus(java.time.Duration.ofHours(12)).minus(java.time.Duration.ofSeconds(1))
+    PlaidItemRepository.updateSyncError(
+      item3.id,
+      currentTime = lastSyncedGreater12HoursBy1Sec,
+      error = "error"
+    )
+
+    // when
+    val items = PlaidItemRepository.getItemsPendingSync(now = currentTime).get
+
+    // then
+    items.size should be(2)
   }

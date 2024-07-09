@@ -17,7 +17,7 @@ object PlaidItemHandler:
     val result = for
       pubTokenData <- PlaidService.exchangePublicToken(publicToken = input.publicToken, userId = user.id)
       itemData <- PlaidService.getItem(accessToken = pubTokenData.getAccessToken(), userId = user.id)
-      item <- PlaidItemRepository.createItem(
+      item <- PlaidItemRepository.getOrCreateItem(
         input = CreateItemInput(
           userId = user.id,
           plaidAccessToken = pubTokenData.getAccessToken(),

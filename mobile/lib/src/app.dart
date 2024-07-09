@@ -1,4 +1,3 @@
-import 'package:finny/src/accounts/account.dart';
 import 'package:finny/src/accounts/accounts_controller.dart';
 import 'package:finny/src/auth/auth_controller.dart';
 import 'package:finny/src/auth/login_view.dart';

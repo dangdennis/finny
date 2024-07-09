@@ -24,7 +24,7 @@ class AccountRepositorySpec extends AnyFlatSpec with Matchers with EitherValues 
     // given
     val user = AuthUserRepositoryHelper.createUser()
     val item = PlaidItemRepository
-      .createItem(
+      .getOrCreateItem(
         CreateItemInput(
           userId = user.id,
           plaidAccessToken = "somePlaid",
