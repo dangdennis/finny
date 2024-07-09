@@ -47,6 +47,21 @@ object PlaidSyncService:
       }
     }
 
+  def runPlaidSyncPeriodically(): Unit =
+    while true do
+      val currentTime = java.time.Instant.now()
+      Logger.root.info(s"Executing Plaid sync at ${currentTime}")
+      PlaidItemRepository.getItemsPendingSync(now = currentTime).map { items =>
+        items.foreach { item =>
+          Future {
+            Logger.root.info(s"Executing Plaid sync task for item: ${item.id}")
+            sync(itemId = item.id)
+            Logger.root.info(s"Finished Plaid sync task for item: ${item.id}")
+          }
+        }
+      }
+      Thread.sleep(60000 * 60)
+
   // todo: simplify error logging
   // 1. update error on any failed transaction or account upsert - done
   // 2. on item db fetch or plaid api call, log a single error
@@ -136,18 +151,3 @@ object PlaidSyncService:
         PlaidItemRepository.updateTransactionCursor(itemId = item.id, cursor = Option(response.getNextCursor))
       case (true, msg) =>
         PlaidItemRepository.updateSyncError(itemId = item.id, error = msg, currentTime = java.time.Instant.now())
-
-  def runPlaidSyncPeriodically(): Unit =
-    while true do
-      val currentTime = java.time.Instant.now()
-      Logger.root.info(s"Executing Plaid sync at ${currentTime}")
-      PlaidItemRepository.getItemsPendingSync(now = currentTime).map { items =>
-        items.foreach { item =>
-          Future {
-            Logger.root.info(s"Executing Plaid sync task for item: ${item.id}")
-            sync(itemId = item.id)
-            Logger.root.info(s"Finished Plaid sync task for item: ${item.id}")
-          }
-        }
-      }
-      Thread.sleep(60000 * 10)
