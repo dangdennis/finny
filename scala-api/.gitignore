@@ -5,6 +5,7 @@
 .idea/
 .metals/
 .vscode/
+.bsp/
 
 # build tool specific entries
 .bloop

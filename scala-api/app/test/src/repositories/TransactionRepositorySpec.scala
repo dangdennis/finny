@@ -16,7 +16,7 @@ import app.repositories.TransactionRepository
 import app.repositories.TransactionRepository.UpsertTransactionInput
 import org.scalatest.BeforeAndAfterEach
 
-class TransactionRepositoryspec extends AnyFlatSpec with Matchers with EitherValues with BeforeAndAfterAll with BeforeAndAfterEach:
+class TransactionRepositorySpec extends AnyFlatSpec with Matchers with EitherValues with BeforeAndAfterAll with BeforeAndAfterEach:
   override protected def beforeAll(): Unit =
     TestHelper.beforeAll()
 

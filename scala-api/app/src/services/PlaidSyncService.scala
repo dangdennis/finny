@@ -40,12 +40,17 @@ object PlaidSyncService:
       )(_sync(itemId))
     }(using ExecutionContext.global)
 
+
+  // todo: simplify error logging
+  // 1. update error on any failed transaction or account upsert - done
+  // 2. on item db fetch or plaid api call, log a single error
   private def _sync(itemId: UUID): Unit =
     Logger.root.info(s"Syncing transactions and accounts for item: $itemId")
     val item = PlaidItemRepository.getById(itemId)
     item match
       case Failure(exception) =>
         Logger.root.error(f"Error getting item: $exception")
+        PlaidItemRepository.updateSyncError(itemId = itemId, error = exception.getMessage, currentTime = java.time.Instant.now())
       case Success(item) =>
         var cursor = item.transactionsCursor
         var hasMore = true
@@ -53,6 +58,7 @@ object PlaidSyncService:
           PlaidService.getTransactionsSync(item) match
             case Left(error) =>
               Logger.root.error(s"Error syncing transactions: $error")
+              PlaidItemRepository.updateSyncError(itemId = item.id, error = error.errorMessage, currentTime = java.time.Instant.now())
             case Right(resp) =>
               handleItemResponse(item, resp)
               hasMore = resp.getHasMore().booleanValue()
@@ -120,7 +126,7 @@ object PlaidSyncService:
 
     encounteredError match
       case (false, _) =>
-        PlaidItemRepository.updateSyncSuccess(itemId=item.id, currentTime = java.time.Instant.now())
+        PlaidItemRepository.updateSyncSuccess(itemId = item.id, currentTime = java.time.Instant.now())
         PlaidItemRepository.updateTransactionCursor(itemId = item.id, cursor = Option(response.getNextCursor))
       case (true, msg) =>
         PlaidItemRepository.updateSyncError(itemId = item.id, error = msg, currentTime = java.time.Instant.now())
@@ -134,18 +140,3 @@ object PlaidSyncService:
     Logger.root.info(s"Executing Plaid sync task for item: $itemId")
     sync(itemId)
     Logger.root.info(s"Finished Plaid sync task for item: $itemId")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    

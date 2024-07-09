@@ -13,28 +13,23 @@ object PlaidItemRepository:
     Try(DB readOnly { implicit session =>
       sql"""
         select
-            id, user_id, plaid_access_token, plaid_item_id, plaid_institution_id, status, transactions_cursor, created_at
-            , last_synced_at, last_sync_error, last_sync_error_at, retry_count
+          id,
+          user_id,
+          plaid_access_token,
+          plaid_item_id,
+          plaid_institution_id,
+          status,
+          transactions_cursor,
+          created_at,
+          last_synced_at,
+          last_sync_error,
+          last_sync_error_at,
+          retry_count
         from
           plaid_items
         where
           id = ${id}"""
-        .map(rs =>
-          PlaidItem(
-            id = UUID.fromString(rs.string("id")),
-            userId = UUID.fromString(rs.string("user_id")),
-            plaidAccessToken = rs.string("plaid_access_token"),
-            plaidItemId = rs.string("plaid_item_id"),
-            plaidInstitutionId = rs.string("plaid_institution_id"),
-            status = PlaidItemStatus.fromString(rs.string("status")),
-            transactionsCursor = rs.stringOpt("transactions_cursor"),
-            createdAt = rs.timestamp("created_at").toInstant,
-            lastSyncedAt = rs.timestampOpt("last_synced_at").map(_.toInstant),
-            lastSyncError = rs.stringOpt("last_sync_error"),
-            lastSyncErrorAt = rs.timestampOpt("last_sync_error_at").map(_.toInstant),
-            retryCount = rs.int("retry_count")
-          )
-        )
+        .map(dbToModel)
         .single
         .apply()
         .get
@@ -44,28 +39,23 @@ object PlaidItemRepository:
     Try(DB readOnly { implicit session =>
       sql"""
           select
-              id, user_id, plaid_access_token, plaid_item_id, plaid_institution_id, status, transactions_cursor, created_at
-              , last_synced_at, last_sync_error, last_sync_error_at, retry_count
+            id,
+            user_id,
+            plaid_access_token,
+            plaid_item_id,
+            plaid_institution_id,
+            status,
+            transactions_cursor,
+            created_at,
+            last_synced_at,
+            last_sync_error,
+            last_sync_error_at,
+            retry_count
           from
               plaid_items
           where
               plaid_item_id = ${itemId}"""
-        .map(rs =>
-          PlaidItem(
-            id = UUID.fromString(rs.string("id")),
-            userId = UUID.fromString(rs.string("user_id")),
-            plaidAccessToken = rs.string("plaid_access_token"),
-            plaidItemId = rs.string("plaid_item_id"),
-            plaidInstitutionId = rs.string("plaid_institution_id"),
-            status = PlaidItemStatus.fromString(rs.string("status")),
-            transactionsCursor = rs.stringOpt("transactions_cursor"),
-            createdAt = rs.timestamp("created_at").toInstant,
-            lastSyncedAt = rs.timestampOpt("last_synced_at").map(_.toInstant),
-            lastSyncError = rs.stringOpt("last_sync_error"),
-            lastSyncErrorAt = rs.timestampOpt("last_sync_error_at").map(_.toInstant),
-            retryCount = rs.int("retry_count")
-          )
-        )
+        .map(dbToModel)
         .single
         .apply()
         .get
@@ -89,28 +79,56 @@ object PlaidItemRepository:
         ON CONFLICT (plaid_item_id) DO UPDATE SET
           status = EXCLUDED.status,
           plaid_access_token = EXCLUDED.plaid_access_token
-        RETURNING id, user_id, plaid_access_token, plaid_item_id, plaid_institution_id, status, transactions_cursor, created_at, last_synced_at, last_sync_error, last_sync_error_at, retry_count;
+        RETURNING
+          id,
+          user_id,
+          plaid_access_token,
+          plaid_item_id,
+          plaid_institution_id,
+          status,
+          transactions_cursor,
+          created_at,
+          last_synced_at,
+          last_sync_error,
+          last_sync_error_at,
+          retry_count
+        ;
         """
       query
-        .map(rs =>
-          PlaidItem(
-            id = UUID.fromString(rs.string("id")),
-            createdAt = rs.timestamp("created_at").toInstant,
-            plaidAccessToken = rs.string("plaid_access_token"),
-            plaidInstitutionId = rs.string("plaid_institution_id"),
-            plaidItemId = rs.string("plaid_item_id"),
-            status = PlaidItemStatus.fromString(rs.string("status")),
-            transactionsCursor = rs.stringOpt("transactions_cursor"),
-            userId = UUID.fromString(rs.string("user_id")),
-            lastSyncedAt = rs.timestampOpt("last_synced_at").map(_.toInstant),
-            lastSyncError = rs.stringOpt("last_sync_error"),
-            lastSyncErrorAt = rs.timestampOpt("last_sync_error_at").map(_.toInstant),
-            retryCount = rs.int("retry_count")
-          )
-        )
+        .map(dbToModel)
         .single
         .apply()
     }).map(item => item.get).toEither
+
+  ///
+  def getItemsPendingSync(now: Instant): Try[List[PlaidItem]] =
+    val threshold = now // - 12 hours
+    Try(
+      DB readOnly { implicit session =>
+        sql"""
+            select
+              id,
+              user_id,
+              plaid_access_token,
+              plaid_item_id,
+              plaid_institution_id,
+              status,
+              transactions_cursor,
+              created_at,
+              last_synced_at,
+              last_sync_error,
+              last_sync_error_at,
+              retry_count
+            from
+              plaid_items
+            where
+		      last_synced_at is null or last_synced_at < ${threshold};
+           """
+          .map(dbToModel)
+          .list
+          .apply()
+      }
+    )
 
   def updateTransactionCursor(itemId: UUID, cursor: Option[String]): Try[Unit] =
     Try(DB autoCommit { implicit session =>
@@ -144,3 +162,19 @@ object PlaidItemRepository:
               id = ${itemId}""".update
         .apply()
     }).toEither
+
+  private def dbToModel(rs: WrappedResultSet) =
+    PlaidItem(
+      id = UUID.fromString(rs.string("id")),
+      createdAt = rs.timestamp("created_at").toInstant,
+      plaidAccessToken = rs.string("plaid_access_token"),
+      plaidInstitutionId = rs.string("plaid_institution_id"),
+      plaidItemId = rs.string("plaid_item_id"),
+      status = PlaidItemStatus.fromString(rs.string("status")),
+      transactionsCursor = rs.stringOpt("transactions_cursor"),
+      userId = UUID.fromString(rs.string("user_id")),
+      lastSyncedAt = rs.timestampOpt("last_synced_at").map(_.toInstant),
+      lastSyncError = rs.stringOpt("last_sync_error"),
+      lastSyncErrorAt = rs.timestampOpt("last_sync_error_at").map(_.toInstant),
+      retryCount = rs.int("retry_count")
+    )
