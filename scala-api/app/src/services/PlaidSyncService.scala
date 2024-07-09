@@ -38,7 +38,7 @@ object PlaidSyncService:
 
   def sync(itemId: UUID): Unit =
     Future {
-      val decoratedTask = RateLimiter.decorateRunnable(rateLimiter, Retry.decorateRunnable(retry, () => schedulePlaidSyncTask(itemId)))
+      val decoratedTask = RateLimiter.decorateRunnable(rateLimiter, Retry.decorateRunnable(retry, () => _sync(itemId)))
       Future {
         decoratedTask.run()
       }.onComplete {
@@ -144,13 +144,10 @@ object PlaidSyncService:
       PlaidItemRepository.getItemsPendingSync(now = currentTime).map { items =>
         items.foreach { item =>
           Future {
-            schedulePlaidSyncTask(item.id)
+            Logger.root.info(s"Executing Plaid sync task for item: ${item.id}")
+            sync(itemId = item.id)
+            Logger.root.info(s"Finished Plaid sync task for item: ${item.id}")
           }
         }
       }
       Thread.sleep(60000 * 10)
-
-  private def schedulePlaidSyncTask(itemId: UUID): Unit =
-    Logger.root.info(s"Executing Plaid sync task for item: $itemId")
-    sync(itemId)
-    Logger.root.info(s"Finished Plaid sync task for item: $itemId")
