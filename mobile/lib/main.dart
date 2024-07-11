@@ -1,6 +1,8 @@
 import 'package:finny/src/accounts/accounts_controller.dart';
 import 'package:finny/src/auth/auth_controller.dart';
 import 'package:finny/src/auth/auth_service.dart';
+import 'package:finny/src/connections/connections_controller.dart';
+import 'package:finny/src/connections/connections_service.dart';
 import 'package:finny/src/transactions/transactions_controller.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -30,7 +32,7 @@ void main() async {
   WidgetsFlutterBinding
       .ensureInitialized(); //required to get sqlite filepath from path_provider before UI has initialized
 
-  await openDatabase();
+  await openDatabaseAndInitSupabase();
 
   // Set up the SettingsController, which will glue user settings to multiple
   // Flutter Widgets.
@@ -38,6 +40,7 @@ void main() async {
   final authController = AuthController(AuthService());
   final accountsController = AccountsController();
   final transactionsController = TransactionsController();
+  final connectionsController = ConnectionsController(ConnectionsService());
 
   // Load the user's preferred theme while the splash screen is displayed.
   // This prevents a sudden theme change when the app is first displayed.
@@ -51,6 +54,7 @@ void main() async {
     authController: authController,
     accountsController: accountsController,
     transactionsController: transactionsController,
+    connectionsController: connectionsController,
     isLoggedIn: authController.isLoggedIn,
   ));
 }

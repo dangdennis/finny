@@ -149,7 +149,7 @@ Future<String> getDatabasePath() async {
 }
 
 /// Initializes powersync database and connects to Supabase.
-Future<void> openDatabase() async {
+Future<void> openDatabaseAndInitSupabase() async {
   // Open the local database
   db = PowerSyncDatabase(
       schema: schema, path: await getDatabasePath(), logger: attachedLogger);

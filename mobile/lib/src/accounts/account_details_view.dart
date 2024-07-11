@@ -1,76 +1,15 @@
-import 'dart:convert';
 
+import 'package:finny/src/connections/connections_controller.dart';
 import 'package:finny/src/routes.dart';
 import 'package:flutter/material.dart';
-import 'package:plaid_flutter/plaid_flutter.dart';
-import 'package:http/http.dart' as http;
-import 'package:powersync/sqlite3.dart';
 
-import '../powersync.dart';
 
 /// Displays detailed information about a SampleItem.
 class AccountDetailsView extends StatelessWidget {
-  const AccountDetailsView({super.key});
+  const AccountDetailsView({super.key, required this.connectionsController});
 
   static const routeName = Routes.accountDetails;
-
-  void _openPlaidLink() {
-    LinkConfiguration configuration = LinkTokenConfiguration(
-      token: "link-production-5fcef624-992a-4be7-b207-e6bda0ff1e7c",
-    );
-
-    PlaidLink.onSuccess.listen((LinkSuccess success) async {
-      print("Success: $success");
-      await _sendPostRequest(success.publicToken);
-    });
-
-    PlaidLink.onExit.listen((LinkExit exit) {
-      // Handle the exit callback
-      print("User exited the Plaid Link flow");
-    });
-
-    PlaidLink.onEvent.listen((LinkEvent event) {
-      // Handle events (optional)
-      print('Event: $event');
-    });
-
-    PlaidLink.open(configuration: configuration);
-  }
-
-  /// Get all list IDs
-  Future<List<String>> getLists() async {
-    ResultSet accounts = await db.getAll('SELECT * FROM accounts;');
-    print("accounts list $accounts");
-
-    return List<String>.empty();
-  }
-
-  Future<void> _sendPostRequest(String publicToken) async {
-    final url =
-        Uri.parse('https://finny-backend.fly.dev/api/plaid-items/create');
-    final headers = {
-      'Content-Type': 'application/json',
-      'Authorization':
-          'Bearer eyJhbGciOiJIUzI1NiIsImtpZCI6IlFtdEZUekozSEd4T3ZzL1giLCJ0eXAiOiJKV1QifQ.eyJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzIwMTU1Mjk5LCJpYXQiOjE3MjAwNjg4OTksImlzcyI6Imh0dHBzOi8vdHFvbmt4aHJ1Y3ltZHluZHBqemYuc3VwYWJhc2UuY28vYXV0aC92MSIsInN1YiI6IjRjZTRiOTU4LWVhMWUtNDFlNi1iZDZhLWY4YzQzOTIyYTY5OSIsImVtYWlsIjoiZGFuZ2dnZGVubmlzQGdtYWlsLmNvbSIsInBob25lIjoiIiwiYXBwX21ldGFkYXRhIjp7InByb3ZpZGVyIjoiZW1haWwiLCJwcm92aWRlcnMiOlsiZW1haWwiXX0sInVzZXJfbWV0YWRhdGEiOnsiZW1haWwiOiJkYW5nZ2dkZW5uaXNAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJwaG9uZV92ZXJpZmllZCI6ZmFsc2UsInN1YiI6IjRjZTRiOTU4LWVhMWUtNDFlNi1iZDZhLWY4YzQzOTIyYTY5OSJ9LCJyb2xlIjoiYXV0aGVudGljYXRlZCIsImFhbCI6ImFhbDEiLCJhbXIiOlt7Im1ldGhvZCI6Im90cCIsInRpbWVzdGFtcCI6MTcyMDA2ODg5OX1dLCJzZXNzaW9uX2lkIjoiZDRlYzIzMDItZDdlYy00YTcwLThjMDMtMjZiYjYxZmRiZThlIiwiaXNfYW5vbnltb3VzIjpmYWxzZX0.Nqd4vBWccx1T5q928X566m3kj4zXhB2SdZgsBozsFE8'
-    };
-    final body = json.encode({
-      'publicToken': publicToken,
-    });
-
-    try {
-      final response = await http.post(url, headers: headers, body: body);
-      if (response.statusCode == 200) {
-        print('Success: ${response.body}');
-        // Handle success
-      } else {
-        print('Error: ${response.statusCode} ${response.body}');
-        // Handle error
-      }
-    } catch (e) {
-      print('Exception: $e');
-      // Handle exception
-    }
-  }
+  final ConnectionsController connectionsController;
 
   @override
   Widget build(BuildContext context) {
@@ -83,24 +22,8 @@ class AccountDetailsView extends StatelessWidget {
           children: [
             Center(
               child: ElevatedButton(
-                onPressed: () {
-                  // Get all list IDs
-                  getLists();
-                },
-                child: const Text('Get Lists'),
-              ),
-            ),
-            Center(
-              child: ElevatedButton(
-                  onPressed: _openPlaidLink, child: const Text("Press Me")),
-            ),
-            const Center(
-              child: Column(
-                children: [
-                  Text('More Information Here'),
-                  Text('link-production-5fcef624-992a-4be7-b207-e6bda0ff1e7c')
-                ],
-              ),
+                  onPressed: connectionsController.openPlaidLink,
+                  child: const Text("Manage Connections")),
             ),
           ],
         ),
