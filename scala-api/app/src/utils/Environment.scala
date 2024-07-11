@@ -49,7 +49,7 @@ object Environment:
 
   def getBaseUrl: String =
     getAppEnv match
-      case AppEnv.Production => "https://finny-backend.fly.dev"
+      case AppEnv.Production => "https://api.finny.finance"
       case AppEnv.Development => "https://chamois-expert-stingray.ngrok-free.app"
 
   def getPlaidClientId: String =

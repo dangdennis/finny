@@ -100,7 +100,7 @@ object PlaidService:
       )
       .countryCodes(List(CountryCode.US).asJava)
       .user(LinkTokenCreateRequestUser().clientUserId(userId.toString))
-      .webhook(f"${Environment.getBaseUrl}/api/webhook/plaid")
+      .webhook(f"${Environment.getBaseUrl}/webhooks/plaid")
       .language("en")
       .clientName("Finny")
       .transactions(LinkTokenTransactions().daysRequested(360))

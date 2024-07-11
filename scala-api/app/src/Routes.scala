@@ -16,29 +16,17 @@ import sttp.tapir.swagger.bundle.SwaggerInterpreter
 import java.util.UUID
 import scala.collection.JavaConverters.*
 import scala.util.Try
+import sttp.model.StatusCode
 
 object Routes:
-  private def makeAuthenticator(authConfig: AuthConfig): AuthenticationToken => Either[AuthenticationError, Profile] =
-    val algorithm = Algorithm.HMAC256(authConfig.jwtSecret);
-    (token: AuthenticationToken) =>
-      val verifier = JWT.require(algorithm).withIssuer(authConfig.jwtIssuer).build();
-      val decodedJwt = Try(verifier.verify(token.value))
-      decodedJwt match
-        case scala.util.Success(jwt) => Right(Profile(id = UUID.fromString(jwt.getSubject())))
-        case scala.util.Failure(error) =>
-          Logger.root.error(s"Error decoding JWT", error)
-          Left(AuthenticationError(404))
-
   def createRoutes(authConfig: AuthConfig): List[ServerEndpoint[Any, Identity]] =
-    val indexRoute = endpoint.get.in("").out(stringBody)
-    val apiRoute = endpoint.in("api").tag("Finny API")
+    val indexEndpoint = endpoint.in("").get.out(stringBody).handle(_ => IndexHandler.handleIndex())
 
-    val protectedApiRouteGroup = apiRoute
+    val protectedApiRouteGroup = endpoint
+      .tag("Finny API")
       .securityIn(auth.bearer[String]().mapTo[AuthenticationToken])
       .errorOut(plainBody[Int].mapTo[AuthenticationError])
       .handleSecurity(makeAuthenticator(authConfig))
-
-    val indexEndpoint = indexRoute.handle(_ => IndexHandler.handleIndex())
 
     val plaidItemCreateRoute = protectedApiRouteGroup.post
       .in("plaid-items" / "create")
@@ -51,7 +39,7 @@ object Routes:
     val plaidItemSyncRoute = protectedApiRouteGroup.post
       .in("plaid-items" / "sync")
       .in(jsonBody[DTOs.PlaidItemSyncRequest])
-    
+
     val plaidItemSyncServerEndpoint = plaidItemSyncRoute
       .handle(user => input => PlaidItemHandler.handlePlaidItemSync(user, input))
 
@@ -61,7 +49,7 @@ object Routes:
     val plaidLinkCreateServerEndpoint = plaidLinkCreateEndpoint.handle(profile => _ => PlaidLinkHandler.handler(userId = profile.id))
 
     val webhookEndpoint = endpoint.post
-      .in("api" / "webhook" / "plaid")
+      .in("webhooks" / "plaid")
       .in(stringJsonBody)
       .out(stringBody)
       .handle(rawJson => PlaidWebhookHandler.handleWebhook(rawJson))
@@ -76,3 +64,14 @@ object Routes:
     all
 
   case class AuthConfig(jwtSecret: String, jwtIssuer: String)
+
+  private def makeAuthenticator(authConfig: AuthConfig): AuthenticationToken => Either[AuthenticationError, Profile] =
+    val algorithm = Algorithm.HMAC256(authConfig.jwtSecret);
+    (token: AuthenticationToken) =>
+      val verifier = JWT.require(algorithm).withIssuer(authConfig.jwtIssuer).build();
+      val decodedJwt = Try(verifier.verify(token.value))
+      decodedJwt match
+        case scala.util.Success(jwt) => Right(Profile(id = UUID.fromString(jwt.getSubject())))
+        case scala.util.Failure(error) =>
+          Logger.root.error(s"Error decoding JWT", error)
+          Left(AuthenticationError(400))
