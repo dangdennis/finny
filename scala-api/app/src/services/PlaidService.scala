@@ -104,6 +104,7 @@ object PlaidService:
       .language("en")
       .clientName("Finny")
       .transactions(LinkTokenTransactions().daysRequested(360))
+      .redirectUri(f"${Environment.getBaseUrl}/oauth/plaid")
 
     handleResponse(
       Try(client.linkTokenCreate(req).execute()),

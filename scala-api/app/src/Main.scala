@@ -31,7 +31,7 @@ import sttp.tapir.server.nima.NimaServerInterpreter
     .builder()
     .routing { builder =>
       builder.any(handler)
-      builder.get("/plaid/oauth", (req, res) => res.send("Redirecting back to Finny"))
+      builder.get("/oauth/plaid", (req, res) => res.send("Redirecting back to Finny"))
       ()
     }
     .host("0.0.0.0")
