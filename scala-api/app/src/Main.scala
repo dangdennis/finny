@@ -47,9 +47,6 @@ import app.jobs.Jobs
         PlaidSyncService.runPlaidSyncPeriodically()
     }(using ExecutionContext.global)
 
-    Future {
-        Jobs.consumeJobs()
-    }(using ExecutionContext.global)
-    
+    Jobs.startWorker()
 
     Logger.root.info(s"Server started at: http://0.0.0.0:${server.port()}")

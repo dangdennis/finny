@@ -16,9 +16,6 @@ object Jobs:
     def init() =
         declareJobQueue()
         jobChannel.basicQos(1)
-        enqueueJob(JobRequest.JobSyncPlaidItem(UUID.randomUUID(), itemId = UUID.randomUUID()))
-        enqueueJob(JobRequest.AnotherJob(UUID.randomUUID(), data = "example data"))
-        consumeJobs()
 
     private def declareJobQueue() =
         Try(jobChannel.queueDeclare(jobQueueName, true, false, false, null))
@@ -36,7 +33,7 @@ object Jobs:
         implicit val anotherJobRW: ReadWriter[AnotherJob] = macroRW
         implicit val jobRequestRW: ReadWriter[JobRequest] = macroRW
 
-    def consumeJobs() =
+    def startWorker() =
         val deliverCallback: DeliverCallback = (consumerTag, delivery) =>
             val body = new String(delivery.getBody, "UTF-8")
             val job = read[JobRequest](body)
