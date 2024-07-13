@@ -5,7 +5,7 @@ class ConnectionsController {
 
   final ConnectionsService connectionsService;
 
-  void openPlaidLink() {
-    connectionsService.openPlaidLink();
+  Future<void> openPlaidLink() async {
+    await connectionsService.openPlaidLink();
   }
 }

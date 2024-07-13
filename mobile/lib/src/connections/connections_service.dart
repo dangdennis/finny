@@ -7,30 +7,31 @@ import 'package:http/http.dart' as http;
 
 /// Service API to initiate plaid links and manage plaid connections.
 class ConnectionsService {
-  void openPlaidLink() async {
+  Future<void> openPlaidLink() async {
     print("${Supabase.instance.client.auth.currentSession?.accessToken}");
-    // final token = await createPlaidLinkToken();
 
-    // LinkConfiguration configuration = LinkTokenConfiguration(
-    //   token: token,
-    // );
+    final token = await createPlaidLinkToken();
 
-    // PlaidLink.onSuccess.listen((LinkSuccess success) async {
-    //   print("Success: ${success.toJson()}");
-    //   await createPlaidItem(success.publicToken);
-    // });
+    LinkConfiguration configuration = LinkTokenConfiguration(
+      token: token,
+    );
 
-    // PlaidLink.onExit.listen((LinkExit exit) {
-    //   // Handle the exit callback
-    //   print("User exited the Plaid Link flow");
-    // });
+    PlaidLink.onSuccess.listen((LinkSuccess success) async {
+      print("Success: ${success.toJson()}");
+      await createPlaidItem(success.publicToken);
+    });
 
-    // PlaidLink.onEvent.listen((LinkEvent event) {
-    //   // Handle events (optional)
-    //   print('Event: $event');
-    // });
+    PlaidLink.onExit.listen((LinkExit exit) {
+      // Handle the exit callback
+      print("User exited the Plaid Link flow");
+    });
 
-    // PlaidLink.open(configuration: configuration);
+    PlaidLink.onEvent.listen((LinkEvent event) {
+      // Handle events (optional)
+      print('Event: $event');
+    });
+
+    await PlaidLink.open(configuration: configuration);
   }
 
   Future<void> createPlaidItem(String publicToken) async {
