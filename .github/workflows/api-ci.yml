@@ -1,4 +1,4 @@
-name: CI
+name: api ci
 
 on:
   push:
@@ -9,7 +9,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    defaults:
+      run:
+        working-directory: scala-api
     services:
       supabase:
         image: supabase/postgres:latest
