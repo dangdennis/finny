@@ -20,7 +20,7 @@ object app extends ScalaModule with ScalafixModule {
     ivy"io.sentry:sentry-logback:8.0.0-alpha.1",
     ivy"io.github.resilience4j:resilience4j-ratelimiter:2.2.0",
     ivy"io.github.resilience4j:resilience4j-retry:2.2.0",
-    ivy"redis.clients:jedis:5.2.0-beta4"
+    ivy"com.rabbitmq:amqp-client:5.21.0",
   )
 
   object test extends ScalaTests with TestModule.ScalaTest with ScalafixModule {

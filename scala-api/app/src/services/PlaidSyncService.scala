@@ -1,10 +1,10 @@
 package app.services
 
+import app.common.*
 import app.models.PlaidItem
 import app.repositories.AccountRepository
 import app.repositories.PlaidItemRepository
 import app.repositories.TransactionRepository
-import app.common.logger.Logger
 import com.plaid.client.model.TransactionsSyncResponse
 import io.github.resilience4j.ratelimiter.*
 import io.github.resilience4j.retry.*
@@ -15,7 +15,6 @@ import scala.concurrent.Future
 import scala.jdk.CollectionConverters.*
 import scala.util.Failure
 import scala.util.Success
-import common.utils.logger.Logger
 
 object PlaidSyncService:
   given ec: ExecutionContext = ExecutionContext.global

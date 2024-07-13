@@ -3,7 +3,6 @@ package app.database
 import app.common.Environment
 import app.common.Environment.DatabaseConfig
 import scalikejdbc.*
-import common.utils.Environment
 
 object Database:
     def init(configs: DatabaseConfig): Unit =

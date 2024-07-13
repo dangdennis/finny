@@ -1,7 +1,7 @@
 package test.helpers
 
 import app.database.Database
-import app.common.logger.Logger
+import app.common.*
 import app.common.Environment
 
 object TestHelper:

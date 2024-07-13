@@ -1,14 +1,13 @@
 package app.handlers
 
+import app.common.*
 import app.repositories.PlaidItemRepository
 import app.services.PlaidSyncService
-import app.common.logger.Logger
 import upickle.default.ReadWriter
 import upickle.default.read
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
-import common.utils.logger.Logger
 
 case class PlaidTransactionsSyncUpdatesAvailable(
     webhook_type: String,

@@ -1,12 +1,11 @@
 package app.handlers
 
+import app.common.*
 import app.dtos.*
 import app.models.*
 import app.services.PlaidService
-import app.common.logger.Logger
 
 import java.util.UUID
-import common.utils.logger.Logger
 
 object PlaidLinkHandler:
   def handler(userId: UUID): Either[AuthenticationError, DTOs.PlaidLinkCreateResponse] =

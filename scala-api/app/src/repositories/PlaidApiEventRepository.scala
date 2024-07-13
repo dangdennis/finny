@@ -1,13 +1,13 @@
 package app.repositories
 
-import app.common.logger.Logger
+import app.common
+import app.common.*
 import io.circe.generic.auto.*
 import io.circe.syntax.*
 import scalikejdbc.*
 
 import java.util.UUID
 import scala.util.Try
-import common.utils.logger.Logger
 
 object PlaidApiEventRepository:
   case class PlaidApiEventCreateInput(

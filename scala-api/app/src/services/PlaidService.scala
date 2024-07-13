@@ -1,11 +1,11 @@
 package app.services
 
+import app.common.*
+import app.common.Environment
 import app.models.PlaidItem
 import app.repositories.PlaidApiEventRepository
 import app.repositories.PlaidApiEventRepository.PlaidApiEventCreateInput
 import app.repositories.PlaidItemRepository
-import app.common.Environment
-import app.common.logger.Logger
 import com.plaid.client.ApiClient
 import com.plaid.client.model.CountryCode
 import com.plaid.client.model.ItemGetRequest
@@ -32,8 +32,6 @@ import scala.reflect.ClassTag
 import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
-import common.utils.Environment
-import common.utils.logger.Logger
 
 object PlaidService:
     private lazy val client = makePlaidClient()

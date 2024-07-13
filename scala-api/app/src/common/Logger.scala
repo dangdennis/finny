@@ -1,6 +1,5 @@
-package app.common.logger
+package app.common
 
-import app.common.Environment
 import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder
