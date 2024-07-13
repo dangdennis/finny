@@ -12,17 +12,7 @@ jobs:
     defaults:
       run:
         working-directory: scala-api
-    services:
-      supabase:
-        image: supabase/postgres:latest
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U postgres"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
+        
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -31,9 +21,12 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: '21'
+      
+      - name: Install Supabase CLI
+        uses: supabase/setup-cli@v1
 
-      - name: Wait for Supabase to be ready
-        run: sleep 15
+      - name: Start Supabase Postgres
+        run: supabase db start
 
       - name: Compile
         run: make compile
