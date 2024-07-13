@@ -9,17 +9,14 @@ object Environment:
     private def getEnv(key: String, default: String): String =
         sys.env.getOrElse(key, default)
 
-    private def getEnv(key: String): Option[String] =
-        sys.env.get(key)
-
     def getAppEnv: AppEnv =
-        getEnv("APP_ENV", "development") match
+        sys.env.getOrElse("APP_ENV", "development") match
             case "development" => AppEnv.Development
             case "production"  => AppEnv.Production
-            case _             => sys.error("Invalid APP_ENV. Expected: development or production")
+            case _                   => sys.error("Invalid APP_ENV. Expected: development or production")
 
     def getPort: Int =
-        getEnv("HTTP_PORT").flatMap(_.toIntOption).getOrElse(8080)
+        sys.env.get("HTTP_PORT").flatMap(_.toIntOption).getOrElse(8080)
 
     case class DatabaseConfig(url: String, user: String, password: String)
 
@@ -33,10 +30,14 @@ object Environment:
                 sys.error("Invalid database URL format. Expected: jdbc:postgresql://username:password@host:port/database")
 
     private def getDatabaseUrl: String =
-        getEnv("DATABASE_URL", "jdbc:postgresql://postgres:postgres@127.0.0.1:54322/postgres")
+        getAppEnv match
+            case AppEnv.Production  => sys.env.get("DATABASE_URL").get
+            case AppEnv.Development => "jdbc:postgresql://postgres:postgres@127.0.0.1:54322/postgres"
 
     def getJwtSecret: String =
-        getEnv("JWT_SECRET", "super-secret-jwt-token-with-at-least-32-characters-long")
+        getAppEnv match
+            case AppEnv.Production  => sys.env.get("JWT_SECRET").get
+            case AppEnv.Development => "super-secret-jwt-token-with-at-least-32-characters-long"
 
     def getJwtIssue: String =
         getAppEnv match
@@ -44,7 +45,9 @@ object Environment:
             case AppEnv.Production  => "https://tqonkxhrucymdyndpjzf.supabase.co/auth/v1"
 
     def getSentryDsn: String =
-        getEnv("SENTRY_DSN", "https://411fd1489713d981f19699e49abc5c6a@o4507494754746368.ingest.us.sentry.io/4507494821003264")
+        getAppEnv match
+            case AppEnv.Production  => sys.env.get("SENTRY_DSN").get
+            case AppEnv.Development => "https://411fd1489713d981f19699e49abc5c6a@o4507494754746368.ingest.us.sentry.io/4507494821003264"
 
     def getBaseUrl: String =
         getAppEnv match
@@ -52,10 +55,16 @@ object Environment:
             case AppEnv.Development => "https://chamois-expert-stingray.ngrok-free.app"
 
     def getPlaidClientId: String =
-        getEnv("PLAID_CLIENT_ID", "661ac9375307a3001ba2ea46")
+        getAppEnv match
+            case AppEnv.Production  => sys.env.get("PLAID_CLIENT_ID").get
+            case AppEnv.Development => "661ac9375307a3001ba2ea46"
 
     def getPlaidSecret: String =
-        getEnv("PLAID_SECRET", "57ebac97c0bcf92f35878135d68793")
+        getAppEnv match
+            case AppEnv.Production  => sys.env.get("PLAID_SECRET").get
+            case AppEnv.Development => "57ebac97c0bcf92f35878135d68793"
 
     def getLavinMqUrl: URI =
-        URI(getEnv("LAVIN_MQ_URL", "amqp://guest:guest@localhost:5672"))
+        getAppEnv match
+            case AppEnv.Production  => URI(sys.env.get("LAVIN_MQ_URL").get)
+            case AppEnv.Development => URI("amqps://guest:guest@localhost:5672")
