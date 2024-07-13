@@ -13,6 +13,7 @@ target
 metals.sbt
 project/project
 out/
+.scala-build/
 
 # node/npm specific entries
 node_modules/

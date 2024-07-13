@@ -36,5 +36,17 @@ object app extends ScalaModule with ScalafixModule {
       "-Wunused:imports"
     )
   }
+}
 
+// Create a new script module that uses the dependencies from app
+object scripts extends ScalaModule {
+  def scalaVersion = "3.4.2"
+  
+  // Use the sources from the scripts directory at the root
+  override def sources = T.sources { millSourcePath / "scripts" / "src" }
+
+  // Depend on the app module to reuse its dependencies
+  override def moduleDeps = Seq(app)
+
+  def mainClass = Some("scripts.UpdatePlaidItemsWebhook")
 }
