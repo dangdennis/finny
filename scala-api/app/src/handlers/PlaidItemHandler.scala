@@ -8,9 +8,10 @@ import app.repositories.PlaidItemRepository
 import app.repositories.PlaidItemRepository.CreateItemInput
 import app.services.PlaidService
 import app.services.PlaidSyncService
-import app.utils.logger.Logger
+import app.common.logger.Logger
 
 import java.util.UUID
+import common.utils.logger.Logger
 
 object PlaidItemHandler:
   def handlePlaidItemCreate(user: Profile, input: PlaidItemCreateRequest): Either[AuthenticationError, DTOs.PlaidItemCreateResponse] =

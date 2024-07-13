@@ -1,4 +1,4 @@
-package app.utils
+package app.common
 
 object Environment:
   enum AppEnv:

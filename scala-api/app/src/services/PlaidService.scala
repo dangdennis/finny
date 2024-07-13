@@ -4,8 +4,8 @@ import app.models.PlaidItem
 import app.repositories.PlaidApiEventRepository
 import app.repositories.PlaidApiEventRepository.PlaidApiEventCreateInput
 import app.repositories.PlaidItemRepository
-import app.utils.Environment
-import app.utils.logger.Logger
+import app.common.Environment
+import app.common.logger.Logger
 import com.plaid.client.ApiClient
 import com.plaid.client.model.CountryCode
 import com.plaid.client.model.ItemGetRequest
@@ -32,230 +32,232 @@ import scala.reflect.ClassTag
 import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
+import common.utils.Environment
+import common.utils.logger.Logger
 
 object PlaidService:
-  private lazy val client = makePlaidClient()
+    private lazy val client = makePlaidClient()
 
-  private def makePlaidClient() =
-    val apiClient = new ApiClient(
-      Map(
-        "clientId" -> Environment.getPlaidClientId,
-        "secret" -> Environment.getPlaidSecret,
-        "plaidVersion" -> "2020-09-14"
-      ).asJava
-    )
+    private def makePlaidClient() =
+        val apiClient = new ApiClient(
+            Map(
+                "clientId" -> Environment.getPlaidClientId,
+                "secret" -> Environment.getPlaidSecret,
+                "plaidVersion" -> "2020-09-14"
+            ).asJava
+        )
 
-    Environment.getAppEnv match
-      case Environment.AppEnv.Production  => apiClient.setPlaidAdapter(ApiClient.Production)
-      case Environment.AppEnv.Development => apiClient.setPlaidAdapter(ApiClient.Sandbox)
+        Environment.getAppEnv match
+            case Environment.AppEnv.Production  => apiClient.setPlaidAdapter(ApiClient.Production)
+            case Environment.AppEnv.Development => apiClient.setPlaidAdapter(ApiClient.Sandbox)
 
-    apiClient.createService(classOf[PlaidApi])
+        apiClient.createService(classOf[PlaidApi])
 
-  def getTransactionsSync(item: PlaidItem) =
-    val req = new TransactionsSyncRequest().accessToken(item.plaidAccessToken).cursor(item.transactionsCursor.orNull)
-    val res = Try(client.transactionsSync(req).execute())
+    def getTransactionsSync(item: PlaidItem) =
+        val req = new TransactionsSyncRequest().accessToken(item.plaidAccessToken).cursor(item.transactionsCursor.orNull)
+        val res = Try(client.transactionsSync(req).execute())
 
-    handleResponse(
-      res,
-      (respBody) =>
-        respBody.left
-          .map(error =>
-            PlaidApiEventRepository
-              .create(
-                PlaidApiEventCreateInput(
-                  userId = Some(item.userId),
-                  itemId = Some(item.id),
-                  plaidMethod = "transactionsSync",
-                  arguments = Map("cursor" -> item.transactionsCursor.getOrElse("")),
-                  requestId = error.requestId,
-                  errorType = Some(error.errorType),
-                  errorCode = Some(error.errorCode)
-                )
-              )
-          )
-          .map(body =>
-            PlaidApiEventRepository
-              .create(
-                PlaidApiEventCreateInput(
-                  userId = Some(item.userId),
-                  itemId = Some(item.id),
-                  plaidMethod = "transactionsSync",
-                  arguments = Map("cursor" -> item.transactionsCursor.getOrElse("")),
-                  requestId = Some(body.getRequestId()),
-                  errorType = None,
-                  errorCode = None
-                )
-              )
-          )
-    )
-
-  def createLinkToken(userId: UUID) =
-    val req = LinkTokenCreateRequest()
-      .products(
-        List(
-          Products.TRANSACTIONS,
-          Products.INVESTMENTS
-          // Products.RECURRING_TRANSACTIONS
-        ).asJava
-      )
-      .countryCodes(List(CountryCode.US).asJava)
-      .user(LinkTokenCreateRequestUser().clientUserId(userId.toString))
-      .webhook(f"${Environment.getBaseUrl}/webhooks/plaid")
-      .language("en")
-      .clientName("Finny")
-      .transactions(LinkTokenTransactions().daysRequested(360))
-      .redirectUri(f"${Environment.getBaseUrl}/oauth/plaid")
-
-    handleResponse(
-      Try(client.linkTokenCreate(req).execute()),
-      (respBody) =>
-        respBody.left
-          .map(error =>
-            PlaidApiEventRepository
-              .create(
-                PlaidApiEventCreateInput(
-                  userId = Some(userId),
-                  itemId = None,
-                  plaidMethod = "linkTokenCreate",
-                  arguments = Map(
-                    "userId" -> userId.toString(),
-                    "products" -> req.getProducts.asScala.mkString(","),
-                    "countryCodes" -> req.getCountryCodes.asScala.mkString(",")
-                  ),
-                  requestId = error.requestId,
-                  errorType = Some(error.errorType),
-                  errorCode = Some(error.errorCode)
-                )
-              )
-          )
-          .map(body =>
-            PlaidApiEventRepository
-              .create(
-                PlaidApiEventCreateInput(
-                  userId = Some(userId),
-                  itemId = None,
-                  plaidMethod = "linkTokenCreate",
-                  arguments = Map(
-                    "userId" -> userId.toString(),
-                    "products" -> req.getProducts.asScala.mkString(","),
-                    "countryCodes" -> req.getCountryCodes.asScala.mkString(",")
-                  ),
-                  requestId = Some(body.getRequestId()),
-                  errorType = None,
-                  errorCode = None
-                )
-              )
-          )
-    )
-
-  def exchangePublicToken(publicToken: String, userId: UUID) =
-    val req = ItemPublicTokenExchangeRequest().publicToken(publicToken)
-    handleResponse(
-      Try(client.itemPublicTokenExchange(req).execute()),
-      (respBody) =>
-        respBody.left
-          .map(error =>
-            PlaidApiEventRepository
-              .create(
-                PlaidApiEventCreateInput(
-                  userId = Some(userId),
-                  itemId = None,
-                  plaidMethod = "itemPublicTokenExchange",
-                  arguments = Map(),
-                  requestId = error.requestId,
-                  errorType = Some(error.errorType),
-                  errorCode = Some(error.errorCode)
-                )
-              )
-          )
-          .map(body =>
-            PlaidApiEventRepository
-              .create(
-                PlaidApiEventCreateInput(
-                  userId = Some(userId),
-                  itemId = None,
-                  plaidMethod = "itemPublicTokenExchange",
-                  arguments = Map(),
-                  requestId = Some(body.getRequestId()),
-                  errorType = None,
-                  errorCode = None
-                )
-              )
-          )
-    )
-
-  def getItem(accessToken: String, userId: UUID) =
-    val req = ItemGetRequest().accessToken(accessToken)
-    handleResponse(
-      Try(client.itemGet(req).execute()),
-      (respBody) =>
-        respBody.left
-          .map(error =>
-            PlaidApiEventRepository
-              .create(
-                PlaidApiEventCreateInput(
-                  userId = Some(userId),
-                  itemId = None,
-                  plaidMethod = "getItem",
-                  arguments = Map(),
-                  requestId = error.requestId,
-                  errorType = Some(error.errorType),
-                  errorCode = Some(error.errorCode)
-                )
-              )
-          )
-          .map(body =>
-            PlaidItemRepository
-              .getByItemId(body.getItem().getItemId())
-              .map(plaidItem =>
-                PlaidApiEventRepository
-                  .create(
-                    PlaidApiEventCreateInput(
-                      userId = Some(userId),
-                      itemId = Some(plaidItem.id),
-                      plaidMethod = "getItem",
-                      arguments = Map(),
-                      requestId = Some(body.getRequestId()),
-                      errorType = None,
-                      errorCode = None
+        handleResponse(
+            res,
+            (respBody) =>
+                respBody.left
+                    .map(error =>
+                        PlaidApiEventRepository
+                            .create(
+                                PlaidApiEventCreateInput(
+                                    userId = Some(item.userId),
+                                    itemId = Some(item.id),
+                                    plaidMethod = "transactionsSync",
+                                    arguments = Map("cursor" -> item.transactionsCursor.getOrElse("")),
+                                    requestId = error.requestId,
+                                    errorType = Some(error.errorType),
+                                    errorCode = Some(error.errorCode)
+                                )
+                            )
                     )
-                  )
-              )
-          )
-    )
+                    .map(body =>
+                        PlaidApiEventRepository
+                            .create(
+                                PlaidApiEventCreateInput(
+                                    userId = Some(item.userId),
+                                    itemId = Some(item.id),
+                                    plaidMethod = "transactionsSync",
+                                    arguments = Map("cursor" -> item.transactionsCursor.getOrElse("")),
+                                    requestId = Some(body.getRequestId()),
+                                    errorType = None,
+                                    errorCode = None
+                                )
+                            )
+                    )
+        )
 
-  case class PlaidError(requestId: Option[String], errorType: String, errorCode: String, errorMessage: String)
+    def createLinkToken(userId: UUID) =
+        val req = LinkTokenCreateRequest()
+            .products(
+                List(
+                    Products.TRANSACTIONS,
+                    Products.INVESTMENTS
+                    // Products.RECURRING_TRANSACTIONS
+                ).asJava
+            )
+            .countryCodes(List(CountryCode.US).asJava)
+            .user(LinkTokenCreateRequestUser().clientUserId(userId.toString))
+            .webhook(f"${Environment.getBaseUrl}/webhooks/plaid")
+            .language("en")
+            .clientName("Finny")
+            .transactions(LinkTokenTransactions().daysRequested(360))
+            .redirectUri(f"${Environment.getBaseUrl}/oauth/plaid")
 
-  object PlaidError {
-    def fromJson(json: String): Either[io.circe.Error, PlaidError] = decode[PlaidError](json)
-  }
+        handleResponse(
+            Try(client.linkTokenCreate(req).execute()),
+            (respBody) =>
+                respBody.left
+                    .map(error =>
+                        PlaidApiEventRepository
+                            .create(
+                                PlaidApiEventCreateInput(
+                                    userId = Some(userId),
+                                    itemId = None,
+                                    plaidMethod = "linkTokenCreate",
+                                    arguments = Map(
+                                        "userId" -> userId.toString(),
+                                        "products" -> req.getProducts.asScala.mkString(","),
+                                        "countryCodes" -> req.getCountryCodes.asScala.mkString(",")
+                                    ),
+                                    requestId = error.requestId,
+                                    errorType = Some(error.errorType),
+                                    errorCode = Some(error.errorCode)
+                                )
+                            )
+                    )
+                    .map(body =>
+                        PlaidApiEventRepository
+                            .create(
+                                PlaidApiEventCreateInput(
+                                    userId = Some(userId),
+                                    itemId = None,
+                                    plaidMethod = "linkTokenCreate",
+                                    arguments = Map(
+                                        "userId" -> userId.toString(),
+                                        "products" -> req.getProducts.asScala.mkString(","),
+                                        "countryCodes" -> req.getCountryCodes.asScala.mkString(",")
+                                    ),
+                                    requestId = Some(body.getRequestId()),
+                                    errorType = None,
+                                    errorCode = None
+                                )
+                            )
+                    )
+        )
 
-  private def handleResponse[T: ClassTag](
-      responseTry: Try[Response[T]],
-      recordEvent: (Either[PlaidError, T]) => Unit
-  ): Either[PlaidError, T] = {
-    responseTry match {
-      case Success(response) if response.isSuccessful =>
-        val body = response.body()
-        Future {
-          recordEvent(Right(body))
+    def exchangePublicToken(publicToken: String, userId: UUID) =
+        val req = ItemPublicTokenExchangeRequest().publicToken(publicToken)
+        handleResponse(
+            Try(client.itemPublicTokenExchange(req).execute()),
+            (respBody) =>
+                respBody.left
+                    .map(error =>
+                        PlaidApiEventRepository
+                            .create(
+                                PlaidApiEventCreateInput(
+                                    userId = Some(userId),
+                                    itemId = None,
+                                    plaidMethod = "itemPublicTokenExchange",
+                                    arguments = Map(),
+                                    requestId = error.requestId,
+                                    errorType = Some(error.errorType),
+                                    errorCode = Some(error.errorCode)
+                                )
+                            )
+                    )
+                    .map(body =>
+                        PlaidApiEventRepository
+                            .create(
+                                PlaidApiEventCreateInput(
+                                    userId = Some(userId),
+                                    itemId = None,
+                                    plaidMethod = "itemPublicTokenExchange",
+                                    arguments = Map(),
+                                    requestId = Some(body.getRequestId()),
+                                    errorType = None,
+                                    errorCode = None
+                                )
+                            )
+                    )
+        )
 
-        }(using ExecutionContext.global)
-        Right(body)
-      case Success(response) =>
-        val errorBody = response.errorBody().string()
-        Logger.root.error(s"Plaid API error: $errorBody")
-        val plaidError = PlaidError.fromJson(errorBody) match {
-          case Right(plaidError) => Left(plaidError)
-          case Left(e)           => Left(PlaidError(None, "API_ERROR", "PARSE_ERROR", e.getMessage))
-        }
-        Future {
-          recordEvent(plaidError)
-        }(using ExecutionContext.global)
-        plaidError
-      case Failure(exception) =>
-        Logger.root.error(s"Unexpected exception on plaid call", exception)
-        val plaidError = PlaidError(None, "API_ERROR", "UNKNOWN_ERROR", exception.getMessage)
-        Left(plaidError)
+    def getItem(accessToken: String, userId: UUID) =
+        val req = ItemGetRequest().accessToken(accessToken)
+        handleResponse(
+            Try(client.itemGet(req).execute()),
+            (respBody) =>
+                respBody.left
+                    .map(error =>
+                        PlaidApiEventRepository
+                            .create(
+                                PlaidApiEventCreateInput(
+                                    userId = Some(userId),
+                                    itemId = None,
+                                    plaidMethod = "getItem",
+                                    arguments = Map(),
+                                    requestId = error.requestId,
+                                    errorType = Some(error.errorType),
+                                    errorCode = Some(error.errorCode)
+                                )
+                            )
+                    )
+                    .map(body =>
+                        PlaidItemRepository
+                            .getByItemId(body.getItem().getItemId())
+                            .map(plaidItem =>
+                                PlaidApiEventRepository
+                                    .create(
+                                        PlaidApiEventCreateInput(
+                                            userId = Some(userId),
+                                            itemId = Some(plaidItem.id),
+                                            plaidMethod = "getItem",
+                                            arguments = Map(),
+                                            requestId = Some(body.getRequestId()),
+                                            errorType = None,
+                                            errorCode = None
+                                        )
+                                    )
+                            )
+                    )
+        )
+
+    case class PlaidError(requestId: Option[String], errorType: String, errorCode: String, errorMessage: String)
+
+    object PlaidError {
+        def fromJson(json: String): Either[io.circe.Error, PlaidError] = decode[PlaidError](json)
     }
-  }
+
+    private def handleResponse[T: ClassTag](
+        responseTry: Try[Response[T]],
+        recordEvent: (Either[PlaidError, T]) => Unit
+    ): Either[PlaidError, T] = {
+        responseTry match {
+            case Success(response) if response.isSuccessful =>
+                val body = response.body()
+                Future {
+                    recordEvent(Right(body))
+
+                }(using ExecutionContext.global)
+                Right(body)
+            case Success(response) =>
+                val errorBody = response.errorBody().string()
+                Logger.root.error(s"Plaid API error: $errorBody")
+                val plaidError = PlaidError.fromJson(errorBody) match {
+                    case Right(plaidError) => Left(plaidError)
+                    case Left(e)           => Left(PlaidError(None, "API_ERROR", "PARSE_ERROR", e.getMessage))
+                }
+                Future {
+                    recordEvent(plaidError)
+                }(using ExecutionContext.global)
+                plaidError
+            case Failure(exception) =>
+                Logger.root.error(s"Unexpected exception on plaid call", exception)
+                val plaidError = PlaidError(None, "API_ERROR", "UNKNOWN_ERROR", exception.getMessage)
+                Left(plaidError)
+        }
+    }

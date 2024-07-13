@@ -3,7 +3,7 @@ package app
 import app.dtos.*
 import app.handlers.*
 import app.models.*
-import app.utils.logger.Logger
+import app.common.logger.Logger
 import com.auth0.jwt.*
 import com.auth0.jwt.algorithms.Algorithm
 import sttp.shared.Identity
@@ -16,7 +16,7 @@ import sttp.tapir.swagger.bundle.SwaggerInterpreter
 import java.util.UUID
 import scala.collection.JavaConverters.*
 import scala.util.Try
-import sttp.model.StatusCode
+import common.utils.logger.Logger
 
 object Routes:
   def createRoutes(authConfig: AuthConfig): List[ServerEndpoint[Any, Identity]] =

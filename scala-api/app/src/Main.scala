@@ -1,13 +1,19 @@
 package app
 
 import app.database.Database
+import app.jobs.Jobs
 import app.services.PlaidSyncService
-import app.utils.Environment
-import app.utils.Environment.AppEnv
-import app.utils.logger.Logger
+import app.common.Environment
+import app.common.Environment.AppEnv
+import app.common.logger.Logger
 import io.helidon.webserver.WebServer
 import sttp.tapir.*
 import sttp.tapir.server.nima.NimaServerInterpreter
+
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
+import common.utils.Environment
+import common.utils.logger.Logger
 
 @main def main: Unit =
   val appEnv = Environment.getAppEnv
@@ -39,6 +45,8 @@ import sttp.tapir.server.nima.NimaServerInterpreter
     .build()
     .start()
 
-  PlaidSyncService.runPlaidSyncPeriodically()
+  Future {
+    PlaidSyncService.runPlaidSyncPeriodically()
+  }(using ExecutionContext.global)
 
   Logger.root.info(s"Server started at: http://0.0.0.0:${server.port()}")

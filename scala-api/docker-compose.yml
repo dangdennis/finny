@@ -1,4 +1,10 @@
 services:
+  # redis:
+  #   image: redis:latest
+  #   container_name: finny-redis
+  #   ports:
+  #     - "6379:6379"
+
   lavinmq:
     image: cloudamqp/lavinmq
     ports:
