@@ -94,7 +94,8 @@ object PlaidService:
             .products(
                 List(
                     Products.TRANSACTIONS,
-                    Products.INVESTMENTS
+                    Products.INVESTMENTS,
+                    Products.LIABILITIES,
                     // Products.RECURRING_TRANSACTIONS
                 ).asJava
             )
