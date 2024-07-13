@@ -37,10 +37,15 @@ object Jobs:
     def startWorker() =
         val deliverCallback: DeliverCallback = (consumerTag, delivery) =>
             val body = new String(delivery.getBody, "UTF-8")
-            val job = read[JobRequest](body)
-            job match
-                case job @ JobRequest.AnotherJob(id, input)       => handleAnotherJob(job, delivery)
-                case job @ JobRequest.JobSyncPlaidItem(id, input) => handleJobSyncPlaidItem(job, delivery)
+            Try(read[JobRequest](body)).toEither.left
+                .map { e =>
+                    Logger.root.error(s"Failed to parse job request: $body", e)
+                }
+                .map { job =>
+                    job match
+                        case job @ JobRequest.AnotherJob(id, input)       => handleAnotherJob(job, delivery)
+                        case job @ JobRequest.JobSyncPlaidItem(id, input) => handleJobSyncPlaidItem(job, delivery)
+                }
 
         jobChannel.basicConsume(
             jobQueueName,
