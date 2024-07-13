@@ -1,12 +1,13 @@
 package app.jobs
 
 import app.common.LavinMqClient
+import app.common.Logger
+import com.rabbitmq.client.DeliverCallback
+import com.rabbitmq.client.Delivery
+import upickle.default.*
+
 import java.util.UUID
 import scala.util.Try
-import upickle.default._
-import com.rabbitmq.client.{DeliverCallback}
-import app.common.Logger
-import com.rabbitmq.client.Delivery
 
 object Jobs:
     val jobConnection = LavinMqClient.createConnection()

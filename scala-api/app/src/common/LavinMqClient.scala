@@ -7,19 +7,13 @@ import com.rabbitmq.client.ConnectionFactory
 object LavinMqClient:
     private val factory = new ConnectionFactory()
     private val lavinMqUrl = Environment.getLavinMqUrl
-    factory.setHost(lavinMqUrl.getHost()) // set your LavinMQ host
-    factory.setPort(lavinMqUrl.getPort()) // set your LavinMQ port
-
-    val userInfo = lavinMqUrl.getUserInfo.split(":")
-    if (userInfo.length == 2) {
-        factory.setUsername(userInfo(0))
-        factory.setPassword(userInfo(1))
-    }
-
+    factory.setUri(lavinMqUrl)
     factory.newConnection()
 
     def createConnection(): Connection =
+        Logger.root.info(s"Connecting to LavinMQ")
         factory.newConnection()
 
     def createChannel(connection: Connection): Channel =
+        Logger.root.info(s"Creating a new channel")
         connection.createChannel()
