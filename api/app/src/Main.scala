@@ -4,13 +4,9 @@ import app.common.*
 import app.common.Environment.AppEnv
 import app.database.Database
 import app.jobs.Jobs
-import app.services.PlaidSyncService
 import io.helidon.webserver.WebServer
 import sttp.tapir.*
 import sttp.tapir.server.nima.NimaServerInterpreter
-
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
 
 @main def main: Unit =
     val appEnv = Environment.getAppEnv
@@ -42,10 +38,6 @@ import scala.concurrent.Future
         .port(port)
         .build()
         .start()
-
-    Future {
-        PlaidSyncService.runPlaidSyncPeriodically()
-    }(using ExecutionContext.global)
 
     Jobs.startWorker()
 

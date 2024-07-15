@@ -15,6 +15,11 @@ object Environment:
             case "production"  => AppEnv.Production
             case _                   => sys.error("Invalid APP_ENV. Expected: development or production")
 
+    def appEnvToString(appEnv: AppEnv): String =
+        appEnv match
+            case AppEnv.Development => "development"
+            case AppEnv.Production  => "production"
+
     def getPort: Int =
         sys.env.get("HTTP_PORT").flatMap(_.toIntOption).getOrElse(8080)
 
@@ -67,4 +72,4 @@ object Environment:
     def getLavinMqUrl: URI =
         getAppEnv match
             case AppEnv.Production  => URI(sys.env.get("LAVIN_MQ_URL").get)
-            case AppEnv.Development => URI("amqps://guest:guest@localhost:5672")
+            case AppEnv.Development => URI("amqp://guest:guest@localhost:5672")

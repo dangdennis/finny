@@ -3,6 +3,7 @@ package app.common
 import com.rabbitmq.client.Channel
 import com.rabbitmq.client.Connection
 import com.rabbitmq.client.ConnectionFactory
+
 import javax.net.ssl.SSLContext
 
 object LavinMqClient:

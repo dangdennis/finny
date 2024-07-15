@@ -32,15 +32,6 @@ import scala.reflect.ClassTag
 import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
-import com.plaid.client.model.LinkTokenAccountFilters
-import com.plaid.client.model.CreditFilter
-import com.plaid.client.model.CreditAccountSubtype
-import com.plaid.client.model.DepositoryFilter
-import com.plaid.client.model.DepositoryAccountSubtype
-import com.plaid.client.model.InvestmentFilter
-import com.plaid.client.model.InvestmentAccountSubtype
-import com.plaid.client.model.LoanFilter
-import com.plaid.client.model.LoanAccountSubtype
 
 object PlaidService:
     private lazy val client = makePlaidClient()
@@ -125,8 +116,8 @@ object PlaidService:
         //     LinkTokenAccountFilters()
         //         .credit(CreditFilter().accountSubtypes(List(CreditAccountSubtype.ALL).asJava))
         //         .depository(DepositoryFilter().accountSubtypes(List(DepositoryAccountSubtype.ALL).asJava))
-        // .investment(InvestmentFilter().accountSubtypes(List(InvestmentAccountSubtype.ALL).asJava))
-        // .loan(LoanFilter().accountSubtypes(List(LoanAccountSubtype.ALL).asJava))
+        //         .investment(InvestmentFilter().accountSubtypes(List(InvestmentAccountSubtype.ALL).asJava))
+        //         .loan(LoanFilter().accountSubtypes(List(LoanAccountSubtype.ALL).asJava))
         // )
 
         handleResponse(
