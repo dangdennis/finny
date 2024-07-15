@@ -5,6 +5,12 @@ import com.goyeau.mill.scalafix.ScalafixModule
 object app extends ScalaModule with ScalafixModule {
     def scalaVersion = "3.4.2"
 
+    def scalacOptions = T {
+        super.scalacOptions() ++ Seq(
+            "-Wunused:imports"
+        )
+    }
+
     def ivyDeps = Agg(
         ivy"com.softwaremill.sttp.tapir::tapir-core:1.10.8",
         ivy"com.softwaremill.sttp.tapir::tapir-nima-server:1.10.8",
@@ -31,16 +37,32 @@ object app extends ScalaModule with ScalafixModule {
         )
     }
 
-    // Add Scala compiler options
-    def scalacOptions = T {
+}
+
+object cli extends ScalaModule with ScalafixModule {
+    def scalaVersion = "3.4.2"
+
+    override def scalacOptions = T {
         super.scalacOptions() ++ Seq(
             "-Wunused:imports"
         )
     }
-}
-
-object cli extends ScalaModule {
-    def scalaVersion = "3.4.2"
 
     override def moduleDeps = Seq(app)
+
+}
+
+object all extends Module {
+    def scalaVersion = "3.4.2"
+
+    def compile() = T.command {
+        app.compile()
+        app.test.compile()
+        cli.compile()
+    }
+
+    def fix() = T.command {
+        app.fix()
+        cli.fix()
+    }
 }
