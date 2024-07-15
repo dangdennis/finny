@@ -98,14 +98,20 @@ object PlaidService:
                     )
         )
 
+    enum AccountType:
+        case Credit, Depository, Investment, Loan
+
     def createLinkToken(userId: UUID) =
         val req = LinkTokenCreateRequest()
             .products(
                 List(
-                    Products.TRANSACTIONS,
+                    Products.TRANSACTIONS
+                ).asJava
+            )
+            .requiredIfSupportedProducts(
+                List(
                     Products.INVESTMENTS,
                     Products.LIABILITIES
-                    // Products.RECURRING_TRANSACTIONS
                 ).asJava
             )
             .countryCodes(List(CountryCode.US).asJava)
@@ -115,13 +121,13 @@ object PlaidService:
             .clientName("Finny")
             .transactions(LinkTokenTransactions().daysRequested(360))
             .redirectUri(f"${Environment.getBaseUrl}/oauth/plaid")
-            .accountFilters(
-                LinkTokenAccountFilters()
-                    .credit(CreditFilter().accountSubtypes(List(CreditAccountSubtype.ALL).asJava))
-                    .depository(DepositoryFilter().accountSubtypes(List(DepositoryAccountSubtype.ALL).asJava))
-                    .investment(InvestmentFilter().accountSubtypes(List(InvestmentAccountSubtype.ALL).asJava))
-                    .loan(LoanFilter().accountSubtypes(List(LoanAccountSubtype.ALL).asJava))
-            )
+        // .accountFilters(
+        //     LinkTokenAccountFilters()
+        //         .credit(CreditFilter().accountSubtypes(List(CreditAccountSubtype.ALL).asJava))
+        //         .depository(DepositoryFilter().accountSubtypes(List(DepositoryAccountSubtype.ALL).asJava))
+        // .investment(InvestmentFilter().accountSubtypes(List(InvestmentAccountSubtype.ALL).asJava))
+        // .loan(LoanFilter().accountSubtypes(List(LoanAccountSubtype.ALL).asJava))
+        // )
 
         handleResponse(
             Try(client.linkTokenCreate(req).execute()),
