@@ -243,50 +243,49 @@ object PlaidService:
             )
             .toTry
 
-        val b = DB localTx { implicit session =>
-            PlaidItemRepository
-                .deleteItem(id)
-                .map(_ =>
-                    handleResponse(
-                        body,
-                        (respBody) =>
-                            respBody.left
-                                .map(error =>
-                                    PlaidApiEventRepository
-                                        .create(
-                                            PlaidApiEventCreateInput(
-                                                userId = None,
-                                                itemId = None,
-                                                plaidMethod = "itemRemove",
-                                                arguments = Map(),
-                                                requestId = error.requestId,
-                                                errorType = Some(error.errorType),
-                                                errorCode = Some(error.errorCode)
-                                            )
-                                        )
+        Try(DB localTx { implicit session =>
+            val result = for {
+                _ <- PlaidItemRepository.deleteItem(id).left.map(ex => PlaidError(None, "DB_ERROR", "DELETE_ERROR", ex.getMessage))
+                response <- handleResponse(
+                    body,
+                    (respBody) =>
+                        respBody.left.foreach { error =>
+                            PlaidApiEventRepository.create(
+                                PlaidApiEventRepository.PlaidApiEventCreateInput(
+                                    userId = None,
+                                    itemId = Some(id),
+                                    plaidMethod = "itemRemove",
+                                    arguments = Map(),
+                                    requestId = error.requestId,
+                                    errorType = Some(error.errorType),
+                                    errorCode = Some(error.errorCode)
                                 )
-                                .map(body =>
-                                    PlaidApiEventRepository
-                                        .create(
-                                            PlaidApiEventCreateInput(
-                                                userId = None,
-                                                itemId = None,
-                                                plaidMethod = "itemRemove",
-                                                arguments = Map(),
-                                                requestId = Some(body.getRequestId()),
-                                                errorType = None,
-                                                errorCode = None
-                                            )
-                                        )
+                            )
+                        }
+                        respBody.map { body =>
+                            PlaidApiEventRepository.create(
+                                PlaidApiEventRepository.PlaidApiEventCreateInput(
+                                    userId = None,
+                                    itemId = Some(id),
+                                    plaidMethod = "itemRemove",
+                                    arguments = Map(),
+                                    requestId = Some(body.getRequestId()),
+                                    errorType = None,
+                                    errorCode = None
                                 )
-                    )
-                )
-                .left
-                .map(error => throw error)
-        }
+                            )
+                        }
+                ).left.map(error => throw new Exception(error.errorMessage))
+            } yield response
 
-        // todo: how do i unnest b without using getOrElse?
-        b.getOrElse(Left(PlaidError(None, "API_ERROR", "UNKNOWN_ERROR", "Unknown error")))
+            result match {
+                case Right(itemRemoveResponse) => Right(itemRemoveResponse)
+                case Left(error)               => Left(error)
+            }
+        }) match {
+            case Success(value)     => value
+            case Failure(exception) => Left(PlaidError(None, "DB_ERROR", "DELETE_ERROR", exception.getMessage))
+        }
 
     case class PlaidError(requestId: Option[String], errorType: String, errorCode: String, errorMessage: String)
 
