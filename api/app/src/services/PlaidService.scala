@@ -32,6 +32,9 @@ import scala.reflect.ClassTag
 import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
+import com.plaid.client.model.ItemRemoveRequest
+import scalikejdbc.DB
+import com.plaid.client.model.ItemRemoveResponse
 
 object PlaidService:
     private lazy val client = makePlaidClient()
@@ -112,13 +115,6 @@ object PlaidService:
             .clientName("Finny")
             .transactions(LinkTokenTransactions().daysRequested(360))
             .redirectUri(f"${Environment.getBaseUrl}/oauth/plaid")
-        // .accountFilters(
-        //     LinkTokenAccountFilters()
-        //         .credit(CreditFilter().accountSubtypes(List(CreditAccountSubtype.ALL).asJava))
-        //         .depository(DepositoryFilter().accountSubtypes(List(DepositoryAccountSubtype.ALL).asJava))
-        //         .investment(InvestmentFilter().accountSubtypes(List(InvestmentAccountSubtype.ALL).asJava))
-        //         .loan(LoanFilter().accountSubtypes(List(LoanAccountSubtype.ALL).asJava))
-        // )
 
         handleResponse(
             Try(client.linkTokenCreate(req).execute()),
@@ -210,7 +206,7 @@ object PlaidService:
                                 PlaidApiEventCreateInput(
                                     userId = Some(userId),
                                     itemId = None,
-                                    plaidMethod = "getItem",
+                                    plaidMethod = "itemGet",
                                     arguments = Map(),
                                     requestId = error.requestId,
                                     errorType = Some(error.errorType),
@@ -227,7 +223,7 @@ object PlaidService:
                                         PlaidApiEventCreateInput(
                                             userId = Some(userId),
                                             itemId = Some(plaidItem.id),
-                                            plaidMethod = "getItem",
+                                            plaidMethod = "itemGet",
                                             arguments = Map(),
                                             requestId = Some(body.getRequestId()),
                                             errorType = None,
@@ -237,6 +233,60 @@ object PlaidService:
                             )
                     )
         )
+
+    def removeItem(id: UUID): Either[PlaidError, ItemRemoveResponse] =
+        val body = PlaidItemRepository
+            .getById(id)
+            .map(plaidItem =>
+                val req = ItemRemoveRequest().accessToken(plaidItem.plaidAccessToken)
+                client.itemRemove(req).execute()
+            )
+            .toTry
+
+        val b = DB localTx { implicit session =>
+            PlaidItemRepository
+                .deleteItem(id)
+                .map(_ =>
+                    handleResponse(
+                        body,
+                        (respBody) =>
+                            respBody.left
+                                .map(error =>
+                                    PlaidApiEventRepository
+                                        .create(
+                                            PlaidApiEventCreateInput(
+                                                userId = None,
+                                                itemId = None,
+                                                plaidMethod = "itemRemove",
+                                                arguments = Map(),
+                                                requestId = error.requestId,
+                                                errorType = Some(error.errorType),
+                                                errorCode = Some(error.errorCode)
+                                            )
+                                        )
+                                )
+                                .map(body =>
+                                    PlaidApiEventRepository
+                                        .create(
+                                            PlaidApiEventCreateInput(
+                                                userId = None,
+                                                itemId = None,
+                                                plaidMethod = "itemRemove",
+                                                arguments = Map(),
+                                                requestId = Some(body.getRequestId()),
+                                                errorType = None,
+                                                errorCode = None
+                                            )
+                                        )
+                                )
+                    )
+                )
+                .left
+                .map(error => throw error)
+        }
+
+        // todo: how do i unnest b without using getOrElse?
+        b.getOrElse(Left(PlaidError(None, "API_ERROR", "UNKNOWN_ERROR", "Unknown error")))
 
     case class PlaidError(requestId: Option[String], errorType: String, errorCode: String, errorMessage: String)
 

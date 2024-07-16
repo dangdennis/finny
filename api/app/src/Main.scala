@@ -22,7 +22,7 @@ import sttp.tapir.server.nima.NimaServerInterpreter
             Logger.root.info(s"Running in production mode.")
 
     Logger.configureLogging()
-    Database.init(configs = databaseConfig)
+    Database.init(databaseConfig)
     Jobs.init()
 
     val handler = NimaServerInterpreter().toHandler(Routes.createRoutes(Routes.AuthConfig(jwtSecret, jwtIssue)))

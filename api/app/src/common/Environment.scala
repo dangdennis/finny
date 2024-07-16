@@ -23,14 +23,14 @@ object Environment:
     def getPort: Int =
         sys.env.get("HTTP_PORT").flatMap(_.toIntOption).getOrElse(8080)
 
-    case class DatabaseConfig(url: String, user: String, password: String)
+    case class DatabaseConfig(host: String, user: String, password: String)
 
     def getDatabaseConfig: DatabaseConfig =
         val pattern = """jdbc:postgresql://([^:]+):([^@]+)@([^/]+/[^?]+)""".r
 
         getDatabaseUrl match
             case pattern(username, password, restUrl) =>
-                DatabaseConfig(url = s"jdbc:postgresql://$restUrl", user = username, password = password)
+                DatabaseConfig(host = s"jdbc:postgresql://$restUrl", user = username, password = password)
             case _ =>
                 sys.error("Invalid database URL format. Expected: jdbc:postgresql://username:password@host:port/database")
 
