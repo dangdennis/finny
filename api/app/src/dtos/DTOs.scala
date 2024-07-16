@@ -9,6 +9,7 @@ object DTOs:
     case class PlaidItemSyncRequest(itemId: String) derives Schema, ReadWriter
     case class PlaidLinkCreateResponse(token: String) derives Schema, ReadWriter
     case class PlaidItemsGetResponse(items: List[PlaidItemDTO]) derives Schema, ReadWriter
+    case class PlaidItemDeleteRequest(itemId: String) derives Schema, ReadWriter
     case class PlaidItemDTO(
         id: String,
         institutionId: String,

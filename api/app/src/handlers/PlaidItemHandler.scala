@@ -100,3 +100,10 @@ object PlaidItemHandler:
                 PlaidSyncService.sync(item.id)
                 Right(())
             )
+
+    def handlePlaidItemsDelete(user: Profile, input: DTOs.PlaidItemDeleteRequest): Either[AuthenticationError, Unit] =
+        PlaidService
+            .removeItem(client = PlaidService.makePlaidClientFromEnv(), itemId = UUID.fromString(input.itemId))
+            .left
+            .map(_ => AuthenticationError(404))
+            .map(_ => Right(()))

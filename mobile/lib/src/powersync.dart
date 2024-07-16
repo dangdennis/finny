@@ -11,19 +11,8 @@ import 'supabase.dart';
 
 final log = Logger('powersync-supabase');
 
-/// Postgres Response codes that we cannot recover from by retrying.
-final List<RegExp> fatalResponseCodes = [
-  // Class 22 — Data Exception
-  // Examples include data type mismatch.
-  RegExp(r'^22...$'),
-  // Class 23 — Integrity Constraint Violation.
-  // Examples include NOT NULL, FOREIGN KEY and UNIQUE violations.
-  RegExp(r'^23...$'),
-  // INSUFFICIENT PRIVILEGE - typically a row-level security violation
-  RegExp(r'^42501$'),
-];
-
-/// Use Supabase for authentication and data upload.
+/// Use Supabase for authentication.
+/// Uses API for data updates.
 class SupabaseConnector extends PowerSyncBackendConnector {
   PowerSyncDatabase db;
 
@@ -89,31 +78,27 @@ class SupabaseConnector extends PowerSyncBackendConnector {
       return;
     }
 
-    final rest = Supabase.instance.client.rest;
     CrudEntry? lastOp;
     try {
       // Note: If transactional consistency is important, use database functions
       // or edge functions to process the entire transaction in a single call.
+
+      // todo: make API request to API, send op as JSON.
       for (var op in transaction.crud) {
         lastOp = op;
-
-        final table = rest.from(op.table);
         if (op.op == UpdateType.put) {
-          var data = Map<String, dynamic>.of(op.opData!);
-          data['id'] = op.id;
-          await table.upsert(data);
+          print('put $op');
         } else if (op.op == UpdateType.patch) {
-          await table.update(op.opData!).eq('id', op.id);
+          print('patch $op');
         } else if (op.op == UpdateType.delete) {
-          await table.delete().eq('id', op.id);
+          print('delete $op');
         }
       }
 
       // All operations successful.
       await transaction.complete();
-    } on PostgrestException catch (e) {
-      if (e.code != null &&
-          fatalResponseCodes.any((re) => re.hasMatch(e.code!))) {
+    } on ApiException catch (e) {
+      if (e.code != null) {
         /// Instead of blocking the queue with these errors,
         /// discard the (rest of the) transaction.
         ///
@@ -123,11 +108,23 @@ class SupabaseConnector extends PowerSyncBackendConnector {
         log.severe('Data upload error - discarding $lastOp', e);
         await transaction.complete();
       } else {
-        // Error may be retryable - e.g. network error or temporary server error.
+        // Unexpected errors may be retryable - e.g. network error or temporary server error.
         // Throwing an error here causes this call to be retried after a delay.
         rethrow;
       }
     }
+  }
+}
+
+class ApiException implements Exception {
+  final String message;
+  final String? code;
+
+  ApiException(this.message, {this.code});
+
+  @override
+  String toString() {
+    return 'ApiException: $message';
   }
 }
 

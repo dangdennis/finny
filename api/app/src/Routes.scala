@@ -28,7 +28,7 @@ object Routes:
             .handleSecurity(makeAuthenticator(authConfig))
 
         val plaidItemsGetRoute = protectedApiRouteGroup.get
-            .in("plaid-items")
+            .in("plaid-items" / "list")
             .out(jsonBody[DTOs.PlaidItemsGetResponse])
 
         val plaidItemsGetServerEndpoint = plaidItemsGetRoute
@@ -41,6 +41,13 @@ object Routes:
 
         val plaidItemsCreateServerEndpoint = plaidItemsCreateRoute
             .handle(user => input => PlaidItemHandler.handlePlaidItemsCreate(user, input))
+
+        val plaidItemsDeleteRoute = protectedApiRouteGroup.delete
+            .in("plaid-items" / "delete")
+            .in(jsonBody[DTOs.PlaidItemDeleteRequest])
+
+        val plaidItemsDeleteServerEndpoint = plaidItemsDeleteRoute
+            .handle(user => input => PlaidItemHandler.handlePlaidItemsDelete(user, input))
 
         val plaidItemsSyncRoute = protectedApiRouteGroup.post
             .in("plaid-items" / "sync")
