@@ -148,7 +148,7 @@ class PlaidItemRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, Befor
         items.size should be(2)
     }
 
-    "deleteItem" should "delete plaid item within a db transaction" in:
+    "deleteItemById" should "delete plaid item within a db transaction" in:
         // given
         val user = AuthUserRepositoryHelper.createUser()
         val item = PlaidItemRepository
@@ -169,7 +169,7 @@ class PlaidItemRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, Befor
 
         // test rollback on exception
         val res = Try(DB localTx { implicit session =>
-            PlaidItemRepository.deleteItem(item.id)
+            PlaidItemRepository.deleteItemById(item.id)
             throw new Exception("rollback")
         })
 
@@ -178,7 +178,7 @@ class PlaidItemRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, Befor
 
         // delete the item now
         DB localTx { implicit session =>
-            PlaidItemRepository.deleteItem(item.id)
+            PlaidItemRepository.deleteItemById(item.id)
         }
 
         val itemsAfterDelete = PlaidItemRepository.getItems().value

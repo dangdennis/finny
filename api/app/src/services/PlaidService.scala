@@ -35,11 +35,32 @@ import scala.util.Try
 import com.plaid.client.model.ItemRemoveRequest
 import scalikejdbc.DB
 import com.plaid.client.model.ItemRemoveResponse
+import app.repositories.TransactionRepository
+import app.repositories.AccountRepository
+import app.common.Environment.AppEnv
 
 object PlaidService:
-    private lazy val client = makePlaidClient()
+    def makePlaidClient(
+        clientId: String,
+        secret: String,
+        env: AppEnv
+    ) =
+        val apiClient = new ApiClient(
+            Map(
+                "clientId" -> clientId,
+                "secret" -> secret,
+                "plaidVersion" -> "2020-09-14"
+            ).asJava
+        )
 
-    private def makePlaidClient() =
+        apiClient.setPlaidAdapter(env match
+            case AppEnv.Production  => ApiClient.Production
+            case AppEnv.Development => ApiClient.Sandbox
+        )
+
+        apiClient.createService(classOf[PlaidApi])
+
+    def makePlaidClientFromEnv() =
         val apiClient = new ApiClient(
             Map(
                 "clientId" -> Environment.getPlaidClientId,
@@ -54,7 +75,7 @@ object PlaidService:
 
         apiClient.createService(classOf[PlaidApi])
 
-    def getTransactionsSync(item: PlaidItem) =
+    def getTransactionsSync(client: PlaidApi, item: PlaidItem) =
         val req = new TransactionsSyncRequest().accessToken(item.plaidAccessToken).cursor(item.transactionsCursor.orNull)
         val res = Try(client.transactionsSync(req).execute())
 
@@ -95,7 +116,7 @@ object PlaidService:
     enum AccountType:
         case Credit, Depository, Investment, Loan
 
-    def createLinkToken(userId: UUID) =
+    def createLinkToken(client: PlaidApi, userId: UUID) =
         val req = LinkTokenCreateRequest()
             .products(
                 List(
@@ -158,7 +179,7 @@ object PlaidService:
                     )
         )
 
-    def exchangePublicToken(publicToken: String, userId: UUID) =
+    def exchangePublicToken(client: PlaidApi, publicToken: String, userId: UUID) =
         val req = ItemPublicTokenExchangeRequest().publicToken(publicToken)
         handleResponse(
             Try(client.itemPublicTokenExchange(req).execute()),
@@ -194,7 +215,7 @@ object PlaidService:
                     )
         )
 
-    def getItem(accessToken: String, userId: UUID) =
+    def getItem(client: PlaidApi, accessToken: String, userId: UUID) =
         val req = ItemGetRequest().accessToken(accessToken)
         handleResponse(
             Try(client.itemGet(req).execute()),
@@ -234,58 +255,58 @@ object PlaidService:
                     )
         )
 
-    def removeItem(id: UUID): Either[PlaidError, ItemRemoveResponse] =
-        val body = PlaidItemRepository
-            .getById(id)
+    def removeItem(client: PlaidApi, itemId: UUID): Either[Throwable, Unit] =
+        PlaidItemRepository
+            .getById(itemId)
             .map(plaidItem =>
                 val req = ItemRemoveRequest().accessToken(plaidItem.plaidAccessToken)
-                client.itemRemove(req).execute()
+                Try(DB localTx { implicit session =>
+                    val result = for
+                        _ <- TransactionRepository
+                            .deleteTransactionsByItemId(itemId)
+                            .left
+                            .map(ex => PlaidError(None, "DB_ERROR", "DELETE_ERROR", ex.getMessage))
+                        _ <- AccountRepository
+                            .deleteAccountsByItemId(itemId)
+                            .left
+                            .map(ex => PlaidError(None, "DB_ERROR", "DELETE_ERROR", ex.getMessage))
+                        _ <- PlaidItemRepository
+                            .deleteItemById(itemId)
+                            .left
+                            .map(ex => PlaidError(None, "DB_ERROR", "DELETE_ERROR", ex.getMessage))
+                        response <- handleResponse(
+                            Try(client.itemRemove(req).execute()),
+                            (respBody) =>
+                                respBody.left.foreach { error =>
+                                    PlaidApiEventRepository.create(
+                                        PlaidApiEventRepository.PlaidApiEventCreateInput(
+                                            userId = None,
+                                            itemId = Some(itemId),
+                                            plaidMethod = "itemRemove",
+                                            arguments = Map(),
+                                            requestId = error.requestId,
+                                            errorType = Some(error.errorType),
+                                            errorCode = Some(error.errorCode)
+                                        )
+                                    )
+                                }
+                                respBody.map { body =>
+                                    PlaidApiEventRepository.create(
+                                        PlaidApiEventRepository.PlaidApiEventCreateInput(
+                                            userId = None,
+                                            itemId = Some(itemId),
+                                            plaidMethod = "itemRemove",
+                                            arguments = Map(),
+                                            requestId = Some(body.getRequestId()),
+                                            errorType = None,
+                                            errorCode = None
+                                        )
+                                    )
+                                }
+                        ).left.map(error => throw new Exception(error.errorMessage))
+                    yield response
+                })
             )
-            .toTry
-
-        Try(DB localTx { implicit session =>
-            val result = for {
-                _ <- PlaidItemRepository.deleteItem(id).left.map(ex => PlaidError(None, "DB_ERROR", "DELETE_ERROR", ex.getMessage))
-                response <- handleResponse(
-                    body,
-                    (respBody) =>
-                        respBody.left.foreach { error =>
-                            PlaidApiEventRepository.create(
-                                PlaidApiEventRepository.PlaidApiEventCreateInput(
-                                    userId = None,
-                                    itemId = Some(id),
-                                    plaidMethod = "itemRemove",
-                                    arguments = Map(),
-                                    requestId = error.requestId,
-                                    errorType = Some(error.errorType),
-                                    errorCode = Some(error.errorCode)
-                                )
-                            )
-                        }
-                        respBody.map { body =>
-                            PlaidApiEventRepository.create(
-                                PlaidApiEventRepository.PlaidApiEventCreateInput(
-                                    userId = None,
-                                    itemId = Some(id),
-                                    plaidMethod = "itemRemove",
-                                    arguments = Map(),
-                                    requestId = Some(body.getRequestId()),
-                                    errorType = None,
-                                    errorCode = None
-                                )
-                            )
-                        }
-                ).left.map(error => throw new Exception(error.errorMessage))
-            } yield response
-
-            result match {
-                case Right(itemRemoveResponse) => Right(itemRemoveResponse)
-                case Left(error)               => Left(error)
-            }
-        }) match {
-            case Success(value)     => value
-            case Failure(exception) => Left(PlaidError(None, "DB_ERROR", "DELETE_ERROR", exception.getMessage))
-        }
 
     case class PlaidError(requestId: Option[String], errorType: String, errorCode: String, errorMessage: String)
 

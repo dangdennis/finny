@@ -8,24 +8,24 @@ import java.util.UUID
 import scala.util.Try
 
 object TransactionRepository {
-  case class UpsertTransactionInput(
-      accountId: UUID,
-      plaidTransactionId: String,
-      category: Option[String],
-      subcategory: Option[String],
-      transactionType: String,
-      name: String,
-      amount: Double,
-      isoCurrencyCode: Option[String],
-      unofficialCurrencyCode: Option[String],
-      date: Instant,
-      pending: Boolean,
-      accountOwner: Option[String]
-  )
+    case class UpsertTransactionInput(
+        accountId: UUID,
+        plaidTransactionId: String,
+        category: Option[String],
+        subcategory: Option[String],
+        transactionType: String,
+        name: String,
+        amount: Double,
+        isoCurrencyCode: Option[String],
+        unofficialCurrencyCode: Option[String],
+        date: Instant,
+        pending: Boolean,
+        accountOwner: Option[String]
+    )
 
-  def upsertTransaction(input: UpsertTransactionInput): Try[Transaction] =
-    Try(DB.autoCommit(implicit session => {
-      sql"""
+    def upsertTransaction(input: UpsertTransactionInput): Try[Transaction] =
+        Try(DB.autoCommit(implicit session => {
+            sql"""
             INSERT INTO transactions (
                 account_id,
                 plaid_transaction_id,
@@ -67,37 +67,49 @@ object TransactionRepository {
                 account_owner = EXCLUDED.account_owner
             RETURNING *
         """
-        .map(toModel)
-        .single
-        .apply()
-        .get
-    }))
+                .map(toModel)
+                .single
+                .apply()
+                .get
+        }))
 
-  def delete(plaidTransactionIds: List[String]): Try[Unit] =
-    if plaidTransactionIds.isEmpty then return Try(())
-    else
-      Try(DB.autoCommit(implicit session => {
-        sql"""
+    def deleteTransactionsByPlaidIds(plaidTransactionIds: List[String]): Try[Unit] =
+        if plaidTransactionIds.isEmpty then return Try(())
+        else
+            Try(DB.autoCommit(implicit session => {
+                sql"""
             DELETE FROM transactions
             WHERE plaid_transaction_id IN ($plaidTransactionIds)
         """.execute
-          .apply()
-      }))
+                    .apply()
+            }))
 
-  def toModel(rs: WrappedResultSet): Transaction =
-    Transaction(
-      id = UUID.fromString(rs.string("id")),
-      accountId = UUID.fromString(rs.string("account_id")),
-      plaidTransactionId = rs.string("plaid_transaction_id"),
-      category = rs.stringOpt("category"),
-      subcategory = rs.stringOpt("subcategory"),
-      transactionType = rs.string("type"),
-      name = rs.string("name"),
-      amount = rs.double("amount"),
-      isoCurrencyCode = rs.stringOpt("iso_currency_code"),
-      unofficialCurrencyCode = rs.stringOpt("unofficial_currency_code"),
-      date = rs.dateTime("date").toInstant(),
-      pending = rs.boolean("pending"),
-      accountOwner = rs.stringOpt("account_owner")
-    )
+    def deleteTransactionsByItemId(itemId: UUID)(implicit session: DBSession): Either[Throwable, Boolean] =
+        Try(
+            sql"""
+            DELETE FROM transactions
+            WHERE account_id IN (
+                SELECT accounts.id
+                FROM accounts
+                WHERE accounts.item_id = $itemId
+            );      
+        """.execute.apply()
+        ).toEither
+
+    def toModel(rs: WrappedResultSet): Transaction =
+        Transaction(
+            id = UUID.fromString(rs.string("id")),
+            accountId = UUID.fromString(rs.string("account_id")),
+            plaidTransactionId = rs.string("plaid_transaction_id"),
+            category = rs.stringOpt("category"),
+            subcategory = rs.stringOpt("subcategory"),
+            transactionType = rs.string("type"),
+            name = rs.string("name"),
+            amount = rs.double("amount"),
+            isoCurrencyCode = rs.stringOpt("iso_currency_code"),
+            unofficialCurrencyCode = rs.stringOpt("unofficial_currency_code"),
+            date = rs.dateTime("date").toInstant(),
+            pending = rs.boolean("pending"),
+            accountOwner = rs.stringOpt("account_owner")
+        )
 }

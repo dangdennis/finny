@@ -87,7 +87,7 @@ object PlaidSyncService:
                 var cursor = item.transactionsCursor
                 var hasMore = true
                 while hasMore do
-                    PlaidService.getTransactionsSync(item) match
+                    PlaidService.getTransactionsSync(client = PlaidService.makePlaidClientFromEnv(), item = item) match
                         case Left(error) =>
                             Logger.root.error(s"Error syncing transactions", error)
                             PlaidItemRepository.updateSyncError(
@@ -158,7 +158,7 @@ object PlaidSyncService:
                         )
                     )
 
-        TransactionRepository.delete(removed.map(_.getTransactionId()).toList)
+        TransactionRepository.deleteTransactionsByPlaidIds(removed.map(_.getTransactionId()).toList)
 
         encounteredError match
             case (false, _) =>

@@ -15,8 +15,16 @@ import java.util.UUID
 object PlaidItemHandler:
     def handlePlaidItemCreate(user: Profile, input: PlaidItemCreateRequest): Either[AuthenticationError, DTOs.PlaidItemCreateResponse] =
         val result = for
-            pubTokenData <- PlaidService.exchangePublicToken(publicToken = input.publicToken, userId = user.id)
-            itemData <- PlaidService.getItem(accessToken = pubTokenData.getAccessToken(), userId = user.id)
+            pubTokenData <- PlaidService.exchangePublicToken(
+                client = PlaidService.makePlaidClientFromEnv(),
+                publicToken = input.publicToken,
+                userId = user.id
+            )
+            itemData <- PlaidService.getItem(
+                client = PlaidService.makePlaidClientFromEnv(),
+                accessToken = pubTokenData.getAccessToken(),
+                userId = user.id
+            )
             item <- PlaidItemRepository.getOrCreateItem(
                 input = CreateItemInput(
                     userId = user.id,
