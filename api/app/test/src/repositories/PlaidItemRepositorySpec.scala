@@ -11,6 +11,10 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatest.EitherValues
 import scalikejdbc.DB
 import scala.util.Try
+import app.repositories.AccountRepository
+import app.repositories.AccountRepository.UpsertAccountInput
+import app.repositories.TransactionRepository
+import app.repositories.TransactionRepository.UpsertTransactionInput
 
 class PlaidItemRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, BeforeAndAfterAll, BeforeAndAfterEach:
     override protected def beforeAll(): Unit =
@@ -148,7 +152,7 @@ class PlaidItemRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, Befor
         items.size should be(2)
     }
 
-    "deleteItemById" should "delete plaid item within a db transaction" in:
+    "deleteItemById" should "delete plaid item as well as associated accounts and transactions in db transaction" in:
         // given
         val user = AuthUserRepositoryHelper.createUser()
         val item = PlaidItemRepository
@@ -163,9 +167,47 @@ class PlaidItemRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, Befor
                 )
             )
             .value
+        val accountId = AccountRepository
+            .upsertAccount(
+                UpsertAccountInput(
+                    itemId = item.id,
+                    userId = user.id,
+                    accountSubtype = Some("checking"),
+                    accountType = Some("depository"),
+                    availableBalance = 100.0,
+                    currentBalance = 100.0,
+                    isoCurrencyCode = Some("USD"),
+                    mask = Some("1234"),
+                    name = "Alice",
+                    officialName = Some("Alice's Checking"),
+                    plaidAccountId = "somePlaidAccountId",
+                    unofficialCurrencyCode = Some("USD")
+                )
+            )
+            .get
+        val transaction = TransactionRepository.upsertTransaction(
+            input = UpsertTransactionInput(
+                accountId = accountId,
+                plaidTransactionId = "somePlaidTransactionId2",
+                category = Some("someOtherCategory"),
+                subcategory = Some("someOtherSubcategory"),
+                transactionType = "someType",
+                name = "someName",
+                amount = 100.0,
+                isoCurrencyCode = Some("USD"),
+                unofficialCurrencyCode = Some("USD"),
+                date = java.time.Instant.now(),
+                pending = false,
+                accountOwner = Some("Dennis")
+            )
+        )
 
         val items = PlaidItemRepository.getItems().value
         items should have size 1
+        val accounts = AccountRepository.getAccounts(userId = user.id).get
+        accounts should have size 1
+        val transactions = TransactionRepository.getTransactionsByAccountId(accountId).get
+        transactions should have size 1
 
         // test rollback on exception
         val res = Try(DB localTx { implicit session =>
@@ -175,11 +217,19 @@ class PlaidItemRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, Befor
 
         val itemsAfterException = PlaidItemRepository.getItems().value
         itemsAfterException should have size 1
+        val accountsAfterException = AccountRepository.getAccounts(userId = user.id).get
+        accountsAfterException should have size 1
+        val transactionsAfterException = TransactionRepository.getTransactionsByAccountId(accountId).get
+        transactionsAfterException should have size 1
 
-        // delete the item now
+        // delete the item and associated accounts and transactions
         DB localTx { implicit session =>
             PlaidItemRepository.deleteItemById(item.id)
         }
 
-        val itemsAfterDelete = PlaidItemRepository.getItems().value
-        itemsAfterDelete should have size 0
+        val itemsAfterDeletion = PlaidItemRepository.getItems().value
+        itemsAfterDeletion should have size 0
+        val accountsAfterDeletion = AccountRepository.getAccounts(userId = user.id).get
+        accountsAfterDeletion should have size 0
+        val transactionsAfterDeletion = TransactionRepository.getTransactionsByAccountId(accountId).get
+        transactionsAfterDeletion should have size 0

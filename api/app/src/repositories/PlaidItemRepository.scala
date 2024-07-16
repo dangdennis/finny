@@ -191,7 +191,13 @@ object PlaidItemRepository:
         }).toEither
 
     def deleteItemById(itemId: UUID)(implicit session: DBSession): Either[Throwable, Int] =
-        Try(sql"""DELETE FROM plaid_items WHERE id = $itemId""".update.apply()).toEither
+        for
+            _ <- TransactionRepository
+                .deleteTransactionsByItemId(itemId)
+            _ <- AccountRepository
+                .deleteAccountsByItemId(itemId)
+            res <- Try(sql"""DELETE FROM plaid_items WHERE id = $itemId""".update.apply()).toEither
+        yield res
 
     private def dbToModel(rs: WrappedResultSet) =
         PlaidItem(

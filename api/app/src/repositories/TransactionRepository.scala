@@ -96,6 +96,17 @@ object TransactionRepository {
         """.execute.apply()
         ).toEither
 
+    def getTransactionsByAccountId(accountId: UUID): Try[List[Transaction]] =
+        Try(DB.readOnly(implicit session => {
+            sql"""
+            SELECT * FROM transactions
+            WHERE account_id = $accountId
+        """
+                .map(toModel)
+                .list
+                .apply()
+        }))
+
     def toModel(rs: WrappedResultSet): Transaction =
         Transaction(
             id = UUID.fromString(rs.string("id")),

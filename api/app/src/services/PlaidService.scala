@@ -262,14 +262,6 @@ object PlaidService:
                 val req = ItemRemoveRequest().accessToken(plaidItem.plaidAccessToken)
                 Try(DB localTx { implicit session =>
                     val result = for
-                        _ <- TransactionRepository
-                            .deleteTransactionsByItemId(itemId)
-                            .left
-                            .map(ex => PlaidError(None, "DB_ERROR", "DELETE_ERROR", ex.getMessage))
-                        _ <- AccountRepository
-                            .deleteAccountsByItemId(itemId)
-                            .left
-                            .map(ex => PlaidError(None, "DB_ERROR", "DELETE_ERROR", ex.getMessage))
                         _ <- PlaidItemRepository
                             .deleteItemById(itemId)
                             .left
