@@ -80,14 +80,14 @@ object PlaidSyncService:
         Logger.root.info(s"Syncing transactions and accounts for item: $itemId")
         val item = PlaidItemRepository.getById(itemId)
         item match
-            case Failure(exception) =>
+            case Left(exception) =>
                 Logger.root.error(f"Error getting item", exception)
                 PlaidItemRepository.updateSyncError(itemId = itemId, error = exception.getMessage, currentTime = java.time.Instant.now())
-            case Success(item) =>
+            case Right(item) =>
                 var cursor = item.transactionsCursor
                 var hasMore = true
                 while hasMore do
-                    PlaidService.getTransactionsSync(item) match
+                    PlaidService.getTransactionsSync(client = PlaidService.makePlaidClientFromEnv(), item = item) match
                         case Left(error) =>
                             Logger.root.error(s"Error syncing transactions", error)
                             PlaidItemRepository.updateSyncError(
@@ -158,7 +158,7 @@ object PlaidSyncService:
                         )
                     )
 
-        TransactionRepository.delete(removed.map(_.getTransactionId()).toList)
+        TransactionRepository.deleteTransactionsByPlaidIds(removed.map(_.getTransactionId()).toList)
 
         encounteredError match
             case (false, _) =>

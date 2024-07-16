@@ -8,7 +8,7 @@
 // import sttp.client3.testing.SttpBackendStub
 // import sttp.tapir.server.stub.TapirStubInterpreter
 
-// class EndpointsSpec extends AnyFlatSpec with Matchers with EitherValues:
+// class EndpointsSpec extends AnyFlatSpec, Matchers, EitherValues:
 
 //   it should "return hello world" in {
 //     // given

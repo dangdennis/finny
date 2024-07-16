@@ -12,7 +12,7 @@ import test.helpers.*
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.EitherValues
 
-class AccountRepositorySpec extends AnyFlatSpec with Matchers with EitherValues with BeforeAndAfterAll with BeforeAndAfterEach:
+class AccountRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, BeforeAndAfterAll, BeforeAndAfterEach:
   override protected def beforeAll(): Unit =
     TestHelper.beforeAll()
 

@@ -16,7 +16,7 @@ import app.repositories.TransactionRepository
 import app.repositories.TransactionRepository.UpsertTransactionInput
 import org.scalatest.BeforeAndAfterEach
 
-class TransactionRepositorySpec extends AnyFlatSpec with Matchers with EitherValues with BeforeAndAfterAll with BeforeAndAfterEach:
+class TransactionRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, BeforeAndAfterAll, BeforeAndAfterEach:
   override protected def beforeAll(): Unit =
     TestHelper.beforeAll()
 
@@ -149,7 +149,7 @@ class TransactionRepositorySpec extends AnyFlatSpec with Matchers with EitherVal
     transaction.pending should be(false)
     transaction.accountOwner should be(Some("Alice"))
 
-    TransactionRepository.delete(List(transaction.plaidTransactionId))
+    TransactionRepository.deleteTransactionsByPlaidIds(List(transaction.plaidTransactionId))
 
     val transactionsAfterDelete = DB.readOnly { implicit session =>
       sql"SELECT * FROM transactions"
@@ -164,6 +164,6 @@ class TransactionRepositorySpec extends AnyFlatSpec with Matchers with EitherVal
     transactionAfterDelete.plaidTransactionId should be("somePlaidTransactionId2")
 
     PlaidItemRepository.updateTransactionCursor(item.id, Some("someCursor"))
-    val updatedItem = PlaidItemRepository.getById(item.id).get
+    val updatedItem = PlaidItemRepository.getById(item.id).value
     updatedItem.transactionsCursor should be(Some("someCursor"))
   }

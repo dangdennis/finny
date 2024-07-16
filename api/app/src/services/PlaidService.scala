@@ -2,6 +2,7 @@ package app.services
 
 import app.common.*
 import app.common.Environment
+import app.common.Environment.AppEnv
 import app.models.PlaidItem
 import app.repositories.PlaidApiEventRepository
 import app.repositories.PlaidApiEventRepository.PlaidApiEventCreateInput
@@ -12,6 +13,8 @@ import com.plaid.client.model.ItemGetRequest
 import com.plaid.client.model.ItemGetResponse
 import com.plaid.client.model.ItemPublicTokenExchangeRequest
 import com.plaid.client.model.ItemPublicTokenExchangeResponse
+import com.plaid.client.model.ItemRemoveRequest
+import com.plaid.client.model.ItemRemoveResponse
 import com.plaid.client.model.LinkTokenCreateRequest
 import com.plaid.client.model.LinkTokenCreateRequestUser
 import com.plaid.client.model.LinkTokenCreateResponse
@@ -23,6 +26,7 @@ import com.plaid.client.request.PlaidApi
 import io.circe.generic.auto.*
 import io.circe.parser.decode
 import retrofit2.Response
+import scalikejdbc.DB
 
 import java.util.UUID
 import scala.collection.JavaConverters.*
@@ -34,9 +38,27 @@ import scala.util.Success
 import scala.util.Try
 
 object PlaidService:
-    private lazy val client = makePlaidClient()
+    def makePlaidClient(
+        clientId: String,
+        secret: String,
+        env: AppEnv
+    ) =
+        val apiClient = new ApiClient(
+            Map(
+                "clientId" -> clientId,
+                "secret" -> secret,
+                "plaidVersion" -> "2020-09-14"
+            ).asJava
+        )
 
-    private def makePlaidClient() =
+        apiClient.setPlaidAdapter(env match
+            case AppEnv.Production  => ApiClient.Production
+            case AppEnv.Development => ApiClient.Sandbox
+        )
+
+        apiClient.createService(classOf[PlaidApi])
+
+    def makePlaidClientFromEnv() =
         val apiClient = new ApiClient(
             Map(
                 "clientId" -> Environment.getPlaidClientId,
@@ -51,7 +73,7 @@ object PlaidService:
 
         apiClient.createService(classOf[PlaidApi])
 
-    def getTransactionsSync(item: PlaidItem) =
+    def getTransactionsSync(client: PlaidApi, item: PlaidItem) =
         val req = new TransactionsSyncRequest().accessToken(item.plaidAccessToken).cursor(item.transactionsCursor.orNull)
         val res = Try(client.transactionsSync(req).execute())
 
@@ -92,7 +114,7 @@ object PlaidService:
     enum AccountType:
         case Credit, Depository, Investment, Loan
 
-    def createLinkToken(userId: UUID) =
+    def createLinkToken(client: PlaidApi, userId: UUID) =
         val req = LinkTokenCreateRequest()
             .products(
                 List(
@@ -112,13 +134,6 @@ object PlaidService:
             .clientName("Finny")
             .transactions(LinkTokenTransactions().daysRequested(360))
             .redirectUri(f"${Environment.getBaseUrl}/oauth/plaid")
-        // .accountFilters(
-        //     LinkTokenAccountFilters()
-        //         .credit(CreditFilter().accountSubtypes(List(CreditAccountSubtype.ALL).asJava))
-        //         .depository(DepositoryFilter().accountSubtypes(List(DepositoryAccountSubtype.ALL).asJava))
-        //         .investment(InvestmentFilter().accountSubtypes(List(InvestmentAccountSubtype.ALL).asJava))
-        //         .loan(LoanFilter().accountSubtypes(List(LoanAccountSubtype.ALL).asJava))
-        // )
 
         handleResponse(
             Try(client.linkTokenCreate(req).execute()),
@@ -162,7 +177,7 @@ object PlaidService:
                     )
         )
 
-    def exchangePublicToken(publicToken: String, userId: UUID) =
+    def exchangePublicToken(client: PlaidApi, publicToken: String, userId: UUID) =
         val req = ItemPublicTokenExchangeRequest().publicToken(publicToken)
         handleResponse(
             Try(client.itemPublicTokenExchange(req).execute()),
@@ -198,7 +213,7 @@ object PlaidService:
                     )
         )
 
-    def getItem(accessToken: String, userId: UUID) =
+    def getItem(client: PlaidApi, accessToken: String, userId: UUID) =
         val req = ItemGetRequest().accessToken(accessToken)
         handleResponse(
             Try(client.itemGet(req).execute()),
@@ -210,7 +225,7 @@ object PlaidService:
                                 PlaidApiEventCreateInput(
                                     userId = Some(userId),
                                     itemId = None,
-                                    plaidMethod = "getItem",
+                                    plaidMethod = "itemGet",
                                     arguments = Map(),
                                     requestId = error.requestId,
                                     errorType = Some(error.errorType),
@@ -227,7 +242,7 @@ object PlaidService:
                                         PlaidApiEventCreateInput(
                                             userId = Some(userId),
                                             itemId = Some(plaidItem.id),
-                                            plaidMethod = "getItem",
+                                            plaidMethod = "itemGet",
                                             arguments = Map(),
                                             requestId = Some(body.getRequestId()),
                                             errorType = None,
@@ -237,6 +252,51 @@ object PlaidService:
                             )
                     )
         )
+
+    def removeItem(client: PlaidApi, itemId: UUID): Either[Throwable, Unit] =
+        PlaidItemRepository
+            .getById(itemId)
+            .map(plaidItem =>
+                val req = ItemRemoveRequest().accessToken(plaidItem.plaidAccessToken)
+                Try(DB localTx { implicit session =>
+                    val result = for
+                        _ <- PlaidItemRepository
+                            .deleteItemById(itemId)
+                            .left
+                            .map(ex => PlaidError(None, "DB_ERROR", "DELETE_ERROR", ex.getMessage))
+                        response <- handleResponse(
+                            Try(client.itemRemove(req).execute()),
+                            (respBody) =>
+                                respBody.left.foreach { error =>
+                                    PlaidApiEventRepository.create(
+                                        PlaidApiEventRepository.PlaidApiEventCreateInput(
+                                            userId = None,
+                                            itemId = Some(itemId),
+                                            plaidMethod = "itemRemove",
+                                            arguments = Map(),
+                                            requestId = error.requestId,
+                                            errorType = Some(error.errorType),
+                                            errorCode = Some(error.errorCode)
+                                        )
+                                    )
+                                }
+                                respBody.map { body =>
+                                    PlaidApiEventRepository.create(
+                                        PlaidApiEventRepository.PlaidApiEventCreateInput(
+                                            userId = None,
+                                            itemId = Some(itemId),
+                                            plaidMethod = "itemRemove",
+                                            arguments = Map(),
+                                            requestId = Some(body.getRequestId()),
+                                            errorType = None,
+                                            errorCode = None
+                                        )
+                                    )
+                                }
+                        ).left.map(error => throw new Exception(error.errorMessage))
+                    yield response
+                })
+            )
 
     case class PlaidError(requestId: Option[String], errorType: String, errorCode: String, errorMessage: String)
 

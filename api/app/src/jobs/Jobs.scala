@@ -16,8 +16,10 @@ object Jobs:
     val jobQueueName = "jobs"
 
     def init() =
-        declareJobQueue()
-        jobChannel.basicQos(1)
+        Try:
+            declareJobQueue()
+            jobChannel.basicQos(1)
+        .toEither
 
     private def declareJobQueue() =
         Try(jobChannel.queueDeclare(jobQueueName, true, false, false, null))
