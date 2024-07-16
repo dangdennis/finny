@@ -60,7 +60,7 @@ object Routes:
             .out(stringBody)
             .handle(rawJson => PlaidWebhookHandler.handleWebhook(rawJson))
 
-        val secureServerEndpoints = List(plaidItemsCreateServerEndpoint, plaidLinkCreateServerEndpoint)
+        val secureServerEndpoints = List(plaidItemsGetServerEndpoint, plaidItemsCreateServerEndpoint, plaidLinkCreateServerEndpoint)
         val serverEndpoints = List(indexEndpoint) ++ secureServerEndpoints
         val docEndpoints = SwaggerInterpreter()
             .fromServerEndpoints[Identity](serverEndpoints, "finny-api", "1.0.0")
