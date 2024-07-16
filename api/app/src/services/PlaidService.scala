@@ -2,6 +2,7 @@ package app.services
 
 import app.common.*
 import app.common.Environment
+import app.common.Environment.AppEnv
 import app.models.PlaidItem
 import app.repositories.PlaidApiEventRepository
 import app.repositories.PlaidApiEventRepository.PlaidApiEventCreateInput
@@ -12,6 +13,8 @@ import com.plaid.client.model.ItemGetRequest
 import com.plaid.client.model.ItemGetResponse
 import com.plaid.client.model.ItemPublicTokenExchangeRequest
 import com.plaid.client.model.ItemPublicTokenExchangeResponse
+import com.plaid.client.model.ItemRemoveRequest
+import com.plaid.client.model.ItemRemoveResponse
 import com.plaid.client.model.LinkTokenCreateRequest
 import com.plaid.client.model.LinkTokenCreateRequestUser
 import com.plaid.client.model.LinkTokenCreateResponse
@@ -23,6 +26,7 @@ import com.plaid.client.request.PlaidApi
 import io.circe.generic.auto.*
 import io.circe.parser.decode
 import retrofit2.Response
+import scalikejdbc.DB
 
 import java.util.UUID
 import scala.collection.JavaConverters.*
@@ -32,12 +36,6 @@ import scala.reflect.ClassTag
 import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
-import com.plaid.client.model.ItemRemoveRequest
-import scalikejdbc.DB
-import com.plaid.client.model.ItemRemoveResponse
-import app.repositories.TransactionRepository
-import app.repositories.AccountRepository
-import app.common.Environment.AppEnv
 
 object PlaidService:
     def makePlaidClient(
