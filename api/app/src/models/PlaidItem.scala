@@ -33,3 +33,8 @@ case class PlaidItem(
     lastSyncErrorAt: Option[Instant],
     retryCount: Int
 )
+
+case class PlaidItemWithAccounts(
+    plaidItem: PlaidItem,
+    accounts: List[Account]
+)

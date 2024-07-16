@@ -202,7 +202,7 @@ class PlaidItemRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, Befor
             )
         )
 
-        val items = PlaidItemRepository.getItems().value
+        val items = PlaidItemRepository.getItemsDebug().value
         items should have size 1
         val accounts = AccountRepository.getAccounts(userId = user.id).get
         accounts should have size 1
@@ -215,7 +215,7 @@ class PlaidItemRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, Befor
             throw new Exception("rollback")
         })
 
-        val itemsAfterException = PlaidItemRepository.getItems().value
+        val itemsAfterException = PlaidItemRepository.getItemsDebug().value
         itemsAfterException should have size 1
         val accountsAfterException = AccountRepository.getAccounts(userId = user.id).get
         accountsAfterException should have size 1
@@ -227,7 +227,7 @@ class PlaidItemRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, Befor
             PlaidItemRepository.deleteItemById(item.id)
         }
 
-        val itemsAfterDeletion = PlaidItemRepository.getItems().value
+        val itemsAfterDeletion = PlaidItemRepository.getItemsDebug().value
         itemsAfterDeletion should have size 0
         val accountsAfterDeletion = AccountRepository.getAccounts(userId = user.id).get
         accountsAfterDeletion should have size 0

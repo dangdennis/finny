@@ -8,8 +8,40 @@ import java.time.Duration
 import java.time.Instant
 import java.util.UUID
 import scala.util.Try
+import app.models.PlaidItemWithAccounts
 
 object PlaidItemRepository:
+    def getItemsWithAccountsByUserId(userId: UUID): Either[Throwable, List[PlaidItemWithAccounts]] =
+        Try(DB readOnly { implicit session =>
+            AccountRepository
+                .getAccounts(userId)
+                .map(accounts =>
+                    sql"""
+                        select
+                            id,
+                            user_id,
+                            plaid_access_token,
+                            plaid_item_id,
+                            plaid_institution_id,
+                            status,
+                            transactions_cursor,
+                            created_at,
+                            last_synced_at,
+                            last_sync_error,
+                            last_sync_error_at,
+                            retry_count
+                        from
+                            plaid_items
+                        where
+                            user_id = ${userId}"""
+                        .map(dbToModel)
+                        .list
+                        .apply()
+                        .map(item => PlaidItemWithAccounts(item, accounts.filter(_.itemId == item.id)))
+                )
+                .get
+        }).toEither
+
     def getById(id: UUID) =
         Try(DB readOnly { implicit session =>
             sql"""
@@ -166,7 +198,7 @@ object PlaidItemRepository:
                 .apply()
         }).toEither
 
-    def getItems(): Either[Throwable, List[PlaidItem]] =
+    def getItemsDebug(): Either[Throwable, List[PlaidItem]] =
         Try(DB readOnly { implicit session =>
             sql"""
           select
