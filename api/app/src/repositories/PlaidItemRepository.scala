@@ -166,7 +166,7 @@ object PlaidItemRepository:
                 .apply()
         }).toEither
 
-    def getItems(): Either[Throwable, List[PlaidItem]] =
+    def getItemsDebug(): Either[Throwable, List[PlaidItem]] =
         Try(DB readOnly { implicit session =>
             sql"""
           select

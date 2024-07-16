@@ -13,7 +13,31 @@ import app.services.PlaidSyncService
 import java.util.UUID
 
 object PlaidItemHandler:
-    def handlePlaidItemCreate(user: Profile, input: PlaidItemCreateRequest): Either[AuthenticationError, DTOs.PlaidItemCreateResponse] =
+    def handlePlaidItemsGet(user: Profile): Either[AuthenticationError, DTOs.PlaidItemsGetResponse] =
+        Left(AuthenticationError(404))
+        // PlaidItemRepository
+        //     .getByUserId(userId = user.id)
+        //     .left
+        //     .map(_ => AuthenticationError(404))
+        //     .map(items =>
+        //         DTOs.PlaidItemGetResponse(
+        //             items = items.map(item =>
+        //                 DTOs.PlaidItemDTO(
+        //                     id = item.id.toString(),
+        //                     institutionId = item.plaidInstitutionId,
+        //                     status = item.status.toString(),
+        //                     createdAt = item.createdAt.toString(),
+        //                     lastSyncedAt = item.lastSyncedAt.map(_.toString()),
+        //                     lastSyncError = item.lastSyncError,
+        //                     lastSyncErrorAt = item.lastSyncErrorAt.map(_.toString()),
+        //                     retryCount = item.retryCount,
+        //                     accounts = List.empty
+        //                 )
+        //             )
+        //         )
+            
+    
+    def handlePlaidItemsCreate(user: Profile, input: PlaidItemCreateRequest): Either[AuthenticationError, DTOs.PlaidItemCreateResponse] =
         val result = for
             pubTokenData <- PlaidService.exchangePublicToken(
                 client = PlaidService.makePlaidClientFromEnv(),
@@ -53,7 +77,7 @@ object PlaidItemHandler:
                     )
                 )
 
-    def handlePlaidItemSync(user: Profile, input: PlaidItemSyncRequest): Either[AuthenticationError, Unit] =
+    def handlePlaidItemsSync(user: Profile, input: PlaidItemSyncRequest): Either[AuthenticationError, Unit] =
         PlaidItemRepository
             .getById(id = UUID.fromString(input.itemId))
             .left
