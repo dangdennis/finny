@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:finny/src/connections/connections_controller.dart';
 import 'package:finny/src/routes.dart';
