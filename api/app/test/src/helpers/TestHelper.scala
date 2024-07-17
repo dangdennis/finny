@@ -5,9 +5,9 @@ import app.common.*
 import app.common.Environment
 
 object TestHelper:
-  def beforeAll(): Unit =
-    Database.init(configs = Environment.getDatabaseConfig)
-    Logger.configureLogging()
+    def beforeAll(): Unit =
+        Database.init(configs = Environment.getDatabaseConfig)
+        Logger.configureLogging()
 
-  def afterEach(): Unit =
-    DatabaseHelper.truncateTables()
+    def afterEach(): Unit =
+        DatabaseHelper.truncateTables()

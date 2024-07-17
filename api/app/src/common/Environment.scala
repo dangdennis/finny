@@ -13,7 +13,7 @@ object Environment:
         sys.env.getOrElse("APP_ENV", "development") match
             case "development" => AppEnv.Development
             case "production"  => AppEnv.Production
-            case _                   => sys.error("Invalid APP_ENV. Expected: development or production")
+            case _             => sys.error("Invalid APP_ENV. Expected: development or production")
 
     def appEnvToString(appEnv: AppEnv): String =
         appEnv match
