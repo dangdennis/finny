@@ -21,7 +21,9 @@ case class Account(
     currentBalance: Double,
     availableBalance: Double,
     isoCurrencyCode: Option[String],
-    unofficialCurrencyCode: Option[String],
+    unofficialCurrencyCode: Option[
+        String
+    ],
     accountType: Option[String],
     accountSubtype: Option[String],
     createdAt: Instant

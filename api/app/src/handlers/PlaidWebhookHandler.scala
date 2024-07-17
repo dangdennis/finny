@@ -16,18 +16,37 @@ case class PlaidTransactionsSyncUpdatesAvailable(
 ) derives ReadWriter
 
 object PlaidWebhookHandler:
-    def handleWebhook(rawJson: String): Either[Unit, String] =
+    def handleWebhook(
+        rawJson: String
+    ): Either[Unit, String] =
         val json = ujson.read(rawJson)
 
-        val webhookType = json("webhook_type").strOpt
-        val webhookCode = json("webhook_code").strOpt
+        val webhookType = json(
+            "webhook_type"
+        ).strOpt
+        val webhookCode = json(
+            "webhook_code"
+        ).strOpt
 
-        Logger.root.warn("Not verifying Plaid webhook signature")
-        Logger.root.info(s"Raw Plaid webhook: $rawJson")
+        Logger.root.warn(
+            "Not verifying Plaid webhook signature"
+        )
+        Logger.root.info(
+            s"Raw Plaid webhook: $rawJson"
+        )
 
         (webhookType, webhookCode) match
-            case (Some("TRANSACTIONS"), Some("SYNC_UPDATES_AVAILABLE")) =>
-                val event = read[PlaidTransactionsSyncUpdatesAvailable](json)
+            case (
+                    Some(
+                        "TRANSACTIONS"
+                    ),
+                    Some(
+                        "SYNC_UPDATES_AVAILABLE"
+                    )
+                ) =>
+                val event = read[
+                    PlaidTransactionsSyncUpdatesAvailable
+                ](json)
                 PlaidItemRepository
                     .getByItemId(itemId = event.item_id)
                     .map(plaidItem =>
@@ -35,8 +54,14 @@ object PlaidWebhookHandler:
                             event.historical_update_complete,
                             event.initial_update_complete
                         ) match
-                            case (true, true) =>
-                                Logger.root.info("Plaid webhook: regular update")
+                            case (
+                                    true,
+                                    true
+                                ) =>
+                                Logger.root
+                                    .info(
+                                        "Plaid webhook: regular update"
+                                    )
                                 Jobs.enqueueJob(
                                     Jobs.JobRequest.JobSyncPlaidItem(
                                         itemId = plaidItem.id,
@@ -44,9 +69,14 @@ object PlaidWebhookHandler:
                                         environment = event.environment
                                     )
                                 )
-                            case (true, false) =>
+                            case (
+                                    true,
+                                    false
+                                ) =>
                                 Logger.root
-                                    .info("Plaid webhook: historical update complete")
+                                    .info(
+                                        "Plaid webhook: historical update complete"
+                                    )
                                 Jobs.enqueueJob(
                                     Jobs.JobRequest.JobSyncPlaidItem(
                                         itemId = plaidItem.id,
@@ -54,8 +84,14 @@ object PlaidWebhookHandler:
                                         environment = event.environment
                                     )
                                 )
-                            case (false, true) =>
-                                Logger.root.info("Plaid webhook: initial update complete")
+                            case (
+                                    false,
+                                    true
+                                ) =>
+                                Logger.root
+                                    .info(
+                                        "Plaid webhook: initial update complete"
+                                    )
                                 Jobs.enqueueJob(
                                     Jobs.JobRequest.JobSyncPlaidItem(
                                         itemId = plaidItem.id,
@@ -63,14 +99,24 @@ object PlaidWebhookHandler:
                                         environment = event.environment
                                     )
                                 )
-                            case (false, false) =>
-                                Logger.root.error("Plaid webhook: no updates complete")
+                            case (
+                                    false,
+                                    false
+                                ) =>
+                                Logger.root
+                                    .error(
+                                        "Plaid webhook: no updates complete"
+                                    )
                     )
 
-                Right("Handled Plaid webhook")
+                Right(
+                    "Handled Plaid webhook"
+                )
 
             case _ =>
                 Logger.root.warn(
                     f"Not handling Plaid webhook: $webhookType, $webhookCode"
                 )
-                Right("Not handling Plaid webhook")
+                Right(
+                    "Not handling Plaid webhook"
+                )

@@ -13,11 +13,16 @@ enum PlaidItemStatus:
             case Unknown => "unknown"
 
 object PlaidItemStatus:
-    def fromString(s: String): PlaidItemStatus =
+    def fromString(
+        s: String
+    ): PlaidItemStatus =
         s match
-            case "good"    => PlaidItemStatus.Good
-            case "bad"     => PlaidItemStatus.Bad
-            case "unknown" => PlaidItemStatus.Unknown
+            case "good" =>
+                PlaidItemStatus.Good
+            case "bad" =>
+                PlaidItemStatus.Bad
+            case "unknown" =>
+                PlaidItemStatus.Unknown
 
 case class PlaidItem(
     id: UUID,

@@ -18,22 +18,41 @@ object AccountRepository:
         currentBalance: Double,
         availableBalance: Double,
         isoCurrencyCode: Option[String],
-        unofficialCurrencyCode: Option[String],
+        unofficialCurrencyCode: Option[
+            String
+        ],
         accountType: Option[String],
         accountSubtype: Option[String]
     )
 
-    def getByPlaidAccountId(itemId: UUID, plaidAccountId: String): Try[AccountSimple] =
+    def getByPlaidAccountId(
+        itemId: UUID,
+        plaidAccountId: String
+    ): Try[AccountSimple] =
         Try(DB readOnly { implicit session =>
             sql"""
         SELECT id, item_id, user_id, plaid_account_id FROM accounts WHERE item_id = $itemId and plaid_account_id = $plaidAccountId;
         """
                 .map(rs =>
                     AccountSimple(
-                        id = UUID.fromString(rs.string("id")),
-                        itemId = UUID.fromString(rs.string("item_id")),
-                        plaidAccountId = rs.string("plaid_account_id"),
-                        userId = UUID.fromString(rs.string("user_id"))
+                        id = UUID.fromString(
+                            rs.string(
+                                "id"
+                            )
+                        ),
+                        itemId = UUID.fromString(
+                            rs.string(
+                                "item_id"
+                            )
+                        ),
+                        plaidAccountId = rs.string(
+                            "plaid_account_id"
+                        ),
+                        userId = UUID.fromString(
+                            rs.string(
+                                "user_id"
+                            )
+                        )
                     )
                 )
                 .single
@@ -41,7 +60,9 @@ object AccountRepository:
                 .get
         })
 
-    def upsertAccount(input: UpsertAccountInput): Try[UUID] =
+    def upsertAccount(
+        input: UpsertAccountInput
+    ): Try[UUID] =
         Try(DB autoCommit { implicit session =>
             sql"""
         INSERT INTO accounts (item_id, user_id, plaid_account_id, name, mask, official_name, current_balance, available_balance, iso_currency_code, unofficial_currency_code, type, subtype)
@@ -51,13 +72,21 @@ object AccountRepository:
           current_balance = EXCLUDED.current_balance
         RETURNING id;
         """
-                .map(rs => UUID.fromString(rs.string("id")))
+                .map(rs =>
+                    UUID.fromString(
+                        rs.string(
+                            "id"
+                        )
+                    )
+                )
                 .single
                 .apply()
                 .get
         })
 
-    def getAccounts(userId: UUID): Try[List[Account]] =
+    def getAccounts(
+        userId: UUID
+    ): Try[List[Account]] =
         Try(DB readOnly { implicit session =>
             sql"""
           SELECT
@@ -85,20 +114,58 @@ object AccountRepository:
           """
                 .map(rs =>
                     Account(
-                        id = UUID.fromString(rs.string("id")),
-                        itemId = UUID.fromString(rs.string("item_id")),
-                        userId = UUID.fromString(rs.string("user_id")),
-                        plaidAccountId = rs.string("plaid_account_id"),
-                        name = rs.string("name"),
-                        mask = rs.stringOpt("mask"),
-                        officialName = rs.stringOpt("official_name"),
-                        currentBalance = rs.double("current_balance"),
-                        availableBalance = rs.double("available_balance"),
-                        isoCurrencyCode = rs.stringOpt("iso_currency_code"),
-                        unofficialCurrencyCode = rs.stringOpt("unofficial_currency_code"),
-                        accountType = rs.stringOpt("type"),
-                        accountSubtype = rs.stringOpt("subtype"),
-                        createdAt = rs.timestamp("created_at").toInstant
+                        id = UUID.fromString(
+                            rs.string(
+                                "id"
+                            )
+                        ),
+                        itemId = UUID.fromString(
+                            rs.string(
+                                "item_id"
+                            )
+                        ),
+                        userId = UUID.fromString(
+                            rs.string(
+                                "user_id"
+                            )
+                        ),
+                        plaidAccountId = rs.string(
+                            "plaid_account_id"
+                        ),
+                        name = rs.string(
+                            "name"
+                        ),
+                        mask = rs
+                            .stringOpt(
+                                "mask"
+                            ),
+                        officialName = rs.stringOpt(
+                            "official_name"
+                        ),
+                        currentBalance = rs.double(
+                            "current_balance"
+                        ),
+                        availableBalance = rs.double(
+                            "available_balance"
+                        ),
+                        isoCurrencyCode = rs.stringOpt(
+                            "iso_currency_code"
+                        ),
+                        unofficialCurrencyCode = rs.stringOpt(
+                            "unofficial_currency_code"
+                        ),
+                        accountType = rs
+                            .stringOpt(
+                                "type"
+                            ),
+                        accountSubtype = rs.stringOpt(
+                            "subtype"
+                        ),
+                        createdAt = rs
+                            .timestamp(
+                                "created_at"
+                            )
+                            .toInstant
                     )
                 )
                 .list
@@ -107,7 +174,10 @@ object AccountRepository:
 
     def deleteAccountsByItemId(
         itemId: UUID
-    )(implicit session: DBSession): Either[Throwable, Int] =
+    )(implicit
+        session: DBSession
+    ): Either[Throwable, Int] =
         Try(
-            sql"""DELETE FROM accounts WHERE item_id = ${itemId}""".update.apply()
+            sql"""DELETE FROM accounts WHERE item_id = ${itemId}""".update
+                .apply()
         ).toEither

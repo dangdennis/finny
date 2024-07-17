@@ -12,7 +12,11 @@ object ProfileRepository:
             sql"select id from profiles"
                 .map(rs =>
                     Profile(
-                        id = UUID.fromString(rs.string("id"))
+                        id = UUID.fromString(
+                            rs.string(
+                                "id"
+                            )
+                        )
                     )
                 )
                 .list

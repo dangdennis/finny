@@ -150,7 +150,9 @@ class TransactionRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, Bef
         transaction.pending should be(false)
         transaction.accountOwner should be(Some("Alice"))
 
-        TransactionRepository.deleteTransactionsByPlaidIds(List(transaction.plaidTransactionId))
+        TransactionRepository.deleteTransactionsByPlaidIds(
+            List(transaction.plaidTransactionId)
+        )
 
         val transactionsAfterDelete = DB.readOnly { implicit session =>
             sql"SELECT * FROM transactions"

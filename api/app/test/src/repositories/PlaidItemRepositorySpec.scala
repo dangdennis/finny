@@ -70,7 +70,11 @@ class PlaidItemRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, Befor
         val error = "got an error from plaid"
 
         // when
-        PlaidItemRepository.updateSyncError(item.id, error = error, currentTime = currentTime)
+        PlaidItemRepository.updateSyncError(
+            item.id,
+            error = error,
+            currentTime = currentTime
+        )
 
         // then
         val updatedItem = PlaidItemRepository.getById(id = item.id).value
@@ -124,21 +128,26 @@ class PlaidItemRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, Befor
 
         // alter last_synced_at times on items
         // should be fetched
-        val lastSyncedExactly12HoursAgo = currentTime.minus(java.time.Duration.ofHours(12))
+        val lastSyncedExactly12HoursAgo =
+            currentTime.minus(java.time.Duration.ofHours(12))
         PlaidItemRepository.updateSyncSuccess(
             item1.id,
             currentTime = lastSyncedExactly12HoursAgo
         )
 
         // should not be fetched
-        val lastSyncedLess12HoursBy1Sec = currentTime.minus(java.time.Duration.ofHours(12)).plus(java.time.Duration.ofSeconds(1))
+        val lastSyncedLess12HoursBy1Sec = currentTime
+            .minus(java.time.Duration.ofHours(12))
+            .plus(java.time.Duration.ofSeconds(1))
         PlaidItemRepository.updateSyncSuccess(
             item2.id,
             currentTime = lastSyncedLess12HoursBy1Sec
         )
 
         // should be fetched
-        val lastSyncedGreater12HoursBy1Sec = currentTime.minus(java.time.Duration.ofHours(12)).minus(java.time.Duration.ofSeconds(1))
+        val lastSyncedGreater12HoursBy1Sec = currentTime
+            .minus(java.time.Duration.ofHours(12))
+            .minus(java.time.Duration.ofSeconds(1))
         PlaidItemRepository.updateSyncError(
             item3.id,
             currentTime = lastSyncedGreater12HoursBy1Sec,
@@ -219,7 +228,8 @@ class PlaidItemRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, Befor
         itemsAfterException should have size 1
         val accountsAfterException = AccountRepository.getAccounts(userId = user.id).get
         accountsAfterException should have size 1
-        val transactionsAfterException = TransactionRepository.getTransactionsByAccountId(accountId).get
+        val transactionsAfterException =
+            TransactionRepository.getTransactionsByAccountId(accountId).get
         transactionsAfterException should have size 1
 
         // delete the item and associated accounts and transactions
@@ -231,5 +241,6 @@ class PlaidItemRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, Befor
         itemsAfterDeletion should have size 0
         val accountsAfterDeletion = AccountRepository.getAccounts(userId = user.id).get
         accountsAfterDeletion should have size 0
-        val transactionsAfterDeletion = TransactionRepository.getTransactionsByAccountId(accountId).get
+        val transactionsAfterDeletion =
+            TransactionRepository.getTransactionsByAccountId(accountId).get
         transactionsAfterDeletion should have size 0

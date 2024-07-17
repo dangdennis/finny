@@ -20,15 +20,25 @@ object PlaidApiEventRepository:
         errorCode: Option[String]
     )
 
-    def create(input: PlaidApiEventCreateInput) =
-        Try(DB autoCommit { implicit session =>
-            val query =
-                sql"""INSERT INTO plaid_api_events (item_id, user_id, plaid_method, arguments, request_id, error_type, error_code)
+    def create(
+        input: PlaidApiEventCreateInput
+    ) =
+        Try(
+            DB autoCommit { implicit session =>
+                val query =
+                    sql"""INSERT INTO plaid_api_events (item_id, user_id, plaid_method, arguments, request_id, error_type, error_code)
           VALUES (${input.itemId}, ${input.userId}, ${input.plaidMethod}, ${input.arguments.asJson.noSpaces}, ${input.requestId}, ${input.errorType}, ${input.errorCode})
           """
-            query.execute
-                .apply()
-        }).toEither.left.map(exception =>
-            Logger.root.error(s"Error creating Plaid API event", exception)
-            RepositoryError.DatabaseError(exception.getMessage)
+                query.execute
+                    .apply()
+            }
+        ).toEither.left.map(exception =>
+            Logger.root.error(
+                s"Error creating Plaid API event",
+                exception
+            )
+            RepositoryError
+                .DatabaseError(
+                    exception.getMessage
+                )
         )

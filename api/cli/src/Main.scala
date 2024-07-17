@@ -28,10 +28,13 @@ object Cli {
                 command match
                     case "delete-item" =>
                         val results =
-                            for res <- PlaidService.removeItem(
-                                    client = plaidClient,
-                                    itemId = UUID.fromString(itemId)
-                                )
+                            for res <- PlaidService
+                                    .removeItem(
+                                        client = plaidClient,
+                                        itemId = UUID.fromString(
+                                            itemId
+                                        )
+                                    )
                             yield res
                         println(results)
                     case _ => println("Unknown command")

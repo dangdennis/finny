@@ -1,8 +1,12 @@
 import mill._, scalalib._
 import $ivy.`com.goyeau::mill-scalafix::0.4.0`
 import com.goyeau.mill.scalafix.ScalafixModule
+import mill.scalalib.scalafmt.ScalafmtModule
 
-object app extends ScalaModule with ScalafixModule with scalafmt.ScalafmtModule {
+object app
+    extends ScalaModule
+    with ScalafixModule
+    with scalafmt.ScalafmtModule {
     def scalaVersion = "3.4.2"
 
     def scalacOptions = T {
@@ -29,7 +33,11 @@ object app extends ScalaModule with ScalafixModule with scalafmt.ScalafmtModule 
         ivy"com.rabbitmq:amqp-client:5.21.0"
     )
 
-    object test extends ScalaTests with TestModule.ScalaTest with ScalafixModule with scalafmt.ScalafmtModule {
+    object test
+        extends ScalaTests
+        with TestModule.ScalaTest
+        with ScalafixModule
+        with scalafmt.ScalafmtModule {
         def ivyDeps = Agg(
             ivy"com.softwaremill.sttp.tapir::tapir-sttp-stub-server:1.10.8",
             ivy"org.scalatest::scalatest:3.2.18",
@@ -39,7 +47,10 @@ object app extends ScalaModule with ScalafixModule with scalafmt.ScalafmtModule 
 
 }
 
-object cli extends ScalaModule with ScalafixModule with scalafmt.ScalafmtModule {
+object cli
+    extends ScalaModule
+    with ScalafixModule
+    with scalafmt.ScalafmtModule {
     def scalaVersion = "3.4.2"
 
     override def scalacOptions = T {
@@ -52,10 +63,13 @@ object cli extends ScalaModule with ScalafixModule with scalafmt.ScalafmtModule 
 
 }
 
-object all extends Module {
+object all
+    extends ScalaModule
+    with ScalafixModule
+    with ScalafmtModule {
     def scalaVersion = "3.4.2"
 
-    def compile() = T.command {
+    def compile = T.command {
         app.compile()
         app.test.compile()
         cli.compile()
@@ -67,6 +81,7 @@ object all extends Module {
         cli.fix()
     }
 
+    // todo: get this working one day
     def reformat() = T.command {
         app.reformat()
         app.test.reformat()

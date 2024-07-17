@@ -13,7 +13,9 @@ case class Transaction(
     name: String,
     amount: Double,
     isoCurrencyCode: Option[String],
-    unofficialCurrencyCode: Option[String],
+    unofficialCurrencyCode: Option[
+        String
+    ],
     date: Instant,
     pending: Boolean,
     accountOwner: Option[String]

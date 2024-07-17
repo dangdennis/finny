@@ -13,7 +13,9 @@ import app.models.PlaidItemWithAccounts
 object PlaidItemRepository:
     def getItemsWithAccountsByUserId(
         userId: UUID
-    ): Either[Throwable, List[PlaidItemWithAccounts]] =
+    ): Either[Throwable, List[
+        PlaidItemWithAccounts
+    ]] =
         Try(DB readOnly { implicit session =>
             AccountRepository
                 .getAccounts(userId)
@@ -42,7 +44,9 @@ object PlaidItemRepository:
                         .map(item =>
                             PlaidItemWithAccounts(
                                 item,
-                                accounts.filter(_.itemId == item.id)
+                                accounts.filter(
+                                    _.itemId == item.id
+                                )
                             )
                         )
                 )
@@ -75,7 +79,9 @@ object PlaidItemRepository:
                 .get
         }).toEither
 
-    def getByItemId(itemId: String): Try[PlaidItem] =
+    def getByItemId(
+        itemId: String
+    ): Try[PlaidItem] =
         Try(DB readOnly { implicit session =>
             sql"""
           select
@@ -107,10 +113,14 @@ object PlaidItemRepository:
         plaidItemId: String,
         plaidInstitutionId: String,
         status: PlaidItemStatus,
-        transactionsCursor: Option[String]
+        transactionsCursor: Option[
+            String
+        ]
     )
 
-    def getOrCreateItem(input: CreateItemInput): Either[Throwable, PlaidItem] =
+    def getOrCreateItem(
+        input: CreateItemInput
+    ): Either[Throwable, PlaidItem] =
         Try(DB autoCommit { implicit session =>
             val query =
                 sql"""INSERT INTO plaid_items (user_id, plaid_access_token, plaid_item_id, plaid_institution_id, status, transactions_cursor)
@@ -141,8 +151,12 @@ object PlaidItemRepository:
         }).map(item => item.get).toEither
 
     /// Returns items with sync times older than 12 hours
-    def getItemsPendingSync(now: Instant): Try[List[PlaidItem]] =
-        val threshold = now.minus(Duration.ofHours(12))
+    def getItemsPendingSync(
+        now: Instant
+    ): Try[List[PlaidItem]] =
+        val threshold = now.minus(
+            Duration.ofHours(12)
+        )
         Try(
             DB readOnly { implicit session =>
                 sql"""
@@ -172,13 +186,19 @@ object PlaidItemRepository:
             }
         )
 
-    def updateTransactionCursor(itemId: UUID, cursor: Option[String]): Try[Unit] =
+    def updateTransactionCursor(
+        itemId: UUID,
+        cursor: Option[String]
+    ): Try[Unit] =
         Try(DB autoCommit { implicit session =>
             sql"""UPDATE plaid_items SET transactions_cursor = ${cursor} WHERE id = ${itemId}""".update
                 .apply()
         })
 
-    def updateSyncSuccess(itemId: UUID, currentTime: Instant): Either[Throwable, Int] =
+    def updateSyncSuccess(
+        itemId: UUID,
+        currentTime: Instant
+    ): Either[Throwable, Int] =
         Try(DB autoCommit { implicit session =>
             sql"""
            UPDATE plaid_items
@@ -209,7 +229,9 @@ object PlaidItemRepository:
                 .apply()
         }).toEither
 
-    def getItemsDebug(): Either[Throwable, List[PlaidItem]] =
+    def getItemsDebug(): Either[Throwable, List[
+        PlaidItem
+    ]] =
         Try(DB readOnly { implicit session =>
             sql"""
           select
@@ -235,29 +257,65 @@ object PlaidItemRepository:
 
     def deleteItemById(
         itemId: UUID
-    )(implicit session: DBSession): Either[Throwable, Int] =
+    )(implicit
+        session: DBSession
+    ): Either[Throwable, Int] =
         for
             _ <- TransactionRepository
-                .deleteTransactionsByItemId(itemId)
+                .deleteTransactionsByItemId(
+                    itemId
+                )
             _ <- AccountRepository
-                .deleteAccountsByItemId(itemId)
+                .deleteAccountsByItemId(
+                    itemId
+                )
             res <- Try(
-                sql"""DELETE FROM plaid_items WHERE id = $itemId""".update.apply()
+                sql"""DELETE FROM plaid_items WHERE id = $itemId""".update
+                    .apply()
             ).toEither
         yield res
 
-    private def dbToModel(rs: WrappedResultSet) =
+    private def dbToModel(
+        rs: WrappedResultSet
+    ) =
         PlaidItem(
-            id = UUID.fromString(rs.string("id")),
-            createdAt = rs.timestamp("created_at").toInstant,
-            plaidAccessToken = rs.string("plaid_access_token"),
-            plaidInstitutionId = rs.string("plaid_institution_id"),
-            plaidItemId = rs.string("plaid_item_id"),
-            status = PlaidItemStatus.fromString(rs.string("status")),
-            transactionsCursor = rs.stringOpt("transactions_cursor"),
-            userId = UUID.fromString(rs.string("user_id")),
-            lastSyncedAt = rs.timestampOpt("last_synced_at").map(_.toInstant),
-            lastSyncError = rs.stringOpt("last_sync_error"),
-            lastSyncErrorAt = rs.timestampOpt("last_sync_error_at").map(_.toInstant),
+            id = UUID.fromString(
+                rs.string("id")
+            ),
+            createdAt = rs
+                .timestamp("created_at")
+                .toInstant,
+            plaidAccessToken = rs.string(
+                "plaid_access_token"
+            ),
+            plaidInstitutionId = rs.string(
+                "plaid_institution_id"
+            ),
+            plaidItemId = rs.string(
+                "plaid_item_id"
+            ),
+            status = PlaidItemStatus
+                .fromString(
+                    rs.string("status")
+                ),
+            transactionsCursor = rs.stringOpt(
+                "transactions_cursor"
+            ),
+            userId = UUID.fromString(
+                rs.string("user_id")
+            ),
+            lastSyncedAt = rs
+                .timestampOpt(
+                    "last_synced_at"
+                )
+                .map(_.toInstant),
+            lastSyncError = rs.stringOpt(
+                "last_sync_error"
+            ),
+            lastSyncErrorAt = rs
+                .timestampOpt(
+                    "last_sync_error_at"
+                )
+                .map(_.toInstant),
             retryCount = rs.int("retry_count")
         )

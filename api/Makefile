@@ -11,7 +11,10 @@ test:
 	./mill app.test
 
 fix:
-	make clean && ./mill all.fix
+	make clean && ./mill all.fix 
+	
+fmt:
+	./mill app.reformat && ./mill app.test.reformat && ./mill cli.reformat
 
 clean:
 	./mill clean
