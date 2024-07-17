@@ -1,10 +1,11 @@
-import 'package:finny/src/powersync.dart';
+import 'package:finny/src/powersync/powersync.dart';
 import 'package:finny/src/transactions/transaction.dart';
 import 'package:powersync/sqlite3.dart';
 
 class TransactionsController {
   Future<List<Transaction>> getTransactions() async {
-    ResultSet transactions = await db.getAll('SELECT * FROM transactions order by DATE(date) desc;');
+    ResultSet transactions =
+        await db.getAll('SELECT * FROM transactions order by DATE(date) desc;');
     print("transactions list $transactions");
     return transactions.map((row) {
       return Transaction(

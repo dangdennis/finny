@@ -5,9 +5,9 @@ import 'package:path_provider/path_provider.dart';
 import 'package:powersync/powersync.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'app_config.dart';
-import 'models/schema.dart';
-import 'supabase.dart';
+import '../app_config.dart';
+import './schema.dart';
+import '../supabase.dart';
 
 final log = Logger('powersync-supabase');
 

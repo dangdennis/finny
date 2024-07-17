@@ -1,4 +1,5 @@
 import 'package:finny/src/accounts/accounts_controller.dart';
+import 'package:finny/src/accounts/accounts_service.dart';
 import 'package:finny/src/auth/auth_controller.dart';
 import 'package:finny/src/auth/auth_service.dart';
 import 'package:finny/src/connections/connections_controller.dart';
@@ -9,7 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 
 import 'src/app.dart';
-import 'src/powersync.dart';
+import 'src/powersync/powersync.dart';
 import 'src/settings/settings_controller.dart';
 import 'src/settings/settings_service.dart';
 
@@ -34,13 +35,14 @@ void main() async {
 
   await openDatabaseAndInitSupabase();
 
-  // Set up the SettingsController, which will glue user settings to multiple
-  // Flutter Widgets.
+  final accountsService = AccountsService();
+  final connectionsService =
+      ConnectionsService(accountsService: accountsService);
   final settingsController = SettingsController(SettingsService());
   final authController = AuthController(AuthService());
-  final accountsController = AccountsController();
+  final accountsController = AccountsController(AccountsService());
   final transactionsController = TransactionsController();
-  final connectionsController = ConnectionsController(ConnectionsService());
+  final connectionsController = ConnectionsController(connectionsService);
 
   // Load the user's preferred theme while the splash screen is displayed.
   // This prevents a sudden theme change when the app is first displayed.

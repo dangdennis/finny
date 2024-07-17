@@ -4,7 +4,6 @@ class Account {
     required this.id,
     required this.itemId,
     required this.userId,
-    required this.plaidAccountId,
     required this.name,
     required this.mask,
     required this.officialName,
@@ -22,7 +21,6 @@ class Account {
   final String id;
   final String itemId;
   final String userId;
-  final String plaidAccountId;
   final String name;
   final String mask;
   final String officialName;

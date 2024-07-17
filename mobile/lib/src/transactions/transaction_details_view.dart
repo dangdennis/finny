@@ -2,7 +2,7 @@ import 'package:finny/src/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:powersync/sqlite3.dart';
 
-import '../powersync.dart';
+import '../powersync/powersync.dart';
 
 /// Displays detailed information about a SampleItem.
 class TransactionDetailsView extends StatelessWidget {
