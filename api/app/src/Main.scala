@@ -25,13 +25,18 @@ import sttp.tapir.server.nima.NimaServerInterpreter
     Database.init(databaseConfig)
     Jobs.init()
 
-    val handler = NimaServerInterpreter().toHandler(Routes.createRoutes(Routes.AuthConfig(jwtSecret, jwtIssue)))
+    val handler = NimaServerInterpreter().toHandler(
+        Routes.createRoutes(Routes.AuthConfig(jwtSecret, jwtIssue))
+    )
 
     val server = WebServer
         .builder()
         .routing { builder =>
             builder.any(handler)
-            builder.get("/oauth/plaid", (req, res) => res.send("Redirecting back to Finny"))
+            builder.get(
+                "/oauth/plaid",
+                (req, res) => res.send("Redirecting back to Finny")
+            )
             ()
         }
         .host("0.0.0.0")

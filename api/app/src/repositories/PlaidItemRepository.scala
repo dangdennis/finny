@@ -11,7 +11,9 @@ import scala.util.Try
 import app.models.PlaidItemWithAccounts
 
 object PlaidItemRepository:
-    def getItemsWithAccountsByUserId(userId: UUID): Either[Throwable, List[PlaidItemWithAccounts]] =
+    def getItemsWithAccountsByUserId(
+        userId: UUID
+    ): Either[Throwable, List[PlaidItemWithAccounts]] =
         Try(DB readOnly { implicit session =>
             AccountRepository
                 .getAccounts(userId)
@@ -37,7 +39,12 @@ object PlaidItemRepository:
                         .map(dbToModel)
                         .list
                         .apply()
-                        .map(item => PlaidItemWithAccounts(item, accounts.filter(_.itemId == item.id)))
+                        .map(item =>
+                            PlaidItemWithAccounts(
+                                item,
+                                accounts.filter(_.itemId == item.id)
+                            )
+                        )
                 )
                 .get
         }).toEither
@@ -185,7 +192,11 @@ object PlaidItemRepository:
                 .apply()
         }).toEither
 
-    def updateSyncError(itemId: UUID, error: String, currentTime: Instant): Either[Throwable, Int] =
+    def updateSyncError(
+        itemId: UUID,
+        error: String,
+        currentTime: Instant
+    ): Either[Throwable, Int] =
         Try(DB autoCommit { implicit session =>
             sql"""
            UPDATE plaid_items
@@ -222,13 +233,17 @@ object PlaidItemRepository:
                 .apply()
         }).toEither
 
-    def deleteItemById(itemId: UUID)(implicit session: DBSession): Either[Throwable, Int] =
+    def deleteItemById(
+        itemId: UUID
+    )(implicit session: DBSession): Either[Throwable, Int] =
         for
             _ <- TransactionRepository
                 .deleteTransactionsByItemId(itemId)
             _ <- AccountRepository
                 .deleteAccountsByItemId(itemId)
-            res <- Try(sql"""DELETE FROM plaid_items WHERE id = $itemId""".update.apply()).toEither
+            res <- Try(
+                sql"""DELETE FROM plaid_items WHERE id = $itemId""".update.apply()
+            ).toEither
         yield res
 
     private def dbToModel(rs: WrappedResultSet) =

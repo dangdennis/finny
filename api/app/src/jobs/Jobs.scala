@@ -26,7 +26,9 @@ object Jobs:
 
     def enqueueJob(job: JobRequest): Unit =
         declareJobQueue()
-            .map(_ => jobChannel.basicPublish("", jobQueueName, null, write(job).getBytes()))
+            .map(_ =>
+                jobChannel.basicPublish("", jobQueueName, null, write(job).getBytes())
+            )
 
     enum SyncType:
         case Initial
@@ -40,7 +42,12 @@ object Jobs:
         implicit val syncTypeRW: ReadWriter[SyncType] = macroRW
 
     enum JobRequest:
-        case JobSyncPlaidItem(id: UUID = UUID.randomUUID(), itemId: UUID, syncType: SyncType, environment: String)
+        case JobSyncPlaidItem(
+            id: UUID = UUID.randomUUID(),
+            itemId: UUID,
+            syncType: SyncType,
+            environment: String
+        )
         case AnotherJob(id: UUID = UUID.randomUUID(), data: String)
 
     object JobRequest:
@@ -57,8 +64,9 @@ object Jobs:
                 }
                 .map { job =>
                     job match
-                        case job: JobRequest.AnotherJob       => handleAnotherJob(job, delivery)
-                        case job: JobRequest.JobSyncPlaidItem => handleJobSyncPlaidItem(job, delivery)
+                        case job: JobRequest.AnotherJob => handleAnotherJob(job, delivery)
+                        case job: JobRequest.JobSyncPlaidItem =>
+                            handleJobSyncPlaidItem(job, delivery)
                 }
 
         jobChannel.basicConsume(
@@ -68,7 +76,10 @@ object Jobs:
             consumerTag => ()
         )
 
-    private def handleJobSyncPlaidItem(job: JobRequest.JobSyncPlaidItem, delivery: Delivery): Unit =
+    private def handleJobSyncPlaidItem(
+        job: JobRequest.JobSyncPlaidItem,
+        delivery: Delivery
+    ): Unit =
         Logger.root.info(s"Handling $job")
 
         job.syncType match

@@ -39,12 +39,17 @@ object PlaidSyncService:
 
     def sync(itemId: UUID): Unit =
         Future {
-            val decoratedTask = RateLimiter.decorateRunnable(rateLimiter, Retry.decorateRunnable(retry, () => _sync(itemId)))
+            val decoratedTask = RateLimiter.decorateRunnable(
+                rateLimiter,
+                Retry.decorateRunnable(retry, () => _sync(itemId))
+            )
             Future {
                 decoratedTask.run()
             }.onComplete {
-                case Success(_)  => Logger.root.info(s"Sync for item ${itemId} completed successfully.")
-                case Failure(ex) => Logger.root.error(s"Sync for item ${itemId} failed.", ex)
+                case Success(_) =>
+                    Logger.root.info(s"Sync for item ${itemId} completed successfully.")
+                case Failure(ex) =>
+                    Logger.root.error(s"Sync for item ${itemId} failed.", ex)
             }
         }
 
@@ -66,7 +71,8 @@ object PlaidSyncService:
                             .JobSyncPlaidItem(
                                 itemId = item.id,
                                 syncType = Jobs.SyncType.Default,
-                                environment = Environment.appEnvToString(Environment.getAppEnv)
+                                environment =
+                                    Environment.appEnvToString(Environment.getAppEnv)
                             )
                     )
                 }
@@ -82,12 +88,19 @@ object PlaidSyncService:
         item match
             case Left(exception) =>
                 Logger.root.error(f"Error getting item", exception)
-                PlaidItemRepository.updateSyncError(itemId = itemId, error = exception.getMessage, currentTime = java.time.Instant.now())
+                PlaidItemRepository.updateSyncError(
+                    itemId = itemId,
+                    error = exception.getMessage,
+                    currentTime = java.time.Instant.now()
+                )
             case Right(item) =>
                 var cursor = item.transactionsCursor
                 var hasMore = true
                 while hasMore do
-                    PlaidService.getTransactionsSync(client = PlaidService.makePlaidClientFromEnv(), item = item) match
+                    PlaidService.getTransactionsSync(
+                        client = PlaidService.makePlaidClientFromEnv(),
+                        item = item
+                    ) match
                         case Left(error) =>
                             Logger.root.error(s"Error syncing transactions", error)
                             PlaidItemRepository.updateSyncError(
@@ -100,7 +113,10 @@ object PlaidSyncService:
                             hasMore = resp.getHasMore().booleanValue()
                             cursor = Option(resp.getNextCursor())
 
-    private def handleItemResponse(item: PlaidItem, response: TransactionsSyncResponse): Unit =
+    private def handleItemResponse(
+        item: PlaidItem,
+        response: TransactionsSyncResponse
+    ): Unit =
         val accounts = response.getAccounts.asScala
         var encounteredError = (false, "")
         Logger.root.info(s"Got number of accounts: ${accounts.size}")
@@ -116,7 +132,8 @@ object PlaidSyncService:
                     currentBalance = account.getBalances.getCurrent(),
                     availableBalance = account.getBalances.getAvailable(),
                     isoCurrencyCode = Option(account.getBalances.getIsoCurrencyCode),
-                    unofficialCurrencyCode = Option(account.getBalances.getUnofficialCurrencyCode),
+                    unofficialCurrencyCode =
+                        Option(account.getBalances.getUnofficialCurrencyCode),
                     accountType = Option(account.getType.getValue),
                     accountSubtype = Option(account.getSubtype.getValue)
                 )
@@ -135,9 +152,13 @@ object PlaidSyncService:
 
         for transaction <- added_or_modified do
             Logger.root.info(s"Upserting transaction: $transaction")
-            AccountRepository.getByPlaidAccountId(itemId = item.id, plaidAccountId = transaction.getAccountId) match
+            AccountRepository.getByPlaidAccountId(
+                itemId = item.id,
+                plaidAccountId = transaction.getAccountId
+            ) match
                 case Failure(error) =>
-                    val msg = s"Failed to upsert transaction ${transaction.getTransactionId} due to missing account: $error"
+                    val msg =
+                        s"Failed to upsert transaction ${transaction.getTransactionId} due to missing account: $error"
                     encounteredError = (true, msg)
                     Logger.root.error(msg)
                 case Success(account) =>
@@ -145,24 +166,42 @@ object PlaidSyncService:
                         TransactionRepository.UpsertTransactionInput(
                             accountId = account.id,
                             plaidTransactionId = transaction.getTransactionId,
-                            category = Option(transaction.getPersonalFinanceCategory.getPrimary),
-                            subcategory = Option(transaction.getPersonalFinanceCategory.getDetailed),
+                            category =
+                                Option(transaction.getPersonalFinanceCategory.getPrimary),
+                            subcategory = Option(
+                                transaction.getPersonalFinanceCategory.getDetailed
+                            ),
                             transactionType = transaction.getTransactionType.getValue,
                             name = transaction.getName,
                             amount = transaction.getAmount.toDouble,
                             isoCurrencyCode = Option(transaction.getIsoCurrencyCode),
-                            unofficialCurrencyCode = Option(transaction.getUnofficialCurrencyCode),
-                            date = transaction.getDate.atStartOfDay().toInstant(java.time.ZoneOffset.UTC),
+                            unofficialCurrencyCode =
+                                Option(transaction.getUnofficialCurrencyCode),
+                            date = transaction.getDate
+                                .atStartOfDay()
+                                .toInstant(java.time.ZoneOffset.UTC),
                             pending = transaction.getPending.booleanValue(),
                             accountOwner = Option(transaction.getAccountOwner)
                         )
                     )
 
-        TransactionRepository.deleteTransactionsByPlaidIds(removed.map(_.getTransactionId()).toList)
+        TransactionRepository.deleteTransactionsByPlaidIds(
+            removed.map(_.getTransactionId()).toList
+        )
 
         encounteredError match
             case (false, _) =>
-                PlaidItemRepository.updateSyncSuccess(itemId = item.id, currentTime = java.time.Instant.now())
-                PlaidItemRepository.updateTransactionCursor(itemId = item.id, cursor = Option(response.getNextCursor))
+                PlaidItemRepository.updateSyncSuccess(
+                    itemId = item.id,
+                    currentTime = java.time.Instant.now()
+                )
+                PlaidItemRepository.updateTransactionCursor(
+                    itemId = item.id,
+                    cursor = Option(response.getNextCursor)
+                )
             case (true, msg) =>
-                PlaidItemRepository.updateSyncError(itemId = item.id, error = msg, currentTime = java.time.Instant.now())
+                PlaidItemRepository.updateSyncError(
+                    itemId = item.id,
+                    error = msg,
+                    currentTime = java.time.Instant.now()
+                )

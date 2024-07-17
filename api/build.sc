@@ -2,7 +2,7 @@ import mill._, scalalib._
 import $ivy.`com.goyeau::mill-scalafix::0.4.0`
 import com.goyeau.mill.scalafix.ScalafixModule
 
-object app extends ScalaModule with ScalafixModule {
+object app extends ScalaModule with ScalafixModule with scalafmt.ScalafmtModule {
     def scalaVersion = "3.4.2"
 
     def scalacOptions = T {
@@ -29,7 +29,7 @@ object app extends ScalaModule with ScalafixModule {
         ivy"com.rabbitmq:amqp-client:5.21.0"
     )
 
-    object test extends ScalaTests with TestModule.ScalaTest with ScalafixModule {
+    object test extends ScalaTests with TestModule.ScalaTest with ScalafixModule with scalafmt.ScalafmtModule {
         def ivyDeps = Agg(
             ivy"com.softwaremill.sttp.tapir::tapir-sttp-stub-server:1.10.8",
             ivy"org.scalatest::scalatest:3.2.18",
@@ -39,7 +39,7 @@ object app extends ScalaModule with ScalafixModule {
 
 }
 
-object cli extends ScalaModule with ScalafixModule {
+object cli extends ScalaModule with ScalafixModule with scalafmt.ScalafmtModule {
     def scalaVersion = "3.4.2"
 
     override def scalacOptions = T {
@@ -63,6 +63,13 @@ object all extends Module {
 
     def fix() = T.command {
         app.fix()
+        app.test.fix()
         cli.fix()
+    }
+
+    def reformat() = T.command {
+        app.reformat()
+        app.test.reformat()
+        cli.reformat()
     }
 }

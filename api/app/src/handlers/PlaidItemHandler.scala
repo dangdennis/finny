@@ -13,7 +13,9 @@ import app.services.PlaidSyncService
 import java.util.UUID
 
 object PlaidItemHandler:
-    def handlePlaidItemsGet(user: Profile): Either[AuthenticationError, DTOs.PlaidItemsGetResponse] =
+    def handlePlaidItemsGet(
+        user: Profile
+    ): Either[AuthenticationError, DTOs.PlaidItemsGetResponse] =
         PlaidItemRepository
             .getItemsWithAccountsByUserId(userId = user.id)
             .left
@@ -28,7 +30,8 @@ object PlaidItemHandler:
                             createdAt = item.plaidItem.createdAt.toString(),
                             lastSyncedAt = item.plaidItem.lastSyncedAt.map(_.toString()),
                             lastSyncError = item.plaidItem.lastSyncError,
-                            lastSyncErrorAt = item.plaidItem.lastSyncErrorAt.map(_.toString()),
+                            lastSyncErrorAt =
+                                item.plaidItem.lastSyncErrorAt.map(_.toString()),
                             retryCount = item.plaidItem.retryCount,
                             accounts = item.accounts.map(account =>
                                 DTOs.PlaidAccountDTO(
@@ -40,7 +43,8 @@ object PlaidItemHandler:
                                     currentBalance = account.currentBalance,
                                     availableBalance = account.availableBalance,
                                     isoCurrencyCode = account.isoCurrencyCode,
-                                    unofficialCurrencyCode = account.unofficialCurrencyCode,
+                                    unofficialCurrencyCode =
+                                        account.unofficialCurrencyCode,
                                     accountType = account.accountType,
                                     accountSubtype = account.accountSubtype,
                                     createdAt = account.createdAt.toString()
@@ -51,7 +55,10 @@ object PlaidItemHandler:
                 )
             )
 
-    def handlePlaidItemsCreate(user: Profile, input: PlaidItemCreateRequest): Either[AuthenticationError, DTOs.PlaidItemCreateResponse] =
+    def handlePlaidItemsCreate(
+        user: Profile,
+        input: PlaidItemCreateRequest
+    ): Either[AuthenticationError, DTOs.PlaidItemCreateResponse] =
         val result = for
             pubTokenData <- PlaidService.exchangePublicToken(
                 client = PlaidService.makePlaidClientFromEnv(),
@@ -91,7 +98,10 @@ object PlaidItemHandler:
                     )
                 )
 
-    def handlePlaidItemsSync(user: Profile, input: PlaidItemSyncRequest): Either[AuthenticationError, Unit] =
+    def handlePlaidItemsSync(
+        user: Profile,
+        input: PlaidItemSyncRequest
+    ): Either[AuthenticationError, Unit] =
         PlaidItemRepository
             .getById(id = UUID.fromString(input.itemId))
             .left
@@ -101,9 +111,15 @@ object PlaidItemHandler:
                 Right(())
             )
 
-    def handlePlaidItemsDelete(user: Profile, input: DTOs.PlaidItemDeleteRequest): Either[AuthenticationError, Unit] =
+    def handlePlaidItemsDelete(
+        user: Profile,
+        input: DTOs.PlaidItemDeleteRequest
+    ): Either[AuthenticationError, Unit] =
         PlaidService
-            .removeItem(client = PlaidService.makePlaidClientFromEnv(), itemId = UUID.fromString(input.itemId))
+            .removeItem(
+                client = PlaidService.makePlaidClientFromEnv(),
+                itemId = UUID.fromString(input.itemId)
+            )
             .left
             .map(_ => AuthenticationError(404))
             .map(_ => Right(()))

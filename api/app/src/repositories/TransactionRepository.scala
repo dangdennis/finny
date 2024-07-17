@@ -84,7 +84,9 @@ object TransactionRepository {
                     .apply()
             }))
 
-    def deleteTransactionsByItemId(itemId: UUID)(implicit session: DBSession): Either[Throwable, Boolean] =
+    def deleteTransactionsByItemId(itemId: UUID)(implicit
+        session: DBSession
+    ): Either[Throwable, Boolean] =
         Try(
             sql"""
             DELETE FROM transactions

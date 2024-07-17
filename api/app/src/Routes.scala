@@ -19,7 +19,8 @@ import scala.util.Try
 
 object Routes:
     def createRoutes(authConfig: AuthConfig): List[ServerEndpoint[Any, Identity]] =
-        val indexEndpoint = endpoint.in("").get.out(stringBody).handle(_ => IndexHandler.handleIndex())
+        val indexEndpoint =
+            endpoint.in("").get.out(stringBody).handle(_ => IndexHandler.handleIndex())
 
         val protectedApiRouteGroup = endpoint
             .tag("Finny API")
@@ -59,7 +60,9 @@ object Routes:
         val plaidLinksCreateEndpoint = protectedApiRouteGroup.post
             .in("plaid-links" / "create")
             .out(jsonBody[DTOs.PlaidLinkCreateResponse])
-        val plaidLinkCreateServerEndpoint = plaidLinksCreateEndpoint.handle(profile => _ => PlaidLinkHandler.handler(userId = profile.id))
+        val plaidLinkCreateServerEndpoint = plaidLinksCreateEndpoint.handle(profile =>
+            _ => PlaidLinkHandler.handler(userId = profile.id)
+        )
 
         val webhooksEndpoint = endpoint.post
             .in("webhooks" / "plaid")
@@ -67,24 +70,37 @@ object Routes:
             .out(stringBody)
             .handle(rawJson => PlaidWebhookHandler.handleWebhook(rawJson))
 
-        val secureServerEndpoints = List(plaidItemsGetServerEndpoint, plaidItemsCreateServerEndpoint, plaidLinkCreateServerEndpoint)
+        val secureServerEndpoints = List(
+            plaidItemsGetServerEndpoint,
+            plaidItemsCreateServerEndpoint,
+            plaidLinkCreateServerEndpoint
+        )
         val serverEndpoints = List(indexEndpoint) ++ secureServerEndpoints
         val docEndpoints = SwaggerInterpreter()
             .fromServerEndpoints[Identity](serverEndpoints, "finny-api", "1.0.0")
-        val metricsEndpoint: ServerEndpoint[Any, Identity] = PrometheusMetrics.default[Identity]().metricsEndpoint
-        val all = serverEndpoints ++ docEndpoints ++ List(metricsEndpoint, webhooksEndpoint, plaidItemsSyncServerEndpoint)
+        val metricsEndpoint: ServerEndpoint[Any, Identity] =
+            PrometheusMetrics.default[Identity]().metricsEndpoint
+        val all = serverEndpoints ++ docEndpoints ++ List(
+            metricsEndpoint,
+            webhooksEndpoint,
+            plaidItemsSyncServerEndpoint
+        )
 
         all
 
     case class AuthConfig(jwtSecret: String, jwtIssuer: String)
 
-    private def makeAuthenticator(authConfig: AuthConfig): AuthenticationToken => Either[AuthenticationError, Profile] =
+    private def makeAuthenticator(
+        authConfig: AuthConfig
+    ): AuthenticationToken => Either[AuthenticationError, Profile] =
         val algorithm = Algorithm.HMAC256(authConfig.jwtSecret);
         (token: AuthenticationToken) =>
-            val verifier = JWT.require(algorithm).withIssuer(authConfig.jwtIssuer).build();
+            val verifier =
+                JWT.require(algorithm).withIssuer(authConfig.jwtIssuer).build();
             val decodedJwt = Try(verifier.verify(token.value))
             decodedJwt match
-                case scala.util.Success(jwt) => Right(Profile(id = UUID.fromString(jwt.getSubject())))
+                case scala.util.Success(jwt) =>
+                    Right(Profile(id = UUID.fromString(jwt.getSubject())))
                 case scala.util.Failure(error) =>
                     Logger.root.error(s"Error decoding JWT", error)
                     Left(AuthenticationError(400))

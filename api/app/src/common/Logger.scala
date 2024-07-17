@@ -30,7 +30,8 @@ object Logger:
                     options.setEnabled(true)
         )
 
-        val loggerContext = LoggerFactory.getILoggerFactory.asInstanceOf[ch.qos.logback.classic.LoggerContext]
+        val loggerContext = LoggerFactory.getILoggerFactory
+            .asInstanceOf[ch.qos.logback.classic.LoggerContext]
 
         // Set up the ConsoleAppender
         val consoleAppender = new ConsoleAppender[ILoggingEvent]()
@@ -47,7 +48,9 @@ object Logger:
         sentryAppender.start()
 
         // Set the root logger level to INFO
-        val rootLogger = loggerContext.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME).asInstanceOf[Logger]
+        val rootLogger = loggerContext
+            .getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME)
+            .asInstanceOf[Logger]
         rootLogger.setLevel(Level.INFO)
         rootLogger.addAppender(consoleAppender)
         rootLogger.addAppender(sentryAppender)

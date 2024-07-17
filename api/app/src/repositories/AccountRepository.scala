@@ -105,5 +105,9 @@ object AccountRepository:
                 .apply()
         })
 
-    def deleteAccountsByItemId(itemId: UUID)(implicit session: DBSession): Either[Throwable, Int] =
-        Try(sql"""DELETE FROM accounts WHERE item_id = ${itemId}""".update.apply()).toEither
+    def deleteAccountsByItemId(
+        itemId: UUID
+    )(implicit session: DBSession): Either[Throwable, Int] =
+        Try(
+            sql"""DELETE FROM accounts WHERE item_id = ${itemId}""".update.apply()
+        ).toEither

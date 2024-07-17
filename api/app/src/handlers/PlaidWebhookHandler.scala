@@ -31,7 +31,10 @@ object PlaidWebhookHandler:
                 PlaidItemRepository
                     .getByItemId(itemId = event.item_id)
                     .map(plaidItem =>
-                        (event.historical_update_complete, event.initial_update_complete) match
+                        (
+                            event.historical_update_complete,
+                            event.initial_update_complete
+                        ) match
                             case (true, true) =>
                                 Logger.root.info("Plaid webhook: regular update")
                                 Jobs.enqueueJob(
@@ -42,7 +45,8 @@ object PlaidWebhookHandler:
                                     )
                                 )
                             case (true, false) =>
-                                Logger.root.info("Plaid webhook: historical update complete")
+                                Logger.root
+                                    .info("Plaid webhook: historical update complete")
                                 Jobs.enqueueJob(
                                     Jobs.JobRequest.JobSyncPlaidItem(
                                         itemId = plaidItem.id,
@@ -66,5 +70,7 @@ object PlaidWebhookHandler:
                 Right("Handled Plaid webhook")
 
             case _ =>
-                Logger.root.warn(f"Not handling Plaid webhook: $webhookType, $webhookCode")
+                Logger.root.warn(
+                    f"Not handling Plaid webhook: $webhookType, $webhookCode"
+                )
                 Right("Not handling Plaid webhook")

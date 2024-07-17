@@ -5,7 +5,13 @@ import upickle.default.ReadWriter
 
 object DTOs:
     case class PlaidItemCreateRequest(publicToken: String) derives Schema, ReadWriter
-    case class PlaidItemCreateResponse(itemId: String, institutionId: String, status: String, createdAt: String) derives Schema, ReadWriter
+    case class PlaidItemCreateResponse(
+        itemId: String,
+        institutionId: String,
+        status: String,
+        createdAt: String
+    ) derives Schema,
+          ReadWriter
     case class PlaidItemSyncRequest(itemId: String) derives Schema, ReadWriter
     case class PlaidLinkCreateResponse(token: String) derives Schema, ReadWriter
     case class PlaidItemsGetResponse(items: List[PlaidItemDTO]) derives Schema, ReadWriter
