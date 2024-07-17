@@ -40,23 +40,5 @@ object DTOs:
         lastSyncError: Option[String],
         lastSyncErrorAt: Option[String],
         retryCount: Int,
-        accounts: List[PlaidAccountDTO]
-    ) derives Schema,
-          ReadWriter
-    case class PlaidAccountDTO(
-        id: String,
-        itemId: String,
-        name: String,
-        mask: Option[String],
-        officialName: Option[String],
-        currentBalance: Double,
-        availableBalance: Double,
-        isoCurrencyCode: Option[String],
-        unofficialCurrencyCode: Option[
-            String
-        ],
-        accountType: Option[String],
-        accountSubtype: Option[String],
-        createdAt: String
     ) derives Schema,
           ReadWriter
