@@ -1,19 +1,21 @@
 import 'package:finny/src/routes.dart';
 import 'package:flutter/material.dart';
+import 'package:logging/logging.dart';
 import 'package:powersync/sqlite3.dart';
 
 import '../powersync/powersync.dart';
 
 /// Displays detailed information about a SampleItem.
 class TransactionDetailsView extends StatelessWidget {
-  const TransactionDetailsView({super.key});
+  TransactionDetailsView({super.key});
 
+  final Logger _logger = Logger('TransactionDetailsView');
   static const routeName = Routes.transactionDetails;
 
   /// Get all list IDs
   Future<List<String>> getLists() async {
     ResultSet transactions = await db.getAll('SELECT * FROM transactions;');
-    print("transactions list $transactions");
+    _logger.info("transactions list $transactions");
     return List<String>.empty();
   }
 
@@ -23,27 +25,25 @@ class TransactionDetailsView extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Item Details'),
       ),
-      body: Container(
-        child: Column(
-          children: [
-            Center(
-              child: ElevatedButton(
+      body: Column(
+        children: [
+          Center(
+            child: ElevatedButton(
+              onPressed: () {
+                // Get all list IDs
+                getLists();
+              },
+              child: const Text('Get Transactions'),
+            ),
+          ),
+          Center(
+            child: ElevatedButton(
                 onPressed: () {
-                  // Get all list IDs
-                  getLists();
+                  _logger.info("hey");
                 },
-                child: const Text('Get Transactions'),
-              ),
-            ),
-            Center(
-              child: ElevatedButton(
-                  onPressed: () {
-                    print("hey");
-                  },
-                  child: const Text("Press Me")),
-            ),
-          ],
-        ),
+                child: const Text("Press Me")),
+          ),
+        ],
       ),
     );
   }

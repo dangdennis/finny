@@ -2,6 +2,7 @@ import 'package:finny/src/accounts/accounts_controller.dart';
 import 'package:finny/src/auth/auth_controller.dart';
 import 'package:finny/src/auth/login_view.dart';
 import 'package:finny/src/connections/connections_controller.dart';
+import 'package:finny/src/connections/connections_list_view.dart';
 import 'package:finny/src/transactions/transaction_details_view.dart';
 import 'package:finny/src/transactions/transaction_list_view.dart';
 import 'package:finny/src/transactions/transactions_controller.dart';
@@ -107,7 +108,11 @@ class MyApp extends StatelessWidget {
                       transactionsController: transactionsController,
                     );
                   case TransactionDetailsView.routeName:
-                    return const TransactionDetailsView();
+                    return TransactionDetailsView();
+                  case ConnectionsListView.routeName:
+                    return ConnectionsListView(
+                      connectionsController: connectionsController,
+                    );
                   default:
                     return LoginView(authController: authController);
                 }

@@ -9,7 +9,7 @@ import '../app_config.dart';
 import './schema.dart';
 import '../supabase.dart';
 
-final log = Logger('powersync-supabase');
+final logger = Logger('powersync-supabase');
 
 /// Use Supabase for authentication.
 /// Uses API for data updates.
@@ -87,11 +87,11 @@ class SupabaseConnector extends PowerSyncBackendConnector {
       for (var op in transaction.crud) {
         lastOp = op;
         if (op.op == UpdateType.put) {
-          print('put $op');
+          logger.info('put $op');
         } else if (op.op == UpdateType.patch) {
-          print('patch $op');
+          logger.info('patch $op');
         } else if (op.op == UpdateType.delete) {
-          print('delete $op');
+          logger.info('delete $op');
         }
       }
 
@@ -105,7 +105,7 @@ class SupabaseConnector extends PowerSyncBackendConnector {
         /// Note that these errors typically indicate a bug in the application.
         /// If protecting against data loss is important, save the failing records
         /// elsewhere instead of discarding, and/or notify the user.
-        log.severe('Data upload error - discarding $lastOp', e);
+        logger.severe('Data upload error - discarding $lastOp', e);
         await transaction.complete();
       } else {
         // Unexpected errors may be retryable - e.g. network error or temporary server error.

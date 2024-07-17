@@ -1,4 +1,5 @@
 import 'package:finny/src/accounts/accounts_controller.dart';
+import 'package:finny/src/connections/connections_list_view.dart';
 import 'package:flutter/material.dart';
 
 import '../routes.dart';
@@ -45,6 +46,13 @@ class _AccountListViewState extends State<AccountListView> {
             icon: const Icon(Icons.settings),
             onPressed: () {
               Navigator.restorablePushNamed(context, SettingsView.routeName);
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: () {
+              Navigator.restorablePushNamed(
+                  context, ConnectionsListView.routeName);
             },
           ),
         ],
