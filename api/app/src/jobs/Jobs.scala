@@ -3,22 +3,25 @@ package app.jobs
 import app.common.LavinMqClient
 import app.common.Logger
 import app.services.PlaidSyncService
+import cats.syntax.all.*
+import com.rabbitmq.client.Channel
+import com.rabbitmq.client.Connection
 import com.rabbitmq.client.DeliverCallback
 import com.rabbitmq.client.Delivery
-import io.circe._
-import io.circe.generic.auto._
-import io.circe.syntax._
-import io.circe.parser._
+import io.circe.*
+import io.circe.generic.semiauto.*
+import io.circe.parser.*
+import io.circe.syntax.*
 
 import java.util.UUID
 import scala.util.Try
 
 object Jobs:
-    val jobConnection = LavinMqClient.createConnection()
-    val jobChannel = LavinMqClient.createChannel(jobConnection)
+    val jobConnection: Connection = LavinMqClient.createConnection()
+    val jobChannel: Channel = LavinMqClient.createChannel(jobConnection)
     val jobQueueName = "jobs"
 
-    def init() =
+    def init(): Either[Throwable, Unit] =
         Try:
             declareJobQueue()
             jobChannel.basicQos(1)
@@ -26,19 +29,49 @@ object Jobs:
 
     private def declareJobQueue() = Try(jobChannel.queueDeclare(jobQueueName, true, false, false, null))
 
-    def enqueueJob(job: JobRequest): Unit = declareJobQueue()
-        .map(_ => jobChannel.basicPublish("", jobQueueName, null, job.asJson.noSpaces.getBytes()))
+    def enqueueJob(job: JobRequest): Unit =
+        val payload = job.asJson.noSpaces
+        jobChannel.basicPublish("", jobQueueName, null, payload.getBytes("UTF-8"))
 
     enum SyncType:
         case Initial
         case Historical
         case Default
 
+    object SyncType:
+        implicit val _: Encoder[SyncType] = Encoder.encodeString.contramap {
+            case Initial => "Initial"
+            case Historical => "Historical"
+            case Default => "Default"
+        }
+
+        implicit val _: Decoder[SyncType] = Decoder.decodeString.emap {
+            case "Initial" => Right(Initial)
+            case "Historical" => Right(Historical)
+            case "Default" => Right(Default)
+            case other => Left(s"Unknown SyncType: $other")
+        }
+
+
     enum JobRequest:
         case JobSyncPlaidItem(id: UUID = UUID.randomUUID(), itemId: UUID, syncType: SyncType, environment: String)
         case AnotherJob(id: UUID = UUID.randomUUID(), data: String)
-        
-    def startWorker() =
+
+    object JobRequest:
+        implicit val _: Codec[JobSyncPlaidItem] = deriveCodec
+        implicit val _: Codec[AnotherJob] = deriveCodec
+        implicit val jobRequestEncoder: Encoder[JobRequest] = Encoder.instance {
+            case job: JobSyncPlaidItem =>
+                job.asJson
+            case job: AnotherJob =>
+                job.asJson
+        }
+        implicit val jobRequestDecoder: Decoder[JobRequest] = List[Decoder[JobRequest]](
+            Decoder[JobSyncPlaidItem].widen,
+            Decoder[AnotherJob].widen
+        ).reduceLeft(_ or _)
+
+    def startWorker(): Any =
         val deliverCallback: DeliverCallback =
             (consumerTag, delivery) =>
                 val body = new String(delivery.getBody, "UTF-8")

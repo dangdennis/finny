@@ -60,12 +60,11 @@ object PlaidSyncService:
                 .map { items =>
                     items.foreach { item =>
                         Jobs.enqueueJob(
-                            Jobs.JobRequest
-                                .JobSyncPlaidItem(
-                                    itemId = item.id,
-                                    syncType = Jobs.SyncType.Default,
-                                    environment = Environment.appEnvToString(Environment.getAppEnv)
-                                )
+                            Jobs.JobRequest.JobSyncPlaidItem(
+                                itemId = item.id,
+                                syncType = Jobs.SyncType.Default,
+                                environment = Environment.appEnvToString(Environment.getAppEnv)
+                            )
                         )
                     }
                 }

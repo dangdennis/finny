@@ -19,6 +19,9 @@ fmt:
 clean:
 	./mill clean
 
+dkup:
+	docker compose up
+
 r:
 	./mill -w app.runBackground
 

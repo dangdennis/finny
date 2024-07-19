@@ -3,6 +3,7 @@ package app.database
 import app.common.Environment
 import app.common.Environment.DatabaseConfig
 import scalikejdbc.*
+
 import scala.util.Try
 
 object Database:

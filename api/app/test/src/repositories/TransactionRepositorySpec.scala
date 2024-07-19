@@ -17,27 +17,26 @@ import app.repositories.TransactionRepository.UpsertTransactionInput
 import org.scalatest.BeforeAndAfterEach
 
 class TransactionRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, BeforeAndAfterAll, BeforeAndAfterEach:
-    override protected def beforeAll(): Unit =
-        TestHelper.beforeAll()
+    override protected def beforeAll(): Unit = TestHelper.beforeAll()
 
-    override protected def afterEach(): Unit =
-        TestHelper.afterEach()
+    override protected def afterEach(): Unit = TestHelper.afterEach()
 
     "upsertTransaction" should "upsert transactions" in {
         // given
         val user = AuthUserRepositoryHelper.createUser()
-        val item = PlaidItemRepository
-            .getOrCreateItem(
-                CreateItemInput(
-                    userId = user.id,
-                    plaidAccessToken = "somePlaid",
-                    plaidInstitutionId = "institutionId",
-                    plaidItemId = "somePlaidItemId",
-                    status = PlaidItemStatus.Bad,
-                    transactionsCursor = None
+        val item =
+            PlaidItemRepository
+                .getOrCreateItem(
+                    CreateItemInput(
+                        userId = user.id,
+                        plaidAccessToken = "somePlaid",
+                        plaidInstitutionId = "institutionId",
+                        plaidItemId = "somePlaidItemId",
+                        status = PlaidItemStatus.Bad,
+                        transactionsCursor = None
+                    )
                 )
-            )
-            .value
+                .value
 
         // when
         AccountRepository.upsertAccount(
@@ -57,27 +56,28 @@ class TransactionRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, Bef
             )
         )
 
-        val accountId = AccountRepository
-            .upsertAccount(
-                UpsertAccountInput(
-                    itemId = item.id,
-                    userId = user.id,
-                    accountSubtype = Some("checking"),
-                    accountType = Some("depository"),
-                    availableBalance = 200.0,
-                    currentBalance = 150.0,
-                    isoCurrencyCode = Some("USD"),
-                    mask = Some("1234"),
-                    name = "Alice",
-                    officialName = Some("Alice's Checking"),
-                    plaidAccountId = "somePlaidAccountId",
-                    unofficialCurrencyCode = Some("USD")
+        val accountId =
+            AccountRepository
+                .upsertAccount(
+                    UpsertAccountInput(
+                        itemId = item.id,
+                        userId = user.id,
+                        accountSubtype = Some("checking"),
+                        accountType = Some("depository"),
+                        availableBalance = 200.0,
+                        currentBalance = 150.0,
+                        isoCurrencyCode = Some("USD"),
+                        mask = Some("1234"),
+                        name = "Alice",
+                        officialName = Some("Alice's Checking"),
+                        plaidAccountId = "somePlaidAccountId",
+                        unofficialCurrencyCode = Some("USD")
+                    )
                 )
-            )
-            .get
+                .get
 
-        TransactionRepository.upsertTransaction(
-            input = UpsertTransactionInput(
+        TransactionRepository.upsertTransaction(input =
+            UpsertTransactionInput(
                 accountId = accountId,
                 plaidTransactionId = "somePlaidTransactionId",
                 category = Some("someCategory"),
@@ -93,8 +93,8 @@ class TransactionRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, Bef
             )
         )
 
-        TransactionRepository.upsertTransaction(
-            input = UpsertTransactionInput(
+        TransactionRepository.upsertTransaction(input =
+            UpsertTransactionInput(
                 accountId = accountId,
                 plaidTransactionId = "somePlaidTransactionId",
                 category = Some("someOtherCategory"),
@@ -110,8 +110,8 @@ class TransactionRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, Bef
             )
         )
 
-        TransactionRepository.upsertTransaction(
-            input = UpsertTransactionInput(
+        TransactionRepository.upsertTransaction(input =
+            UpsertTransactionInput(
                 accountId = accountId,
                 plaidTransactionId = "somePlaidTransactionId2",
                 category = Some("someOtherCategory"),
@@ -129,10 +129,7 @@ class TransactionRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, Bef
 
         // then
         val transactions = DB.readOnly { implicit session =>
-            sql"SELECT * FROM transactions"
-                .map(TransactionRepository.toModel)
-                .list
-                .apply()
+            sql"SELECT * FROM transactions".map(TransactionRepository.toModel).list.apply()
         }
 
         transactions.size should be(2)
@@ -150,15 +147,10 @@ class TransactionRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, Bef
         transaction.pending should be(false)
         transaction.accountOwner should be(Some("Alice"))
 
-        TransactionRepository.deleteTransactionsByPlaidIds(
-            List(transaction.plaidTransactionId)
-        )
+        TransactionRepository.deleteTransactionsByPlaidIds(List(transaction.plaidTransactionId))
 
         val transactionsAfterDelete = DB.readOnly { implicit session =>
-            sql"SELECT * FROM transactions"
-                .map(TransactionRepository.toModel)
-                .list
-                .apply()
+            sql"SELECT * FROM transactions".map(TransactionRepository.toModel).list.apply()
         }
 
         transactionsAfterDelete.size should be(1)

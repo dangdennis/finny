@@ -1,10 +1,9 @@
 package app.dtos
 
-import sttp.tapir.Schema
-import sttp.tapir.*
-import sttp.tapir.json.circe.*
-import sttp.tapir.generic.auto.*
 import io.circe.generic.auto.*
+import sttp.tapir.*
+import sttp.tapir.Schema
+import sttp.tapir.generic.auto.*
 
 object DTOs:
     case class PlaidItemCreateRequest(publicToken: String) derives Schema

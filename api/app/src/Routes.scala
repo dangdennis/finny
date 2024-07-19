@@ -6,17 +6,15 @@ import app.handlers.*
 import app.models.*
 import com.auth0.jwt.*
 import com.auth0.jwt.algorithms.Algorithm
+import io.circe.generic.auto.*
 import sttp.shared.Identity
 import sttp.tapir.*
 import sttp.tapir.json.circe.*
-import sttp.tapir.generic.auto.*
-import io.circe.generic.auto.*
 import sttp.tapir.server.ServerEndpoint
 import sttp.tapir.server.metrics.prometheus.PrometheusMetrics
 import sttp.tapir.swagger.bundle.SwaggerInterpreter
 
 import java.util.UUID
-import scala.collection.JavaConverters.*
 import scala.util.Try
 
 object Routes:
@@ -92,7 +90,7 @@ object Routes:
     case class AuthConfig(jwtSecret: String, jwtIssuer: String)
 
     private def makeAuthenticator(authConfig: AuthConfig): AuthenticationToken => Either[AuthenticationError, Profile] =
-        val algorithm = Algorithm.HMAC256(authConfig.jwtSecret);
+        val algorithm = Algorithm.HMAC256(authConfig.jwtSecret)
         (token: AuthenticationToken) =>
             val verifier = JWT.require(algorithm).withIssuer(authConfig.jwtIssuer).build();
             val decodedJwt = Try(verifier.verify(token.value))

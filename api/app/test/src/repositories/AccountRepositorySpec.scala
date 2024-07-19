@@ -13,27 +13,26 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatest.EitherValues
 
 class AccountRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, BeforeAndAfterAll, BeforeAndAfterEach:
-    override protected def beforeAll(): Unit =
-        TestHelper.beforeAll()
+    override protected def beforeAll(): Unit = TestHelper.beforeAll()
 
-    override protected def afterEach(): Unit =
-        TestHelper.afterEach()
+    override protected def afterEach(): Unit = TestHelper.afterEach()
 
     "upsertAccount" should "upsert accounts" in {
         // given
         val user = AuthUserRepositoryHelper.createUser()
-        val item = PlaidItemRepository
-            .getOrCreateItem(
-                CreateItemInput(
-                    userId = user.id,
-                    plaidAccessToken = "somePlaid",
-                    plaidInstitutionId = "institutionId",
-                    plaidItemId = "somePlaidItemId",
-                    status = PlaidItemStatus.Bad,
-                    transactionsCursor = None
+        val item =
+            PlaidItemRepository
+                .getOrCreateItem(
+                    CreateItemInput(
+                        userId = user.id,
+                        plaidAccessToken = "somePlaid",
+                        plaidInstitutionId = "institutionId",
+                        plaidItemId = "somePlaidItemId",
+                        status = PlaidItemStatus.Bad,
+                        transactionsCursor = None
+                    )
                 )
-            )
-            .value
+                .value
 
         // when
         AccountRepository.upsertAccount(
