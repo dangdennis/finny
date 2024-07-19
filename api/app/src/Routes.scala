@@ -8,7 +8,9 @@ import com.auth0.jwt.*
 import com.auth0.jwt.algorithms.Algorithm
 import sttp.shared.Identity
 import sttp.tapir.*
-import sttp.tapir.json.upickle.*
+import sttp.tapir.json.circe.*
+import sttp.tapir.generic.auto.*
+import io.circe.generic.auto.*
 import sttp.tapir.server.ServerEndpoint
 import sttp.tapir.server.metrics.prometheus.PrometheusMetrics
 import sttp.tapir.swagger.bundle.SwaggerInterpreter

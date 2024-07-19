@@ -1,17 +1,19 @@
 package app.dtos
 
 import sttp.tapir.Schema
-import upickle.default.ReadWriter
+import sttp.tapir.*
+import sttp.tapir.json.circe.*
+import sttp.tapir.generic.auto.*
+import io.circe.generic.auto.*
 
 object DTOs:
-    case class PlaidItemCreateRequest(publicToken: String) derives Schema, ReadWriter
+    case class PlaidItemCreateRequest(publicToken: String) derives Schema
     case class PlaidItemCreateResponse(itemId: String, institutionId: String, status: String, createdAt: String)
-        derives Schema,
-          ReadWriter
-    case class PlaidItemSyncRequest(itemId: String) derives Schema, ReadWriter
-    case class PlaidLinkCreateResponse(token: String) derives Schema, ReadWriter
-    case class PlaidItemsGetResponse(items: List[PlaidItemDTO]) derives Schema, ReadWriter
-    case class PlaidItemDeleteRequest(itemId: String) derives Schema, ReadWriter
+        derives Schema
+    case class PlaidItemSyncRequest(itemId: String) derives Schema
+    case class PlaidLinkCreateResponse(token: String) derives Schema
+    case class PlaidItemsGetResponse(items: List[PlaidItemDTO]) derives Schema
+    case class PlaidItemDeleteRequest(itemId: String) derives Schema
     case class PlaidItemDTO(
         id: String,
         institutionId: String,
@@ -21,5 +23,4 @@ object DTOs:
         lastSyncError: Option[String],
         lastSyncErrorAt: Option[String],
         retryCount: Int
-    ) derives Schema,
-          ReadWriter
+    ) derives Schema
