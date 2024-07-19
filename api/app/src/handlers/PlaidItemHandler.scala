@@ -26,10 +26,13 @@ object PlaidItemHandler:
                             institutionId = item.plaidInstitutionId,
                             status = item.status.toString(),
                             createdAt = item.createdAt.toString(),
-                            lastSyncedAt = item.lastSyncedAt.map(_.toString()),
-                            lastSyncError = item.lastSyncError,
-                            lastSyncErrorAt = item.lastSyncErrorAt.map(_.toString()),
-                            retryCount = item.retryCount
+                            // lastSyncedAt = item.lastSyncedAt.map(_.toString()),
+                            lastSyncedAt = None,
+                            // lastSyncError = item.lastSyncError,
+                            lastSyncError = None,
+                            // lastSyncErrorAt = item.lastSyncErrorAt.map(_.toString()),
+                            lastSyncErrorAt = None,
+                            retryCount = 2
                         )
                     )
                 )
