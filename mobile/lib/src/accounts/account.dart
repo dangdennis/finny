@@ -33,4 +33,9 @@ class Account {
   final String createdAt;
   final String updatedAt;
   final String? deletedAt;
+
+  @override
+  String toString() {
+    return 'Account{id: $id, itemId: $itemId, userId: $userId, name: $name, mask: $mask, officialName: $officialName, currentBalance: $currentBalance, availableBalance: $availableBalance, isoCurrencyCode: $isoCurrencyCode, unofficialCurrencyCode: $unofficialCurrencyCode, type: $type, subtype: $subtype, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt}';
+  }
 }

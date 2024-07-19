@@ -108,7 +108,7 @@ class MyApp extends StatelessWidget {
                       transactionsController: transactionsController,
                     );
                   case TransactionDetailsView.routeName:
-                    return TransactionDetailsView();
+                    return const TransactionDetailsView();
                   case ConnectionsListView.routeName:
                     return ConnectionsListView(
                       connectionsController: connectionsController,
@@ -158,6 +158,9 @@ class _MainViewState extends State<MainView> {
       TransactionListView(
         transactionsController: widget.transactionsController,
       ),
+      SettingsView(
+        settingsController: widget.settingsController,
+      ),
     ];
   }
 
@@ -181,7 +184,10 @@ class _MainViewState extends State<MainView> {
             icon: Icon(Icons.list),
             label: 'Transactions',
           ),
-          // Add other BottomNavigationBarItem as needed
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: 'Settings',
+          )
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.amber[800],

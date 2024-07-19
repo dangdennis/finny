@@ -30,15 +30,13 @@ class _ConnectionsListViewState extends State<ConnectionsListView> {
       setState(() {
         _isLoading = true;
       });
-      _logger.info('Fetching connections');
       final items = await widget.connectionsController.getPlaidItems();
-      _logger.info('Items: $items');
       setState(() {
         _plaidItems = items;
         _isLoading = false;
       });
     } catch (e) {
-      _logger.warning('Failed to fetch connections', e);
+      _logger.warning('failed to fetch connections', e);
       setState(() {
         _isLoading = false;
       });
@@ -60,12 +58,11 @@ class _ConnectionsListViewState extends State<ConnectionsListView> {
               },
               child: const Icon(Icons.add),
             ),
-      body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
-          : _plaidItems.isEmpty
-              ? Center(
+      body: Stack(
+        children: [
+          _plaidItems.isNotEmpty
+              ? Container(child: null)
+              : Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -86,21 +83,26 @@ class _ConnectionsListViewState extends State<ConnectionsListView> {
                       ),
                     ],
                   ),
-                )
-              : ListView.builder(
-                  itemCount: _plaidItems.length,
-                  itemBuilder: (context, index) {
-                    final item = _plaidItems[index];
-                    return ListTile(
-                      title: Text(item.id),
-                      subtitle: Text(item.institutionId),
-                      // onTap: () {
-                      //   Navigator.of(context).pushNamed(Routes.transactions,
-                      //       arguments: {'plaidItemId': item.plaidItemId});
-                      // },
-                    );
-                  },
                 ),
+          RefreshIndicator(
+            onRefresh: fetchConnections,
+            child: ListView.builder(
+              itemCount: _plaidItems.length,
+              itemBuilder: (context, index) {
+                final item = _plaidItems[index];
+                return ListTile(
+                  title: Text(item.id),
+                  subtitle: Text(item.institutionId),
+                  // onTap: () {
+                  //   Navigator.of(context).pushNamed(Routes.transactions,
+                  //       arguments: {'plaidItemId': item.plaidItemId});
+                  // },
+                );
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

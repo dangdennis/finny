@@ -12,7 +12,7 @@ import 'package:http/http.dart' as http;
 class ConnectionsService {
   ConnectionsService({required this.accountsService});
 
-  final Logger _logger = Logger('ConnectionsListView');
+  final Logger _logger = Logger('ConnectionsService');
   final AccountsService accountsService;
 
   Future<void> openPlaidLink() async {
@@ -118,6 +118,8 @@ class ConnectionsService {
       throw Exception('No access token');
     }
 
+    print('accessToken $accessToken');
+
     final headers = {
       'Content-Type': 'application/json',
       'Authorization':
@@ -131,29 +133,40 @@ class ConnectionsService {
           await http.get(AppConfig.plaidItemsListUrl, headers: headers);
       if (response.statusCode == 200) {
         _logger.info('Success: ${response.body}');
-        final data = json.decode(response.body);
-        final List<dynamic> rawItems = data['items'];
-        final List<PlaidItem> items = rawItems
-            .map<PlaidItem>((item) => PlaidItem.fromJson(item))
-            .toList();
-
+        final data = json.decode(response.body) as Map<String, dynamic>;
         final accounts = await accountsFuture;
-
-        for (var item in items) {
-          item.accounts =
-              accounts.where((account) => account.itemId == item.id).toList();
+        print('accounts $accounts');
+        final List<PlaidItem> plaidItems = [];
+        for (var item in data['items']) {
+          final plaidItem = PlaidItem.fromJson(item);
+          print('plaidItem $plaidItem');
+          // plaidItem.accounts =
+          //     accounts.where((account) => account.itemId == item.id).toList();
+          plaidItems.add(plaidItem);
         }
-
-        return items;
+        print('plaidItems w/ accounts $plaidItems');
+        return plaidItems;
       } else {
         _logger.warning('Error: ${response.statusCode} ${response.body}');
-        // Handle error
-        return [];
+        throw Exception('failed to fetch connections');
       }
     } catch (e) {
       _logger.warning('Exception: $e');
-
-      throw Exception('Failed to get Plaid Items');
+      rethrow;
     }
+  }
+}
+
+class PlaidItemsListDto {
+  final List<PlaidItem> items;
+
+  PlaidItemsListDto({required this.items});
+
+  factory PlaidItemsListDto.fromJson(Map<String, dynamic> json) {
+    return PlaidItemsListDto(
+      items: (json['items'] as List)
+          .map((item) => PlaidItem.fromJson(item))
+          .toList(),
+    );
   }
 }

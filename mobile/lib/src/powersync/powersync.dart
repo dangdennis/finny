@@ -142,7 +142,7 @@ String? getUserId() {
 
 Future<String> getDatabasePath() async {
   final dir = await getApplicationSupportDirectory();
-  return join(dir.path, 'finny.db');
+  return join(dir.path, 'finny1.db');
 }
 
 /// Initializes powersync database and connects to Supabase.
