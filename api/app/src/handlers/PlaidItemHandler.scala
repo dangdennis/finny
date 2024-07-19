@@ -17,7 +17,7 @@ object PlaidItemHandler:
         PlaidItemRepository
             .getItemsByUserId(userId = user.id)
             .left
-            .map(_ => AuthenticationError(404))
+            .map(_ => AuthenticationError(400))
             .map(items =>
                 DTOs.PlaidItemsGetResponse(items =
                     items.map(item =>
@@ -83,7 +83,7 @@ object PlaidItemHandler:
         PlaidItemRepository
             .getById(id = UUID.fromString(input.itemId))
             .left
-            .map(_ => AuthenticationError(404))
+            .map(_ => AuthenticationError(400))
             .map(item =>
                 PlaidSyncService.sync(item.id)
                 Right(())
@@ -93,5 +93,5 @@ object PlaidItemHandler:
         PlaidService
             .removeItem(client = PlaidService.makePlaidClientFromEnv(), itemId = UUID.fromString(input.itemId))
             .left
-            .map(_ => AuthenticationError(404))
+            .map(_ => AuthenticationError(400))
             .map(_ => Right(()))
