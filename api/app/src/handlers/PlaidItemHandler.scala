@@ -13,21 +13,14 @@ import app.services.PlaidSyncService
 import java.util.UUID
 
 object PlaidItemHandler:
-    def handlePlaidItemsGet(
-        user: Profile
-    ): Either[
-        AuthenticationError,
-        DTOs.PlaidItemsGetResponse
-    ] =
+    def handlePlaidItemsGet(user: Profile): Either[AuthenticationError, DTOs.PlaidItemsGetResponse] =
         PlaidItemRepository
-            .getItemsByUserId(
-                userId = user.id
-            )
+            .getItemsByUserId(userId = user.id)
             .left
             .map(_ => AuthenticationError(404))
             .map(items =>
-                DTOs.PlaidItemsGetResponse(
-                    items = items.map(item =>
+                DTOs.PlaidItemsGetResponse(items =
+                    items.map(item =>
                         DTOs.PlaidItemDTO(
                             id = item.id.toString(),
                             institutionId = item.plaidInstitutionId,
@@ -45,106 +38,60 @@ object PlaidItemHandler:
     def handlePlaidItemsCreate(
         user: Profile,
         input: PlaidItemCreateRequest
-    ): Either[
-        AuthenticationError,
-        DTOs.PlaidItemCreateResponse
-    ] =
-        val result = for
-            pubTokenData <- PlaidService
-                .exchangePublicToken(
-                    client = PlaidService
-                        .makePlaidClientFromEnv(),
+    ): Either[AuthenticationError, DTOs.PlaidItemCreateResponse] =
+        val result =
+            for
+                pubTokenData <- PlaidService.exchangePublicToken(
+                    client = PlaidService.makePlaidClientFromEnv(),
                     publicToken = input.publicToken,
                     userId = user.id
                 )
-            itemData <- PlaidService.getItem(
-                client = PlaidService
-                    .makePlaidClientFromEnv(),
-                accessToken = pubTokenData
-                    .getAccessToken(),
-                userId = user.id
-            )
-            item <- PlaidItemRepository
-                .getOrCreateItem(
-                    input = CreateItemInput(
+                itemData <- PlaidService.getItem(
+                    client = PlaidService.makePlaidClientFromEnv(),
+                    accessToken = pubTokenData.getAccessToken(),
+                    userId = user.id
+                )
+                item <- PlaidItemRepository.getOrCreateItem(input =
+                    CreateItemInput(
                         userId = user.id,
-                        plaidAccessToken = pubTokenData
-                            .getAccessToken(),
-                        plaidItemId = pubTokenData
-                            .getItemId(),
-                        plaidInstitutionId = itemData
-                            .getItem()
-                            .getInstitutionId(),
+                        plaidAccessToken = pubTokenData.getAccessToken(),
+                        plaidItemId = pubTokenData.getItemId(),
+                        plaidInstitutionId = itemData.getItem().getInstitutionId(),
                         status = PlaidItemStatus.Good,
                         transactionsCursor = None
                     )
                 )
-        yield item
+            yield item
 
         result match
             case Left(error) =>
-                Logger.root.error(
-                    s"Error creating Plaid item",
-                    error
-                )
-                Left(
-                    AuthenticationError(
-                        400
-                    )
-                )
+                Logger.root.error(s"Error creating Plaid item", error)
+                Left(AuthenticationError(400))
             case Right(item) =>
-                PlaidSyncService.sync(
-                    item.id
-                )
+                PlaidSyncService.sync(item.id)
 
                 Right(
                     DTOs.PlaidItemCreateResponse(
-                        itemId = item.id
-                            .toString(),
+                        itemId = item.id.toString(),
                         institutionId = item.plaidInstitutionId,
-                        status = item.status
-                            .toString(),
-                        createdAt = item.createdAt
-                            .toString()
+                        status = item.status.toString(),
+                        createdAt = item.createdAt.toString()
                     )
                 )
 
-    def handlePlaidItemsSync(
-        user: Profile,
-        input: PlaidItemSyncRequest
-    ): Either[
-        AuthenticationError,
-        Unit
-    ] =
+    def handlePlaidItemsSync(user: Profile, input: PlaidItemSyncRequest): Either[AuthenticationError, Unit] =
         PlaidItemRepository
-            .getById(id =
-                UUID.fromString(
-                    input.itemId
-                )
-            )
+            .getById(id = UUID.fromString(input.itemId))
             .left
             .map(_ => AuthenticationError(404))
             .map(item =>
-                PlaidSyncService
-                    .sync(item.id)
+                PlaidSyncService.sync(item.id)
                 Right(())
             )
 
-    def handlePlaidItemsDelete(
-        user: Profile,
-        input: DTOs.PlaidItemDeleteRequest
-    ): Either[
-        AuthenticationError,
-        Unit
-    ] =
+    def handlePlaidItemsDelete(user: Profile, input: DTOs.PlaidItemDeleteRequest): Either[AuthenticationError, Unit] =
         PlaidService
-            .removeItem(
-                client = PlaidService
-                    .makePlaidClientFromEnv(),
-                itemId = UUID.fromString(
-                    input.itemId
-                )
-            )
+            .removeItem(client = PlaidService.makePlaidClientFromEnv(), itemId = UUID.fromString(input.itemId))
             .left
             .map(_ => AuthenticationError(404))
             .map(_ => Right(()))

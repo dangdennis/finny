@@ -3,12 +3,7 @@ package app.models
 import java.time.Instant
 import java.util.UUID
 
-case class AccountSimple(
-    id: UUID,
-    itemId: UUID,
-    plaidAccountId: String,
-    userId: UUID
-)
+case class AccountSimple(id: UUID, itemId: UUID, plaidAccountId: String, userId: UUID)
 
 case class Account(
     id: UUID,
@@ -21,9 +16,7 @@ case class Account(
     currentBalance: Double,
     availableBalance: Double,
     isoCurrencyCode: Option[String],
-    unofficialCurrencyCode: Option[
-        String
-    ],
+    unofficialCurrencyCode: Option[String],
     accountType: Option[String],
     accountSubtype: Option[String],
     createdAt: Instant
