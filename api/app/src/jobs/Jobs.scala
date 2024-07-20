@@ -39,13 +39,13 @@ object Jobs:
         case Default
 
     object SyncType:
-        implicit val _: Encoder[SyncType] = Encoder.encodeString.contramap {
+        given Encoder[SyncType] = Encoder.encodeString.contramap {
             case Initial => "Initial"
             case Historical => "Historical"
             case Default => "Default"
         }
 
-        implicit val _: Decoder[SyncType] = Decoder.decodeString.emap {
+        given Decoder[SyncType] = Decoder.decodeString.emap {
             case "Initial" => Right(Initial)
             case "Historical" => Right(Historical)
             case "Default" => Right(Default)
@@ -58,18 +58,15 @@ object Jobs:
         case AnotherJob(id: UUID = UUID.randomUUID(), data: String)
 
     object JobRequest:
-        implicit val _: Codec[JobSyncPlaidItem] = deriveCodec
-        implicit val _: Codec[AnotherJob] = deriveCodec
-        implicit val jobRequestEncoder: Encoder[JobRequest] = Encoder.instance {
+        given Codec[JobSyncPlaidItem] = deriveCodec
+        given Codec[AnotherJob] = deriveCodec
+        given Encoder[JobRequest] = Encoder.instance {
             case job: JobSyncPlaidItem =>
                 job.asJson
             case job: AnotherJob =>
                 job.asJson
         }
-        implicit val jobRequestDecoder: Decoder[JobRequest] = List[Decoder[JobRequest]](
-            Decoder[JobSyncPlaidItem].widen,
-            Decoder[AnotherJob].widen
-        ).reduceLeft(_ or _)
+        given Decoder[JobRequest] = Decoder[JobSyncPlaidItem].widen.or(Decoder[AnotherJob].widen)
 
     def startWorker(): Any =
         val deliverCallback: DeliverCallback =
