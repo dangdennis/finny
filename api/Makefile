@@ -11,7 +11,7 @@ test:
 	./mill api.test
 
 fix:
-	./mill api.fix && ./mill api.test.fix && ./mill cli.fix
+	make clean && ./mill api.fix && ./mill api.test.fix && ./mill cli.fix
 	
 fmt:
 	./mill api.reformat && ./mill api.test.reformat && ./mill cli.reformat
