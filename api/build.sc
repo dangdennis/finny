@@ -6,6 +6,8 @@ import mill.scalalib.scalafmt.ScalafmtModule
 object app extends ScalaModule with ScalafixModule with scalafmt.ScalafmtModule {
     def scalaVersion = "3.4.2"
 
+    override def sources = T.sources { os.pwd / "src" / "api" }
+
     def scalacOptions = T {
         super.scalacOptions() ++ Seq("-Wunused:imports")
     }
@@ -44,6 +46,8 @@ object app extends ScalaModule with ScalafixModule with scalafmt.ScalafmtModule 
 
 object cli extends ScalaModule with ScalafixModule with scalafmt.ScalafmtModule {
     def scalaVersion = "3.4.2"
+
+    override def sources = T.sources { os.pwd / "src" / "cli" }
 
     override def scalacOptions = T {
         super.scalacOptions() ++ Seq("-Wunused:imports")
