@@ -1,4 +1,4 @@
-package app.common
+package api.common
 
 enum AppError:
     case DatabaseError(message: String)

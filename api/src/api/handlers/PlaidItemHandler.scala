@@ -1,14 +1,14 @@
-package app.handlers
+package api.handlers
 
-import app.common.*
-import app.dtos.*
-import app.dtos.DTOs.PlaidItemCreateRequest
-import app.dtos.DTOs.PlaidItemSyncRequest
-import app.models.*
-import app.repositories.PlaidItemRepository
-import app.repositories.PlaidItemRepository.CreateItemInput
-import app.services.PlaidService
-import app.services.PlaidSyncService
+import api.common.*
+import api.dtos.*
+import api.dtos.DTOs.PlaidItemCreateRequest
+import api.dtos.DTOs.PlaidItemSyncRequest
+import api.models.*
+import api.repositories.PlaidItemRepository
+import api.repositories.PlaidItemRepository.CreateItemInput
+import api.services.PlaidService
+import api.services.PlaidSyncService
 
 import java.util.UUID
 

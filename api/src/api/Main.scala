@@ -1,9 +1,9 @@
-package app
+package api
 
-import app.routes.Routes
-import app.common.*, Environment.*
-import app.database.Database
-import app.jobs.Jobs
+import api.routes.Routes
+import api.common.*, Environment.*
+import api.database.Database
+import api.jobs.Jobs
 import io.helidon.webserver.WebServer
 import sttp.tapir.*
 import sttp.tapir.server.nima.NimaServerInterpreter

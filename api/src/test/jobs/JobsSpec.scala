@@ -1,9 +1,9 @@
 package test.jobs
 
-import app.common.LavinMqClient
+import api.common.LavinMqClient
 import io.circe.parser.decode
-import app.jobs.*
-import app.jobs.Jobs.*
+import api.jobs.*
+import api.jobs.Jobs.*
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.BeforeAndAfterAll

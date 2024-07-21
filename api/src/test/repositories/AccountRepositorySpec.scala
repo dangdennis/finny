@@ -2,12 +2,12 @@ package test.repositories
 
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import app.repositories.AccountRepository
-import app.repositories.AccountRepository.UpsertAccountInput
+import api.repositories.AccountRepository
+import api.repositories.AccountRepository.UpsertAccountInput
 import org.scalatest.BeforeAndAfterAll
-import app.repositories.PlaidItemRepository
-import app.repositories.PlaidItemRepository.CreateItemInput
-import app.models.PlaidItemStatus
+import api.repositories.PlaidItemRepository
+import api.repositories.PlaidItemRepository.CreateItemInput
+import api.models.PlaidItemStatus
 import test.helpers.*
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.EitherValues

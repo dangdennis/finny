@@ -1,7 +1,7 @@
-package app.repositories
+package api.repositories
 
-import app.models.Account
-import app.models.AccountSimple
+import api.models.Account
+import api.models.AccountSimple
 import scalikejdbc.*
 
 import java.util.UUID

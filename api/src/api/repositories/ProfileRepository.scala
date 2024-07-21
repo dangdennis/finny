@@ -1,6 +1,6 @@
-package app.repositories
+package api.repositories
 
-import app.models.Profile
+import api.models.Profile
 import scalikejdbc.*
 
 import java.util.UUID

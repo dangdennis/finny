@@ -1,4 +1,4 @@
-package app.common
+package api.common
 
 import java.net.URI
 

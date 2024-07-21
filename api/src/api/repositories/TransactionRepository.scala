@@ -1,6 +1,6 @@
-package app.repositories
+package api.repositories
 
-import app.models.Transaction
+import api.models.Transaction
 import scalikejdbc.*
 
 import java.time.Instant

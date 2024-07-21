@@ -1,22 +1,22 @@
 package test.repositories
 
-import app.common.Time
+import api.common.Time
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.BeforeAndAfterAll
-import app.repositories.PlaidItemRepository
-import app.repositories.PlaidItemRepository.CreateItemInput
-import app.models.PlaidItemStatus
+import api.repositories.PlaidItemRepository
+import api.repositories.PlaidItemRepository.CreateItemInput
+import api.models.PlaidItemStatus
 import test.helpers.*
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.EitherValues
 import scalikejdbc.DB
 
 import scala.util.Try
-import app.repositories.AccountRepository
-import app.repositories.AccountRepository.UpsertAccountInput
-import app.repositories.TransactionRepository
-import app.repositories.TransactionRepository.UpsertTransactionInput
+import api.repositories.AccountRepository
+import api.repositories.AccountRepository.UpsertAccountInput
+import api.repositories.TransactionRepository
+import api.repositories.TransactionRepository.UpsertTransactionInput
 
 class PlaidItemRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, BeforeAndAfterAll, BeforeAndAfterEach:
     override protected def beforeAll(): Unit = TestHelper.beforeAll()

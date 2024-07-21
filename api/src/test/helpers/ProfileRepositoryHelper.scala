@@ -1,6 +1,6 @@
 package test.helpers
 
-import app.models.*
+import api.models.*
 import scalikejdbc.*
 
 import java.util.UUID

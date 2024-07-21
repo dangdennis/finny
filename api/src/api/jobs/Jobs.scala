@@ -1,8 +1,8 @@
-package app.jobs
+package api.jobs
 
-import app.common.LavinMqClient
-import app.common.Logger
-import app.services.PlaidSyncService
+import api.common.LavinMqClient
+import api.common.Logger
+import api.services.PlaidSyncService
 import cats.syntax.all.*
 import com.rabbitmq.client.Channel
 import com.rabbitmq.client.Connection

@@ -1,9 +1,9 @@
-package app.routes
+package api.routes
 
-import app.common.*
-import app.dtos.*
-import app.handlers.*
-import app.models.*
+import api.common.*
+import api.dtos.*
+import api.handlers.*
+import api.models.*
 import com.auth0.jwt.*
 import com.auth0.jwt.algorithms.Algorithm
 import io.circe.generic.auto.*
