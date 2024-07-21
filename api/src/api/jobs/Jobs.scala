@@ -39,19 +39,29 @@ object Jobs:
         case Default
 
     object SyncType:
-        given Encoder[SyncType] = Encoder.encodeString.contramap {
-            case Initial => "Initial"
-            case Historical => "Historical"
-            case Default => "Default"
-        }
+        given Encoder[SyncType] = Encoder
+            .encodeString
+            .contramap {
+                case Initial =>
+                    "Initial"
+                case Historical =>
+                    "Historical"
+                case Default =>
+                    "Default"
+            }
 
-        given Decoder[SyncType] = Decoder.decodeString.emap {
-            case "Initial" => Right(Initial)
-            case "Historical" => Right(Historical)
-            case "Default" => Right(Default)
-            case other => Left(s"Unknown SyncType: $other")
-        }
-
+        given Decoder[SyncType] = Decoder
+            .decodeString
+            .emap {
+                case "Initial" =>
+                    Right(Initial)
+                case "Historical" =>
+                    Right(Historical)
+                case "Default" =>
+                    Right(Default)
+                case other =>
+                    Left(s"Unknown SyncType: $other")
+            }
 
     enum JobRequest:
         case JobSyncPlaidItem(id: UUID = UUID.randomUUID(), itemId: UUID, syncType: SyncType, environment: String)

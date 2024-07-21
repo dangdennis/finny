@@ -11,7 +11,7 @@ test:
 	./mill api.test
 
 fix:
-	make clean && ./mill all.fix 
+	./mill api.fix && ./mill api.test.fix && ./mill cli.fix
 	
 fmt:
 	./mill api.reformat && ./mill api.test.reformat && ./mill cli.reformat
@@ -19,7 +19,7 @@ fmt:
 clean:
 	./mill clean
 
-dkup:
+compose-up:
 	docker compose up
 
 r:

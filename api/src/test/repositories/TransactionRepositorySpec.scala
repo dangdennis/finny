@@ -1,20 +1,20 @@
 package test.repositories
 
+import api.models.PlaidItemStatus
+import api.models.Transaction
+import api.repositories.AccountRepository
+import api.repositories.AccountRepository.UpsertAccountInput
+import api.repositories.PlaidItemRepository
+import api.repositories.PlaidItemRepository.CreateItemInput
+import api.repositories.TransactionRepository
+import api.repositories.TransactionRepository.UpsertTransactionInput
+import org.scalatest.BeforeAndAfterAll
+import org.scalatest.BeforeAndAfterEach
 import org.scalatest.EitherValues
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import api.repositories.AccountRepository
-import api.repositories.AccountRepository.UpsertAccountInput
-import org.scalatest.BeforeAndAfterAll
-import api.repositories.PlaidItemRepository
-import api.repositories.PlaidItemRepository.CreateItemInput
-import api.models.PlaidItemStatus
-import api.models.Transaction
-import test.helpers.*
 import scalikejdbc.*
-import api.repositories.TransactionRepository
-import api.repositories.TransactionRepository.UpsertTransactionInput
-import org.scalatest.BeforeAndAfterEach
+import test.helpers.*
 
 class TransactionRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, BeforeAndAfterAll, BeforeAndAfterEach:
     override protected def beforeAll(): Unit = TestHelper.beforeAll()

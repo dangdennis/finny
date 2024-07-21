@@ -45,29 +45,32 @@ object PlaidWebhookHandler:
                                             case (true, true) =>
                                                 Logger.root.info("Plaid webhook: regular update")
                                                 Jobs.enqueueJob(
-                                                    Jobs.JobRequest.JobSyncPlaidItem(
-                                                        itemId = plaidItem.id,
-                                                        syncType = Jobs.SyncType.Default,
-                                                        environment = event.environment
-                                                    )
+                                                    Jobs.JobRequest
+                                                        .JobSyncPlaidItem(
+                                                            itemId = plaidItem.id,
+                                                            syncType = Jobs.SyncType.Default,
+                                                            environment = event.environment
+                                                        )
                                                 )
                                             case (true, false) =>
                                                 Logger.root.info("Plaid webhook: historical update complete")
                                                 Jobs.enqueueJob(
-                                                    Jobs.JobRequest.JobSyncPlaidItem(
-                                                        itemId = plaidItem.id,
-                                                        syncType = Jobs.SyncType.Historical,
-                                                        environment = event.environment
-                                                    )
+                                                    Jobs.JobRequest
+                                                        .JobSyncPlaidItem(
+                                                            itemId = plaidItem.id,
+                                                            syncType = Jobs.SyncType.Historical,
+                                                            environment = event.environment
+                                                        )
                                                 )
                                             case (false, true) =>
                                                 Logger.root.info("Plaid webhook: initial update complete")
                                                 Jobs.enqueueJob(
-                                                    Jobs.JobRequest.JobSyncPlaidItem(
-                                                        itemId = plaidItem.id,
-                                                        syncType = Jobs.SyncType.Initial,
-                                                        environment = event.environment
-                                                    )
+                                                    Jobs.JobRequest
+                                                        .JobSyncPlaidItem(
+                                                            itemId = plaidItem.id,
+                                                            syncType = Jobs.SyncType.Initial,
+                                                            environment = event.environment
+                                                        )
                                                 )
                                             case (false, false) =>
                                                 Logger.root.error("Plaid webhook: no updates complete")

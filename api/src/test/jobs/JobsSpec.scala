@@ -1,14 +1,14 @@
 package test.jobs
 
 import api.common.LavinMqClient
-import io.circe.parser.decode
 import api.jobs.*
 import api.jobs.Jobs.*
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
+import io.circe.parser.decode
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.EitherValues
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 import test.helpers.*
 
 class JobsSpec extends AnyFlatSpec, Matchers, EitherValues, BeforeAndAfterAll, BeforeAndAfterEach:
@@ -26,14 +26,8 @@ class JobsSpec extends AnyFlatSpec, Matchers, EitherValues, BeforeAndAfterAll, B
         Jobs.enqueueJob(jobMsg)
 
         val itemId = java.util.UUID.randomUUID()
-        val jobMsg2 =  JobRequest.JobSyncPlaidItem(
-            itemId = itemId,
-            syncType = SyncType.Default,
-            environment = "sandbox"
-        )
-        Jobs.enqueueJob(
-            jobMsg2
-        )
+        val jobMsg2 = JobRequest.JobSyncPlaidItem(itemId = itemId, syncType = SyncType.Default, environment = "sandbox")
+        Jobs.enqueueJob(jobMsg2)
 
         // then
         val response = jobChannel.basicGet(jobQueueName, false)
