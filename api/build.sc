@@ -35,6 +35,8 @@ object app extends ScalaModule with ScalafixModule with scalafmt.ScalafmtModule 
     )
 
     object test extends ScalaTests with TestModule.ScalaTest with ScalafixModule with scalafmt.ScalafmtModule {
+        override def sources = T.sources { os.pwd / "src" / "test" }
+        
         def ivyDeps = Agg(
             ivy"com.softwaremill.sttp.tapir::tapir-sttp-stub-server:1.10.8",
             ivy"org.scalatest::scalatest:3.2.18",
