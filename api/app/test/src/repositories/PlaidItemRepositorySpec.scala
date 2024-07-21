@@ -1,5 +1,6 @@
 package test.repositories
 
+import app.common.Time
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.BeforeAndAfterAll
@@ -10,6 +11,7 @@ import test.helpers.*
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.EitherValues
 import scalikejdbc.DB
+
 import scala.util.Try
 import app.repositories.AccountRepository
 import app.repositories.AccountRepository.UpsertAccountInput
@@ -17,28 +19,27 @@ import app.repositories.TransactionRepository
 import app.repositories.TransactionRepository.UpsertTransactionInput
 
 class PlaidItemRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, BeforeAndAfterAll, BeforeAndAfterEach:
-    override protected def beforeAll(): Unit =
-        TestHelper.beforeAll()
+    override protected def beforeAll(): Unit = TestHelper.beforeAll()
 
-    override protected def afterEach(): Unit =
-        TestHelper.afterEach()
+    override protected def afterEach(): Unit = TestHelper.afterEach()
 
     "updateSyncSuccess" should "update item sync success time" in {
         // given
         val user = AuthUserRepositoryHelper.createUser()
-        val item = PlaidItemRepository
-            .getOrCreateItem(
-                CreateItemInput(
-                    userId = user.id,
-                    plaidAccessToken = "somePlaid",
-                    plaidInstitutionId = "institutionId",
-                    plaidItemId = "somePlaidItemId",
-                    status = PlaidItemStatus.Bad,
-                    transactionsCursor = None
+        val item =
+            PlaidItemRepository
+                .getOrCreateItem(
+                    CreateItemInput(
+                        userId = user.id,
+                        plaidAccessToken = "somePlaid",
+                        plaidInstitutionId = "institutionId",
+                        plaidItemId = "somePlaidItemId",
+                        status = PlaidItemStatus.Bad,
+                        transactionsCursor = None
+                    )
                 )
-            )
-            .value
-        val currentTime = java.time.Instant.now()
+                .value
+        val currentTime = Time.now()
 
         // when
         PlaidItemRepository.updateSyncSuccess(item.id, currentTime = currentTime)
@@ -54,19 +55,20 @@ class PlaidItemRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, Befor
     "updateSyncError" should "update item sync error columns" in {
         // given
         val user = AuthUserRepositoryHelper.createUser()
-        val item = PlaidItemRepository
-            .getOrCreateItem(
-                CreateItemInput(
-                    userId = user.id,
-                    plaidAccessToken = "somePlaid",
-                    plaidInstitutionId = "institutionId",
-                    plaidItemId = "somePlaidItemId",
-                    status = PlaidItemStatus.Bad,
-                    transactionsCursor = None
+        val item =
+            PlaidItemRepository
+                .getOrCreateItem(
+                    CreateItemInput(
+                        userId = user.id,
+                        plaidAccessToken = "somePlaid",
+                        plaidInstitutionId = "institutionId",
+                        plaidItemId = "somePlaidItemId",
+                        status = PlaidItemStatus.Bad,
+                        transactionsCursor = None
+                    )
                 )
-            )
-            .value
-        val currentTime = java.time.Instant.now()
+                .value
+        val currentTime = Time.now()
         val error = "got an error from plaid"
 
         // when
@@ -83,67 +85,64 @@ class PlaidItemRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, Befor
     "getItemsPendingSync" should "only return items that need to be synced" in {
         // given
         val user = AuthUserRepositoryHelper.createUser()
-        val item1 = PlaidItemRepository
-            .getOrCreateItem(
-                CreateItemInput(
-                    userId = user.id,
-                    plaidAccessToken = "somePlaid1",
-                    plaidInstitutionId = "institutionId",
-                    plaidItemId = "somePlaidItemId1",
-                    status = PlaidItemStatus.Good,
-                    transactionsCursor = None
+        val item1 =
+            PlaidItemRepository
+                .getOrCreateItem(
+                    CreateItemInput(
+                        userId = user.id,
+                        plaidAccessToken = "somePlaid1",
+                        plaidInstitutionId = "institutionId",
+                        plaidItemId = "somePlaidItemId1",
+                        status = PlaidItemStatus.Good,
+                        transactionsCursor = None
+                    )
                 )
-            )
-            .value
-        val item2 = PlaidItemRepository
-            .getOrCreateItem(
-                CreateItemInput(
-                    userId = user.id,
-                    plaidAccessToken = "somePlaid2",
-                    plaidInstitutionId = "institutionId",
-                    plaidItemId = "somePlaidItemId2",
-                    status = PlaidItemStatus.Good,
-                    transactionsCursor = None
+                .value
+        val item2 =
+            PlaidItemRepository
+                .getOrCreateItem(
+                    CreateItemInput(
+                        userId = user.id,
+                        plaidAccessToken = "somePlaid2",
+                        plaidInstitutionId = "institutionId",
+                        plaidItemId = "somePlaidItemId2",
+                        status = PlaidItemStatus.Good,
+                        transactionsCursor = None
+                    )
                 )
-            )
-            .value
-        val item3 = PlaidItemRepository
-            .getOrCreateItem(
-                CreateItemInput(
-                    userId = user.id,
-                    plaidAccessToken = "somePlaid",
-                    plaidInstitutionId = "institutionId",
-                    plaidItemId = "somePlaidItemId3",
-                    status = PlaidItemStatus.Good,
-                    transactionsCursor = None
+                .value
+        val item3 =
+            PlaidItemRepository
+                .getOrCreateItem(
+                    CreateItemInput(
+                        userId = user.id,
+                        plaidAccessToken = "somePlaid",
+                        plaidInstitutionId = "institutionId",
+                        plaidItemId = "somePlaidItemId3",
+                        status = PlaidItemStatus.Good,
+                        transactionsCursor = None
+                    )
                 )
-            )
-            .value
+                .value
 
         val currentTime = java.time.Instant.now()
 
         // alter last_synced_at times on items
         // should be fetched
         val lastSyncedExactly12HoursAgo = currentTime.minus(java.time.Duration.ofHours(12))
-        PlaidItemRepository.updateSyncSuccess(
-            item1.id,
-            currentTime = lastSyncedExactly12HoursAgo
-        )
+        PlaidItemRepository.updateSyncSuccess(item1.id, currentTime = lastSyncedExactly12HoursAgo)
 
         // should not be fetched
-        val lastSyncedLess12HoursBy1Sec = currentTime.minus(java.time.Duration.ofHours(12)).plus(java.time.Duration.ofSeconds(1))
-        PlaidItemRepository.updateSyncSuccess(
-            item2.id,
-            currentTime = lastSyncedLess12HoursBy1Sec
-        )
+        val lastSyncedLess12HoursBy1Sec = currentTime
+            .minus(java.time.Duration.ofHours(12))
+            .plus(java.time.Duration.ofSeconds(1))
+        PlaidItemRepository.updateSyncSuccess(item2.id, currentTime = lastSyncedLess12HoursBy1Sec)
 
         // should be fetched
-        val lastSyncedGreater12HoursBy1Sec = currentTime.minus(java.time.Duration.ofHours(12)).minus(java.time.Duration.ofSeconds(1))
-        PlaidItemRepository.updateSyncError(
-            item3.id,
-            currentTime = lastSyncedGreater12HoursBy1Sec,
-            error = "error"
-        )
+        val lastSyncedGreater12HoursBy1Sec = currentTime
+            .minus(java.time.Duration.ofHours(12))
+            .minus(java.time.Duration.ofSeconds(1))
+        PlaidItemRepository.updateSyncError(item3.id, currentTime = lastSyncedGreater12HoursBy1Sec, error = "error")
 
         // when
         val items = PlaidItemRepository.getItemsPendingSync(now = currentTime).get
@@ -155,38 +154,40 @@ class PlaidItemRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, Befor
     "deleteItemById" should "delete plaid item as well as associated accounts and transactions in db transaction" in:
         // given
         val user = AuthUserRepositoryHelper.createUser()
-        val item = PlaidItemRepository
-            .getOrCreateItem(
-                CreateItemInput(
-                    userId = user.id,
-                    plaidAccessToken = "somePlaid",
-                    plaidInstitutionId = "institutionId",
-                    plaidItemId = "somePlaidItemId",
-                    status = PlaidItemStatus.Bad,
-                    transactionsCursor = None
+        val item =
+            PlaidItemRepository
+                .getOrCreateItem(
+                    CreateItemInput(
+                        userId = user.id,
+                        plaidAccessToken = "somePlaid",
+                        plaidInstitutionId = "institutionId",
+                        plaidItemId = "somePlaidItemId",
+                        status = PlaidItemStatus.Bad,
+                        transactionsCursor = None
+                    )
                 )
-            )
-            .value
-        val accountId = AccountRepository
-            .upsertAccount(
-                UpsertAccountInput(
-                    itemId = item.id,
-                    userId = user.id,
-                    accountSubtype = Some("checking"),
-                    accountType = Some("depository"),
-                    availableBalance = 100.0,
-                    currentBalance = 100.0,
-                    isoCurrencyCode = Some("USD"),
-                    mask = Some("1234"),
-                    name = "Alice",
-                    officialName = Some("Alice's Checking"),
-                    plaidAccountId = "somePlaidAccountId",
-                    unofficialCurrencyCode = Some("USD")
+                .value
+        val accountId =
+            AccountRepository
+                .upsertAccount(
+                    UpsertAccountInput(
+                        itemId = item.id,
+                        userId = user.id,
+                        accountSubtype = Some("checking"),
+                        accountType = Some("depository"),
+                        availableBalance = 100.0,
+                        currentBalance = 100.0,
+                        isoCurrencyCode = Some("USD"),
+                        mask = Some("1234"),
+                        name = "Alice",
+                        officialName = Some("Alice's Checking"),
+                        plaidAccountId = "somePlaidAccountId",
+                        unofficialCurrencyCode = Some("USD")
+                    )
                 )
-            )
-            .get
-        val transaction = TransactionRepository.upsertTransaction(
-            input = UpsertTransactionInput(
+                .get
+        val transaction = TransactionRepository.upsertTransaction(input =
+            UpsertTransactionInput(
                 accountId = accountId,
                 plaidTransactionId = "somePlaidTransactionId2",
                 category = Some("someOtherCategory"),
@@ -210,10 +211,12 @@ class PlaidItemRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, Befor
         transactions should have size 1
 
         // test rollback on exception
-        val res = Try(DB localTx { implicit session =>
-            PlaidItemRepository.deleteItemById(item.id)
-            throw new Exception("rollback")
-        })
+        val res = Try(
+            DB localTx { implicit session =>
+                PlaidItemRepository.deleteItemById(item.id)
+                throw new Exception("rollback")
+            }
+        )
 
         val itemsAfterException = PlaidItemRepository.getItemsDebug().value
         itemsAfterException should have size 1

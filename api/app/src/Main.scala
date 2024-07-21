@@ -8,7 +8,8 @@ import io.helidon.webserver.WebServer
 import sttp.tapir.*
 import sttp.tapir.server.nima.NimaServerInterpreter
 
-@main def main: Unit =
+@main
+def main: Unit =
     val appEnv = Environment.getAppEnv
     val port = Environment.getPort
     val jwtIssue = Environment.getJwtIssue

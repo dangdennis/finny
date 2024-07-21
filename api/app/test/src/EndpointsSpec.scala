@@ -10,18 +10,18 @@
 
 // class EndpointsSpec extends AnyFlatSpec, Matchers, EitherValues:
 
-//   it should "return hello world" in {
-//     // given
-//     val endpoints = Endpoints.createEndpoints()
-//     val backendStub = TapirStubInterpreter(SttpBackendStub.synchronous)
-//       .whenServerEndpointRunLogic(endpoints.indexServerEndpoint)
-//       .backend()
+//     it should "return hello world" in {
+//         // given
+//         val endpoints = Endpoints.createEndpoints()
+//         val backendStub = TapirStubInterpreter(SttpBackendStub.synchronous)
+//             .whenServerEndpointRunLogic(endpoints.indexServerEndpoint)
+//             .backend()
 
-//     // when
-//     val response = basicRequest
-//       .get(uri"http://test.com/")
-//       .send(backendStub)
+//         // when
+//         val response = basicRequest
+//             .get(uri"http://test.com/")
+//             .send(backendStub)
 
-//     // then
-//     response.body.value shouldBe "Hello world!"
-//   }
+//         // then
+//         response.body.value shouldBe "Hello world!"
+//     }

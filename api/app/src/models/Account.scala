@@ -3,12 +3,7 @@ package app.models
 import java.time.Instant
 import java.util.UUID
 
-case class AccountSimple(
-    id: UUID,
-    itemId: UUID,
-    plaidAccountId: String,
-    userId: UUID
-)
+case class AccountSimple(id: UUID, itemId: UUID, plaidAccountId: String, userId: UUID)
 
 case class Account(
     id: UUID,

@@ -14,8 +14,4 @@ object PlaidLinkHandler:
                 Logger.root.error(s"Error creating Plaid link token", error)
                 Left(AuthenticationError(400))
             case Right(response) =>
-                Right(
-                    DTOs.PlaidLinkCreateResponse(
-                        token = response.getLinkToken()
-                    )
-                )
+                Right(DTOs.PlaidLinkCreateResponse(token = response.getLinkToken()))

@@ -1,14 +1,23 @@
 import 'dart:convert';
 
+import 'package:finny/src/accounts/accounts_service.dart';
 import 'package:finny/src/app_config.dart';
+import 'package:finny/src/connections/plaid_item.dart';
+import 'package:logging/logging.dart';
 import 'package:plaid_flutter/plaid_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:http/http.dart' as http;
 
 /// Service API to initiate plaid links and manage plaid connections.
 class ConnectionsService {
+  ConnectionsService({required this.accountsService});
+
+  final Logger _logger = Logger('ConnectionsService');
+  final AccountsService accountsService;
+
   Future<void> openPlaidLink() async {
-    print("${Supabase.instance.client.auth.currentSession?.accessToken}");
+    _logger
+        .info("${Supabase.instance.client.auth.currentSession?.accessToken}");
 
     final token = await createPlaidLinkToken();
 
@@ -17,18 +26,18 @@ class ConnectionsService {
     );
 
     PlaidLink.onSuccess.listen((LinkSuccess success) async {
-      print("Success: ${success.toJson()}");
+      _logger.info("Success: ${success.toJson()}");
       await createPlaidItem(success.publicToken);
     });
 
     PlaidLink.onExit.listen((LinkExit exit) {
       // Handle the exit callback
-      print("User exited the Plaid Link flow");
+      _logger.info("User exited the Plaid Link flow");
     });
 
     PlaidLink.onEvent.listen((LinkEvent event) {
       // Handle events (optional)
-      print('Event: $event');
+      _logger.info('Event: $event');
     });
 
     await PlaidLink.open(configuration: configuration);
@@ -53,17 +62,17 @@ class ConnectionsService {
     });
 
     try {
-      final response = await http.post(AppConfig.createPlaidItemUrl,
+      final response = await http.post(AppConfig.plaidItemsCreateUrl,
           headers: headers, body: body);
       if (response.statusCode == 200) {
-        print('Success: ${response.body}');
+        _logger.info('Success: ${response.body}');
         // Handle success
       } else {
-        print('Error: ${response.statusCode} ${response.body}');
+        _logger.warning('Error: ${response.statusCode} ${response.body}');
         // Handle error
       }
     } catch (e) {
-      print('Exception: $e');
+      _logger.warning('Exception: $e');
       // Handle exception
     }
   }
@@ -83,9 +92,9 @@ class ConnectionsService {
     };
 
     final response =
-        await http.post(AppConfig.createPlaidLinkTokenUrl, headers: headers);
+        await http.post(AppConfig.plaidLinksCreateUrl, headers: headers);
     if (response.statusCode == 200) {
-      print('Success: ${response.body}');
+      _logger.info('Success: ${response.body}');
       // Handle success
 
       final data = json.decode(response.body);
@@ -94,10 +103,70 @@ class ConnectionsService {
 
       return token;
     } else {
-      print('Error: ${response.statusCode} ${response.body}');
+      _logger.warning('Error: ${response.statusCode} ${response.body}');
 
       throw Exception('Failed to create Plaid Link token');
       // Handle error
     }
+  }
+
+  Future<List<PlaidItem>> getPlaidItems() async {
+    final accessToken =
+        Supabase.instance.client.auth.currentSession?.accessToken;
+
+    if (accessToken == null) {
+      throw Exception('No access token');
+    }
+
+    print('accessToken $accessToken');
+
+    final headers = {
+      'Content-Type': 'application/json',
+      'Authorization':
+          'Bearer ${Supabase.instance.client.auth.currentSession?.accessToken}',
+    };
+
+    var accountsFuture = accountsService.loadAccounts();
+
+    try {
+      final response =
+          await http.get(AppConfig.plaidItemsListUrl, headers: headers);
+      if (response.statusCode == 200) {
+        _logger.info('Success: ${response.body}');
+        final data = json.decode(response.body) as Map<String, dynamic>;
+        final accounts = await accountsFuture;
+        print('accounts $accounts');
+        final List<PlaidItem> plaidItems = [];
+        for (var item in data['items']) {
+          final plaidItem = PlaidItem.fromJson(item);
+          print('plaidItem $plaidItem');
+          // plaidItem.accounts =
+          //     accounts.where((account) => account.itemId == item.id).toList();
+          plaidItems.add(plaidItem);
+        }
+        print('plaidItems w/ accounts $plaidItems');
+        return plaidItems;
+      } else {
+        _logger.warning('Error: ${response.statusCode} ${response.body}');
+        throw Exception('failed to fetch connections');
+      }
+    } catch (e) {
+      _logger.warning('Exception: $e');
+      rethrow;
+    }
+  }
+}
+
+class PlaidItemsListDto {
+  final List<PlaidItem> items;
+
+  PlaidItemsListDto({required this.items});
+
+  factory PlaidItemsListDto.fromJson(Map<String, dynamic> json) {
+    return PlaidItemsListDto(
+      items: (json['items'] as List)
+          .map((item) => PlaidItem.fromJson(item))
+          .toList(),
+    );
   }
 }

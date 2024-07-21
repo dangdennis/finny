@@ -8,7 +8,8 @@ import app.services.PlaidService
 import java.util.UUID
 
 object Cli {
-    @main def main(args: String*): Unit =
+    @main
+    def main(args: String*): Unit =
         val config = Environment.DatabaseConfig(
             host = "jdbc:postgresql://aws-0-us-east-1.pooler.supabase.com:6543/postgres",
             user = "postgres.tqonkxhrucymdyndpjzf",
@@ -23,16 +24,15 @@ object Cli {
         )
 
         args match
-            case Seq() => println("Please provide a command")
+            case Seq() =>
+                println("Please provide a command")
             case command :: itemId :: _ =>
                 command match
                     case "delete-item" =>
                         val results =
-                            for res <- PlaidService.removeItem(
-                                    client = plaidClient,
-                                    itemId = UUID.fromString(itemId)
-                                )
+                            for res <- PlaidService.removeItem(client = plaidClient, itemId = UUID.fromString(itemId))
                             yield res
                         println(results)
-                    case _ => println("Unknown command")
+                    case _ =>
+                        println("Unknown command")
 }

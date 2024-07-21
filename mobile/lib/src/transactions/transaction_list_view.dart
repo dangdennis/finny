@@ -4,7 +4,6 @@ import 'package:finny/src/transactions/transactions_controller.dart';
 import 'package:flutter/material.dart';
 
 import '../routes.dart';
-import '../settings/settings_view.dart';
 
 /// Displays a list of SampleItems.
 class TransactionListView extends StatefulWidget {
@@ -41,17 +40,6 @@ class _TransactionListViewState extends State<TransactionListView> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Transactions'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.history),
-            onPressed: () {
-              // Navigate to the settings page. If the user leaves and returns
-              // to the app after it has been killed while running in the
-              // background, the navigation stack is restored.
-              Navigator.restorablePushNamed(context, SettingsView.routeName);
-            },
-          ),
-        ],
       ),
 
       // To work with lists that may contain a large number of items, it’s best
@@ -70,50 +58,48 @@ class _TransactionListViewState extends State<TransactionListView> {
           final transaction = transactions[index];
 
           return ListTile(
-              title: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                          StringUtils.truncateWithEllipsis(
-                              transaction.name, 32),
-                          style: const TextStyle(
-                            fontSize: 12,
-                          )),
-                      const Spacer(),
-                      Text(
-                        '\$${transaction.amount * -1}',
+            title: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(StringUtils.truncateWithEllipsis(transaction.name, 32),
                         style: const TextStyle(
                           fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        )),
+                    const Spacer(),
+                    Text(
+                      '\$${transaction.amount * -1}',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
                       ),
-                    ],
-                  ),
-                  Text(
-                    transaction.date,
-                    style: const TextStyle(
-                      fontSize: 10,
-                      color: Colors.grey,
                     ),
+                  ],
+                ),
+                Text(
+                  transaction.date,
+                  style: const TextStyle(
+                    fontSize: 10,
+                    color: Colors.grey,
                   ),
-                ],
-              ),
-              leading: const CircleAvatar(
-                // Display the Flutter Logo image asset.
-                foregroundImage: AssetImage('assets/images/flutter_logo.png'),
-              ),
-              // onTap: () {
-              //   // Navigate to the details page. If the user leaves and returns to
-              //   // the app after it has been killed while running in the
-              //   // background, the navigation stack is restored.
-              //   Navigator.restorablePushNamed(
-              //     context,
-              //     TransactionDetailsView.routeName,
-              //   );
-              // }
-              );
+                ),
+              ],
+            ),
+            leading: const CircleAvatar(
+              // Display the Flutter Logo image asset.
+              foregroundImage: AssetImage('assets/images/flutter_logo.png'),
+            ),
+            // onTap: () {
+            //   // Navigate to the details page. If the user leaves and returns to
+            //   // the app after it has been killed while running in the
+            //   // background, the navigation stack is restored.
+            //   Navigator.restorablePushNamed(
+            //     context,
+            //     TransactionDetailsView.routeName,
+            //   );
+            // }
+          );
         },
       ),
     );

@@ -1,4 +1,4 @@
-import 'package:finny/src/powersync.dart';
+import 'package:finny/src/powersync/powersync.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';

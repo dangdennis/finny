@@ -27,50 +27,47 @@ object PlaidSyncService:
         .limitRefreshPeriod(java.time.Duration.ofMinutes(1))
         .build()
     private val rateLimiterRegistry = RateLimiterRegistry.of(rateLimiterConfig);
-    private val rateLimiter = rateLimiterRegistry
-        .rateLimiter("plaidSyncRateLimiter");
-    private val retryConfig = RetryConfig
-        .custom()
-        .maxAttempts(3)
-        .waitDuration(java.time.Duration.ofSeconds(20))
-        .build()
+    private val rateLimiter = rateLimiterRegistry.rateLimiter("plaidSyncRateLimiter");
+    private val retryConfig = RetryConfig.custom().maxAttempts(3).waitDuration(java.time.Duration.ofSeconds(20)).build()
     private val retryRegistry: RetryRegistry = RetryRegistry.of(retryConfig)
     private val retry = retryRegistry.retry("PlaidSyncRetry")
 
-    def sync(itemId: UUID): Unit =
+    def sync(itemId: UUID): Unit = Future {
+        val decoratedTask = RateLimiter
+            .decorateRunnable(rateLimiter, Retry.decorateRunnable(retry, () => _sync(itemId)))
         Future {
-            val decoratedTask = RateLimiter.decorateRunnable(rateLimiter, Retry.decorateRunnable(retry, () => _sync(itemId)))
-            Future {
-                decoratedTask.run()
-            }.onComplete {
-                case Success(_)  => Logger.root.info(s"Sync for item ${itemId} completed successfully.")
-                case Failure(ex) => Logger.root.error(s"Sync for item ${itemId} failed.", ex)
-            }
+            decoratedTask.run()
+        }.onComplete {
+            case Success(_) =>
+                Logger.root.info(s"Sync for item ${itemId} completed successfully.")
+            case Failure(ex) =>
+                Logger.root.error(s"Sync for item ${itemId} failed.", ex)
         }
+    }
 
-    def syncHistorical(itemId: UUID) =
-        PlaidItemRepository
-            .updateTransactionCursor(itemId = itemId, cursor = None)
-            .map { _ =>
-                sync(itemId)
-            }
+    def syncHistorical(itemId: UUID) = PlaidItemRepository
+        .updateTransactionCursor(itemId = itemId, cursor = None)
+        .map { _ =>
+            sync(itemId)
+        }
 
     def runPlaidSyncPeriodically(): Unit =
         while true do
             val currentTime = java.time.Instant.now()
             Logger.root.info(s"Executing Plaid sync at ${currentTime}")
-            PlaidItemRepository.getItemsPendingSync(now = currentTime).map { items =>
-                items.foreach { item =>
-                    Jobs.enqueueJob(
-                        Jobs.JobRequest
-                            .JobSyncPlaidItem(
+            PlaidItemRepository
+                .getItemsPendingSync(now = currentTime)
+                .map { items =>
+                    items.foreach { item =>
+                        Jobs.enqueueJob(
+                            Jobs.JobRequest.JobSyncPlaidItem(
                                 itemId = item.id,
                                 syncType = Jobs.SyncType.Default,
                                 environment = Environment.appEnvToString(Environment.getAppEnv)
                             )
-                    )
+                        )
+                    }
                 }
-            }
             Thread.sleep(60000 * 60)
 
     // todo: simplify error logging
@@ -82,7 +79,11 @@ object PlaidSyncService:
         item match
             case Left(exception) =>
                 Logger.root.error(f"Error getting item", exception)
-                PlaidItemRepository.updateSyncError(itemId = itemId, error = exception.getMessage, currentTime = java.time.Instant.now())
+                PlaidItemRepository.updateSyncError(
+                    itemId = itemId,
+                    error = exception.getMessage,
+                    currentTime = java.time.Instant.now()
+                )
             case Right(item) =>
                 var cursor = item.transactionsCursor
                 var hasMore = true
@@ -137,7 +138,8 @@ object PlaidSyncService:
             Logger.root.info(s"Upserting transaction: $transaction")
             AccountRepository.getByPlaidAccountId(itemId = item.id, plaidAccountId = transaction.getAccountId) match
                 case Failure(error) =>
-                    val msg = s"Failed to upsert transaction ${transaction.getTransactionId} due to missing account: $error"
+                    val msg =
+                        s"Failed to upsert transaction ${transaction.getTransactionId} due to missing account: $error"
                     encounteredError = (true, msg)
                     Logger.root.error(msg)
                 case Success(account) =>
@@ -165,4 +167,5 @@ object PlaidSyncService:
                 PlaidItemRepository.updateSyncSuccess(itemId = item.id, currentTime = java.time.Instant.now())
                 PlaidItemRepository.updateTransactionCursor(itemId = item.id, cursor = Option(response.getNextCursor))
             case (true, msg) =>
-                PlaidItemRepository.updateSyncError(itemId = item.id, error = msg, currentTime = java.time.Instant.now())
+                PlaidItemRepository
+                    .updateSyncError(itemId = item.id, error = msg, currentTime = java.time.Instant.now())

@@ -2,6 +2,7 @@ import 'package:finny/src/accounts/accounts_controller.dart';
 import 'package:finny/src/auth/auth_controller.dart';
 import 'package:finny/src/auth/login_view.dart';
 import 'package:finny/src/connections/connections_controller.dart';
+import 'package:finny/src/connections/connections_list_view.dart';
 import 'package:finny/src/transactions/transaction_details_view.dart';
 import 'package:finny/src/transactions/transaction_list_view.dart';
 import 'package:finny/src/transactions/transactions_controller.dart';
@@ -108,6 +109,10 @@ class MyApp extends StatelessWidget {
                     );
                   case TransactionDetailsView.routeName:
                     return const TransactionDetailsView();
+                  case ConnectionsListView.routeName:
+                    return ConnectionsListView(
+                      connectionsController: connectionsController,
+                    );
                   default:
                     return LoginView(authController: authController);
                 }
@@ -153,6 +158,9 @@ class _MainViewState extends State<MainView> {
       TransactionListView(
         transactionsController: widget.transactionsController,
       ),
+      SettingsView(
+        settingsController: widget.settingsController,
+      ),
     ];
   }
 
@@ -176,7 +184,10 @@ class _MainViewState extends State<MainView> {
             icon: Icon(Icons.list),
             label: 'Transactions',
           ),
-          // Add other BottomNavigationBarItem as needed
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: 'Settings',
+          )
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.amber[800],

@@ -1,7 +1,7 @@
 import 'dart:async';
 
 // import 'package:finny/src/context_extension.dart';
-import 'package:finny/src/powersync.dart' as powersync;
+import 'package:finny/src/powersync/powersync.dart' as powersync;
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'auth_service.dart';

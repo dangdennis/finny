@@ -4,7 +4,6 @@ class Account {
     required this.id,
     required this.itemId,
     required this.userId,
-    required this.plaidAccountId,
     required this.name,
     required this.mask,
     required this.officialName,
@@ -22,7 +21,6 @@ class Account {
   final String id;
   final String itemId;
   final String userId;
-  final String plaidAccountId;
   final String name;
   final String mask;
   final String officialName;
@@ -35,4 +33,9 @@ class Account {
   final String createdAt;
   final String updatedAt;
   final String? deletedAt;
+
+  @override
+  String toString() {
+    return 'Account{id: $id, itemId: $itemId, userId: $userId, name: $name, mask: $mask, officialName: $officialName, currentBalance: $currentBalance, availableBalance: $availableBalance, isoCurrencyCode: $isoCurrencyCode, unofficialCurrencyCode: $unofficialCurrencyCode, type: $type, subtype: $subtype, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt}';
+  }
 }

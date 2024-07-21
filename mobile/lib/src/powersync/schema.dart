@@ -4,7 +4,6 @@ const schema = Schema([
   Table('accounts', [
     Column.text('item_id'),
     Column.text('user_id'),
-    Column.text('plaid_account_id'),
     Column.text('name'),
     Column.text('mask'),
     Column.text('official_name'),
@@ -20,7 +19,6 @@ const schema = Schema([
   ]),
   Table('transactions', [
     Column.text('account_id'),
-    Column.text('plaid_transaction_id'),
     Column.text('category'),
     Column.text('subcategory'),
     Column.text('type'),

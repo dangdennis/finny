@@ -1,10 +1,9 @@
 import 'package:finny/src/accounts/accounts_controller.dart';
+import 'package:finny/src/connections/connections_list_view.dart';
 import 'package:flutter/material.dart';
 
 import '../routes.dart';
-import '../settings/settings_view.dart';
 import 'account.dart';
-import 'account_details_view.dart';
 
 class AccountListView extends StatefulWidget {
   const AccountListView({
@@ -42,9 +41,10 @@ class _AccountListViewState extends State<AccountListView> {
         title: const Text('Accounts'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings),
+            icon: const Icon(Icons.add),
             onPressed: () {
-              Navigator.restorablePushNamed(context, SettingsView.routeName);
+              Navigator.restorablePushNamed(
+                  context, ConnectionsListView.routeName);
             },
           ),
         ],
@@ -56,16 +56,17 @@ class _AccountListViewState extends State<AccountListView> {
           final account = accounts[index];
 
           return ListTile(
-              title: Text('${account.name} (...${account.mask})'),
-              leading: const CircleAvatar(
-                foregroundImage: AssetImage('assets/images/flutter_logo.png'),
-              ),
-              onTap: () {
-                Navigator.restorablePushNamed(
-                  context,
-                  AccountDetailsView.routeName,
-                );
-              });
+            title: Text('${account.name} (...${account.mask})'),
+            leading: const CircleAvatar(
+              foregroundImage: AssetImage('assets/images/flutter_logo.png'),
+            ),
+            // onTap: () {
+            //   Navigator.restorablePushNamed(
+            //     context,
+            //     AccountDetailsView.routeName,
+            //   );
+            // }
+          );
         },
       ),
     );
