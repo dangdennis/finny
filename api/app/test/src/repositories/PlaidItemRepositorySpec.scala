@@ -1,5 +1,6 @@
 package test.repositories
 
+import app.common.Time
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.BeforeAndAfterAll
@@ -10,6 +11,7 @@ import test.helpers.*
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.EitherValues
 import scalikejdbc.DB
+
 import scala.util.Try
 import app.repositories.AccountRepository
 import app.repositories.AccountRepository.UpsertAccountInput
@@ -37,7 +39,7 @@ class PlaidItemRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, Befor
                     )
                 )
                 .value
-        val currentTime = java.time.Instant.now()
+        val currentTime = Time.now()
 
         // when
         PlaidItemRepository.updateSyncSuccess(item.id, currentTime = currentTime)
@@ -66,7 +68,7 @@ class PlaidItemRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, Befor
                     )
                 )
                 .value
-        val currentTime = java.time.Instant.now()
+        val currentTime = Time.now()
         val error = "got an error from plaid"
 
         // when
