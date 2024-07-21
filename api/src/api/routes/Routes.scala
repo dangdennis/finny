@@ -1,4 +1,4 @@
-package app
+package app.routes
 
 import app.common.*
 import app.dtos.*
