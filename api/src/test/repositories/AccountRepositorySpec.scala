@@ -1,16 +1,16 @@
 package test.repositories
 
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
-import app.repositories.AccountRepository
-import app.repositories.AccountRepository.UpsertAccountInput
+import api.models.PlaidItemStatus
+import api.repositories.AccountRepository
+import api.repositories.AccountRepository.UpsertAccountInput
+import api.repositories.PlaidItemRepository
+import api.repositories.PlaidItemRepository.CreateItemInput
 import org.scalatest.BeforeAndAfterAll
-import app.repositories.PlaidItemRepository
-import app.repositories.PlaidItemRepository.CreateItemInput
-import app.models.PlaidItemStatus
-import test.helpers.*
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.EitherValues
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
+import test.helpers.*
 
 class AccountRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, BeforeAndAfterAll, BeforeAndAfterEach:
     override protected def beforeAll(): Unit = TestHelper.beforeAll()

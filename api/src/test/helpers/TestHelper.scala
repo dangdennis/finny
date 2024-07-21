@@ -1,9 +1,9 @@
 package test.helpers
 
-import app.database.Database
-import app.common.*
-import app.common.Environment
-import app.jobs.*
+import api.common.*
+import api.common.Environment
+import api.database.Database
+import api.jobs.*
 
 object TestHelper:
     def beforeAll(): Unit =

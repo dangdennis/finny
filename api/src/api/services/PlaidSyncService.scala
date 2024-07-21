@@ -1,11 +1,11 @@
-package app.services
+package api.services
 
-import app.common.*
-import app.jobs.Jobs
-import app.models.PlaidItem
-import app.repositories.AccountRepository
-import app.repositories.PlaidItemRepository
-import app.repositories.TransactionRepository
+import api.common.*
+import api.jobs.Jobs
+import api.models.PlaidItem
+import api.repositories.AccountRepository
+import api.repositories.PlaidItemRepository
+import api.repositories.TransactionRepository
 import com.plaid.client.model.TransactionsSyncResponse
 import io.github.resilience4j.ratelimiter.*
 import io.github.resilience4j.retry.*
@@ -26,8 +26,8 @@ object PlaidSyncService:
         .limitForPeriod(45)
         .limitRefreshPeriod(java.time.Duration.ofMinutes(1))
         .build()
-    private val rateLimiterRegistry = RateLimiterRegistry.of(rateLimiterConfig);
-    private val rateLimiter = rateLimiterRegistry.rateLimiter("plaidSyncRateLimiter");
+    private val rateLimiterRegistry = RateLimiterRegistry.of(rateLimiterConfig)
+    private val rateLimiter = rateLimiterRegistry.rateLimiter("plaidSyncRateLimiter")
     private val retryConfig = RetryConfig.custom().maxAttempts(3).waitDuration(java.time.Duration.ofSeconds(20)).build()
     private val retryRegistry: RetryRegistry = RetryRegistry.of(retryConfig)
     private val retry = retryRegistry.retry("PlaidSyncRetry")
@@ -60,11 +60,12 @@ object PlaidSyncService:
                 .map { items =>
                     items.foreach { item =>
                         Jobs.enqueueJob(
-                            Jobs.JobRequest.JobSyncPlaidItem(
-                                itemId = item.id,
-                                syncType = Jobs.SyncType.Default,
-                                environment = Environment.appEnvToString(Environment.getAppEnv)
-                            )
+                            Jobs.JobRequest
+                                .JobSyncPlaidItem(
+                                    itemId = item.id,
+                                    syncType = Jobs.SyncType.Default,
+                                    environment = Environment.appEnvToString(Environment.getAppEnv)
+                                )
                         )
                     }
                 }

@@ -1,7 +1,7 @@
-package app.repositories
+package api.repositories
 
-import app.models.PlaidItem
-import app.models.PlaidItemStatus
+import api.models.PlaidItem
+import api.models.PlaidItemStatus
 import scalikejdbc.*
 
 import java.time.Duration

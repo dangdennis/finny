@@ -1,9 +1,9 @@
-package app
+package api.routes
 
-import app.common.*
-import app.dtos.*
-import app.handlers.*
-import app.models.*
+import api.common.*
+import api.dtos.*
+import api.handlers.*
+import api.models.*
 import com.auth0.jwt.*
 import com.auth0.jwt.algorithms.Algorithm
 import io.circe.generic.auto.*
@@ -92,7 +92,7 @@ object Routes:
     private def makeAuthenticator(authConfig: AuthConfig): AuthenticationToken => Either[AuthenticationError, Profile] =
         val algorithm = Algorithm.HMAC256(authConfig.jwtSecret)
         (token: AuthenticationToken) =>
-            val verifier = JWT.require(algorithm).withIssuer(authConfig.jwtIssuer).build();
+            val verifier = JWT.require(algorithm).withIssuer(authConfig.jwtIssuer).build()
             val decodedJwt = Try(verifier.verify(token.value))
             decodedJwt match
                 case scala.util.Success(jwt) =>

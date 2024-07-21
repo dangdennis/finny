@@ -3,7 +3,7 @@ import $ivy.`com.goyeau::mill-scalafix::0.4.0`
 import com.goyeau.mill.scalafix.ScalafixModule
 import mill.scalalib.scalafmt.ScalafmtModule
 
-object app extends ScalaModule with ScalafixModule with scalafmt.ScalafmtModule {
+object api extends ScalaModule with ScalafixModule with scalafmt.ScalafmtModule {
     def scalaVersion = "3.4.2"
 
     override def sources = T.sources { os.pwd / "src" / "api" }
@@ -55,7 +55,7 @@ object cli extends ScalaModule with ScalafixModule with scalafmt.ScalafmtModule 
         super.scalacOptions() ++ Seq("-Wunused:imports")
     }
 
-    override def moduleDeps = Seq(app)
+    override def moduleDeps = Seq(api)
 
 }
 
@@ -63,21 +63,21 @@ object all extends ScalaModule with ScalafixModule with ScalafmtModule {
     def scalaVersion = "3.4.2"
 
     def compile = T.command {
-        app.compile()
-        app.test.compile()
+        api.compile()
+        api.test.compile()
         cli.compile()
     }
 
     def fix() = T.command {
-        app.fix()
-        app.test.fix()
+        api.fix()
+        api.test.fix()
         cli.fix()
     }
 
     // todo: get this working one day
     def reformat() = T.command {
-        app.reformat()
-        app.test.reformat()
+        api.reformat()
+        api.test.reformat()
         cli.reformat()
     }
 }

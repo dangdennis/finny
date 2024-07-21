@@ -1,4 +1,4 @@
-package app.common
+package api.common
 
 import com.rabbitmq.client.Channel
 import com.rabbitmq.client.Connection

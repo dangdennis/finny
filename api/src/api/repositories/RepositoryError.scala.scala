@@ -1,4 +1,4 @@
-package app.repositories
+package api.repositories
 
 enum RepositoryError:
     case DatabaseError(message: String)

@@ -1,7 +1,7 @@
-package app.database
+package api.database
 
-import app.common.Environment
-import app.common.Environment.DatabaseConfig
+import api.common.Environment
+import api.common.Environment.DatabaseConfig
 import scalikejdbc.*
 
 import scala.util.Try

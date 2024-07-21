@@ -1,9 +1,9 @@
-package app.handlers
+package api.handlers
 
-import app.common.*
-import app.dtos.*
-import app.models.*
-import app.services.PlaidService
+import api.common.*
+import api.dtos.*
+import api.models.*
+import api.services.PlaidService
 
 import java.util.UUID
 

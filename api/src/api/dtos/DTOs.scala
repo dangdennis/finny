@@ -1,4 +1,4 @@
-package app.dtos
+package api.dtos
 
 import io.circe.generic.auto.*
 import sttp.tapir.*

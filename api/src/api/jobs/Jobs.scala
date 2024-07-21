@@ -1,8 +1,8 @@
-package app.jobs
+package api.jobs
 
-import app.common.LavinMqClient
-import app.common.Logger
-import app.services.PlaidSyncService
+import api.common.LavinMqClient
+import api.common.Logger
+import api.services.PlaidSyncService
 import cats.syntax.all.*
 import com.rabbitmq.client.Channel
 import com.rabbitmq.client.Connection
@@ -39,19 +39,29 @@ object Jobs:
         case Default
 
     object SyncType:
-        given Encoder[SyncType] = Encoder.encodeString.contramap {
-            case Initial => "Initial"
-            case Historical => "Historical"
-            case Default => "Default"
-        }
+        given Encoder[SyncType] = Encoder
+            .encodeString
+            .contramap {
+                case Initial =>
+                    "Initial"
+                case Historical =>
+                    "Historical"
+                case Default =>
+                    "Default"
+            }
 
-        given Decoder[SyncType] = Decoder.decodeString.emap {
-            case "Initial" => Right(Initial)
-            case "Historical" => Right(Historical)
-            case "Default" => Right(Default)
-            case other => Left(s"Unknown SyncType: $other")
-        }
-
+        given Decoder[SyncType] = Decoder
+            .decodeString
+            .emap {
+                case "Initial" =>
+                    Right(Initial)
+                case "Historical" =>
+                    Right(Historical)
+                case "Default" =>
+                    Right(Default)
+                case other =>
+                    Left(s"Unknown SyncType: $other")
+            }
 
     enum JobRequest:
         case JobSyncPlaidItem(id: UUID = UUID.randomUUID(), itemId: UUID, syncType: SyncType, environment: String)

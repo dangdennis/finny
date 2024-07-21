@@ -1,7 +1,7 @@
-package app.repositories
+package api.repositories
 
-import app.common
-import app.common.*
+import api.common
+import api.common.*
 import io.circe.generic.auto.*
 import io.circe.syntax.*
 import scalikejdbc.*
