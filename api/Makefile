@@ -1,20 +1,20 @@
 run:
-	./mill app.run
+	./mill api.run
 
 compile:
 	./mill all.compile
 
 assembly:
-	./mill app.assembly
+	./mill api.assembly
 
 test:
-	./mill app.test
+	./mill api.test
 
 fix:
 	make clean && ./mill all.fix 
 	
 fmt:
-	./mill app.reformat && ./mill app.test.reformat && ./mill cli.reformat
+	./mill api.reformat && ./mill api.test.reformat && ./mill cli.reformat
 
 clean:
 	./mill clean
@@ -23,10 +23,10 @@ dkup:
 	docker compose up
 
 r:
-	./mill -w app.runBackground
+	./mill -w api.runBackground
 
 c:
 	./mill -w all.compile
 
 t:
-	./mill -w app.test
+	./mill -w api.test

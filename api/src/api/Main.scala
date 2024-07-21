@@ -1,12 +1,14 @@
 package api
 
-import api.routes.Routes
-import api.common.*, Environment.*
+import api.common.*
 import api.database.Database
 import api.jobs.Jobs
+import api.routes.Routes
 import io.helidon.webserver.WebServer
 import sttp.tapir.*
 import sttp.tapir.server.nima.NimaServerInterpreter
+
+import Environment.*
 
 @main
 def main: Unit =
