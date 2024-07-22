@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:finny/src/accounts/accounts_service.dart';
 import 'package:finny/src/app_config.dart';
 import 'package:finny/src/connections/plaid_item.dart';
+import 'package:finny/src/connections/plaid_items_list_dto.dart';
 import 'package:logging/logging.dart';
 import 'package:plaid_flutter/plaid_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -118,34 +119,25 @@ class ConnectionsService {
       throw Exception('No access token');
     }
 
-    print('accessToken $accessToken');
-
     final headers = {
       'Content-Type': 'application/json',
       'Authorization':
           'Bearer ${Supabase.instance.client.auth.currentSession?.accessToken}',
     };
 
-    var accountsFuture = accountsService.loadAccounts();
-
     try {
+      var accounts = await accountsService.loadAccounts();
       final response =
           await http.get(AppConfig.plaidItemsListUrl, headers: headers);
       if (response.statusCode == 200) {
         _logger.info('Success: ${response.body}');
         final data = json.decode(response.body) as Map<String, dynamic>;
-        final accounts = await accountsFuture;
-        print('accounts $accounts');
-        final List<PlaidItem> plaidItems = [];
-        for (var item in data['items']) {
-          final plaidItem = PlaidItem.fromJson(item);
-          print('plaidItem $plaidItem');
-          // plaidItem.accounts =
-          //     accounts.where((account) => account.itemId == item.id).toList();
-          plaidItems.add(plaidItem);
+        final plaidItemListDto = PlaidItemsListDto.fromJson(data);
+        for (var item in plaidItemListDto.items) {
+          item.accounts =
+              accounts.where((account) => account.itemId == item.id).toList();
         }
-        print('plaidItems w/ accounts $plaidItems');
-        return plaidItems;
+        return plaidItemListDto.items.map((item) => item.toModel()).toList();
       } else {
         _logger.warning('Error: ${response.statusCode} ${response.body}');
         throw Exception('failed to fetch connections');
@@ -154,19 +146,5 @@ class ConnectionsService {
       _logger.warning('Exception: $e');
       rethrow;
     }
-  }
-}
-
-class PlaidItemsListDto {
-  final List<PlaidItem> items;
-
-  PlaidItemsListDto({required this.items});
-
-  factory PlaidItemsListDto.fromJson(Map<String, dynamic> json) {
-    return PlaidItemsListDto(
-      items: (json['items'] as List)
-          .map((item) => PlaidItem.fromJson(item))
-          .toList(),
-    );
   }
 }
