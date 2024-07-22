@@ -55,7 +55,7 @@ class ConnectionsService {
     final headers = {
       'Content-Type': 'application/json',
       'Authorization':
-          'Bearer ${Supabase.instance.client.auth.currentSession?.accessToken}',
+          'Bearer $accessToken',
     };
 
     final body = json.encode({
@@ -89,7 +89,7 @@ class ConnectionsService {
     final headers = {
       'Content-Type': 'application/json',
       'Authorization':
-          'Bearer ${Supabase.instance.client.auth.currentSession?.accessToken}',
+          'Bearer $accessToken',
     };
 
     final response =
@@ -122,7 +122,7 @@ class ConnectionsService {
     final headers = {
       'Content-Type': 'application/json',
       'Authorization':
-          'Bearer ${Supabase.instance.client.auth.currentSession?.accessToken}',
+          'Bearer $accessToken',
     };
 
     try {
@@ -145,6 +145,42 @@ class ConnectionsService {
     } catch (e) {
       _logger.warning('Exception: $e');
       rethrow;
+    }
+  }
+
+  Future<void> deletePlaidItem(PlaidItem item) async {
+    final accessToken =
+        Supabase.instance.client.auth.currentSession?.accessToken;
+
+    if (accessToken == null) {
+      throw Exception('No access token');
+    }
+
+    final headers = {
+      'Content-Type': 'application/json',
+      'Authorization':
+          'Bearer $accessToken',
+    };
+
+    final body = json.encode({
+      'itemId': item.id,
+    });
+
+    try {
+      final response = await http.delete(AppConfig.plaidItemsDeleteUrl,
+          headers: headers, body: body);
+      if (response.statusCode == 200) {
+        _logger.info('Success: ${response.body}');
+        // Handle success
+      } else {
+        _logger.warning('Error: ${response.statusCode} ${response.body}');
+        throw Exception('Failed to delete connection');
+        // Handle error
+      }
+    } catch (e) {
+      _logger.warning('Exception: $e');
+      rethrow;
+      // Handle exception
     }
   }
 }
