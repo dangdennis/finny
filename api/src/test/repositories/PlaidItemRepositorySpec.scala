@@ -25,7 +25,7 @@ class PlaidItemRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, Befor
 
     "updateSyncSuccess" should "update item sync success time" in {
         // given
-        val user = AuthUserRepositoryHelper.createUser()
+        val user = AuthServiceHelper.createUser()
         val item =
             PlaidItemRepository
                 .getOrCreateItem(
@@ -54,7 +54,7 @@ class PlaidItemRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, Befor
 
     "updateSyncError" should "update item sync error columns" in {
         // given
-        val user = AuthUserRepositoryHelper.createUser()
+        val user = AuthServiceHelper.createUser()
         val item =
             PlaidItemRepository
                 .getOrCreateItem(
@@ -84,7 +84,7 @@ class PlaidItemRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, Befor
 
     "getItemsPendingSync" should "only return items that need to be synced" in {
         // given
-        val user = AuthUserRepositoryHelper.createUser()
+        val user = AuthServiceHelper.createUser()
         val item1 =
             PlaidItemRepository
                 .getOrCreateItem(
@@ -153,7 +153,7 @@ class PlaidItemRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, Befor
 
     "deleteItemById" should "delete plaid item as well as associated accounts and transactions in db transaction" in:
         // given
-        val user = AuthUserRepositoryHelper.createUser()
+        val user = AuthServiceHelper.createUser()
         val item =
             PlaidItemRepository
                 .getOrCreateItem(

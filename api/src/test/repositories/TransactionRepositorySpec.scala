@@ -18,12 +18,11 @@ import test.helpers.*
 
 class TransactionRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, BeforeAndAfterAll, BeforeAndAfterEach:
     override protected def beforeAll(): Unit = TestHelper.beforeAll()
-
     override protected def afterEach(): Unit = TestHelper.afterEach()
 
     "upsertTransaction" should "upsert transactions" in {
         // given
-        val user = AuthUserRepositoryHelper.createUser()
+        val user = AuthServiceHelper.createUser()
         val item =
             PlaidItemRepository
                 .getOrCreateItem(

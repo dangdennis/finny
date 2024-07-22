@@ -13,7 +13,7 @@ class ProfileRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, BeforeA
     override protected def beforeEach(): Unit = TestHelper.beforeEach()
 
     "getProfileByUserId" should "find profile record" in {
-        val profile = AuthUserRepositoryHelper.createUser()
+        val profile = AuthServiceHelper.createUser()
         val gotProfile = ProfileRepository.getProfileByUserId(profile.id).get.get
         gotProfile.id should be(profile.id)
     }

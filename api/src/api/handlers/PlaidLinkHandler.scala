@@ -5,10 +5,8 @@ import api.dtos.*
 import api.models.*
 import api.services.PlaidService
 
-import java.util.UUID
-
 object PlaidLinkHandler:
-    def handler(userId: UUID): Either[AuthenticationError, DTOs.PlaidLinkCreateResponse] =
+    def handler(userId: UserId): Either[AuthenticationError, DTOs.PlaidLinkCreateResponse] =
         PlaidService.createLinkToken(client = PlaidService.makePlaidClientFromEnv(), userId = userId) match
             case Left(error) =>
                 Logger.root.error(s"Error creating Plaid link token", error)

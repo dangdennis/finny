@@ -19,7 +19,7 @@ class AccountRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, BeforeA
 
     "upsertAccount" should "upsert accounts" in {
         // given
-        val user = AuthUserRepositoryHelper.createUser()
+        val user = AuthServiceHelper.createUser()
         val item =
             PlaidItemRepository
                 .getOrCreateItem(

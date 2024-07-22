@@ -6,7 +6,9 @@ import mill.scalalib.scalafmt.ScalafmtModule
 object api extends ScalaModule with ScalafixModule with scalafmt.ScalafmtModule {
     def scalaVersion = "3.4.2"
 
-    override def sources = T.sources { os.pwd / "src" / "api" }
+    override def sources = T.sources {
+        os.pwd / "src" / "api"
+    }
 
     def scalacOptions = T {
         super.scalacOptions() ++ Seq("-Wunused:imports")
@@ -19,7 +21,8 @@ object api extends ScalaModule with ScalafixModule with scalafmt.ScalafmtModule 
         ivy"com.softwaremill.sttp.tapir::tapir-swagger-ui-bundle:1.10.8",
         ivy"com.softwaremill.sttp.tapir::tapir-json-circe:1.10.8",
         ivy"com.plaid:plaid-java:23.0.0",
-        ivy"com.softwaremill.sttp.client3::circe:3.9.6",
+        ivy"com.softwaremill.sttp.client3::core:3.9.7",
+        ivy"com.softwaremill.sttp.client3::circe:3.9.7",
         ivy"ch.qos.logback:logback-classic:1.5.6",
         ivy"org.postgresql:postgresql::42.2.18",
         ivy"org.scalikejdbc::scalikejdbc:4.3.0",
@@ -35,8 +38,10 @@ object api extends ScalaModule with ScalafixModule with scalafmt.ScalafmtModule 
     )
 
     object test extends ScalaTests with TestModule.ScalaTest with ScalafixModule with scalafmt.ScalafmtModule {
-        override def sources = T.sources { os.pwd / "src" / "test" }
-        
+        override def sources = T.sources {
+            os.pwd / "src" / "test"
+        }
+
         def ivyDeps = Agg(
             ivy"com.softwaremill.sttp.tapir::tapir-sttp-stub-server:1.10.8",
             ivy"org.scalatest::scalatest:3.2.18",
@@ -49,7 +54,9 @@ object api extends ScalaModule with ScalafixModule with scalafmt.ScalafmtModule 
 object cli extends ScalaModule with ScalafixModule with scalafmt.ScalafmtModule {
     def scalaVersion = "3.4.2"
 
-    override def sources = T.sources { os.pwd / "src" / "cli" }
+    override def sources = T.sources {
+        os.pwd / "src" / "cli"
+    }
 
     override def scalacOptions = T {
         super.scalacOptions() ++ Seq("-Wunused:imports")
