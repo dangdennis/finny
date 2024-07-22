@@ -1,11 +1,12 @@
 package api.handlers
 
 import api.models.AuthenticationError
-import api.models.Profile
+import api.services.AuthService
+import api.models.UserId
 
 object UserHandler:
-    def handleUserDelete(user: Profile): Either[AuthenticationError, Unit] =
-        // delete plaid items
-        // delete user
-
-        Right(())
+    def handleUserDelete(userId: UserId): Either[AuthenticationError, Unit] = AuthService
+        .deleteUser(userId)
+        .left
+        .map(_ => AuthenticationError(400))
+        .map(_ => Right(()))

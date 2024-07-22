@@ -32,7 +32,7 @@ object Routes:
 
         val usersDeleteRoute = protectedApiRouteGroup.delete.in("users" / "delete")
 
-        val usersDeleteServerEndpoint = usersDeleteRoute.handle(user => input => UserHandler.handleUserDelete(user))
+        val usersDeleteServerEndpoint = usersDeleteRoute.handle(user => input => UserHandler.handleUserDelete(user.id))
 
         val plaidItemsGetRoute = protectedApiRouteGroup
             .get
