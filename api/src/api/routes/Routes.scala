@@ -4,6 +4,7 @@ import api.common.*
 import api.dtos.*
 import api.handlers.*
 import api.models.*
+import api.repositories.ProfileRepository
 import com.auth0.jwt.*
 import com.auth0.jwt.algorithms.Algorithm
 import io.circe.generic.auto.*
@@ -15,6 +16,8 @@ import sttp.tapir.server.metrics.prometheus.PrometheusMetrics
 import sttp.tapir.swagger.bundle.SwaggerInterpreter
 
 import java.util.UUID
+import scala.util.Failure
+import scala.util.Success
 import scala.util.Try
 
 object Routes:
@@ -26,6 +29,10 @@ object Routes:
             .securityIn(auth.bearer[String]().mapTo[AuthenticationToken])
             .errorOut(plainBody[Int].mapTo[AuthenticationError])
             .handleSecurity(makeAuthenticator(authConfig))
+
+        val usersDeleteRoute = protectedApiRouteGroup.delete.in("users" / "delete")
+
+        val usersDeleteServerEndpoint = usersDeleteRoute.handle(user => input => UserHandler.handleUserDelete(user))
 
         val plaidItemsGetRoute = protectedApiRouteGroup
             .get
@@ -96,8 +103,16 @@ object Routes:
             val verifier = JWT.require(algorithm).withIssuer(authConfig.jwtIssuer).build()
             val decodedJwt = Try(verifier.verify(token.value))
             decodedJwt match
-                case scala.util.Success(jwt) =>
-                    Right(Profile(id = UUID.fromString(jwt.getSubject())))
-                case scala.util.Failure(error) =>
+                case Success(jwt) =>
+                    val userId = UUID.fromString(jwt.getSubject())
+                    ProfileRepository.getProfileByUserId(userId) match
+                        case Failure(error) =>
+                            Logger.root.error(s"Error fetching profile by user id", error)
+                            Left(AuthenticationError(500))
+                        case Success(None) =>
+                            Left(AuthenticationError(404))
+                        case Success(Some(Profile(id))) =>
+                            Right(Profile(id = userId))
+                case Failure(error) =>
                     Logger.root.error(s"Error decoding JWT", error)
                     Left(AuthenticationError(400))
