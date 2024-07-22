@@ -13,13 +13,13 @@ object Cli {
         val config = Environment.DatabaseConfig(
             host = "jdbc:postgresql://aws-0-us-east-1.pooler.supabase.com:6543/postgres",
             user = "postgres.tqonkxhrucymdyndpjzf",
-            password = "I07R6V4POCTi5wd4"
+            password = "x"
         )
         Database.init(config)
         println("Database initialized")
         val plaidClient = PlaidService.makePlaidClient(
             clientId = "661ac9375307a3001ba2ea46",
-            secret = "b7cdf3790e64dffb46b4edd1762f70",
+            secret = "x",
             env = AppEnv.Production
         )
 
