@@ -1,18 +1,20 @@
-import 'package:finny/src/accounts/accounts_controller.dart';
-import 'package:finny/src/accounts/accounts_service.dart';
-import 'package:finny/src/auth/auth_controller.dart';
-import 'package:finny/src/auth/auth_service.dart';
-import 'package:finny/src/connections/connections_controller.dart';
-import 'package:finny/src/connections/connections_service.dart';
-import 'package:finny/src/transactions/transactions_controller.dart';
+import 'package:finny/src/auth/auth_provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
+import 'package:provider/provider.dart';
 
 import 'src/app.dart';
+import 'src/accounts/accounts_controller.dart';
+import 'src/accounts/accounts_service.dart';
+import 'src/auth/auth_controller.dart';
+import 'src/auth/auth_service.dart';
+import 'src/connections/connections_controller.dart';
+import 'src/connections/connections_service.dart';
 import 'src/powersync/powersync.dart';
 import 'src/settings/settings_controller.dart';
 import 'src/settings/settings_service.dart';
+import 'src/transactions/transactions_controller.dart';
 
 void main() async {
   Logger.root.level = Level.INFO;
@@ -36,10 +38,11 @@ void main() async {
   await openDatabaseAndInitSupabase();
 
   final accountsService = AccountsService();
+  final authService = AuthService();
   final connectionsService =
       ConnectionsService(accountsService: accountsService);
   final settingsController = SettingsController(SettingsService());
-  final authController = AuthController(AuthService());
+  final authController = AuthController(authService);
   final accountsController = AccountsController(AccountsService());
   final transactionsController = TransactionsController();
   final connectionsController = ConnectionsController(connectionsService);
@@ -48,15 +51,19 @@ void main() async {
   // This prevents a sudden theme change when the app is first displayed.
   await settingsController.loadSettings();
 
-  // Run the app and pass in the SettingsController. The app listens to the
-  // SettingsController for changes, then passes it further down to the
-  // SettingsView.
-  runApp(Finny(
-    settingsController: settingsController,
-    authController: authController,
-    accountsController: accountsController,
-    transactionsController: transactionsController,
-    connectionsController: connectionsController,
-    isLoggedIn: authController.isLoggedIn,
-  ));
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+            create: (_) => AuthProvider(authService: authService)),
+      ],
+      child: MyApp(
+        settingsController: settingsController,
+        authController: authController,
+        accountsController: accountsController,
+        transactionsController: transactionsController,
+        connectionsController: connectionsController,
+      ),
+    ),
+  );
 }

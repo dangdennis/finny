@@ -54,8 +54,7 @@ class ConnectionsService {
 
     final headers = {
       'Content-Type': 'application/json',
-      'Authorization':
-          'Bearer $accessToken',
+      'Authorization': 'Bearer $accessToken',
     };
 
     final body = json.encode({
@@ -88,8 +87,7 @@ class ConnectionsService {
 
     final headers = {
       'Content-Type': 'application/json',
-      'Authorization':
-          'Bearer $accessToken',
+      'Authorization': 'Bearer $accessToken',
     };
 
     final response =
@@ -121,8 +119,7 @@ class ConnectionsService {
 
     final headers = {
       'Content-Type': 'application/json',
-      'Authorization':
-          'Bearer $accessToken',
+      'Authorization': 'Bearer $accessToken',
     };
 
     try {
@@ -158,8 +155,7 @@ class ConnectionsService {
 
     final headers = {
       'Content-Type': 'application/json',
-      'Authorization':
-          'Bearer $accessToken',
+      'Authorization': 'Bearer $accessToken',
     };
 
     final body = json.encode({
