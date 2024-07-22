@@ -13,4 +13,8 @@ class ConnectionsController {
   Future<List<PlaidItem>> getPlaidItems() async {
     return connectionsService.getPlaidItems();
   }
+
+  Future<void> deletePlaidItem(PlaidItem item) async {
+    return connectionsService.deletePlaidItem(item);
+  }
 }

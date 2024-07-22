@@ -8,6 +8,8 @@ class AppConfig {
   static final plaidItemsListUrl = Uri.parse("$apiBaseUrl/plaid-items/list");
   static final plaidItemsCreateUrl =
       Uri.parse("$apiBaseUrl/plaid-items/create");
+  static final plaidItemsDeleteUrl =
+      Uri.parse("$apiBaseUrl/plaid-items/delete");
   static final plaidLinksCreateUrl =
       Uri.parse("$apiBaseUrl/plaid-links/create");
 }

@@ -1,4 +1,5 @@
 import 'package:finny/src/accounts/account.dart';
+import 'package:finny/src/institutions/institutions_model.dart';
 
 class PlaidItem {
   final String id;
@@ -23,31 +24,7 @@ class PlaidItem {
     required this.accounts,
   });
 
-  factory PlaidItem.fromJson(Map<String, dynamic> json) {
-    return PlaidItem(
-        // id: 'id',
-        // institutionId: 'institutionId',
-        // status: 'status',
-        // createdAt: DateTime.now(),
-        lastSyncedAt: DateTime.now(),
-        lastSyncError: 'lastSyncError',
-        lastSyncErrorAt: DateTime.now(),
-        retryCount: 5,
-        //
-        id: json['id'],
-        institutionId: json['institutionId'],
-        status: json['status'],
-        createdAt: DateTime.parse(json['createdAt'] as String),
-        // lastSyncedAt: json['lastSyncedAt'] != null
-        //     ? DateTime.parse(json['lastSyncedAt'])
-        //     : null,
-        // lastSyncError: json['lastSyncError'],
-        // lastSyncErrorAt: json['lastSyncErrorAt'] != null
-        //     ? DateTime.parse(json['lastSyncErrorAt'])
-        //     : null,
-        // retryCount: json['retryCount'],
-        accounts: []);
-  }
+  String get institutionName => institutions[institutionId]?.name ?? 'Unknown';
 
   @override
   String toString() {

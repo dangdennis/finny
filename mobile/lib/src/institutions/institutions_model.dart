@@ -29,13 +29,15 @@ class Institution {
   }
 }
 
-Map<String, Institution> createInstitutionMap() {
+Map<String, Institution> createInstitutions() {
   final jsonList = jsonDecode(institutionsJson)['institutions'];
   return {
     for (var item in jsonList)
       item['institution_id'] as String: Institution.fromJson(item)
   };
 }
+
+final institutions = createInstitutions();
 
 const institutionsJson = """
 {

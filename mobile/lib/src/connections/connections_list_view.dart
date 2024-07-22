@@ -15,93 +15,178 @@ class ConnectionsListView extends StatefulWidget {
 }
 
 class _ConnectionsListViewState extends State<ConnectionsListView> {
+  late Future<List<PlaidItem>> _futurePlaidItems;
   List<PlaidItem> _plaidItems = [];
-  bool _isLoading = true;
   final Logger _logger = Logger('ConnectionsListView');
 
   @override
   void initState() {
     super.initState();
-    fetchConnections();
+    _futurePlaidItems = fetchConnections();
   }
 
-  Future<void> fetchConnections() async {
+  Future<List<PlaidItem>> fetchConnections() async {
     try {
-      setState(() {
-        _isLoading = true;
-      });
       final items = await widget.connectionsController.getPlaidItems();
-      setState(() {
-        _plaidItems = items;
-        _isLoading = false;
-      });
+      _plaidItems = items;
+      return items;
     } catch (e) {
-      _logger.warning('failed to fetch connections', e);
-      setState(() {
-        _isLoading = false;
-      });
+      _logger.warning('Failed to fetch connections', e);
+      rethrow;
     }
+  }
+
+  Future<void> deleteConnection(PlaidItem item) async {
+    try {
+      await widget.connectionsController.deletePlaidItem(item);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${item.institutionName} deleted')),
+        );
+      }
+    } catch (e) {
+      _logger.warning('Failed to delete connection', e);
+      setState(() {
+        _plaidItems.add(item);
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to delete connection')),
+        );
+      }
+    }
+  }
+
+  Future<bool?> _showConfirmationDialog(
+      BuildContext context, String institutionName) {
+    return showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Delete Connection'),
+          content: Text(
+              'Are you sure you want to delete the connection with $institutionName?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Connections')),
-      floatingActionButton: _isLoading
-          ? null
-          : FloatingActionButton(
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(32.0)),
-              ),
-              onPressed: () {
-                widget.connectionsController.openPlaidLink();
-              },
-              child: const Icon(Icons.add),
-            ),
-      body: Stack(
-        children: [
-          _plaidItems.isNotEmpty
-              ? Container(child: null)
-              : Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text(
-                        'No connections yet',
-                        style: TextStyle(fontSize: 16),
-                      ),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: _isLoading
-                            ? null
-                            : () {
-                                widget.connectionsController.openPlaidLink();
-                              },
-                        child: const Text('Connect an institution'),
-                      ),
-                    ],
+      body: FutureBuilder<List<PlaidItem>>(
+        future: _futurePlaidItems,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Failed to load connections',
+                    style: TextStyle(fontSize: 16),
                   ),
-                ),
-          RefreshIndicator(
-            onRefresh: fetchConnections,
-            child: ListView.builder(
-              itemCount: _plaidItems.length,
-              itemBuilder: (context, index) {
-                final item = _plaidItems[index];
-                return ListTile(
-                  title: Text(item.id),
-                  subtitle: Text(item.institutionId),
-                  // onTap: () {
-                  //   Navigator.of(context).pushNamed(Routes.transactions,
-                  //       arguments: {'plaidItemId': item.plaidItemId});
-                  // },
-                );
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        _futurePlaidItems = fetchConnections();
+                      });
+                    },
+                    child: const Text('Try Again'),
+                  ),
+                ],
+              ),
+            );
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'No connections yet',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      widget.connectionsController.openPlaidLink();
+                    },
+                    child: const Text('Connect an institution'),
+                  ),
+                ],
+              ),
+            );
+          } else {
+            final plaidItems = snapshot.data!;
+            return RefreshIndicator(
+              onRefresh: () async {
+                setState(() {
+                  _futurePlaidItems = fetchConnections();
+                });
+                await _futurePlaidItems;
               },
-            ),
-          ),
-        ],
+              child: ListView.builder(
+                itemCount: plaidItems.length,
+                itemBuilder: (context, index) {
+                  final item = plaidItems[index];
+                  return Dismissible(
+                    key: Key(item.id),
+                    direction: DismissDirection.endToStart,
+                    confirmDismiss: (direction) async {
+                      return await _showConfirmationDialog(
+                              context, item.institutionName) ??
+                          false;
+                    },
+                    onDismissed: (direction) {
+                      setState(() {
+                        _plaidItems.removeAt(index);
+                      });
+                      deleteConnection(item);
+                    },
+                    background: Container(
+                      color: Colors.red,
+                      alignment: Alignment.centerRight,
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: const Icon(Icons.delete, color: Colors.white),
+                    ),
+                    child: ListTile(
+                      title: Text(item.institutionName),
+                      subtitle: Text(
+                          "${item.accounts.length} account${item.accounts.length == 1 ? '' : 's'}"),
+                    ),
+                  );
+                },
+              ),
+            );
+          }
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(32.0)),
+        ),
+        onPressed: () {
+          widget.connectionsController.openPlaidLink();
+        },
+        child: const Icon(Icons.add),
       ),
     );
   }
