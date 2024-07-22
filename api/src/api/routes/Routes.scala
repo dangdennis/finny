@@ -111,8 +111,8 @@ object Routes:
                             Left(AuthenticationError(500))
                         case Success(None) =>
                             Left(AuthenticationError(404))
-                        case Success(Some(Profile(id))) =>
-                            Right(Profile(id = userId))
+                        case Success(Some(profile)) =>
+                            Right(profile)
                 case Failure(error) =>
                     Logger.root.error(s"Error decoding JWT", error)
                     Left(AuthenticationError(400))

@@ -16,8 +16,15 @@ object ProfileRepository:
     def getProfileByUserId(userId: UUID): Try[Option[Profile]] = Try(
         DB.readOnly { implicit session =>
             sql"select id from profiles where id = ${userId}"
-                .map(rs => Profile(id = UUID.fromString(rs.string("id"))))
+                .map(rs =>
+                    Profile(
+                        id = UUID.fromString(rs.string("id")),
+                        deletedAt = rs.timestampOpt("deleted_at").map(_.toInstant)
+                    )
+                )
                 .single
                 .apply()
         }
     )
+
+    // def deleteProfileAndUser(userId: UUID): Try[Int] = Try(
