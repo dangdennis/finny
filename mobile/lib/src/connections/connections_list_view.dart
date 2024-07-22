@@ -39,9 +39,6 @@ class _ConnectionsListViewState extends State<ConnectionsListView> {
   Future<void> deleteConnection(PlaidItem item) async {
     try {
       await widget.connectionsController.deletePlaidItem(item);
-      setState(() {
-        _plaidItems.remove(item);
-      });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('${item.institutionName} deleted')),
@@ -49,6 +46,9 @@ class _ConnectionsListViewState extends State<ConnectionsListView> {
       }
     } catch (e) {
       _logger.warning('Failed to delete connection', e);
+      setState(() {
+        _plaidItems.add(item);
+      });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Failed to delete connection')),
@@ -135,6 +135,7 @@ class _ConnectionsListViewState extends State<ConnectionsListView> {
               ),
             );
           } else {
+            final plaidItems = snapshot.data!;
             return RefreshIndicator(
               onRefresh: () async {
                 setState(() {
@@ -143,56 +144,22 @@ class _ConnectionsListViewState extends State<ConnectionsListView> {
                 await _futurePlaidItems;
               },
               child: ListView.builder(
-                itemCount: _plaidItems.length,
+                itemCount: plaidItems.length,
                 itemBuilder: (context, index) {
-                  final item = _plaidItems[index];
+                  final item = plaidItems[index];
                   return Dismissible(
                     key: Key(item.id),
                     direction: DismissDirection.endToStart,
-                    confirmDismiss: (_) async {
+                    confirmDismiss: (direction) async {
                       return await _showConfirmationDialog(
                               context, item.institutionName) ??
                           false;
                     },
-                    onDismissed: (_) async {
-                      // Optimistically update the UI by removing the item
-                      // If deletion fails, re-add the item
-                      final removedItem = item;
-                      final removedIndex = index;
-
-                      // Show a snackbar while deleting the item
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('${item.institutionName} deleting...'),
-                          duration: const Duration(seconds: 2),
-                        ),
-                      );
-
-                      try {
-                        await widget.connectionsController
-                            .deletePlaidItem(item);
-                        setState(() {
-                          _plaidItems.removeAt(index);
-                        });
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                                content:
-                                    Text('${item.institutionName} deleted')),
-                          );
-                        }
-                      } catch (e) {
-                        _logger.warning('Failed to delete connection', e);
-                        setState(() {
-                          _plaidItems.insert(removedIndex, removedItem);
-                        });
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text('Failed to delete connection')),
-                          );
-                        }
-                      }
+                    onDismissed: (direction) {
+                      setState(() {
+                        _plaidItems.removeAt(index);
+                      });
+                      deleteConnection(item);
                     },
                     background: Container(
                       color: Colors.red,
