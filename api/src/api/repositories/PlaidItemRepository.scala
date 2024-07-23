@@ -2,6 +2,7 @@ package api.repositories
 
 import api.models.PlaidItem
 import api.models.PlaidItemStatus
+import api.models.UserId
 import scalikejdbc.*
 
 import java.time.Duration
@@ -10,7 +11,7 @@ import java.util.UUID
 import scala.util.Try
 
 object PlaidItemRepository:
-    def getItemsByUserId(userId: UUID): Either[Throwable, List[PlaidItem]] =
+    def getItemsByUserId(userId: UserId): Either[Throwable, List[PlaidItem]] =
         Try(
             DB.readOnly { implicit session =>
                 sql"""
@@ -184,7 +185,7 @@ object PlaidItemRepository:
             }
         ).toEither
 
-    def getItemsDebug(): Either[Throwable, List[PlaidItem]] =
+    def debugGetItems(): Either[Throwable, List[PlaidItem]] =
         Try(
             DB.readOnly { implicit session =>
                 sql"""
@@ -208,11 +209,7 @@ object PlaidItemRepository:
         ).toEither
 
     def deleteItemById(itemId: UUID)(implicit session: DBSession): Either[Throwable, Int] =
-        for
-            _ <- TransactionRepository.deleteTransactionsByItemId(itemId)
-            _ <- AccountRepository.deleteAccountsByItemId(itemId)
-            res <- Try(sql"""DELETE FROM plaid_items WHERE id = $itemId""".update.apply()).toEither
-        yield res
+        Try(sql"""DELETE FROM plaid_items WHERE id = $itemId""".update.apply()).toEither
 
     private def dbToModel(rs: WrappedResultSet) = PlaidItem(
         id = UUID.fromString(rs.string("id")),

@@ -70,7 +70,7 @@ object TransactionRepository {
         }
     )
 
-    def deleteTransactionsByPlaidIds(plaidTransactionIds: List[String]): Try[Unit] =
+    def deleteTransactionsByPlaidTransactionIds(plaidTransactionIds: List[String]): Try[Unit] =
         if plaidTransactionIds.isEmpty then
             return Try(())
         else
@@ -90,7 +90,7 @@ object TransactionRepository {
                 SELECT accounts.id
                 FROM accounts
                 WHERE accounts.item_id = $itemId
-            );      
+            );
         """.execute.apply()).toEither
 
     def getTransactionsByAccountId(accountId: UUID): Try[List[Transaction]] = Try(

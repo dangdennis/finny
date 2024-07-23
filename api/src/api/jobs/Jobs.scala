@@ -2,6 +2,8 @@ package api.jobs
 
 import api.common.LavinMqClient
 import api.common.Logger
+import api.models.UserId
+import api.repositories.ProfileRepository
 import api.services.PlaidSyncService
 import cats.syntax.all.*
 import com.rabbitmq.client.Channel
@@ -15,6 +17,7 @@ import io.circe.syntax.*
 
 import java.util.UUID
 import scala.util.Try
+import api.services.DeletionService
 
 object Jobs:
     val jobConnection: Connection = LavinMqClient.createConnection()
@@ -65,18 +68,18 @@ object Jobs:
 
     enum JobRequest:
         case JobSyncPlaidItem(id: UUID = UUID.randomUUID(), itemId: UUID, syncType: SyncType, environment: String)
-        case AnotherJob(id: UUID = UUID.randomUUID(), data: String)
+        case JobDeleteUser(id: UUID = UUID.randomUUID(), userId: UUID)
 
     object JobRequest:
         given Codec[JobSyncPlaidItem] = deriveCodec
-        given Codec[AnotherJob] = deriveCodec
+        given Codec[JobDeleteUser] = deriveCodec
         given Encoder[JobRequest] = Encoder.instance {
             case job: JobSyncPlaidItem =>
                 job.asJson
-            case job: AnotherJob =>
+            case job: JobDeleteUser =>
                 job.asJson
         }
-        given Decoder[JobRequest] = Decoder[JobSyncPlaidItem].widen.or(Decoder[AnotherJob].widen)
+        given Decoder[JobRequest] = Decoder[JobSyncPlaidItem].widen.or(Decoder[JobDeleteUser].widen)
 
     def startWorker(): Any =
         val deliverCallback: DeliverCallback =
@@ -87,7 +90,7 @@ object Jobs:
                         Logger.root.error(s"Failed to parse job request: $body", e)
                     case Right(job) =>
                         job match
-                            case job: JobRequest.AnotherJob =>
+                            case job: JobRequest.JobDeleteUser =>
                                 handleAnotherJob(job, delivery)
                             case job: JobRequest.JobSyncPlaidItem =>
                                 handleJobSyncPlaidItem(job, delivery)
@@ -100,17 +103,14 @@ object Jobs:
         )
 
     private def handleJobSyncPlaidItem(job: JobRequest.JobSyncPlaidItem, delivery: Delivery): Unit =
-        Logger.root.info(s"Handling $job")
-
+        Logger.root.info(s"Handling JobSyncPlaidItem $job")
         job.syncType match
             case SyncType.Initial | SyncType.Default =>
                 PlaidSyncService.sync(itemId = job.itemId)
             case SyncType.Historical =>
                 PlaidSyncService.syncHistorical(itemId = job.itemId)
-
         jobChannel.basicAck(delivery.getEnvelope.getDeliveryTag, false)
 
-    private def handleAnotherJob(job: JobRequest.AnotherJob, delivery: Delivery): Unit =
-        Logger.root.info(s"Handling AnotherJob: $job")
-        // Add your job handling logic here
-        jobChannel.basicAck(delivery.getEnvelope.getDeliveryTag, false)
+    private def handleAnotherJob(job: JobRequest.JobDeleteUser, delivery: Delivery): Unit =
+        Logger.root.info(s"Handling JobDeleteUser $job")
+        DeletionService.deleteUserEverything(UserId(job.userId))

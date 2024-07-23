@@ -1,6 +1,5 @@
 package test.services
-import api.repositories.AccountRepository
-import api.repositories.PlaidItemRepository
+
 import api.services.AuthService
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.BeforeAndAfterEach
@@ -14,7 +13,7 @@ import java.util.UUID
 
 class AuthServiceSpec extends AnyFlatSpec, Matchers, EitherValues, BeforeAndAfterAll, BeforeAndAfterEach:
     override protected def beforeAll(): Unit = TestHelper.beforeAll()
-    // override protected def afterEach(): Unit = TestHelper.afterEach()
+    override protected def afterEach(): Unit = TestHelper.afterEach()
 
     "deleteUser" should "soft delete user" in {
         // given

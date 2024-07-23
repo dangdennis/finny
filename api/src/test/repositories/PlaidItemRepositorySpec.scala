@@ -2,21 +2,14 @@ package test.repositories
 
 import api.common.Time
 import api.models.PlaidItemStatus
-import api.repositories.AccountRepository
-import api.repositories.AccountRepository.UpsertAccountInput
 import api.repositories.PlaidItemRepository
 import api.repositories.PlaidItemRepository.CreateItemInput
-import api.repositories.TransactionRepository
-import api.repositories.TransactionRepository.UpsertTransactionInput
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.EitherValues
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import scalikejdbc.DB
 import test.helpers.*
-
-import scala.util.Try
 
 class PlaidItemRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, BeforeAndAfterAll, BeforeAndAfterEach:
     override protected def beforeAll(): Unit = TestHelper.beforeAll()
@@ -150,89 +143,3 @@ class PlaidItemRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, Befor
         // then
         items.size should be(2)
     }
-
-    "deleteItemById" should "delete plaid item as well as associated accounts and transactions in db transaction" in:
-        // given
-        val user = AuthServiceHelper.createUser()
-        val item =
-            PlaidItemRepository
-                .getOrCreateItem(
-                    CreateItemInput(
-                        userId = user.id,
-                        plaidAccessToken = "somePlaid",
-                        plaidInstitutionId = "institutionId",
-                        plaidItemId = "somePlaidItemId",
-                        status = PlaidItemStatus.Bad,
-                        transactionsCursor = None
-                    )
-                )
-                .value
-        val accountId =
-            AccountRepository
-                .upsertAccount(
-                    UpsertAccountInput(
-                        itemId = item.id,
-                        userId = user.id,
-                        accountSubtype = Some("checking"),
-                        accountType = Some("depository"),
-                        availableBalance = 100.0,
-                        currentBalance = 100.0,
-                        isoCurrencyCode = Some("USD"),
-                        mask = Some("1234"),
-                        name = "Alice",
-                        officialName = Some("Alice's Checking"),
-                        plaidAccountId = "somePlaidAccountId",
-                        unofficialCurrencyCode = Some("USD")
-                    )
-                )
-                .get
-        val transaction = TransactionRepository.upsertTransaction(input =
-            UpsertTransactionInput(
-                accountId = accountId,
-                plaidTransactionId = "somePlaidTransactionId2",
-                category = Some("someOtherCategory"),
-                subcategory = Some("someOtherSubcategory"),
-                transactionType = "someType",
-                name = "someName",
-                amount = 100.0,
-                isoCurrencyCode = Some("USD"),
-                unofficialCurrencyCode = Some("USD"),
-                date = java.time.Instant.now(),
-                pending = false,
-                accountOwner = Some("Dennis")
-            )
-        )
-
-        val items = PlaidItemRepository.getItemsDebug().value
-        items should have size 1
-        val accounts = AccountRepository.getAccounts(userId = user.id).get
-        accounts should have size 1
-        val transactions = TransactionRepository.getTransactionsByAccountId(accountId).get
-        transactions should have size 1
-
-        // test rollback on exception
-        val res = Try(
-            DB localTx { implicit session =>
-                PlaidItemRepository.deleteItemById(item.id)
-                throw new Exception("rollback")
-            }
-        )
-
-        val itemsAfterException = PlaidItemRepository.getItemsDebug().value
-        itemsAfterException should have size 1
-        val accountsAfterException = AccountRepository.getAccounts(userId = user.id).get
-        accountsAfterException should have size 1
-        val transactionsAfterException = TransactionRepository.getTransactionsByAccountId(accountId).get
-        transactionsAfterException should have size 1
-
-        // delete the item and associated accounts and transactions
-        DB localTx { implicit session =>
-            PlaidItemRepository.deleteItemById(item.id)
-        }
-
-        val itemsAfterDeletion = PlaidItemRepository.getItemsDebug().value
-        itemsAfterDeletion should have size 0
-        val accountsAfterDeletion = AccountRepository.getAccounts(userId = user.id).get
-        accountsAfterDeletion should have size 0
-        val transactionsAfterDeletion = TransactionRepository.getTransactionsByAccountId(accountId).get
-        transactionsAfterDeletion should have size 0

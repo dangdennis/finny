@@ -16,7 +16,7 @@ object AuthService:
     val supabaseKey = Environment.getSupabaseKey
 
     case class AdminDeleteUserInput(should_soft_delete: Boolean)
-    given Encoder[AdminDeleteUserInput] = deriveEncoder[AdminDeleteUserInput]
+    given Encoder[AdminDeleteUserInput] = deriveEncoder
 
     def deleteUser(userId: UserId, shouldSoftDelete: Boolean): Either[String, Boolean] =
         val request = basicRequest
@@ -35,8 +35,8 @@ object AuthService:
 
     case class AdminCreateUserInput(email: String, password: String, email_confirm: Boolean)
     case class AdminCreateUserOutput(id: String, email: String)
-    given Encoder[AdminCreateUserInput] = deriveEncoder[AdminCreateUserInput]
-    given Decoder[AdminCreateUserOutput] = deriveDecoder[AdminCreateUserOutput]
+    given Encoder[AdminCreateUserInput] = deriveEncoder
+    given Decoder[AdminCreateUserOutput] = deriveDecoder
 
     def createUserViaSupabaseAuth(
         email: String,
@@ -55,7 +55,7 @@ object AuthService:
 
         request.send(HttpClientSyncBackend()) match
             case response if response.isSuccess =>
-                Logger.root.info(s"User ${email} was successfully created")
+                Logger.root.info(s"User was successfully created via Supabase")
                 response
                     .body
                     .left
