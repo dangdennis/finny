@@ -3,7 +3,7 @@ package api.jobs
 import api.common.LavinMqClient
 import api.common.Logger
 import api.models.UserId
-import api.repositories.ProfileRepository
+import api.services.DeletionService
 import api.services.PlaidSyncService
 import cats.syntax.all.*
 import com.rabbitmq.client.Channel
@@ -17,7 +17,6 @@ import io.circe.syntax.*
 
 import java.util.UUID
 import scala.util.Try
-import api.services.DeletionService
 
 object Jobs:
     val jobConnection: Connection = LavinMqClient.createConnection()
@@ -113,4 +112,10 @@ object Jobs:
 
     private def handleAnotherJob(job: JobRequest.JobDeleteUser, delivery: Delivery): Unit =
         Logger.root.info(s"Handling JobDeleteUser $job")
-        DeletionService.deleteUserEverything(UserId(job.userId))
+        DeletionService
+            .deleteUserEverything(UserId(job.userId))
+            .left
+            .foreach { e =>
+                Logger.root.error(s"Failed to delete user ${job.userId} in job ${job.id}", e)
+            }
+        jobChannel.basicAck(delivery.getEnvelope.getDeliveryTag, false)
