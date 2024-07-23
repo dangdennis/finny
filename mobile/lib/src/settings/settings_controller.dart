@@ -47,4 +47,8 @@ class SettingsController with ChangeNotifier {
     // SettingService.
     await _settingsService.updateThemeMode(newThemeMode);
   }
+
+  Future<void> deleteSelf() async {
+    await _settingsService.deleteSelf();
+  }
 }

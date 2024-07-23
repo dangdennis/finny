@@ -41,7 +41,10 @@ void main() async {
   final authService = AuthService();
   final connectionsService =
       ConnectionsService(accountsService: accountsService);
-  final settingsController = SettingsController(SettingsService());
+  final authProvider = AuthProvider(authService: authService);
+  final settingsController = SettingsController(SettingsService(
+    authProvider: authProvider,
+  ));
   final authController = AuthController(authService);
   final accountsController = AccountsController(AccountsService());
   final transactionsController = TransactionsController();
@@ -53,10 +56,7 @@ void main() async {
 
   runApp(
     MultiProvider(
-      providers: [
-        ChangeNotifierProvider(
-            create: (_) => AuthProvider(authService: authService)),
-      ],
+      providers: [ChangeNotifierProvider(create: (_) => authProvider)],
       child: MyApp(
         settingsController: settingsController,
         authController: authController,
