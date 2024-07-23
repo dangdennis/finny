@@ -161,7 +161,7 @@ object PlaidSyncService:
                         )
                     )
 
-        TransactionRepository.deleteTransactionsByPlaidIds(removed.map(_.getTransactionId()).toList)
+        TransactionRepository.deleteTransactionsByPlaidTransactionIds(removed.map(_.getTransactionId()).toList)
 
         encounteredError match
             case (false, _) =>

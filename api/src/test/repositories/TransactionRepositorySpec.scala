@@ -18,12 +18,11 @@ import test.helpers.*
 
 class TransactionRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, BeforeAndAfterAll, BeforeAndAfterEach:
     override protected def beforeAll(): Unit = TestHelper.beforeAll()
-
     override protected def afterEach(): Unit = TestHelper.afterEach()
 
     "upsertTransaction" should "upsert transactions" in {
         // given
-        val user = AuthUserRepositoryHelper.createUser()
+        val user = AuthServiceHelper.createUser()
         val item =
             PlaidItemRepository
                 .getOrCreateItem(
@@ -147,7 +146,7 @@ class TransactionRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, Bef
         transaction.pending should be(false)
         transaction.accountOwner should be(Some("Alice"))
 
-        TransactionRepository.deleteTransactionsByPlaidIds(List(transaction.plaidTransactionId))
+        TransactionRepository.deleteTransactionsByPlaidTransactionIds(List(transaction.plaidTransactionId))
 
         val transactionsAfterDelete = DB.readOnly { implicit session =>
             sql"SELECT * FROM transactions".map(TransactionRepository.toModel).list.apply()

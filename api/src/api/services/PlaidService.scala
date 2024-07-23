@@ -242,7 +242,7 @@ object PlaidService:
                     )
         )
 
-    def removeItem(client: PlaidApi, itemId: UUID): Either[Throwable, Unit] = PlaidItemRepository
+    def deleteItem(client: PlaidApi, itemId: UUID): Either[Throwable, Unit] = PlaidItemRepository
         .getById(itemId)
         .map(plaidItem =>
             val req = ItemRemoveRequest().accessToken(plaidItem.plaidAccessToken)

@@ -17,11 +17,8 @@ object Cli {
         )
         Database.init(config)
         println("Database initialized")
-        val plaidClient = PlaidService.makePlaidClient(
-            clientId = "661ac9375307a3001ba2ea46",
-            secret = "x",
-            env = AppEnv.Production
-        )
+        val plaidClient = PlaidService
+            .makePlaidClient(clientId = "661ac9375307a3001ba2ea46", secret = "x", env = AppEnv.Production)
 
         args match
             case Seq() =>
@@ -30,7 +27,7 @@ object Cli {
                 command match
                     case "delete-item" =>
                         val results =
-                            for res <- PlaidService.removeItem(client = plaidClient, itemId = UUID.fromString(itemId))
+                            for res <- PlaidService.deleteItem(client = plaidClient, itemId = UUID.fromString(itemId))
                             yield res
                         println(results)
                     case _ =>

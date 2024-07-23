@@ -12,4 +12,5 @@ class AppConfig {
       Uri.parse("$apiBaseUrl/plaid-items/delete");
   static final plaidLinksCreateUrl =
       Uri.parse("$apiBaseUrl/plaid-links/create");
+  static final usersDeleteUrl = Uri.parse("$apiBaseUrl/users/delete");
 }

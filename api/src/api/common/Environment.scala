@@ -95,3 +95,17 @@ object Environment:
                 URI(sys.env.get("LAVIN_MQ_URL").get)
             case AppEnv.Development =>
                 URI("amqp://guest:guest@localhost:5672")
+
+    def getSupabaseUrl: String =
+        getAppEnv match
+            case AppEnv.Production =>
+                sys.env.get("SUPABASE_URL").get
+            case AppEnv.Development =>
+                "http://127.0.0.1:54321"
+
+    def getSupabaseKey: String =
+        getAppEnv match
+            case AppEnv.Production =>
+                sys.env.get("SUPABASE_KEY").get
+            case AppEnv.Development =>
+                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU"

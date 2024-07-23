@@ -1,0 +1,96 @@
+package test.services
+import api.models.PlaidItemStatus
+import api.repositories.AccountRepository
+import api.repositories.AccountRepository.UpsertAccountInput
+import api.repositories.PlaidItemRepository
+import api.repositories.PlaidItemRepository.CreateItemInput
+import api.repositories.TransactionRepository
+import api.repositories.TransactionRepository.UpsertTransactionInput
+import api.services.DeletionService
+import org.scalatest.BeforeAndAfterAll
+import org.scalatest.BeforeAndAfterEach
+import org.scalatest.EitherValues
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
+import repositories.AuthUserRepository
+import test.helpers.*
+
+import java.util.UUID
+
+class DeletionServiceSpec extends AnyFlatSpec, Matchers, EitherValues, BeforeAndAfterAll, BeforeAndAfterEach:
+    override protected def beforeAll(): Unit = TestHelper.beforeAll()
+    override protected def afterEach(): Unit = TestHelper.afterEach()
+
+    "deleteUserEverything" should
+        "delete all user data, including transaction, accounts, plaid items, goals, assets, profile, auth.user" in:
+            // given
+            val user =
+                AuthServiceHelper.createUserViaSupabaseAuth(email = "dennis@gmail.com", password = "password").value
+            val userId = UUID.fromString(user.id)
+            val item =
+                PlaidItemRepository
+                    .getOrCreateItem(
+                        CreateItemInput(
+                            userId = userId,
+                            plaidAccessToken = "somePlaid",
+                            plaidInstitutionId = "institutionId",
+                            plaidItemId = "somePlaidItemId",
+                            status = PlaidItemStatus.Bad,
+                            transactionsCursor = None
+                        )
+                    )
+                    .value
+            val accountId =
+                AccountRepository
+                    .upsertAccount(
+                        UpsertAccountInput(
+                            itemId = item.id,
+                            userId = userId,
+                            accountSubtype = Some("checking"),
+                            accountType = Some("depository"),
+                            availableBalance = 100.0,
+                            currentBalance = 100.0,
+                            isoCurrencyCode = Some("USD"),
+                            mask = Some("1234"),
+                            name = "Alice",
+                            officialName = Some("Alice's Checking"),
+                            plaidAccountId = "somePlaidAccountId",
+                            unofficialCurrencyCode = Some("USD")
+                        )
+                    )
+                    .get
+            val transaction = TransactionRepository.upsertTransaction(input =
+                UpsertTransactionInput(
+                    accountId = accountId,
+                    plaidTransactionId = "somePlaidTransactionId2",
+                    category = Some("someOtherCategory"),
+                    subcategory = Some("someOtherSubcategory"),
+                    transactionType = "someType",
+                    name = "someName",
+                    amount = 100.0,
+                    isoCurrencyCode = Some("USD"),
+                    unofficialCurrencyCode = Some("USD"),
+                    date = java.time.Instant.now(),
+                    pending = false,
+                    accountOwner = Some("Dennis")
+                )
+            )
+
+            val items = PlaidItemRepository.debugGetItems().value
+            items should have size 1
+            val accounts = AccountRepository.getAccounts(userId = userId).get
+            accounts should have size 1
+            val transactions = TransactionRepository.getTransactionsByAccountId(accountId).get
+            transactions should have size 1
+
+            val k = DeletionService.deleteUserEverything(userId)
+
+            val itemsAfterDeletion = PlaidItemRepository.debugGetItems().value
+            itemsAfterDeletion should have size 0
+            val accountsAfterDeletion = AccountRepository.getAccounts(userId = userId).get
+            accountsAfterDeletion should have size 0
+            val transactionsAfterDeletion = TransactionRepository.getTransactionsByAccountId(accountId).get
+            transactionsAfterDeletion should have size 0
+
+            val deletedUser = AuthUserRepository.getUser(userId).get
+            deletedUser should be(None)

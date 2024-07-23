@@ -14,12 +14,11 @@ import test.helpers.*
 
 class AccountRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, BeforeAndAfterAll, BeforeAndAfterEach:
     override protected def beforeAll(): Unit = TestHelper.beforeAll()
-
     override protected def afterEach(): Unit = TestHelper.afterEach()
 
     "upsertAccount" should "upsert accounts" in {
         // given
-        val user = AuthUserRepositoryHelper.createUser()
+        val user = AuthServiceHelper.createUser()
         val item =
             PlaidItemRepository
                 .getOrCreateItem(

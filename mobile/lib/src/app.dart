@@ -1,18 +1,19 @@
+import 'package:finny/src/accounts/account_details_view.dart';
+import 'package:finny/src/accounts/account_list_view.dart';
 import 'package:finny/src/accounts/accounts_controller.dart';
 import 'package:finny/src/auth/auth_controller.dart';
+import 'package:finny/src/auth/auth_provider.dart';
 import 'package:finny/src/auth/login_view.dart';
 import 'package:finny/src/connections/connections_controller.dart';
 import 'package:finny/src/connections/connections_list_view.dart';
+import 'package:finny/src/settings/settings_controller.dart';
+import 'package:finny/src/settings/settings_view.dart';
 import 'package:finny/src/transactions/transaction_details_view.dart';
 import 'package:finny/src/transactions/transaction_list_view.dart';
 import 'package:finny/src/transactions/transactions_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-
-import 'accounts/account_details_view.dart';
-import 'accounts/account_list_view.dart';
-import 'settings/settings_controller.dart';
-import 'settings/settings_view.dart';
+import 'package:provider/provider.dart';
 
 /// The Widget that configures your application.
 class MyApp extends StatelessWidget {
@@ -23,7 +24,6 @@ class MyApp extends StatelessWidget {
     required this.accountsController,
     required this.transactionsController,
     required this.connectionsController,
-    required this.isLoggedIn,
   });
 
   final SettingsController settingsController;
@@ -31,7 +31,6 @@ class MyApp extends StatelessWidget {
   final AccountsController accountsController;
   final TransactionsController transactionsController;
   final ConnectionsController connectionsController;
-  final bool isLoggedIn;
 
   @override
   Widget build(BuildContext context) {
@@ -74,14 +73,20 @@ class MyApp extends StatelessWidget {
           theme: ThemeData(),
           darkTheme: ThemeData.dark(),
           themeMode: settingsController.themeMode,
-          home: isLoggedIn
-              ? MainView(
+          home: Consumer<AuthProvider>(
+            builder: (context, authProvider, child) {
+              if (authProvider.isLoggedIn) {
+                return MainView(
                   accountsController: accountsController,
                   authController: authController,
                   settingsController: settingsController,
                   transactionsController: transactionsController,
-                )
-              : LoginView(authController: authController),
+                );
+              } else {
+                return LoginView(authController: authController);
+              }
+            },
+          ),
 
           // Define a function to handle named routes in order to support
           // Flutter web url navigation and deep linking.

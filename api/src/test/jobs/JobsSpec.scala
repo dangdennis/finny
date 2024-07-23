@@ -11,18 +11,21 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import test.helpers.*
 
+import java.util.UUID
+
 class JobsSpec extends AnyFlatSpec, Matchers, EitherValues, BeforeAndAfterAll, BeforeAndAfterEach:
     override protected def beforeAll(): Unit = TestHelper.beforeAll()
     override protected def beforeEach(): Unit = TestHelper.beforeEach()
 
-    "enqueueJobs" should "send messages" in:
+    "enqueueJobs" should "send clean serialized messages and consumers should be able to deserialize cleanly" in:
         // given
         val jobConnection = LavinMqClient.createConnection()
         val jobChannel = LavinMqClient.createChannel(jobConnection)
         val jobQueueName = "jobs"
 
         // when
-        val jobMsg = JobRequest.AnotherJob(data = "someDataX")
+        val userId = UUID.randomUUID()
+        val jobMsg = JobRequest.JobDeleteUser(userId = userId)
         Jobs.enqueueJob(jobMsg)
 
         val itemId = java.util.UUID.randomUUID()
@@ -32,14 +35,14 @@ class JobsSpec extends AnyFlatSpec, Matchers, EitherValues, BeforeAndAfterAll, B
         // then
         val response = jobChannel.basicGet(jobQueueName, false)
         val body = new String(response.getBody, "UTF-8")
-        val anotherJob = decode[JobRequest.AnotherJob](body)
-        anotherJob.value.data should be("someDataX")
+        val job1 = decode[JobRequest.JobDeleteUser](body)
+        job1.value.userId should be(userId)
         jobChannel.basicAck(response.getEnvelope.getDeliveryTag, false)
 
         val response2 = jobChannel.basicGet(jobQueueName, false)
         val body2 = new String(response2.getBody, "UTF-8")
-        val jobSyncPlaidItem = decode[JobRequest.JobSyncPlaidItem](body2)
-        jobSyncPlaidItem.value.itemId should be(itemId)
-        jobSyncPlaidItem.value.syncType should be(SyncType.Default)
-        jobSyncPlaidItem.value.syncType.toString should be("Default")
+        val job2 = decode[JobRequest.JobSyncPlaidItem](body2)
+        job2.value.itemId should be(itemId)
+        job2.value.syncType should be(SyncType.Default)
+        job2.value.syncType.toString should be("Default")
         jobChannel.basicAck(response2.getEnvelope.getDeliveryTag, false)

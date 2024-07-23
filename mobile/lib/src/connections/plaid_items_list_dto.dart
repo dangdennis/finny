@@ -1,4 +1,3 @@
-
 import 'package:finny/src/connections/plaid_item_dto.dart';
 
 class PlaidItemsListDto {
