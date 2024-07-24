@@ -3,7 +3,7 @@ package api.jobs
 import api.common.LavinMqClient
 import api.common.Logger
 import api.models.UserId
-import api.services.DeletionService
+import api.services.UserDeletionService
 import api.services.PlaidSyncService
 import cats.syntax.all.*
 import com.rabbitmq.client.Channel
@@ -31,9 +31,9 @@ object Jobs:
 
     private def declareJobQueue() = Try(jobChannel.queueDeclare(jobQueueName, true, false, false, null))
 
-    def enqueueJob(job: JobRequest): Unit =
+    def enqueueJob(job: JobRequest): Either[Throwable, Unit] =
         val payload = job.asJson.noSpaces
-        jobChannel.basicPublish("", jobQueueName, null, payload.getBytes("UTF-8"))
+        Try(jobChannel.basicPublish("", jobQueueName, null, payload.getBytes("UTF-8"))).toEither
 
     enum SyncType:
         case Initial
@@ -112,7 +112,7 @@ object Jobs:
 
     private def handleAnotherJob(job: JobRequest.JobDeleteUser, delivery: Delivery): Unit =
         Logger.root.info(s"Handling JobDeleteUser $job")
-        DeletionService
+        UserDeletionService
             .deleteUserEverything(UserId(job.userId))
             .left
             .foreach { e =>

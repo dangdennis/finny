@@ -2,6 +2,8 @@ package api.services
 
 import api.common.Environment
 import api.common.Logger
+import api.jobs.Jobs
+import api.jobs.Jobs.JobRequest
 import api.models.UserId
 import io.circe.*
 import io.circe.generic.semiauto.deriveDecoder
@@ -19,6 +21,8 @@ object AuthService:
     given Encoder[AdminDeleteUserInput] = deriveEncoder
 
     def deleteUser(userId: UserId, shouldSoftDelete: Boolean): Either[String, Boolean] =
+        Logger.root.info(s"Deleting user with ID ${userId} via Supabase")
+
         val request = basicRequest
             .delete(uri"$supabaseUrl/auth/v1/admin/users/${userId}")
             .body(AdminDeleteUserInput(should_soft_delete = shouldSoftDelete).asJson.noSpaces)
@@ -29,7 +33,13 @@ object AuthService:
 
         request.send(HttpClientSyncBackend()) match
             case response if response.isSuccess =>
-                Right(true)
+                Jobs.enqueueJob(JobRequest.JobDeleteUser(userId = userId))
+                    .left
+                    .map(err =>
+                        Logger.root.error(s"Failed to enqueue job to delete user with ID ${userId} $err")
+                        s"Failed to enqueue job to delete user with ID ${userId}"
+                    )
+                    .map(_ => true)
             case response =>
                 Left(s"Failed to delete user with ID ${userId}. ${response.body.toString()}")
 

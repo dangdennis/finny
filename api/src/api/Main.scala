@@ -5,6 +5,7 @@ import api.database.Database
 import api.jobs.Jobs
 import api.routes.Routes
 import io.helidon.webserver.WebServer
+import io.helidon.webserver.accesslog.AccessLogFeature
 import sttp.tapir.*
 import sttp.tapir.server.nima.NimaServerInterpreter
 
@@ -32,6 +33,7 @@ def main: Unit =
 
     val server = WebServer
         .builder()
+        .addFeature(AccessLogFeature.builder().commonLogFormat().build())
         .routing { builder =>
             builder.any(handler)
             builder.get("/oauth/plaid", (req, res) => res.send("Redirecting back to Finny"))

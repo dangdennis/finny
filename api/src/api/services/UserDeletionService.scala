@@ -12,7 +12,7 @@ import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
 
-object DeletionService:
+object UserDeletionService:
     def deleteUserEverything(userId: UserId): Either[Throwable, Boolean] =
         (
             for

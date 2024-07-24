@@ -34,7 +34,8 @@ object api extends ScalaModule with ScalafixModule with scalafmt.ScalafmtModule 
         ivy"com.softwaremill.sttp.tapir:tapir-json-circe_3:1.10.14",
         ivy"io.circe:circe-core_3:0.14.9",
         ivy"io.circe:circe-generic_3:0.14.9",
-        ivy"io.circe:circe-parser_3:0.14.9"
+        ivy"io.circe:circe-parser_3:0.14.9",
+        ivy"io.helidon.webserver:helidon-webserver-access-log:4.0.11"
     )
 
     object test extends ScalaTests with TestModule.ScalaTest with ScalafixModule with scalafmt.ScalafmtModule {
