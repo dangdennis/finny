@@ -1,4 +1,3 @@
-import 'package:finny/src/auth/auth_controller.dart';
 import 'package:finny/src/auth/auth_provider.dart';
 import 'package:finny/src/context_extension.dart';
 import 'package:finny/src/routes.dart';
