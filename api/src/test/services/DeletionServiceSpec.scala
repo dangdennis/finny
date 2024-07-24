@@ -6,7 +6,7 @@ import api.repositories.PlaidItemRepository
 import api.repositories.PlaidItemRepository.CreateItemInput
 import api.repositories.TransactionRepository
 import api.repositories.TransactionRepository.UpsertTransactionInput
-import api.services.DeletionService
+import api.services.UserDeletionService
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.EitherValues
@@ -17,7 +17,7 @@ import test.helpers.*
 
 import java.util.UUID
 
-class DeletionServiceSpec extends AnyFlatSpec, Matchers, EitherValues, BeforeAndAfterAll, BeforeAndAfterEach:
+class UserDeletionServiceSpec extends AnyFlatSpec, Matchers, EitherValues, BeforeAndAfterAll, BeforeAndAfterEach:
     override protected def beforeAll(): Unit = TestHelper.beforeAll()
     override protected def afterEach(): Unit = TestHelper.afterEach()
 
@@ -83,7 +83,7 @@ class DeletionServiceSpec extends AnyFlatSpec, Matchers, EitherValues, BeforeAnd
             val transactions = TransactionRepository.getTransactionsByAccountId(accountId).get
             transactions should have size 1
 
-            val k = DeletionService.deleteUserEverything(userId)
+            val k = UserDeletionService.deleteUserEverything(userId)
 
             val itemsAfterDeletion = PlaidItemRepository.debugGetItems().value
             itemsAfterDeletion should have size 0
