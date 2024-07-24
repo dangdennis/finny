@@ -44,7 +44,7 @@ class _AccountListViewState extends State<AccountListView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Accounts List'),
+        title: const Text('Accounts'),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
