@@ -154,40 +154,42 @@ Future<void> openDatabaseAndInitSupabase() async {
 
   await loadSupabase();
 
-  // SupabaseConnector? currentConnector;
+  SupabaseConnector? currentConnector;
 
-  // if (isLoggedIn()) {
-  //   // If the user is already logged in, connect immediately.
-  //   // Otherwise, connect once logged in.
-  //   currentConnector = SupabaseConnector(db);
-  //   db.connect(connector: currentConnector);
-  // }
+  if (isLoggedIn()) {
+    // If the user is already logged in, connect immediately.
+    // Otherwise, connect once logged in.
+    currentConnector = SupabaseConnector(db);
+    db.connect(connector: currentConnector);
+  }
 
-  // Supabase.instance.client.auth.onAuthStateChange.listen(
-  //   (data) async {
-  //     final AuthChangeEvent event = data.event;
-  //     if (event == AuthChangeEvent.signedIn) {
-  //       // Connect to PowerSync when the user is signed in
-  //       currentConnector = SupabaseConnector(db);
-  //       db.connect(connector: currentConnector!);
-  //       // Navigator.pushNamed(context, Routes.home);
-  //     } else if (event == AuthChangeEvent.signedOut) {
-  //       // Implicit sign out - disconnect, but don't delete data
-  //       currentConnector = null;
-  //       await db.disconnect();
-  //     } else if (event == AuthChangeEvent.tokenRefreshed) {
-  //       // Supabase token refreshed - trigger token refresh for PowerSync.
-  //       currentConnector?.prefetchCredentials();
-  //     }
-  //   },
-  //   onError: (error) {
-  //     if (error is AuthException) {
-  //       context.showSnackBar(error.message, isError: true);
-  //     } else {
-  //       context.showSnackBar('Unexpected error occurred', isError: true);
-  //     }
-  //   },
-  // );
+  Supabase.instance.client.auth.onAuthStateChange.listen(
+    (data) async {
+      final AuthChangeEvent event = data.event;
+      if (event == AuthChangeEvent.signedIn) {
+        // Connect to PowerSync when the user is signed in
+        currentConnector = SupabaseConnector(db);
+        db.connect(connector: currentConnector!);
+        // Navigator.pushNamed(context, Routes.home);
+      } else if (event == AuthChangeEvent.signedOut) {
+        // Implicit sign out - disconnect, but don't delete data
+        currentConnector = null;
+        await db.disconnect();
+      } else if (event == AuthChangeEvent.tokenRefreshed) {
+        // Supabase token refreshed - trigger token refresh for PowerSync.
+        currentConnector?.prefetchCredentials();
+      }
+    },
+    onError: (error) {
+      if (error is AuthException) {
+        print('Auth error: ${error.message}');
+        // context.showSnackBar(error.message, isError: true);
+      } else {
+        print('Unexpected error: $error');
+        // context.showSnackBar('Unexpected error occurred', isError: true);
+      }
+    },
+  );
 
   // Demo using SQLite Full-Text Search with PowerSync.
   // See https://docs.powersync.com/usage-examples/full-text-search for more details

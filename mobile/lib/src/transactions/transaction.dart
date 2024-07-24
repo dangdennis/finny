@@ -2,7 +2,6 @@ class Transaction {
   const Transaction({
     required this.id,
     required this.accountId,
-    required this.plaidTransactionId,
     required this.category,
     this.subcategory,
     required this.type,
@@ -20,7 +19,6 @@ class Transaction {
 
   final String id;
   final String accountId;
-  final String plaidTransactionId;
   final String category;
   final String? subcategory;
   final String type;

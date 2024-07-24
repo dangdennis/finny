@@ -14,7 +14,6 @@ class TransactionsController {
         return Transaction(
           id: row['id'],
           accountId: row['account_id'],
-          plaidTransactionId: row['plaid_transaction_id'],
           category: row['category'],
           subcategory: row['subcategory'],
           type: row['type'],

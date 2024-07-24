@@ -23,12 +23,21 @@ class _AccountListViewState extends State<AccountListView> {
 
   @override
   void initState() {
+    print('AccountListView.initState');
     super.initState();
+    initAccounts();
+  }
+
+  @override
+  void didChangeDependencies() {
+    print('AccountListView.didChangeDependencies');
+    super.didChangeDependencies();
     initAccounts();
   }
 
   void initAccounts() async {
     accounts = await widget.accountsController.loadAccounts();
+    print('Fetched accounts: $accounts');
     setState(() {
       accounts = accounts;
     });
@@ -38,7 +47,7 @@ class _AccountListViewState extends State<AccountListView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Accounts'),
+        title: const Text('Accounts List'),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
