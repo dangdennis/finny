@@ -1,7 +1,7 @@
 package models
 
-import java.util.UUID
 import java.time.Instant
+import java.util.UUID
 
 case class GoalAccount(
     id: UUID,

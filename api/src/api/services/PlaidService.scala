@@ -2,9 +2,11 @@ package api.services
 
 import api.common.*
 import api.common.Environment.AppEnv
-import api.models.{PlaidItem, PlaidItemId}
+import api.models.PlaidItem
+import api.models.PlaidItemId
+import api.repositories.PlaidApiEventRepository
 import api.repositories.PlaidApiEventRepository.PlaidApiEventCreateInput
-import api.repositories.{PlaidApiEventRepository, PlaidItemRepository}
+import api.repositories.PlaidItemRepository
 import com.plaid.client.ApiClient
 import com.plaid.client.model.*
 import com.plaid.client.request.PlaidApi
@@ -15,11 +17,12 @@ import scalikejdbc.DB
 
 import java.util.UUID
 import scala.collection.JavaConverters.*
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 import scala.reflect.ClassTag
-import scala.util.{Failure, Success, Try}
-import java.time.Instant
-import java.time.temporal.ChronoUnit
+import scala.util.Failure
+import scala.util.Success
+import scala.util.Try
 
 object PlaidService:
     def makePlaidClient(clientId: String, secret: String, env: AppEnv) =
@@ -53,6 +56,43 @@ object PlaidService:
                 apiClient.setPlaidAdapter(ApiClient.Sandbox)
 
         apiClient.createService(classOf[PlaidApi])
+
+    def getAccounts(client: PlaidApi, item: PlaidItem) =
+        val req = new AccountsGetRequest().accessToken(item.plaidAccessToken)
+        val res = Try(client.accountsGet(req).execute())
+
+        handlePlaidResponse(
+            res,
+            respBody =>
+                respBody
+                    .left
+                    .map(error =>
+                        PlaidApiEventRepository.create(
+                            PlaidApiEventCreateInput(
+                                userId = Some(item.userId),
+                                itemId = Some(item.id),
+                                plaidMethod = "accountsGet",
+                                arguments = Map(),
+                                requestId = error.requestId,
+                                errorType = Some(error.errorType),
+                                errorCode = Some(error.errorCode)
+                            )
+                        )
+                    )
+                    .map(body =>
+                        PlaidApiEventRepository.create(
+                            PlaidApiEventCreateInput(
+                                userId = Some(item.userId),
+                                itemId = Some(item.id),
+                                plaidMethod = "accountsGet",
+                                arguments = Map(),
+                                requestId = Some(body.getRequestId),
+                                errorType = None,
+                                errorCode = None
+                            )
+                        )
+                    )
+        )
 
     def getTransactionsSync(client: PlaidApi, item: PlaidItem) =
         val req = new TransactionsSyncRequest()

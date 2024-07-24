@@ -1,8 +1,9 @@
 package models
 
-import java.util.UUID
-import java.time.Instant
 import api.models.UserId
+
+import java.time.Instant
+import java.util.UUID
 
 case class Goal(
     id: UUID,

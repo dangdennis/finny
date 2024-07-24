@@ -6,6 +6,7 @@ import api.models.PlaidItem
 import api.repositories.AccountRepository
 import api.repositories.PlaidItemRepository
 import api.repositories.TransactionRepository
+import com.plaid.client.model.AccountBase
 import com.plaid.client.model.TransactionsSyncResponse
 import io.github.resilience4j.ratelimiter.*
 import io.github.resilience4j.retry.*
@@ -32,7 +33,7 @@ object PlaidSyncService:
     private val retryRegistry: RetryRegistry = RetryRegistry.of(retryConfig)
     private val retry = retryRegistry.retry("PlaidSyncRetry")
 
-    def sync(itemId: UUID): Unit = Future {
+    def sync(itemId: UUID): Future[Unit] = Future {
         val decoratedTask = RateLimiter
             .decorateRunnable(rateLimiter, Retry.decorateRunnable(retry, () => _sync(itemId)))
         Future {
@@ -110,22 +111,7 @@ object PlaidSyncService:
         Logger.root.info(s"Got number of accounts: ${accounts.size}")
         for account <- accounts do
             Logger.root.info(s"Upserting account: ${account.getAccountId}")
-            AccountRepository.upsertAccount(
-                AccountRepository.UpsertAccountInput(
-                    itemId = item.id,
-                    userId = item.userId,
-                    plaidAccountId = account.getAccountId,
-                    name = account.getName,
-                    mask = Option(account.getMask),
-                    officialName = Option(account.getOfficialName),
-                    currentBalance = account.getBalances.getCurrent(),
-                    availableBalance = account.getBalances.getAvailable(),
-                    isoCurrencyCode = Option(account.getBalances.getIsoCurrencyCode),
-                    unofficialCurrencyCode = Option(account.getBalances.getUnofficialCurrencyCode),
-                    accountType = Option(account.getType.getValue),
-                    accountSubtype = Option(account.getSubtype.getValue)
-                )
-            ) match
+            upsertAccount(item, account) match
                 case Failure(error) =>
                     val msg = s"Error upserting account: $error"
                     Logger.root.error(msg)
@@ -172,3 +158,20 @@ object PlaidSyncService:
             case (true, msg) =>
                 PlaidItemRepository
                     .updateSyncError(itemId = item.id, error = msg, currentTime = java.time.Instant.now())
+
+    def upsertAccount(item: PlaidItem, account: AccountBase) = AccountRepository.upsertAccount(
+        AccountRepository.UpsertAccountInput(
+            itemId = item.id,
+            userId = item.userId,
+            plaidAccountId = account.getAccountId,
+            name = account.getName,
+            mask = Option(account.getMask),
+            officialName = Option(account.getOfficialName),
+            currentBalance = account.getBalances.getCurrent(),
+            availableBalance = account.getBalances.getAvailable(),
+            isoCurrencyCode = Option(account.getBalances.getIsoCurrencyCode),
+            unofficialCurrencyCode = Option(account.getBalances.getUnofficialCurrencyCode),
+            accountType = Option(account.getType.getValue),
+            accountSubtype = Option(account.getSubtype.getValue)
+        )
+    )
