@@ -1,7 +1,6 @@
 import 'package:finny/src/accounts/account_details_view.dart';
 import 'package:finny/src/accounts/account_list_view.dart';
 import 'package:finny/src/accounts/accounts_controller.dart';
-import 'package:finny/src/auth/auth_controller.dart';
 import 'package:finny/src/auth/auth_provider.dart';
 import 'package:finny/src/auth/login_view.dart';
 import 'package:finny/src/connections/connections_controller.dart';
