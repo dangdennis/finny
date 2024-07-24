@@ -66,10 +66,8 @@ class ConnectionsService {
           headers: headers, body: body);
       if (response.statusCode == 200) {
         _logger.info('Success: ${response.body}');
-        // Handle success
       } else {
         _logger.warning('Error: ${response.statusCode} ${response.body}');
-        // Handle error
       }
     } catch (e) {
       _logger.warning('Exception: $e');
@@ -94,12 +92,8 @@ class ConnectionsService {
         await http.post(AppConfig.plaidLinksCreateUrl, headers: headers);
     if (response.statusCode == 200) {
       _logger.info('Success: ${response.body}');
-      // Handle success
-
       final data = json.decode(response.body);
-
       final String token = data['token'];
-
       return token;
     } else {
       _logger.warning('Error: ${response.statusCode} ${response.body}');
@@ -167,11 +161,9 @@ class ConnectionsService {
           headers: headers, body: body);
       if (response.statusCode == 200) {
         _logger.info('Success: ${response.body}');
-        // Handle success
       } else {
         _logger.warning('Error: ${response.statusCode} ${response.body}');
         throw Exception('Failed to delete connection');
-        // Handle error
       }
     } catch (e) {
       _logger.warning('Exception: $e');
