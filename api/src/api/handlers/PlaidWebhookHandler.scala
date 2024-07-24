@@ -28,7 +28,7 @@ object PlaidWebhookHandler:
                 val webhookCode = json.hcursor.downField("webhook_code").as[String].toOption
 
                 Logger.root.warn("Not verifying Plaid webhook signature")
-                Logger.root.info(s"Raw Plaid webhook: $rawJson")
+                Logger.root.info(s"Raw Plaid webhook: ${json.noSpaces}")
 
                 (webhookType, webhookCode) match
                     case (Some("TRANSACTIONS"), Some("SYNC_UPDATES_AVAILABLE")) =>
