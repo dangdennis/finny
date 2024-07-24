@@ -3,12 +3,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'src/app.dart';
 import 'src/accounts/accounts_controller.dart';
 import 'src/accounts/accounts_service.dart';
-import 'src/auth/auth_controller.dart';
 import 'src/auth/auth_service.dart';
 import 'src/connections/connections_controller.dart';
 import 'src/connections/connections_service.dart';
@@ -38,11 +36,14 @@ void main() async {
 
   await openDatabaseAndInitSupabase();
 
+  // services
   final settingsService = SettingsService();
   final accountsService = AccountsService();
   final authService = AuthService();
   final connectionsService =
       ConnectionsService(accountsService: accountsService);
+
+  // controllers and providers
   final authProvider = AuthProvider(authService: authService);
   final settingsController = SettingsController(
     settingsService: settingsService,
