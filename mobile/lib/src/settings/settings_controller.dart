@@ -1,3 +1,4 @@
+import 'package:finny/src/auth/auth_provider.dart';
 import 'package:flutter/material.dart';
 
 import 'settings_service.dart';
@@ -8,10 +9,12 @@ import 'settings_service.dart';
 /// Controllers glue Data Services to Flutter Widgets. The SettingsController
 /// uses the SettingsService to store and retrieve user settings.
 class SettingsController with ChangeNotifier {
-  SettingsController(this._settingsService);
+  SettingsController(
+      {required this.settingsService, required this.authProvider});
 
   // Make SettingsService a private variable so it is not used directly.
-  final SettingsService _settingsService;
+  final SettingsService settingsService;
+  final AuthProvider authProvider;
 
   // Make ThemeMode a private variable so it is not updated directly without
   // also persisting the changes with the SettingsService.
@@ -24,7 +27,7 @@ class SettingsController with ChangeNotifier {
   /// local database or the internet. The controller only knows it can load the
   /// settings from the service.
   Future<void> loadSettings() async {
-    _themeMode = await _settingsService.themeMode();
+    _themeMode = await settingsService.themeMode();
 
     // Important! Inform listeners a change has occurred.
     notifyListeners();
@@ -45,10 +48,14 @@ class SettingsController with ChangeNotifier {
 
     // Persist the changes to a local database or the internet using the
     // SettingService.
-    await _settingsService.updateThemeMode(newThemeMode);
+    await settingsService.updateThemeMode(newThemeMode);
   }
 
   Future<void> deleteSelf() async {
-    await _settingsService.deleteSelf();
+    await authProvider.deleteSelf();
+  }
+
+  Future<void> signOut() async {
+    await authProvider.signOut();
   }
 }

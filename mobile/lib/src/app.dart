@@ -1,7 +1,6 @@
 import 'package:finny/src/accounts/account_details_view.dart';
 import 'package:finny/src/accounts/account_list_view.dart';
 import 'package:finny/src/accounts/accounts_controller.dart';
-import 'package:finny/src/auth/auth_controller.dart';
 import 'package:finny/src/auth/auth_provider.dart';
 import 'package:finny/src/auth/login_view.dart';
 import 'package:finny/src/connections/connections_controller.dart';
@@ -20,17 +19,17 @@ class MyApp extends StatelessWidget {
   const MyApp({
     super.key,
     required this.settingsController,
-    required this.authController,
     required this.accountsController,
     required this.transactionsController,
     required this.connectionsController,
+    required this.authProvider,
   });
 
   final SettingsController settingsController;
-  final AuthController authController;
   final AccountsController accountsController;
   final TransactionsController transactionsController;
   final ConnectionsController connectionsController;
+  final AuthProvider authProvider;
 
   @override
   Widget build(BuildContext context) {
@@ -78,12 +77,11 @@ class MyApp extends StatelessWidget {
               if (authProvider.isLoggedIn) {
                 return MainView(
                   accountsController: accountsController,
-                  authController: authController,
                   settingsController: settingsController,
                   transactionsController: transactionsController,
                 );
               } else {
-                return LoginView(authController: authController);
+                return LoginView(authProvider: authProvider);
               }
             },
           ),
@@ -97,7 +95,7 @@ class MyApp extends StatelessWidget {
                 switch (routeSettings.name) {
                   case LoginView.routeName:
                     return LoginView(
-                      authController: authController,
+                      authProvider: authProvider,
                     );
                   case SettingsView.routeName:
                     return SettingsView(settingsController: settingsController);
@@ -119,7 +117,9 @@ class MyApp extends StatelessWidget {
                       connectionsController: connectionsController,
                     );
                   default:
-                    return LoginView(authController: authController);
+                    return LoginView(
+                      authProvider: authProvider,
+                    );
                 }
               },
             );
@@ -133,13 +133,11 @@ class MyApp extends StatelessWidget {
 class MainView extends StatefulWidget {
   const MainView({
     super.key,
-    required this.authController,
     required this.settingsController,
     required this.accountsController,
     required this.transactionsController,
   });
 
-  final AuthController authController;
   final SettingsController settingsController;
   final AccountsController accountsController;
   final TransactionsController transactionsController;

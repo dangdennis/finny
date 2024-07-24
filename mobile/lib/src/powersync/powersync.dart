@@ -1,24 +1,24 @@
-// This file performs setup of the PowerSync database
+// This file performs setup of the PowerSync database and Supabase.
+import 'package:finny/src/app_config.dart';
+import 'package:finny/src/powersync/schema.dart';
+import 'package:finny/src/supabase.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:powersync/powersync.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../app_config.dart';
-import './schema.dart';
-import '../supabase.dart';
-
-final logger = Logger('powersync-supabase');
+/// Global reference to the database
+late final PowerSyncDatabase powersyncDb;
 
 /// Use Supabase for authentication.
 /// Uses API for data updates.
-class SupabaseConnector extends PowerSyncBackendConnector {
+class PowersyncSupabaseConnector extends PowerSyncBackendConnector {
   PowerSyncDatabase db;
-
+  final logger = Logger('PowersyncSupabaseConnector');
   Future<void>? _refreshFuture;
 
-  SupabaseConnector(this.db);
+  PowersyncSupabaseConnector(this.db);
 
   /// Get a Supabase token to authenticate against the PowerSync instance.
   @override
@@ -67,7 +67,7 @@ class SupabaseConnector extends PowerSyncBackendConnector {
         .then((response) => null, onError: (error) => null);
   }
 
-  // Upload pending changes to Supabase.
+  // Upload pending changes to api.
   @override
   Future<void> uploadData(PowerSyncDatabase database) async {
     // This function is called whenever there is data to upload, whether the
@@ -114,6 +114,71 @@ class SupabaseConnector extends PowerSyncBackendConnector {
       }
     }
   }
+
+  static bool isLoggedIn() {
+    return Supabase.instance.client.auth.currentSession?.accessToken != null;
+  }
+
+  /// Initializes powersync database and connects to Supabase.
+  static Future<void> openDatabaseAndInitSupabase() async {
+    // Open the local database
+    powersyncDb = PowerSyncDatabase(
+        schema: schema, path: await getDatabasePath(), logger: attachedLogger);
+    await powersyncDb.initialize();
+
+    await SupabaseService.loadSupabase();
+
+    PowersyncSupabaseConnector? currentConnector;
+
+    if (isLoggedIn()) {
+      // If the user is already logged in, connect immediately.
+      // Otherwise, connect once logged in.
+      currentConnector = PowersyncSupabaseConnector(powersyncDb);
+      powersyncDb.connect(connector: currentConnector);
+    }
+
+    Supabase.instance.client.auth.onAuthStateChange.listen(
+      (data) async {
+        final AuthChangeEvent event = data.event;
+        if (event == AuthChangeEvent.signedIn) {
+          // Connect to PowerSync when the user is signed in
+          currentConnector = PowersyncSupabaseConnector(powersyncDb);
+          powersyncDb.connect(connector: currentConnector!);
+          // Navigator.pushNamed(context, Routes.home);
+        } else if (event == AuthChangeEvent.signedOut) {
+          // Implicit sign out - disconnect, but don't delete data
+          currentConnector = null;
+          await powersyncDb.disconnect();
+        } else if (event == AuthChangeEvent.tokenRefreshed) {
+          // Supabase token refreshed - trigger token refresh for PowerSync.
+          currentConnector?.prefetchCredentials();
+        }
+      },
+      onError: (error) {
+        if (error is AuthException) {
+          Logger.root.warning('auth error: ${error.message}');
+          // context.showSnackBar(error.message, isError: true);
+        } else {
+          Logger.root.severe('Unexpected auth error: $error');
+          // context.showSnackBar('Unexpected error occurred', isError: true);
+        }
+      },
+    );
+
+    // Demo using SQLite Full-Text Search with PowerSync.
+    // See https://docs.powersync.com/usage-examples/full-text-search for more details
+    // await configureFts(db);
+  }
+
+  static Future<String> getDatabasePath() async {
+    final dir = await getApplicationSupportDirectory();
+    return join(dir.path, 'finny1.db');
+  }
+
+  /// Explicit sign out - clear database and log out.
+  static Future<void> disconnectAndClearDb() async {
+    await powersyncDb.disconnectAndClear();
+  }
 }
 
 class ApiException implements Exception {
@@ -126,78 +191,4 @@ class ApiException implements Exception {
   String toString() {
     return 'ApiException: $message';
   }
-}
-
-/// Global reference to the database
-late final PowerSyncDatabase db;
-
-bool isLoggedIn() {
-  return Supabase.instance.client.auth.currentSession?.accessToken != null;
-}
-
-/// id of the user currently logged in
-String? getUserId() {
-  return Supabase.instance.client.auth.currentSession?.user.id;
-}
-
-Future<String> getDatabasePath() async {
-  final dir = await getApplicationSupportDirectory();
-  return join(dir.path, 'finny1.db');
-}
-
-/// Initializes powersync database and connects to Supabase.
-Future<void> openDatabaseAndInitSupabase() async {
-  // Open the local database
-  db = PowerSyncDatabase(
-      schema: schema, path: await getDatabasePath(), logger: attachedLogger);
-  await db.initialize();
-
-  await loadSupabase();
-
-  SupabaseConnector? currentConnector;
-
-  if (isLoggedIn()) {
-    // If the user is already logged in, connect immediately.
-    // Otherwise, connect once logged in.
-    currentConnector = SupabaseConnector(db);
-    db.connect(connector: currentConnector);
-  }
-
-  Supabase.instance.client.auth.onAuthStateChange.listen(
-    (data) async {
-      final AuthChangeEvent event = data.event;
-      if (event == AuthChangeEvent.signedIn) {
-        // Connect to PowerSync when the user is signed in
-        currentConnector = SupabaseConnector(db);
-        db.connect(connector: currentConnector!);
-        // Navigator.pushNamed(context, Routes.home);
-      } else if (event == AuthChangeEvent.signedOut) {
-        // Implicit sign out - disconnect, but don't delete data
-        currentConnector = null;
-        await db.disconnect();
-      } else if (event == AuthChangeEvent.tokenRefreshed) {
-        // Supabase token refreshed - trigger token refresh for PowerSync.
-        currentConnector?.prefetchCredentials();
-      }
-    },
-    onError: (error) {
-      if (error is AuthException) {
-        print('Auth error: ${error.message}');
-        // context.showSnackBar(error.message, isError: true);
-      } else {
-        print('Unexpected error: $error');
-        // context.showSnackBar('Unexpected error occurred', isError: true);
-      }
-    },
-  );
-
-  // Demo using SQLite Full-Text Search with PowerSync.
-  // See https://docs.powersync.com/usage-examples/full-text-search for more details
-  // await configureFts(db);
-}
-
-/// Explicit sign out - clear database and log out.
-Future<void> logout() async {
-  await Supabase.instance.client.auth.signOut();
-  await db.disconnectAndClear();
 }

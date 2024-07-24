@@ -4,7 +4,7 @@ import 'package:powersync/sqlite3.dart';
 
 class AccountsService {
   Future<List<Account>> loadAccounts() async {
-    ResultSet accounts = await db.getAll('SELECT * FROM accounts;');
+    ResultSet accounts = await powersyncDb.getAll('SELECT * FROM accounts;');
 
     return accounts.map((row) {
       return Account(

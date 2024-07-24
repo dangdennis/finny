@@ -7,7 +7,6 @@ import 'package:provider/provider.dart';
 import 'src/app.dart';
 import 'src/accounts/accounts_controller.dart';
 import 'src/accounts/accounts_service.dart';
-import 'src/auth/auth_controller.dart';
 import 'src/auth/auth_service.dart';
 import 'src/connections/connections_controller.dart';
 import 'src/connections/connections_service.dart';
@@ -35,17 +34,21 @@ void main() async {
   WidgetsFlutterBinding
       .ensureInitialized(); //required to get sqlite filepath from path_provider before UI has initialized
 
-  await openDatabaseAndInitSupabase();
+  await PowersyncSupabaseConnector.openDatabaseAndInitSupabase();
 
+  // services
+  final settingsService = SettingsService();
   final accountsService = AccountsService();
   final authService = AuthService();
   final connectionsService =
       ConnectionsService(accountsService: accountsService);
+
+  // controllers and providers
   final authProvider = AuthProvider(authService: authService);
-  final settingsController = SettingsController(SettingsService(
+  final settingsController = SettingsController(
+    settingsService: settingsService,
     authProvider: authProvider,
-  ));
-  final authController = AuthController(authService);
+  );
   final accountsController = AccountsController(AccountsService());
   final transactionsController = TransactionsController();
   final connectionsController = ConnectionsController(connectionsService);
@@ -58,8 +61,8 @@ void main() async {
     MultiProvider(
       providers: [ChangeNotifierProvider(create: (_) => authProvider)],
       child: MyApp(
+        authProvider: authProvider,
         settingsController: settingsController,
-        authController: authController,
         accountsController: accountsController,
         transactionsController: transactionsController,
         connectionsController: connectionsController,
