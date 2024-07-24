@@ -3,8 +3,8 @@ package api.jobs
 import api.common.LavinMqClient
 import api.common.Logger
 import api.models.UserId
-import api.services.UserDeletionService
 import api.services.PlaidSyncService
+import api.services.UserDeletionService
 import cats.syntax.all.*
 import com.rabbitmq.client.Channel
 import com.rabbitmq.client.Connection

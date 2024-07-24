@@ -74,6 +74,7 @@ object PlaidService:
         val req = new TransactionsSyncRequest()
             .accessToken(item.plaidAccessToken)
             .cursor(item.transactionsCursor.orNull)
+            .count(500)
         val res = Try(client.transactionsSync(req).execute())
 
         handleResponse(

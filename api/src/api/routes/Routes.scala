@@ -86,7 +86,7 @@ object Routes:
             plaidItemsDeleteServerEndpoint,
             plaidItemsGetServerEndpoint,
             plaidLinkCreateServerEndpoint,
-            usersDeleteServerEndpoint,
+            usersDeleteServerEndpoint
         )
         val serverEndpoints = List(indexEndpoint) ++ secureServerEndpoints
         val docEndpoints = SwaggerInterpreter().fromServerEndpoints[Identity](serverEndpoints, "finny-api", "1.0.0")

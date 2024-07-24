@@ -100,13 +100,16 @@ object PlaidSyncService:
                         case Right(resp) =>
                             handleItemResponse(item, resp)
                             hasMore = resp.getHasMore().booleanValue()
+                            Logger.root.info(s"Sync ${item.id} hasMore: $hasMore")
                             cursor = Option(resp.getNextCursor())
+                            Logger.root.info(s"Sync ${item.id} cursor: $cursor")
 
     private def handleItemResponse(item: PlaidItem, response: TransactionsSyncResponse): Unit =
         val accounts = response.getAccounts.asScala
         var encounteredError = (false, "")
         Logger.root.info(s"Got number of accounts: ${accounts.size}")
         for account <- accounts do
+            Logger.root.info(s"Upserting account: ${account.getAccountId}")
             AccountRepository.upsertAccount(
                 AccountRepository.UpsertAccountInput(
                     itemId = item.id,
@@ -136,7 +139,6 @@ object PlaidSyncService:
         Logger.root.info(s"removed length: ${removed.size}")
 
         for transaction <- added_or_modified do
-            Logger.root.info(s"Upserting transaction: $transaction")
             AccountRepository.getByPlaidAccountId(itemId = item.id, plaidAccountId = transaction.getAccountId) match
                 case Failure(error) =>
                     val msg =
@@ -161,7 +163,7 @@ object PlaidSyncService:
                         )
                     )
 
-        TransactionRepository.deleteTransactionsByPlaidTransactionIds(removed.map(_.getTransactionId()).toList)
+        TransactionRepository.deleteTransactionsByPlaidTransactionIds(removed.map(_.getTransactionId).toList)
 
         encounteredError match
             case (false, _) =>
