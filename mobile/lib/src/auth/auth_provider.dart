@@ -31,7 +31,7 @@ class AuthProvider extends ChangeNotifier {
   Future<void> signIn(String email, BuildContext context,
       Function(String, {bool isError}) showSnackBar) async {
     _setLoading(true, context);
-    await authService.signInWithOtp(email, showSnackBar);
+    await authService.signInWithEmail(email, showSnackBar);
     if (context.mounted) {
       _setLoading(false, context);
     }
@@ -61,6 +61,4 @@ class AuthProvider extends ChangeNotifier {
     _isLoading = isLoading;
     (context as Element).markNeedsBuild();
   }
-
-  
 }

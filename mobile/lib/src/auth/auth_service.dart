@@ -11,7 +11,7 @@ class AuthService {
   bool _authListenerInitialized = false;
   final Logger _logger = Logger('AuthService');
 
-  Future<void> signInWithOtp(
+  Future<void> signInWithEmail(
       String email, Function(String, {bool isError}) showSnackBar) async {
     try {
       await Supabase.instance.client.auth.signInWithOtp(
@@ -27,7 +27,8 @@ class AuthService {
   }
 
   Future<void> signOut() async {
-    await logout();
+    await PowersyncSupabaseConnector.disconnectAndClearDb();
+    await Supabase.instance.client.auth.signOut();
   }
 
   Future<void> deleteSelf() async {
@@ -69,12 +70,12 @@ class AuthService {
       Supabase.instance.client.auth.currentSession?.accessToken != null;
 
   void initAuthListener(BuildContext context) {
-    SupabaseConnector? currentConnector;
+    PowersyncSupabaseConnector? currentConnector;
 
     if (isLoggedIn) {
       // If the user is already logged in, connect immediately.
       // Otherwise, connect once logged in.
-      currentConnector = SupabaseConnector(powersyncDb);
+      currentConnector = PowersyncSupabaseConnector(powersyncDb);
       powersyncDb.connect(connector: currentConnector);
     }
 
@@ -87,7 +88,7 @@ class AuthService {
         final AuthChangeEvent event = data.event;
         if (event == AuthChangeEvent.signedIn) {
           // Connect to PowerSync when the user is signed in
-          currentConnector = SupabaseConnector(powersyncDb);
+          currentConnector = PowersyncSupabaseConnector(powersyncDb);
           powersyncDb.connect(connector: currentConnector!);
           // Navigator.pushNamed(context, Routes.home);
         } else if (event == AuthChangeEvent.signedOut) {

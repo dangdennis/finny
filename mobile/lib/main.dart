@@ -34,7 +34,7 @@ void main() async {
   WidgetsFlutterBinding
       .ensureInitialized(); //required to get sqlite filepath from path_provider before UI has initialized
 
-  await openDatabaseAndInitSupabase();
+  await PowersyncSupabaseConnector.openDatabaseAndInitSupabase();
 
   // services
   final settingsService = SettingsService();
