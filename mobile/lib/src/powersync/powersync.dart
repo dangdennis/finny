@@ -182,10 +182,10 @@ Future<void> openDatabaseAndInitSupabase() async {
     },
     onError: (error) {
       if (error is AuthException) {
-        print('Auth error: ${error.message}');
+        Logger.root.warning('auth error: ${error.message}');
         // context.showSnackBar(error.message, isError: true);
       } else {
-        print('Unexpected error: $error');
+        Logger.root.severe('Unexpected auth error: $error');
         // context.showSnackBar('Unexpected error occurred', isError: true);
       }
     },

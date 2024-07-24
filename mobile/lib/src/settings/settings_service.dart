@@ -54,10 +54,16 @@ class SettingsService {
         throw Exception('Failed to delete user');
         // Handle error
       }
+
+      authProvider.signOut();
     } catch (e) {
       _logger.warning('Exception: $e');
       rethrow;
       // Handle exception
     }
+  }
+
+  Future<void> logout() async {
+    await authProvider.signOut();
   }
 }

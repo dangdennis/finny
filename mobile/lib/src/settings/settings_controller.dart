@@ -51,4 +51,8 @@ class SettingsController with ChangeNotifier {
   Future<void> deleteSelf() async {
     await _settingsService.deleteSelf();
   }
+
+  Future<void> logout() async {
+    await _settingsService.logout();
+  }
 }

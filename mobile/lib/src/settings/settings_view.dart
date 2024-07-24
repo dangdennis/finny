@@ -50,6 +50,9 @@ class SettingsView extends StatelessWidget {
               onPressed: () => _showDeleteConfirmationDialog(context),
               child: const Text('Delete Account'),
             ),
+            ElevatedButton(
+                onPressed: settingsController.logout,
+                child: const Text('Logout'))
           ],
         ),
       ),

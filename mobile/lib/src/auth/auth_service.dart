@@ -23,7 +23,7 @@ class AuthService {
   }
 
   Future<void> signOut() async {
-    await Supabase.instance.client.auth.signOut();
+    await logout();
   }
 
   Stream<AuthState> get authStateChanges =>

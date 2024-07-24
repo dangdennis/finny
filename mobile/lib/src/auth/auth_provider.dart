@@ -5,7 +5,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class AuthProvider extends ChangeNotifier {
   AuthProvider({
     required this.authService,
-  });
+  }) {
+    // Listen for authentication state changes
+    Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+      checkAuthStatus();
+    });
+  }
 
   AuthService authService;
 
@@ -14,7 +19,7 @@ class AuthProvider extends ChangeNotifier {
   bool get isLoggedIn => _isLoggedIn;
 
   Future<void> signOut() async {
-    authService.signOut();
+    await authService.signOut();
     _isLoggedIn = false;
     notifyListeners();
   }
