@@ -1,27 +1,12 @@
 package api.services
 
 import api.common.*
-import api.common.Environment
 import api.common.Environment.AppEnv
-import api.models.PlaidItem
-import api.repositories.PlaidApiEventRepository
+import api.models.{PlaidItem, PlaidItemId}
 import api.repositories.PlaidApiEventRepository.PlaidApiEventCreateInput
-import api.repositories.PlaidItemRepository
+import api.repositories.{PlaidApiEventRepository, PlaidItemRepository}
 import com.plaid.client.ApiClient
-import com.plaid.client.model.CountryCode
-import com.plaid.client.model.ItemGetRequest
-import com.plaid.client.model.ItemGetResponse
-import com.plaid.client.model.ItemPublicTokenExchangeRequest
-import com.plaid.client.model.ItemPublicTokenExchangeResponse
-import com.plaid.client.model.ItemRemoveRequest
-import com.plaid.client.model.ItemRemoveResponse
-import com.plaid.client.model.LinkTokenCreateRequest
-import com.plaid.client.model.LinkTokenCreateRequestUser
-import com.plaid.client.model.LinkTokenCreateResponse
-import com.plaid.client.model.LinkTokenTransactions
-import com.plaid.client.model.Products
-import com.plaid.client.model.TransactionsSyncRequest
-import com.plaid.client.model.TransactionsSyncResponse
+import com.plaid.client.model.*
 import com.plaid.client.request.PlaidApi
 import io.circe.generic.auto.*
 import io.circe.parser.decode
@@ -30,12 +15,11 @@ import scalikejdbc.DB
 
 import java.util.UUID
 import scala.collection.JavaConverters.*
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.ClassTag
-import scala.util.Failure
-import scala.util.Success
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 
 object PlaidService:
     def makePlaidClient(clientId: String, secret: String, env: AppEnv) =
@@ -77,7 +61,7 @@ object PlaidService:
             .count(500)
         val res = Try(client.transactionsSync(req).execute())
 
-        handleResponse(
+        handlePlaidResponse(
             res,
             respBody =>
                 respBody
@@ -128,7 +112,7 @@ object PlaidService:
             .transactions(LinkTokenTransactions().daysRequested(360))
             .redirectUri(f"${Environment.getBaseUrl}/oauth/plaid")
 
-        handleResponse(
+        handlePlaidResponse(
             Try(client.linkTokenCreate(req).execute()),
             respBody =>
                 respBody
@@ -171,7 +155,7 @@ object PlaidService:
 
     def exchangePublicToken(client: PlaidApi, publicToken: String, userId: UUID) =
         val req = ItemPublicTokenExchangeRequest().publicToken(publicToken)
-        handleResponse(
+        handlePlaidResponse(
             Try(client.itemPublicTokenExchange(req).execute()),
             respBody =>
                 respBody
@@ -206,7 +190,7 @@ object PlaidService:
 
     def getItem(client: PlaidApi, accessToken: String, userId: UUID) =
         val req = ItemGetRequest().accessToken(accessToken)
-        handleResponse(
+        handlePlaidResponse(
             Try(client.itemGet(req).execute()),
             respBody =>
                 respBody
@@ -255,7 +239,7 @@ object PlaidService:
                                 .deleteItemById(itemId)
                                 .left
                                 .map(ex => PlaidError(None, "DB_ERROR", "DELETE_ERROR", ex.getMessage))
-                            response <- handleResponse(
+                            response <- handlePlaidResponse(
                                 Try(client.itemRemove(req).execute()),
                                 respBody =>
                                     respBody
@@ -292,13 +276,104 @@ object PlaidService:
             )
         )
 
+    def getInvestmentTransactions(
+        client: PlaidApi,
+        itemId: PlaidItemId
+    ): Either[PlaidError, InvestmentsTransactionsGetResponse] = PlaidItemRepository
+        .getById(itemId.toUUID)
+        .left
+        .map(ex => PlaidError(None, "DB_ERROR", "DELETE_ERROR", ex.getMessage))
+        .flatMap(plaidItem =>
+            val today = Time.nowUtc()
+            val yearAgo = today.minusYears(1)
+            val req = InvestmentsTransactionsGetRequest()
+                .accessToken(plaidItem.plaidAccessToken)
+                .startDate(yearAgo.toLocalDate())
+                .endDate(today.toLocalDate())
+            handlePlaidResponse(
+                Try(client.investmentsTransactionsGet(req).execute()),
+                respBody =>
+                    respBody
+                        .left
+                        .map(error =>
+                            PlaidApiEventRepository.create(
+                                PlaidApiEventCreateInput(
+                                    userId = Some(plaidItem.userId),
+                                    itemId = None,
+                                    plaidMethod = "investmentsTransactionsGet",
+                                    arguments = Map(),
+                                    requestId = error.requestId,
+                                    errorType = Some(error.errorType),
+                                    errorCode = Some(error.errorCode)
+                                )
+                            )
+                        )
+                        .map(body =>
+                            PlaidApiEventRepository.create(
+                                PlaidApiEventCreateInput(
+                                    userId = Some(plaidItem.userId),
+                                    itemId = None,
+                                    plaidMethod = "investmentsTransactionsGet",
+                                    arguments = Map(),
+                                    requestId = Some(body.getRequestId()),
+                                    errorType = None,
+                                    errorCode = None
+                                )
+                            )
+                        )
+            )
+        )
+
+    def getInvestmentHoldings(
+        client: PlaidApi,
+        itemId: PlaidItemId
+    ): Either[PlaidError, InvestmentsHoldingsGetResponse] = PlaidItemRepository
+        .getById(itemId.toUUID)
+        .left
+        .map(ex => PlaidError(None, "DB_ERROR", "DELETE_ERROR", ex.getMessage))
+        .flatMap(plaidItem =>
+            val req = InvestmentsHoldingsGetRequest().accessToken(plaidItem.plaidAccessToken)
+            handlePlaidResponse(
+                Try(client.investmentsHoldingsGet(req).execute()),
+                respBody =>
+                    respBody
+                        .left
+                        .map(error =>
+                            PlaidApiEventRepository.create(
+                                PlaidApiEventCreateInput(
+                                    userId = Some(plaidItem.userId),
+                                    itemId = None,
+                                    plaidMethod = "investmentsHoldingsGet",
+                                    arguments = Map(),
+                                    requestId = error.requestId,
+                                    errorType = Some(error.errorType),
+                                    errorCode = Some(error.errorCode)
+                                )
+                            )
+                        )
+                        .map(body =>
+                            PlaidApiEventRepository.create(
+                                PlaidApiEventCreateInput(
+                                    userId = Some(plaidItem.userId),
+                                    itemId = None,
+                                    plaidMethod = "investmentsHoldingsGet",
+                                    arguments = Map(),
+                                    requestId = Some(body.getRequestId()),
+                                    errorType = None,
+                                    errorCode = None
+                                )
+                            )
+                        )
+            )
+        )
+
     case class PlaidError(requestId: Option[String], errorType: String, errorCode: String, errorMessage: String)
 
     object PlaidError {
         def fromJson(json: String): Either[io.circe.Error, PlaidError] = decode[PlaidError](json)
     }
 
-    private def handleResponse[T: ClassTag](
+    private def handlePlaidResponse[T: ClassTag](
         responseTry: Try[Response[T]],
         recordEvent: (Either[PlaidError, T]) => Unit
     ): Either[PlaidError, T] =

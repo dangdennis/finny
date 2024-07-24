@@ -3,6 +3,13 @@ package api.models
 import java.time.Instant
 import java.util.UUID
 
+opaque type PlaidItemId = UUID
+object PlaidItemId:
+    def apply(uuid: UUID): PlaidItemId = uuid
+
+    extension (itemId: PlaidItemId)
+        def toUUID: UUID = itemId
+
 enum PlaidItemStatus:
     case Good,
         Bad,
