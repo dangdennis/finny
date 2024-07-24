@@ -63,6 +63,9 @@ class _AccountListViewState extends State<AccountListView> {
 
           return ListTile(
             title: Text('${account.name} (...${account.mask})'),
+            subtitle: account.officialName != null
+                ? Text(account.officialName!)
+                : null,
             leading: const CircleAvatar(
               foregroundImage: AssetImage('assets/images/flutter_logo.png'),
             ),

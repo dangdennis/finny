@@ -23,6 +23,31 @@ class _ConnectionsListViewState extends State<ConnectionsListView> {
   void initState() {
     super.initState();
     _futurePlaidItems = fetchConnections();
+    widget.connectionsController.connectionSuccessNotifier
+        .addListener(_onConnectionSuccess);
+  }
+
+  @override
+  void dispose() {
+    widget.connectionsController.connectionSuccessNotifier
+        .removeListener(_onConnectionSuccess);
+    super.dispose();
+  }
+
+  void _onConnectionSuccess() {
+    if (widget.connectionsController.connectionSuccessNotifier.value) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text(
+                'Your institution was connected successfully. Syncing data...')),
+      );
+      // Reset the notifier
+      widget.connectionsController.connectionSuccessNotifier.value = false;
+      // Refresh the connections list
+      setState(() {
+        _futurePlaidItems = fetchConnections();
+      });
+    }
   }
 
   Future<List<PlaidItem>> fetchConnections() async {

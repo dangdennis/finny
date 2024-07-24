@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ui';
 
 import 'package:finny/src/accounts/accounts_service.dart';
 import 'package:finny/src/app_config.dart';
@@ -16,7 +17,8 @@ class ConnectionsService {
   final Logger _logger = Logger('ConnectionsService');
   final AccountsService accountsService;
 
-  Future<void> openPlaidLink() async {
+  Future<void> openPlaidLink(
+      {required VoidCallback onConnectionSuccess}) async {
     _logger
         .info("${Supabase.instance.client.auth.currentSession?.accessToken}");
 
@@ -29,6 +31,7 @@ class ConnectionsService {
     PlaidLink.onSuccess.listen((LinkSuccess success) async {
       _logger.info("Success: ${success.toJson()}");
       await createPlaidItem(success.publicToken);
+      onConnectionSuccess();
     });
 
     PlaidLink.onExit.listen((LinkExit exit) {
