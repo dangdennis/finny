@@ -24,8 +24,8 @@ jobs:
       - name: Install Supabase CLI
         uses: supabase/setup-cli@v1
 
-      - name: Start Supabase DB
-        run: supabase db start
+      - name: Start Supabase
+        run: supabase start
 
       - name: Run docker compose
         uses: hoverkraft-tech/compose-action@v2.0.1
