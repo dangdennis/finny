@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'src/app.dart';
 import 'src/accounts/accounts_controller.dart';
@@ -37,15 +38,16 @@ void main() async {
 
   await openDatabaseAndInitSupabase();
 
+  final settingsService = SettingsService();
   final accountsService = AccountsService();
   final authService = AuthService();
   final connectionsService =
       ConnectionsService(accountsService: accountsService);
   final authProvider = AuthProvider(authService: authService);
-  final settingsController = SettingsController(SettingsService(
+  final settingsController = SettingsController(
+    settingsService: settingsService,
     authProvider: authProvider,
-  ));
-  final authController = AuthController(authService);
+  );
   final accountsController = AccountsController(AccountsService());
   final transactionsController = TransactionsController();
   final connectionsController = ConnectionsController(connectionsService);
@@ -58,8 +60,8 @@ void main() async {
     MultiProvider(
       providers: [ChangeNotifierProvider(create: (_) => authProvider)],
       child: MyApp(
+        authProvider: authProvider,
         settingsController: settingsController,
-        authController: authController,
         accountsController: accountsController,
         transactionsController: transactionsController,
         connectionsController: connectionsController,

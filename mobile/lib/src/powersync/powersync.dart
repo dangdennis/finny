@@ -129,7 +129,7 @@ class ApiException implements Exception {
 }
 
 /// Global reference to the database
-late final PowerSyncDatabase db;
+late final PowerSyncDatabase powersyncDb;
 
 bool isLoggedIn() {
   return Supabase.instance.client.auth.currentSession?.accessToken != null;
@@ -148,9 +148,9 @@ Future<String> getDatabasePath() async {
 /// Initializes powersync database and connects to Supabase.
 Future<void> openDatabaseAndInitSupabase() async {
   // Open the local database
-  db = PowerSyncDatabase(
+  powersyncDb = PowerSyncDatabase(
       schema: schema, path: await getDatabasePath(), logger: attachedLogger);
-  await db.initialize();
+  await powersyncDb.initialize();
 
   await loadSupabase();
 
@@ -159,8 +159,8 @@ Future<void> openDatabaseAndInitSupabase() async {
   if (isLoggedIn()) {
     // If the user is already logged in, connect immediately.
     // Otherwise, connect once logged in.
-    currentConnector = SupabaseConnector(db);
-    db.connect(connector: currentConnector);
+    currentConnector = SupabaseConnector(powersyncDb);
+    powersyncDb.connect(connector: currentConnector);
   }
 
   Supabase.instance.client.auth.onAuthStateChange.listen(
@@ -168,13 +168,13 @@ Future<void> openDatabaseAndInitSupabase() async {
       final AuthChangeEvent event = data.event;
       if (event == AuthChangeEvent.signedIn) {
         // Connect to PowerSync when the user is signed in
-        currentConnector = SupabaseConnector(db);
-        db.connect(connector: currentConnector!);
+        currentConnector = SupabaseConnector(powersyncDb);
+        powersyncDb.connect(connector: currentConnector!);
         // Navigator.pushNamed(context, Routes.home);
       } else if (event == AuthChangeEvent.signedOut) {
         // Implicit sign out - disconnect, but don't delete data
         currentConnector = null;
-        await db.disconnect();
+        await powersyncDb.disconnect();
       } else if (event == AuthChangeEvent.tokenRefreshed) {
         // Supabase token refreshed - trigger token refresh for PowerSync.
         currentConnector?.prefetchCredentials();
@@ -199,5 +199,5 @@ Future<void> openDatabaseAndInitSupabase() async {
 /// Explicit sign out - clear database and log out.
 Future<void> logout() async {
   await Supabase.instance.client.auth.signOut();
-  await db.disconnectAndClear();
+  await powersyncDb.disconnectAndClear();
 }

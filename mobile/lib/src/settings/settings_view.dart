@@ -51,7 +51,7 @@ class SettingsView extends StatelessWidget {
               child: const Text('Delete Account'),
             ),
             ElevatedButton(
-                onPressed: settingsController.logout,
+                onPressed: settingsController.signOut,
                 child: const Text('Logout'))
           ],
         ),
@@ -69,14 +69,14 @@ class SettingsView extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Dismiss the dialog
+                Navigator.of(context).pop();
               },
               child: const Text('Cancel'),
             ),
             ElevatedButton(
               onPressed: () async {
-                Navigator.of(context).pop(); // Dismiss the dialog
-                await settingsController.deleteSelf(); // Call deleteSelf
+                Navigator.of(context).pop();
+                await settingsController.deleteSelf();
               },
               child: const Text('Delete'),
             ),

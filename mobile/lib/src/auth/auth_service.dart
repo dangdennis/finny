@@ -1,11 +1,15 @@
 import 'package:finny/src/powersync/powersync.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:logging/logging.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:finny/src/context_extension.dart';
+import 'package:finny/src/app_config.dart';
+import 'package:http/http.dart' as http;
 
 class AuthService {
   bool _authListenerInitialized = false;
+  final Logger _logger = Logger('AuthService');
 
   Future<void> signInWithOtp(
       String email, Function(String, {bool isError}) showSnackBar) async {
@@ -26,6 +30,38 @@ class AuthService {
     await logout();
   }
 
+  Future<void> deleteSelf() async {
+    final accessToken =
+        Supabase.instance.client.auth.currentSession?.accessToken;
+
+    if (accessToken == null) {
+      throw Exception('No access token');
+    }
+
+    final headers = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $accessToken',
+    };
+
+    try {
+      final response = await http.delete(
+        AppConfig.usersDeleteUrl,
+        headers: headers,
+      );
+      if (response.statusCode == 200) {
+        _logger.info('User deleted');
+      } else {
+        _logger.warning('Error: ${response.statusCode} ${response.body}');
+        throw Exception('Failed to delete user');
+        // Handle error
+      }
+    } catch (e) {
+      _logger.warning('Exception: $e');
+      rethrow;
+      // Handle exception
+    }
+  }
+
   Stream<AuthState> get authStateChanges =>
       Supabase.instance.client.auth.onAuthStateChange;
 
@@ -38,8 +74,8 @@ class AuthService {
     if (isLoggedIn) {
       // If the user is already logged in, connect immediately.
       // Otherwise, connect once logged in.
-      currentConnector = SupabaseConnector(db);
-      db.connect(connector: currentConnector);
+      currentConnector = SupabaseConnector(powersyncDb);
+      powersyncDb.connect(connector: currentConnector);
     }
 
     if (_authListenerInitialized) {
@@ -51,13 +87,13 @@ class AuthService {
         final AuthChangeEvent event = data.event;
         if (event == AuthChangeEvent.signedIn) {
           // Connect to PowerSync when the user is signed in
-          currentConnector = SupabaseConnector(db);
-          db.connect(connector: currentConnector!);
+          currentConnector = SupabaseConnector(powersyncDb);
+          powersyncDb.connect(connector: currentConnector!);
           // Navigator.pushNamed(context, Routes.home);
         } else if (event == AuthChangeEvent.signedOut) {
           // Implicit sign out - disconnect, but don't delete data
           currentConnector = null;
-          await db.disconnect();
+          await powersyncDb.disconnect();
         } else if (event == AuthChangeEvent.tokenRefreshed) {
           // Supabase token refreshed - trigger token refresh for PowerSync.
           currentConnector?.prefetchCredentials();

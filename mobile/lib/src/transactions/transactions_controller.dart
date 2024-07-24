@@ -8,7 +8,7 @@ class TransactionsController {
 
   Future<List<Transaction>> getTransactions() async {
     try {
-      ResultSet transactions = await db
+      ResultSet transactions = await powersyncDb
           .getAll('SELECT * FROM transactions order by DATE(date) desc;');
       return transactions.map((row) {
         return Transaction(

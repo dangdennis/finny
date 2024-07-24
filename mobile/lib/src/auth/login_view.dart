@@ -1,14 +1,15 @@
 import 'package:finny/src/auth/auth_controller.dart';
+import 'package:finny/src/auth/auth_provider.dart';
 import 'package:finny/src/context_extension.dart';
 import 'package:finny/src/routes.dart';
 import 'package:flutter/material.dart';
 
 class LoginView extends StatefulWidget {
-  const LoginView({super.key, required this.authController});
+  const LoginView({super.key, required this.authProvider});
 
   static const routeName = Routes.login;
 
-  final AuthController authController;
+  final AuthProvider authProvider;
 
   @override
   State<LoginView> createState() => _LoginViewState();
@@ -21,10 +22,10 @@ class _LoginViewState extends State<LoginView> {
   void initState() {
     _emailController = TextEditingController();
     super.initState();
-    widget.authController.initAuthStateListener(context);
+    widget.authProvider.initAuthStateListener(context);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (widget.authController.isLoggedIn) {
+      if (widget.authProvider.isLoggedIn) {
         Navigator.restorablePushNamed(context, Routes.accounts);
       }
     });
@@ -33,7 +34,7 @@ class _LoginViewState extends State<LoginView> {
   @override
   void dispose() {
     _emailController.dispose();
-    widget.authController.dispose();
+    widget.authProvider.dispose();
     super.dispose();
   }
 
@@ -52,11 +53,11 @@ class _LoginViewState extends State<LoginView> {
           ),
           const SizedBox(height: 18),
           ElevatedButton(
-            onPressed: widget.authController.isLoading
+            onPressed: widget.authProvider.isLoading
                 ? null
-                : () => widget.authController.signIn(
+                : () => widget.authProvider.signIn(
                     _emailController.text, context, context.showSnackBar),
-            child: Text(widget.authController.isLoading
+            child: Text(widget.authProvider.isLoading
                 ? 'Sending...'
                 : 'Send Magic Link'),
           ),
