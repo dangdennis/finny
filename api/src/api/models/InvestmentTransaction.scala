@@ -16,7 +16,10 @@ case class InvestmentTransaction(
     fees: Option[Double],
     investmentTransactionType: InvestmentTransactionType,
     isoCurrencyCode: Option[String],
-    unofficialCurrencyCode: Option[String]
+    unofficialCurrencyCode: Option[String],
+    createdAt: Instant,
+    updatedAt: Instant,
+    deletedAt: Option[Instant]
 )
 
 enum InvestmentTransactionType:

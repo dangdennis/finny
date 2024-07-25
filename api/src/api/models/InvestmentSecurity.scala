@@ -1,17 +1,20 @@
 package api.models
 
 import java.util.UUID
+import java.time.Instant
 
 case class InvestmentSecurity(
     id: UUID,
-    securityId: String,
-    sedol: Option[String],
-    institutionSecurityId: Option[String],
-    institutionId: Option[String],
-    proxySecurityId: Option[String],
+    plaidDecurityId: String,
+    plaidInstitutionSecurityId: Option[String],
+    plaidInstitutionId: Option[String],
+    plaidProxySecurityId: Option[String],
     name: Option[String],
     tickerSymbol: Option[String],
-    securityType: Option[SecurityType]
+    securityType: Option[SecurityType],
+    createdAt: Instant,
+    updatedAt: Instant,
+    deletedAt: Option[Instant]
 )
 
 enum SecurityType:
