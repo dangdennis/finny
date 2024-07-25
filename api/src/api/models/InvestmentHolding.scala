@@ -1,19 +1,22 @@
-package models
+package api.models
 
 import java.util.UUID
+import java.time.Instant
 
 case class InvestmentHolding(
     id: String,
     accountId: UUID,
-    symbol: String,
-    name: String,
+    securityId: String,
+    institutionPrice: Double,
+    institutionPriceAsOf: Option[Instant],
+    institutionPriceDateTime: Option[Instant],
+    institutionValue: Double,
+    costBasis: Option[Double],
     quantity: Double,
-    price: Double,
-    value: Double,
-    costBasis: Double,
-    gain: Double,
-    gainPercentage: Double,
-    createdAt: Long,
-    updatedAt: Long,
-    deletedAt: Option[Long]
+    isoCurrencyCode: Option[String],
+    unofficialCurrencyCode: Option[String],
+    vestedValue: Option[Double],
+    createdAt: Instant,
+    updatedAt: Instant,
+    deletedAt: Option[Instant]
 )

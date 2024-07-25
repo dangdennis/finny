@@ -223,5 +223,12 @@ object PlaidItemRepository:
         lastSyncedAt = rs.timestampOpt("last_synced_at").map(_.toInstant),
         lastSyncError = rs.stringOpt("last_sync_error"),
         lastSyncErrorAt = rs.timestampOpt("last_sync_error_at").map(_.toInstant),
-        retryCount = rs.int("retry_count")
+        retryCount = rs.int("retry_count"),
+        errorType = rs.stringOpt("error_type"),
+        errorCode = rs.stringOpt("error_code"),
+        errorMessage = rs.stringOpt("error_message"),
+        errorDisplayMessage = rs.stringOpt("error_display_message"),
+        errorRequestId = rs.stringOpt("error_request_id"),
+        documentationUrl = rs.stringOpt("documentation_url"),
+        suggestedAction = rs.stringOpt("suggested_action")
     )

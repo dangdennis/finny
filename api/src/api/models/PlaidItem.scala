@@ -46,5 +46,12 @@ case class PlaidItem(
     lastSyncedAt: Option[Instant],
     lastSyncError: Option[String],
     lastSyncErrorAt: Option[Instant],
-    retryCount: Int
+    retryCount: Int,
+    errorType: Option[String],
+    errorCode: Option[String],
+    errorMessage: Option[String],
+    errorDisplayMessage: Option[String],
+    errorRequestId: Option[String],
+    documentationUrl: Option[String],
+    suggestedAction: Option[String]
 )
