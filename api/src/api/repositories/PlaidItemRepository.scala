@@ -16,22 +16,29 @@ object PlaidItemRepository:
             DB.readOnly { implicit session =>
                 sql"""
                 select
-                id,
-                user_id,
-                plaid_access_token,
-                plaid_item_id,
-                plaid_institution_id,
-                status,
-                transactions_cursor,
-                created_at,
-                last_synced_at,
-                last_sync_error,
-                last_sync_error_at,
-                retry_count
+                  id,
+                  user_id,
+                  plaid_access_token,
+                  plaid_item_id,
+                  plaid_institution_id,
+                  status,
+                  transactions_cursor,
+                  created_at,
+                  last_synced_at,
+                  last_sync_error,
+                  last_sync_error_at,
+                  retry_count,
+                  error_type,
+                  error_code,
+                  error_message,
+                  error_display_message,
+                  error_request_id,
+                  documentation_url,
+                  suggested_action
                 from
-                plaid_items
-                where
-                user_id = $userId
+                  plaid_items
+                  where
+                  user_id = $userId
                 """.map(dbToModel).list.apply()
             }
         ).toEither
@@ -52,7 +59,14 @@ object PlaidItemRepository:
           last_synced_at,
           last_sync_error,
           last_sync_error_at,
-          retry_count
+          retry_count,
+          error_type,
+          error_code,
+          error_message,
+          error_display_message,
+          error_request_id,
+          documentation_url,
+          suggested_action
         from
           plaid_items
         where
@@ -75,7 +89,14 @@ object PlaidItemRepository:
             last_synced_at,
             last_sync_error,
             last_sync_error_at,
-            retry_count
+            retry_count,
+            error_type,
+            error_code,
+            error_message,
+            error_display_message,
+            error_request_id,
+            documentation_url,
+            suggested_action
           from
               plaid_items
           where
@@ -114,7 +135,14 @@ object PlaidItemRepository:
           last_synced_at,
           last_sync_error,
           last_sync_error_at,
-          retry_count
+          retry_count,
+          error_type,
+          error_code,
+          error_message,
+          error_display_message,
+          error_request_id,
+          documentation_url,
+          suggested_action
         ;
         """
                 query.map(dbToModel).single.apply()
@@ -139,7 +167,14 @@ object PlaidItemRepository:
               last_synced_at,
               last_sync_error,
               last_sync_error_at,
-              retry_count
+              retry_count,
+              error_type,
+              error_code,
+              error_message,
+              error_display_message,
+              error_request_id,
+              documentation_url,
+              suggested_action
             from
               plaid_items
             where
@@ -201,7 +236,14 @@ object PlaidItemRepository:
             last_synced_at,
             last_sync_error,
             last_sync_error_at,
-            retry_count
+            retry_count,
+            error_type,
+            error_code,
+            error_message,
+            error_display_message,
+            error_request_id,
+            documentation_url,
+            suggested_action
           from
               plaid_items
           """.map(dbToModel).list.apply()
