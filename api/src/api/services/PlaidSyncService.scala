@@ -20,6 +20,7 @@ import scala.util.Failure
 import scala.util.Success
 import api.repositories.InvestmentRepository
 import api.models.SecurityType
+import api.services.PlaidService.PlaidError
 
 object PlaidSyncService:
     given ec: ExecutionContext = ExecutionContext.global
@@ -43,23 +44,20 @@ object PlaidSyncService:
                 retry,
                 () =>
                     Logger.root.info(s"Syncing transactions and accounts for item: $itemId")
-                    val item = PlaidItemRepository.getById(itemId.toUUID)
-                    item.left
-                        .map { exception =>
-                            Logger.root.error(f"Error getting item", exception)
-                            PlaidItemRepository.updateSyncError(
-                                itemId = itemId.toUUID,
-                                error = exception.getMessage,
-                                currentTime = java.time.Instant.now()
-                            )
-                        }
-                        .map { item =>
-                            syncNonInvestmentAccounts(item)
-                            item
-                        }
-                        .map { item =>
-                            syncInvestmentAccounts(item)
-                        }
+                    (
+                        for
+                            item <- PlaidItemRepository.getById(itemId.toUUID)
+                            _ <- syncAccounts(item)
+                            _ <- syncNonInvestmentAccounts(item)
+                            _ <- Right(syncInvestmentAccounts(item))
+                        yield ()
+                    ) match
+                        case Right(_) =>
+                            Logger.root.info(s"Sync for item ${itemId} completed successfully.")
+                        case Left(PlaidError(requestId, errorType, errorCode, errorMessage)) =>
+                            Logger.root.error(s"Sync for item ${itemId} failed: $errorMessage")
+                        case Left(ex) =>
+                            Logger.root.error(s"Sync for item ${itemId} failed.", ex)
             )
         )
 
@@ -72,6 +70,10 @@ object PlaidSyncService:
                 Logger.root.error(s"Sync for item ${itemId} failed.", ex)
         }
     }
+
+    def syncAccounts(item: PlaidItem) = PlaidService
+        .getAccounts(PlaidService.makePlaidClientFromEnv(), item)
+        .map(accountsResp => accountsResp.getAccounts.asScala.map(account => upsertAccount(item, account)))
 
     def syncHistorical(itemId: PlaidItemId) = PlaidItemRepository
         .updateTransactionCursor(itemId = itemId.toUUID, cursor = None)
@@ -99,7 +101,7 @@ object PlaidSyncService:
                 }
             Thread.sleep(60000 * 60)
 
-    private def syncNonInvestmentAccounts(item: PlaidItem): Unit =
+    private def syncNonInvestmentAccounts(item: PlaidItem): Either[PlaidError, Unit] =
         Logger.root.info(s"Syncing non-investment accounts and transactions for item: ${item.id}")
         var cursor = item.transactionsCursor
         var hasMore = true
@@ -112,6 +114,7 @@ object PlaidSyncService:
                         error = error.errorMessage,
                         currentTime = java.time.Instant.now()
                     )
+                    return Left(error)
                 case Right(resp) =>
                     handleItemResponse(item, resp)
                     hasMore = resp.getHasMore().booleanValue()
@@ -119,95 +122,103 @@ object PlaidSyncService:
                     cursor = Option(resp.getNextCursor())
                     Logger.root.info(s"Sync ${item.id} cursor: $cursor")
 
+        Right(())
+
     private def syncInvestmentAccounts(item: PlaidItem): Unit =
         Logger.root.info(s"Syncing investment accounts and holdings for item: ${item.id}")
         AccountRepository
             .getAccounts(item.userId)
             .map(accounts =>
                 val investmentAccounts = accounts.filter(_.accountType.exists(_ == "investment"))
-                PlaidService.getInvestmentHoldings(client = PlaidService.makePlaidClientFromEnv(), item) match
-                    case Left(error) =>
-                        Logger.root.error(s"Error syncing investment holdings", error)
-                        PlaidItemRepository.updateSyncError(
-                            itemId = item.id.toUUID,
-                            error = error.errorMessage,
-                            currentTime = java.time.Instant.now()
-                        )
-                    case Right(resp) =>
-                        for account <- resp.getAccounts().asScala do
-                            upsertAccount(item, account) match
-                                case Failure(error) =>
-                                    Logger.root.error(s"Error upserting account: $error")
-                                case Success(accountId) =>
-                                    Logger.root.info(s"Upserted account: $accountId")
-
-                        for security <- resp.getSecurities().asScala do
-                            InvestmentRepository.upsertInvestmentSecurity(
-                                InvestmentRepository.InvestmentSecurityInput(
-                                    plaidSecurityId = security.getSecurityId(),
-                                    plaidInstitutionSecurityId = Option(security.getInstitutionSecurityId),
-                                    plaidInstitutionId = Option(security.getInstitutionId),
-                                    plaidProxySecurityId = Option(security.getProxySecurityId),
-                                    name = Option(security.getName),
-                                    tickerSymbol = Option(security.getTickerSymbol),
-                                    securityType =
-                                        SecurityType.fromString(security.getType()) match
-                                            case Right(securityType) =>
-                                                Some(securityType)
-                                            case Left(error) =>
-                                                Logger.root.error(s"Error parsing security type: $error")
-                                                None
-                                )
+                if investmentAccounts.nonEmpty then
+                    PlaidService.getInvestmentHoldings(client = PlaidService.makePlaidClientFromEnv(), item) match
+                        case Left(error) =>
+                            Logger.root.error(s"Error syncing investment holdings", error)
+                            PlaidItemRepository.updateSyncError(
+                                itemId = item.id.toUUID,
+                                error = error.errorMessage,
+                                currentTime = java.time.Instant.now()
                             )
+                        case Right(resp) =>
+                            for account <- resp.getAccounts().asScala do
+                                upsertAccount(item, account) match
+                                    case Failure(error) =>
+                                        Logger.root.error(s"Error upserting account: $error")
+                                    case Success(accountId) =>
+                                        Logger.root.info(s"Upserted account: $accountId")
 
-                        val holdings = resp.getHoldings().asScala
-                        for holding <- holdings do
-                            val result = AccountRepository
-                                .getByPlaidAccountId(itemId = item.id.toUUID, plaidAccountId = holding.getAccountId())
-                                .map(account =>
-                                    InvestmentRepository
-                                        .getInvestmentSecurityByPlaidSecurityId(plaidSecurityId =
-                                            Option(holding.getSecurityId()).get
-                                        )
-                                        .map(securityOpt =>
-                                            securityOpt.map(security =>
-                                                Logger.root.info(s"Upserting holding for account: ${account.id}")
-                                                InvestmentRepository.upsertInvestmentHoldings(
-                                                    InvestmentRepository.InvestmentHoldingInput(
-                                                        accountId = account.id,
-                                                        investmentSecurityId = security.id,
-                                                        institutionPrice = holding.getInstitutionPrice,
-                                                        institutionPriceAsOf = Option(holding.getInstitutionPriceAsOf),
-                                                        institutionPriceDateTime = Option(
-                                                            holding.getInstitutionPriceDatetime
-                                                        ).map(_.toInstant()),
-                                                        institutionValue = holding.getInstitutionValue,
-                                                        costBasis = Option(holding.getCostBasis),
-                                                        quantity = holding.getQuantity,
-                                                        isoCurrencyCode = Option(holding.getIsoCurrencyCode),
-                                                        unofficialCurrencyCode = Option(
-                                                            holding.getUnofficialCurrencyCode
-                                                        ),
-                                                        vestedValue = Option(holding.getVestedValue)
+                            for security <- resp.getSecurities().asScala do
+                                InvestmentRepository.upsertInvestmentSecurity(
+                                    InvestmentRepository.InvestmentSecurityInput(
+                                        plaidSecurityId = security.getSecurityId(),
+                                        plaidInstitutionSecurityId = Option(security.getInstitutionSecurityId),
+                                        plaidInstitutionId = Option(security.getInstitutionId),
+                                        plaidProxySecurityId = Option(security.getProxySecurityId),
+                                        name = Option(security.getName),
+                                        tickerSymbol = Option(security.getTickerSymbol),
+                                        securityType =
+                                            SecurityType.fromString(security.getType()) match
+                                                case Right(securityType) =>
+                                                    Some(securityType)
+                                                case Left(error) =>
+                                                    Logger.root.error(s"Error parsing security type: $error")
+                                                    None
+                                    )
+                                )
+
+                            val holdings = resp.getHoldings().asScala
+                            for holding <- holdings do
+                                val result = AccountRepository
+                                    .getByPlaidAccountId(
+                                        itemId = item.id.toUUID,
+                                        plaidAccountId = holding.getAccountId()
+                                    )
+                                    .map(account =>
+                                        InvestmentRepository
+                                            .getInvestmentSecurityByPlaidSecurityId(plaidSecurityId =
+                                                Option(holding.getSecurityId()).get
+                                            )
+                                            .map(securityOpt =>
+                                                securityOpt.map(security =>
+                                                    Logger.root.info(s"Upserting holding for account: ${account.id}")
+                                                    InvestmentRepository.upsertInvestmentHoldings(
+                                                        InvestmentRepository.InvestmentHoldingInput(
+                                                            accountId = account.id,
+                                                            investmentSecurityId = security.id,
+                                                            institutionPrice = holding.getInstitutionPrice,
+                                                            institutionPriceAsOf = Option(
+                                                                holding.getInstitutionPriceAsOf
+                                                            ),
+                                                            institutionPriceDateTime = Option(
+                                                                holding.getInstitutionPriceDatetime
+                                                            ).map(_.toInstant()),
+                                                            institutionValue = holding.getInstitutionValue,
+                                                            costBasis = Option(holding.getCostBasis),
+                                                            quantity = holding.getQuantity,
+                                                            isoCurrencyCode = Option(holding.getIsoCurrencyCode),
+                                                            unofficialCurrencyCode = Option(
+                                                                holding.getUnofficialCurrencyCode
+                                                            ),
+                                                            vestedValue = Option(holding.getVestedValue)
+                                                        )
                                                     )
                                                 )
                                             )
-                                        )
-                                )
+                                    )
 
-                            // todo: refactor this nesting
-                            result match {
-                                case scala.util.Success(Right(Some(Right(uuid)))) => // log success and continue
-                                case scala.util.Success(Right(Some(Left(err)))) =>
-                                    Logger.root.error(s"Failed to upsert holding due to error", err)
-                                case scala.util.Success(Right(None)) =>
-                                    Logger.root.error("No security found")
-                                case scala.util.Success(Left(err)) =>
-                                    Logger.root.error("Failed to fetch security", err)
-                                case scala.util.Failure(ex) =>
-                                    Logger.root.error(s"No account found", ex)
-                            }
-                        ()
+                                // todo: refactor this nesting
+                                result match {
+                                    case scala.util.Success(Right(Some(Right(uuid)))) => // log success and continue
+                                    case scala.util.Success(Right(Some(Left(err)))) =>
+                                        Logger.root.error(s"Failed to upsert holding due to error", err)
+                                    case scala.util.Success(Right(None)) =>
+                                        Logger.root.error("No security found")
+                                    case scala.util.Success(Left(err)) =>
+                                        Logger.root.error("Failed to fetch security", err)
+                                    case scala.util.Failure(ex) =>
+                                        Logger.root.error(s"No account found", ex)
+                                }
+                            ()
             )
 
     private def handleItemResponse(item: PlaidItem, response: TransactionsSyncResponse): Unit =

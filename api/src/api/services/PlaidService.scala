@@ -364,48 +364,46 @@ object PlaidService:
             )
         )
 
-    def getInvestmentHoldings(
-        client: PlaidApi,
-        item: PlaidItem
-    ): Either[PlaidError, InvestmentsHoldingsGetResponse] = PlaidItemRepository
-        .getById(item.id.toUUID)
-        .left
-        .map(ex => PlaidError(None, "DB_ERROR", "DELETE_ERROR", ex.getMessage))
-        .flatMap(plaidItem =>
-            val req = InvestmentsHoldingsGetRequest().accessToken(plaidItem.plaidAccessToken)
-            handlePlaidResponse(
-                Try(client.investmentsHoldingsGet(req).execute()),
-                respBody =>
-                    respBody
-                        .left
-                        .map(error =>
-                            PlaidApiEventRepository.create(
-                                PlaidApiEventCreateInput(
-                                    userId = Some(plaidItem.userId),
-                                    itemId = None,
-                                    plaidMethod = "investmentsHoldingsGet",
-                                    arguments = Map(),
-                                    requestId = error.requestId,
-                                    errorType = Some(error.errorType),
-                                    errorCode = Some(error.errorCode)
+    def getInvestmentHoldings(client: PlaidApi, item: PlaidItem): Either[PlaidError, InvestmentsHoldingsGetResponse] =
+        PlaidItemRepository
+            .getById(item.id.toUUID)
+            .left
+            .map(ex => PlaidError(None, "DB_ERROR", "DELETE_ERROR", ex.getMessage))
+            .flatMap(plaidItem =>
+                val req = InvestmentsHoldingsGetRequest().accessToken(plaidItem.plaidAccessToken)
+                handlePlaidResponse(
+                    Try(client.investmentsHoldingsGet(req).execute()),
+                    respBody =>
+                        respBody
+                            .left
+                            .map(error =>
+                                PlaidApiEventRepository.create(
+                                    PlaidApiEventCreateInput(
+                                        userId = Some(plaidItem.userId),
+                                        itemId = None,
+                                        plaidMethod = "investmentsHoldingsGet",
+                                        arguments = Map(),
+                                        requestId = error.requestId,
+                                        errorType = Some(error.errorType),
+                                        errorCode = Some(error.errorCode)
+                                    )
                                 )
                             )
-                        )
-                        .map(body =>
-                            PlaidApiEventRepository.create(
-                                PlaidApiEventCreateInput(
-                                    userId = Some(plaidItem.userId),
-                                    itemId = None,
-                                    plaidMethod = "investmentsHoldingsGet",
-                                    arguments = Map(),
-                                    requestId = Some(body.getRequestId()),
-                                    errorType = None,
-                                    errorCode = None
+                            .map(body =>
+                                PlaidApiEventRepository.create(
+                                    PlaidApiEventCreateInput(
+                                        userId = Some(plaidItem.userId),
+                                        itemId = None,
+                                        plaidMethod = "investmentsHoldingsGet",
+                                        arguments = Map(),
+                                        requestId = Some(body.getRequestId()),
+                                        errorType = None,
+                                        errorCode = None
+                                    )
                                 )
                             )
-                        )
+                )
             )
-        )
 
     case class PlaidError(requestId: Option[String], errorType: String, errorCode: String, errorMessage: String)
 

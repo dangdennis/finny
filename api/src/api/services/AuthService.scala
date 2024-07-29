@@ -11,6 +11,7 @@ import io.circe.generic.semiauto.deriveEncoder
 import io.circe.parser.*
 import io.circe.syntax.*
 import sttp.client3.*
+import repositories.AuthUserRepository
 
 object AuthService:
     // Replace with your actual Supabase project URL and key
@@ -34,12 +35,13 @@ object AuthService:
         request.send(HttpClientSyncBackend()) match
             case response if response.isSuccess =>
                 Jobs.enqueueJob(JobRequest.JobDeleteUser(userId = userId))
+                    .flatMap(_ => AuthUserRepository.deleteIdentitiesAdmin(userId))
+                    .map(_ => true)
                     .left
                     .map(err =>
-                        Logger.root.error(s"Failed to enqueue job to delete user with ID ${userId} $err")
+                        Logger.root.error(s"Failed to soft delete user with ID ${userId} $err")
                         s"Failed to enqueue job to delete user with ID ${userId}"
                     )
-                    .map(_ => true)
             case response =>
                 Left(s"Failed to delete user with ID ${userId}. ${response.body.toString()}")
 

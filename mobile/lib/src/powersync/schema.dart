@@ -32,5 +32,29 @@ const schema = Schema([
     Column.text('created_at'),
     Column.text('updated_at'),
     Column.text('deleted_at')
+  ]),
+  Table('investment_holdings', [
+    Column.text('account_id'),
+    Column.real('institution_price'),
+    Column.text('institution_price_as_of'),
+    Column.real('institution_value'),
+    Column.real('cost_basis'),
+    Column.real('quantity'),
+    Column.text('iso_currency_code'),
+    Column.real('vested_value')
+  ]),
+  Table('goals', [
+    Column.text('name'),
+    Column.real('amount'),
+    Column.text('target_date'),
+    Column.text('user_id'),
+    Column.real('progress')
+  ]),
+  Table('goal_accounts', [
+    Column.text('goal_id'),
+    Column.text('account_id'),
+    Column.text('amount'),
+    Column.text('percentage'),
+    Column.text('created_at')
   ])
 ]);
