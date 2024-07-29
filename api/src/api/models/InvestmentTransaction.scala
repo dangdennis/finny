@@ -1,7 +1,7 @@
 package api.models
 
-import java.util.UUID
 import java.time.Instant
+import java.util.UUID
 
 case class InvestmentTransaction(
     id: UUID,

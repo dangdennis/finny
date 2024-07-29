@@ -1,12 +1,12 @@
 package api.models
 
-import java.util.UUID
 import java.time.Instant
+import java.util.UUID
 
 case class InvestmentHolding(
-    id: String,
+    id: UUID,
     accountId: UUID,
-    securityId: String,
+    investmentSecurityId: String,
     institutionPrice: Double,
     institutionPriceAsOf: Option[Instant],
     institutionPriceDateTime: Option[Instant],

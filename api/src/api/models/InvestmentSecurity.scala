@@ -1,11 +1,11 @@
 package api.models
 
-import java.util.UUID
 import java.time.Instant
+import java.util.UUID
 
 case class InvestmentSecurity(
     id: UUID,
-    plaidDecurityId: String,
+    plaidSecurityId: String,
     plaidInstitutionSecurityId: Option[String],
     plaidInstitutionId: Option[String],
     plaidProxySecurityId: Option[String],
