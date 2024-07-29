@@ -20,6 +20,7 @@ import scala.util.Failure
 import scala.util.Success
 import api.repositories.InvestmentRepository
 import api.models.SecurityType
+import api.services.PlaidService.PlaidError
 
 object PlaidSyncService:
     given ec: ExecutionContext = ExecutionContext.global
@@ -43,23 +44,20 @@ object PlaidSyncService:
                 retry,
                 () =>
                     Logger.root.info(s"Syncing transactions and accounts for item: $itemId")
-                    val item = PlaidItemRepository.getById(itemId.toUUID)
-                    item.left
-                        .map { exception =>
-                            Logger.root.error(f"Error getting item", exception)
-                            PlaidItemRepository.updateSyncError(
-                                itemId = itemId.toUUID,
-                                error = exception.getMessage,
-                                currentTime = java.time.Instant.now()
-                            )
-                        }
-                        .map { item =>
-                            syncNonInvestmentAccounts(item)
-                            item
-                        }
-                        .map { item =>
-                            syncInvestmentAccounts(item)
-                        }
+                    (
+                        for
+                            item <- PlaidItemRepository.getById(itemId.toUUID)
+                            _ <- syncAccounts(item)
+                            _ <- syncNonInvestmentAccounts(item)
+                            _ <- Right(syncInvestmentAccounts(item))
+                        yield ()
+                    ) match
+                        case Right(_) =>
+                            Logger.root.info(s"Sync for item ${itemId} completed successfully.")
+                        case Left(PlaidError(requestId, errorType, errorCode, errorMessage)) =>
+                            Logger.root.error(s"Sync for item ${itemId} failed: $errorMessage")
+                        case Left(ex) =>
+                            Logger.root.error(s"Sync for item ${itemId} failed.", ex)
             )
         )
 
@@ -72,6 +70,10 @@ object PlaidSyncService:
                 Logger.root.error(s"Sync for item ${itemId} failed.", ex)
         }
     }
+
+    def syncAccounts(item: PlaidItem) = PlaidService
+        .getAccounts(PlaidService.makePlaidClientFromEnv(), item)
+        .map(accountsResp => accountsResp.getAccounts.asScala.map(account => upsertAccount(item, account)))
 
     def syncHistorical(itemId: PlaidItemId) = PlaidItemRepository
         .updateTransactionCursor(itemId = itemId.toUUID, cursor = None)
@@ -99,7 +101,7 @@ object PlaidSyncService:
                 }
             Thread.sleep(60000 * 60)
 
-    private def syncNonInvestmentAccounts(item: PlaidItem): Unit =
+    private def syncNonInvestmentAccounts(item: PlaidItem): Either[PlaidError, Unit] =
         Logger.root.info(s"Syncing non-investment accounts and transactions for item: ${item.id}")
         var cursor = item.transactionsCursor
         var hasMore = true
@@ -112,12 +114,15 @@ object PlaidSyncService:
                         error = error.errorMessage,
                         currentTime = java.time.Instant.now()
                     )
+                    return Left(error)
                 case Right(resp) =>
                     handleItemResponse(item, resp)
                     hasMore = resp.getHasMore().booleanValue()
                     Logger.root.info(s"Sync ${item.id} hasMore: $hasMore")
                     cursor = Option(resp.getNextCursor())
                     Logger.root.info(s"Sync ${item.id} cursor: $cursor")
+
+        Right(())
 
     private def syncInvestmentAccounts(item: PlaidItem): Unit =
         Logger.root.info(s"Syncing investment accounts and holdings for item: ${item.id}")
