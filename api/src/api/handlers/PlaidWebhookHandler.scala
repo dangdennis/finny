@@ -7,13 +7,34 @@ import io.circe.*
 import io.circe.generic.auto.*
 import io.circe.parser.*
 
-case class PlaidTransactionsSyncUpdatesAvailable(
+case class EventPlaidTransactionsSyncUpdatesAvailable(
     webhook_type: String,
     webhook_code: String,
     item_id: String,
     initial_update_complete: Boolean,
     historical_update_complete: Boolean,
     environment: String
+)
+
+case class EventPlaidInvestmentHoldingsDefaultUpdate(
+    webhook_type: String,
+    webhook_code: String,
+    item_id: String,
+    error: Option[WebhookPlaidError],
+    new_holdings: Int,
+    updated_holdings: Int,
+    environment: String
+)
+
+case class WebhookPlaidError(
+    error_type: String,
+    error_code: String,
+    error_message: String,
+    display_message: String,
+    request_id: String,
+    // causes: List[Any], // todo: figure out the data model for this
+    documentation_url: String,
+    suggested_action: String
 )
 
 object PlaidWebhookHandler:
@@ -32,7 +53,7 @@ object PlaidWebhookHandler:
 
                 (webhookType, webhookCode) match
                     case (Some("TRANSACTIONS"), Some("SYNC_UPDATES_AVAILABLE")) =>
-                        json.as[PlaidTransactionsSyncUpdatesAvailable] match
+                        json.as[EventPlaidTransactionsSyncUpdatesAvailable] match
                             case Left(failure) =>
                                 Logger.root.error(s"Failed to decode JSON: $failure")
                                 Right("Failed to decode JSON")
@@ -76,7 +97,25 @@ object PlaidWebhookHandler:
                                                 Logger.root.error("Plaid webhook: no updates complete")
                                     }
                                 Right("Handled Plaid webhook")
-
+                    case (Some("HOLDINGS"), Some("DEFAULT_UPDATE")) =>
+                        json.as[EventPlaidInvestmentHoldingsDefaultUpdate] match
+                            case Left(failure) =>
+                                Logger.root.error(s"Failed to decode JSON: $failure")
+                                Right("Failed to decode JSON")
+                            case Right(event) =>
+                                PlaidItemRepository
+                                    .getByItemId(itemId = event.item_id)
+                                    .map { plaidItem =>
+                                        Jobs.enqueueJob(
+                                            Jobs.JobRequest
+                                                .JobSyncPlaidItem(
+                                                    itemId = plaidItem.id.toUUID,
+                                                    syncType = Jobs.SyncType.Default,
+                                                    environment = event.environment
+                                                )
+                                        )
+                                    }
+                                Right("Handled Plaid webhook")
                     case _ =>
                         Logger.root.warn(f"Not handling Plaid webhook: $webhookType, $webhookCode")
                         Right("Not handling Plaid webhook")
