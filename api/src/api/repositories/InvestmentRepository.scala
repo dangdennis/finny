@@ -29,7 +29,7 @@ object InvestmentRepository:
         Try(
             DB readOnly { implicit session =>
                 sql"""
-                SELECT 
+                SELECT
                     id,
                     plaid_security_id,
                     plaid_institution_security_id,
@@ -37,7 +37,10 @@ object InvestmentRepository:
                     plaid_proxy_security_id,
                     name,
                     ticker_symbol,
-                    security_type
+                    security_type,
+                    created_at,
+                    updated_at,
+                    deleted_at
                 FROM investment_securities
                 WHERE plaid_security_id = $plaidSecurityId
                 """.map(rs =>

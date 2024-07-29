@@ -56,13 +56,15 @@ class InvestmentRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, Befo
                         plaidAccountId = "somePlaidAccountId",
                         unofficialCurrencyCode = Some("USD")
                     )
-                ).get
+                )
+                .get
 
+        val plaidSecurityId = UUID.randomUUID().toString
         val investmentSecurityId =
             InvestmentRepository
                 .upsertInvestmentSecurity(
                     InvestmentRepository.InvestmentSecurityInput(
-                        plaidSecurityId = UUID.randomUUID().toString,
+                        plaidSecurityId = plaidSecurityId,
                         plaidInstitutionSecurityId = Some("somePlaidInstitutionSecurityId"),
                         plaidInstitutionId = Some("somePlaidInstitutionId"),
                         plaidProxySecurityId = Some("somePlaidProxySecurityId"),
@@ -70,24 +72,31 @@ class InvestmentRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, Befo
                         tickerSymbol = Some("SSEC"),
                         securityType = Some(SecurityType.Equity)
                     )
-                ).value
+                )
+                .value
+
+        val security = InvestmentRepository.getInvestmentSecurityByPlaidSecurityId(plaidSecurityId).value
+        security should not be None
 
         // when
-        val holdingId = InvestmentRepository.upsertInvestmentHoldings(
-            InvestmentRepository.InvestmentHoldingInput(
-                accountId = accountId,
-                investmentSecurityId = investmentSecurityId,
-                institutionPrice = 100.0,
-                institutionPriceAsOf = Some(Time.now().toLocalDate()),
-                institutionPriceDateTime = Some(Time.now()),
-                institutionValue = 100.0,
-                costBasis = Some(100.0),
-                quantity = 100.0,
-                isoCurrencyCode = Some("USD"),
-                unofficialCurrencyCode = Some("USD"),
-                vestedValue = Some(100.0)
-            )
-        ).value
+        val holdingId =
+            InvestmentRepository
+                .upsertInvestmentHoldings(
+                    InvestmentRepository.InvestmentHoldingInput(
+                        accountId = accountId,
+                        investmentSecurityId = investmentSecurityId,
+                        institutionPrice = 100.0,
+                        institutionPriceAsOf = Some(Time.now().toLocalDate()),
+                        institutionPriceDateTime = Some(Time.now()),
+                        institutionValue = 100.0,
+                        costBasis = Some(100.0),
+                        quantity = 100.0,
+                        isoCurrencyCode = Some("USD"),
+                        unofficialCurrencyCode = Some("USD"),
+                        vestedValue = Some(100.0)
+                    )
+                )
+                .value
 
         // then
         val holdings = InvestmentRepository.getInvestmentHoldings(accountId).value
