@@ -42,7 +42,7 @@ class InvestmentRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, Befo
             AccountRepository
                 .upsertAccount(
                     UpsertAccountInput(
-                        itemId = item.id,
+                        itemId = item.id.toUUID,
                         userId = user.id,
                         accountSubtype = Some("checking"),
                         accountType = Some("depository"),
@@ -88,6 +88,7 @@ class InvestmentRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, Befo
             )
         ).value
 
+        // then
         val holdings = InvestmentRepository.getInvestmentHoldings(accountId).value
         holdings should have size 1
     }

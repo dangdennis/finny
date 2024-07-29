@@ -1,5 +1,6 @@
 package api.repositories
 
+import api.models.PlaidItemId
 import api.models.Transaction
 import scalikejdbc.*
 
@@ -83,7 +84,7 @@ object TransactionRepository {
                 }
             )
 
-    def deleteTransactionsByItemId(itemId: UUID)(implicit session: DBSession): Either[Throwable, Boolean] =
+    def deleteTransactionsByItemId(itemId: PlaidItemId)(implicit session: DBSession): Either[Throwable, Boolean] =
         Try(sql"""
             DELETE FROM transactions
             WHERE account_id IN (

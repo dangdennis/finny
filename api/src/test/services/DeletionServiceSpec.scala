@@ -44,7 +44,7 @@ class UserDeletionServiceSpec extends AnyFlatSpec, Matchers, EitherValues, Befor
                 AccountRepository
                     .upsertAccount(
                         UpsertAccountInput(
-                            itemId = item.id,
+                            itemId = item.id.toUUID,
                             userId = userId,
                             accountSubtype = Some("checking"),
                             accountType = Some("depository"),

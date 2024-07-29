@@ -70,7 +70,7 @@ object PlaidService:
                         PlaidApiEventRepository.create(
                             PlaidApiEventCreateInput(
                                 userId = Some(item.userId),
-                                itemId = Some(item.id),
+                                itemId = Some(item.id.toUUID),
                                 plaidMethod = "accountsGet",
                                 arguments = Map(),
                                 requestId = error.requestId,
@@ -83,7 +83,7 @@ object PlaidService:
                         PlaidApiEventRepository.create(
                             PlaidApiEventCreateInput(
                                 userId = Some(item.userId),
-                                itemId = Some(item.id),
+                                itemId = Some(item.id.toUUID),
                                 plaidMethod = "accountsGet",
                                 arguments = Map(),
                                 requestId = Some(body.getRequestId),
@@ -110,7 +110,7 @@ object PlaidService:
                         PlaidApiEventRepository.create(
                             PlaidApiEventCreateInput(
                                 userId = Some(item.userId),
-                                itemId = Some(item.id),
+                                itemId = Some(item.id.toUUID),
                                 plaidMethod = "transactionsSync",
                                 arguments = Map("cursor" -> item.transactionsCursor.getOrElse("")),
                                 requestId = error.requestId,
@@ -123,7 +123,7 @@ object PlaidService:
                         PlaidApiEventRepository.create(
                             PlaidApiEventCreateInput(
                                 userId = Some(item.userId),
-                                itemId = Some(item.id),
+                                itemId = Some(item.id.toUUID),
                                 plaidMethod = "transactionsSync",
                                 arguments = Map("cursor" -> item.transactionsCursor.getOrElse("")),
                                 requestId = Some(body.getRequestId()),
@@ -255,7 +255,7 @@ object PlaidService:
                                 PlaidApiEventRepository.create(
                                     PlaidApiEventCreateInput(
                                         userId = Some(userId),
-                                        itemId = Some(plaidItem.id),
+                                        itemId = Some(plaidItem.id.toUUID),
                                         plaidMethod = "itemGet",
                                         arguments = Map(),
                                         requestId = Some(body.getRequestId()),
@@ -267,8 +267,8 @@ object PlaidService:
                     )
         )
 
-    def deleteItem(client: PlaidApi, itemId: UUID): Either[Throwable, Unit] = PlaidItemRepository
-        .getById(itemId)
+    def deleteItem(client: PlaidApi, itemId: PlaidItemId): Either[Throwable, Unit] = PlaidItemRepository
+        .getById(itemId.toUUID)
         .map(plaidItem =>
             val req = ItemRemoveRequest().accessToken(plaidItem.plaidAccessToken)
             Try(
@@ -288,7 +288,7 @@ object PlaidService:
                                             PlaidApiEventRepository.create(
                                                 PlaidApiEventRepository.PlaidApiEventCreateInput(
                                                     userId = None,
-                                                    itemId = Some(itemId),
+                                                    itemId = Some(itemId.toUUID),
                                                     plaidMethod = "itemRemove",
                                                     arguments = Map(),
                                                     requestId = error.requestId,
@@ -301,7 +301,7 @@ object PlaidService:
                                         PlaidApiEventRepository.create(
                                             PlaidApiEventRepository.PlaidApiEventCreateInput(
                                                 userId = None,
-                                                itemId = Some(itemId),
+                                                itemId = Some(itemId.toUUID),
                                                 plaidMethod = "itemRemove",
                                                 arguments = Map(),
                                                 requestId = Some(body.getRequestId()),
@@ -366,9 +366,9 @@ object PlaidService:
 
     def getInvestmentHoldings(
         client: PlaidApi,
-        itemId: PlaidItemId
+        item: PlaidItem
     ): Either[PlaidError, InvestmentsHoldingsGetResponse] = PlaidItemRepository
-        .getById(itemId.toUUID)
+        .getById(item.id.toUUID)
         .left
         .map(ex => PlaidError(None, "DB_ERROR", "DELETE_ERROR", ex.getMessage))
         .flatMap(plaidItem =>

@@ -3,6 +3,7 @@ package cli
 import api.common.Environment
 import api.common.Environment.AppEnv
 import api.database.Database
+import api.models.PlaidItemId
 import api.services.PlaidService
 
 import java.util.UUID
@@ -27,7 +28,8 @@ object Cli {
                 command match
                     case "delete-item" =>
                         val results =
-                            for res <- PlaidService.deleteItem(client = plaidClient, itemId = UUID.fromString(itemId))
+                            for res <- PlaidService
+                                    .deleteItem(client = plaidClient, itemId = PlaidItemId(UUID.fromString(itemId)))
                             yield res
                         println(results)
                     case _ =>

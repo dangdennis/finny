@@ -35,7 +35,7 @@ object PlaidItemStatus:
                 PlaidItemStatus.Unknown
 
 case class PlaidItem(
-    id: UUID,
+    id: PlaidItemId,
     userId: UUID,
     plaidAccessToken: String,
     plaidItemId: String,

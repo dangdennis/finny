@@ -1,6 +1,7 @@
 package api.repositories
 
 import api.models.PlaidItem
+import api.models.PlaidItemId
 import api.models.PlaidItemStatus
 import api.models.UserId
 import scalikejdbc.*
@@ -250,11 +251,11 @@ object PlaidItemRepository:
             }
         ).toEither
 
-    def deleteItemById(itemId: UUID)(implicit session: DBSession): Either[Throwable, Int] =
+    def deleteItemById(itemId: PlaidItemId)(implicit session: DBSession): Either[Throwable, Int] =
         Try(sql"""DELETE FROM plaid_items WHERE id = $itemId""".update.apply()).toEither
 
     private def dbToModel(rs: WrappedResultSet) = PlaidItem(
-        id = UUID.fromString(rs.string("id")),
+        id = PlaidItemId(UUID.fromString(rs.string("id"))),
         createdAt = rs.timestamp("created_at").toInstant,
         plaidAccessToken = rs.string("plaid_access_token"),
         plaidInstitutionId = rs.string("plaid_institution_id"),

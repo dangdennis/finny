@@ -36,7 +36,7 @@ class AccountRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, BeforeA
         // when
         AccountRepository.upsertAccount(
             UpsertAccountInput(
-                itemId = item.id,
+                itemId = item.id.toUUID,
                 userId = user.id,
                 accountSubtype = Some("checking"),
                 accountType = Some("depository"),
@@ -53,7 +53,7 @@ class AccountRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, BeforeA
 
         AccountRepository.upsertAccount(
             UpsertAccountInput(
-                itemId = item.id,
+                itemId = item.id.toUUID,
                 userId = user.id,
                 accountSubtype = Some("checking"),
                 accountType = Some("depository"),

@@ -2,6 +2,7 @@ package api.repositories
 
 import api.models.Account
 import api.models.AccountSimple
+import api.models.PlaidItemId
 import scalikejdbc.*
 
 import java.util.UUID
@@ -104,5 +105,5 @@ object AccountRepository:
         }
     )
 
-    def deleteAccountsByItemId(itemId: UUID)(implicit session: DBSession): Either[Throwable, Int] =
+    def deleteAccountsByItemId(itemId: PlaidItemId)(implicit session: DBSession): Either[Throwable, Int] =
         Try(sql"""DELETE FROM accounts WHERE item_id = ${itemId}""".update.apply()).toEither
