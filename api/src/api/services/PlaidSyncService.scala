@@ -18,6 +18,7 @@ import scala.concurrent.Future
 import scala.jdk.CollectionConverters.*
 import scala.util.Failure
 import scala.util.Success
+import api.repositories.InvestmentRepository
 
 object PlaidSyncService:
     given ec: ExecutionContext = ExecutionContext.global
@@ -138,7 +139,39 @@ object PlaidSyncService:
                                 currentTime = java.time.Instant.now()
                             )
                         case Right(resp) =>
-                            // handleItemResponse(item, resp)
+                            val accounts = resp.getAccounts().asScala
+                            for account <- accounts do
+                                upsertAccount(item, account) match
+                                    case Failure(error) =>
+                                        Logger.root.error(s"Error upserting account: $error")
+                                    case Success(accountId) =>
+                                        Logger.root.info(s"Upserted account: $accountId")
+                            val holdings = resp.getHoldings().asScala
+                            for holding <- holdings do
+                                AccountRepository.getByPlaidAccountId(
+                                    itemId = item.id.toUUID,
+                                    plaidAccountId = holding.getAccountId()
+                                ) match
+                                    case Failure(error) =>
+                                        val msg =
+                                            s"Failed to upsert holdings for ${holding.getAccountId()} due to missing account: $error"
+                                        Logger.root.error(msg)
+                                    case Success(account) =>
+                                        InvestmentRepository.upsertInvestmentHoldings(
+                                            InvestmentRepository.InvestmentHoldingInput(
+                                                accountId = account.id,
+                                                investmentSecurityId = UUID.randomUUID(),
+                                                institutionPrice = holding.getInstitutionPrice,
+                                                institutionPriceAsOf = Option(holding.getInstitutionPriceAsOf),
+                                                institutionPriceDateTime = Option(holding.getInstitutionPriceDatetime.toInstant()),
+                                                institutionValue = holding.getInstitutionValue,
+                                                costBasis = Option(holding.getCostBasis),
+                                                quantity = holding.getQuantity,
+                                                isoCurrencyCode = Option(holding.getIsoCurrencyCode),
+                                                unofficialCurrencyCode = Option(holding.getUnofficialCurrencyCode),
+                                                vestedValue = Option(holding.getVestedValue)
+                                            )
+                                        )
                             ()
             )
 
@@ -162,7 +195,8 @@ object PlaidSyncService:
         Logger.root.info(s"removed length: ${removed.size}")
 
         for transaction <- added_or_modified do
-            AccountRepository.getByPlaidAccountId(itemId = item.id.toUUID, plaidAccountId = transaction.getAccountId) match
+            AccountRepository
+                .getByPlaidAccountId(itemId = item.id.toUUID, plaidAccountId = transaction.getAccountId) match
                 case Failure(error) =>
                     val msg =
                         s"Failed to upsert transaction ${transaction.getTransactionId} due to missing account: $error"
@@ -191,7 +225,8 @@ object PlaidSyncService:
         encounteredError match
             case (false, _) =>
                 PlaidItemRepository.updateSyncSuccess(itemId = item.id.toUUID, currentTime = java.time.Instant.now())
-                PlaidItemRepository.updateTransactionCursor(itemId = item.id.toUUID, cursor = Option(response.getNextCursor))
+                PlaidItemRepository
+                    .updateTransactionCursor(itemId = item.id.toUUID, cursor = Option(response.getNextCursor))
             case (true, msg) =>
                 PlaidItemRepository
                     .updateSyncError(itemId = item.id.toUUID, error = msg, currentTime = java.time.Instant.now())

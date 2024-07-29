@@ -16,6 +16,7 @@ import org.scalatest.matchers.should.Matchers
 import test.helpers.*
 
 import java.util.UUID
+import api.common.Time.*
 
 class InvestmentRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, BeforeAndAfterAll, BeforeAndAfterEach:
     override protected def beforeAll(): Unit = TestHelper.beforeAll()
@@ -77,7 +78,7 @@ class InvestmentRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, Befo
                 accountId = accountId,
                 investmentSecurityId = investmentSecurityId,
                 institutionPrice = 100.0,
-                institutionPriceAsOf = Some(Time.now()),
+                institutionPriceAsOf = Some(Time.now().toLocalDate()),
                 institutionPriceDateTime = Some(Time.now()),
                 institutionValue = 100.0,
                 costBasis = Some(100.0),

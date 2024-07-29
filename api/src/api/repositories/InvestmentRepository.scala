@@ -4,7 +4,7 @@ import api.models.InvestmentHolding
 import api.models.SecurityType
 import scalikejdbc.*
 
-import java.time.Instant
+import java.time.{Instant, LocalDate}
 import java.util.UUID
 import scala.util.Try
 
@@ -13,7 +13,7 @@ object InvestmentRepository:
         accountId: UUID,
         investmentSecurityId: UUID,
         institutionPrice: Double,
-        institutionPriceAsOf: Option[Instant],
+        institutionPriceAsOf: Option[LocalDate],
         institutionPriceDateTime: Option[Instant],
         institutionValue: Double,
         costBasis: Option[Double],
