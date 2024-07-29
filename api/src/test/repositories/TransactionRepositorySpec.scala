@@ -40,7 +40,7 @@ class TransactionRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, Bef
         // when
         AccountRepository.upsertAccount(
             UpsertAccountInput(
-                itemId = item.id,
+                itemId = item.id.toUUID,
                 userId = user.id,
                 accountSubtype = Some("checking"),
                 accountType = Some("depository"),
@@ -59,7 +59,7 @@ class TransactionRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, Bef
             AccountRepository
                 .upsertAccount(
                     UpsertAccountInput(
-                        itemId = item.id,
+                        itemId = item.id.toUUID,
                         userId = user.id,
                         accountSubtype = Some("checking"),
                         accountType = Some("depository"),
@@ -157,7 +157,7 @@ class TransactionRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, Bef
         val transactionAfterDelete = transactionsAfterDelete.head
         transactionAfterDelete.plaidTransactionId should be("somePlaidTransactionId2")
 
-        PlaidItemRepository.updateTransactionCursor(item.id, Some("someCursor"))
-        val updatedItem = PlaidItemRepository.getById(item.id).value
+        PlaidItemRepository.updateTransactionCursor(item.id.toUUID, Some("someCursor"))
+        val updatedItem = PlaidItemRepository.getById(item.id.toUUID).value
         updatedItem.transactionsCursor should be(Some("someCursor"))
     }

@@ -2,6 +2,7 @@ package api.jobs
 
 import api.common.LavinMqClient
 import api.common.Logger
+import api.models.PlaidItemId
 import api.models.UserId
 import api.services.PlaidSyncService
 import api.services.UserDeletionService
@@ -105,9 +106,9 @@ object Jobs:
         Logger.root.info(s"Handling JobSyncPlaidItem $job")
         job.syncType match
             case SyncType.Initial | SyncType.Default =>
-                PlaidSyncService.sync(itemId = job.itemId)
+                PlaidSyncService.sync(itemId = PlaidItemId(job.itemId))
             case SyncType.Historical =>
-                PlaidSyncService.syncHistorical(itemId = job.itemId)
+                PlaidSyncService.syncHistorical(itemId = PlaidItemId(job.itemId))
         jobChannel.basicAck(delivery.getEnvelope.getDeliveryTag, false)
 
     private def handleAnotherJob(job: JobRequest.JobDeleteUser, delivery: Delivery): Unit =

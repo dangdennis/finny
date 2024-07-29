@@ -19,9 +19,6 @@ fmt:
 clean:
 	./mill clean
 
-compose-up:
-	docker compose up
-
 r:
 	./mill -w api.runBackground
 

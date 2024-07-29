@@ -1,6 +1,7 @@
 package api.repositories
 
 import api.models.PlaidItem
+import api.models.PlaidItemId
 import api.models.PlaidItemStatus
 import api.models.UserId
 import scalikejdbc.*
@@ -16,22 +17,29 @@ object PlaidItemRepository:
             DB.readOnly { implicit session =>
                 sql"""
                 select
-                id,
-                user_id,
-                plaid_access_token,
-                plaid_item_id,
-                plaid_institution_id,
-                status,
-                transactions_cursor,
-                created_at,
-                last_synced_at,
-                last_sync_error,
-                last_sync_error_at,
-                retry_count
+                  id,
+                  user_id,
+                  plaid_access_token,
+                  plaid_item_id,
+                  plaid_institution_id,
+                  status,
+                  transactions_cursor,
+                  created_at,
+                  last_synced_at,
+                  last_sync_error,
+                  last_sync_error_at,
+                  retry_count,
+                  error_type,
+                  error_code,
+                  error_message,
+                  error_display_message,
+                  error_request_id,
+                  documentation_url,
+                  suggested_action
                 from
-                plaid_items
-                where
-                user_id = $userId
+                  plaid_items
+                  where
+                  user_id = $userId
                 """.map(dbToModel).list.apply()
             }
         ).toEither
@@ -52,7 +60,14 @@ object PlaidItemRepository:
           last_synced_at,
           last_sync_error,
           last_sync_error_at,
-          retry_count
+          retry_count,
+          error_type,
+          error_code,
+          error_message,
+          error_display_message,
+          error_request_id,
+          documentation_url,
+          suggested_action
         from
           plaid_items
         where
@@ -75,7 +90,14 @@ object PlaidItemRepository:
             last_synced_at,
             last_sync_error,
             last_sync_error_at,
-            retry_count
+            retry_count,
+            error_type,
+            error_code,
+            error_message,
+            error_display_message,
+            error_request_id,
+            documentation_url,
+            suggested_action
           from
               plaid_items
           where
@@ -114,7 +136,14 @@ object PlaidItemRepository:
           last_synced_at,
           last_sync_error,
           last_sync_error_at,
-          retry_count
+          retry_count,
+          error_type,
+          error_code,
+          error_message,
+          error_display_message,
+          error_request_id,
+          documentation_url,
+          suggested_action
         ;
         """
                 query.map(dbToModel).single.apply()
@@ -139,7 +168,14 @@ object PlaidItemRepository:
               last_synced_at,
               last_sync_error,
               last_sync_error_at,
-              retry_count
+              retry_count,
+              error_type,
+              error_code,
+              error_message,
+              error_display_message,
+              error_request_id,
+              documentation_url,
+              suggested_action
             from
               plaid_items
             where
@@ -201,18 +237,25 @@ object PlaidItemRepository:
             last_synced_at,
             last_sync_error,
             last_sync_error_at,
-            retry_count
+            retry_count,
+            error_type,
+            error_code,
+            error_message,
+            error_display_message,
+            error_request_id,
+            documentation_url,
+            suggested_action
           from
               plaid_items
           """.map(dbToModel).list.apply()
             }
         ).toEither
 
-    def deleteItemById(itemId: UUID)(implicit session: DBSession): Either[Throwable, Int] =
+    def deleteItemById(itemId: PlaidItemId)(implicit session: DBSession): Either[Throwable, Int] =
         Try(sql"""DELETE FROM plaid_items WHERE id = $itemId""".update.apply()).toEither
 
     private def dbToModel(rs: WrappedResultSet) = PlaidItem(
-        id = UUID.fromString(rs.string("id")),
+        id = PlaidItemId(UUID.fromString(rs.string("id"))),
         createdAt = rs.timestamp("created_at").toInstant,
         plaidAccessToken = rs.string("plaid_access_token"),
         plaidInstitutionId = rs.string("plaid_institution_id"),
@@ -223,5 +266,12 @@ object PlaidItemRepository:
         lastSyncedAt = rs.timestampOpt("last_synced_at").map(_.toInstant),
         lastSyncError = rs.stringOpt("last_sync_error"),
         lastSyncErrorAt = rs.timestampOpt("last_sync_error_at").map(_.toInstant),
-        retryCount = rs.int("retry_count")
+        retryCount = rs.int("retry_count"),
+        errorType = rs.stringOpt("error_type"),
+        errorCode = rs.stringOpt("error_code"),
+        errorMessage = rs.stringOpt("error_message"),
+        errorDisplayMessage = rs.stringOpt("error_display_message"),
+        errorRequestId = rs.stringOpt("error_request_id"),
+        documentationUrl = rs.stringOpt("documentation_url"),
+        suggestedAction = rs.stringOpt("suggested_action")
     )

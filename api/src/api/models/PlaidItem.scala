@@ -3,6 +3,13 @@ package api.models
 import java.time.Instant
 import java.util.UUID
 
+opaque type PlaidItemId = UUID
+object PlaidItemId:
+    def apply(uuid: UUID): PlaidItemId = uuid
+
+    extension (itemId: PlaidItemId)
+        def toUUID: UUID = itemId
+
 enum PlaidItemStatus:
     case Good,
         Bad,
@@ -28,7 +35,7 @@ object PlaidItemStatus:
                 PlaidItemStatus.Unknown
 
 case class PlaidItem(
-    id: UUID,
+    id: PlaidItemId,
     userId: UUID,
     plaidAccessToken: String,
     plaidItemId: String,
@@ -39,5 +46,12 @@ case class PlaidItem(
     lastSyncedAt: Option[Instant],
     lastSyncError: Option[String],
     lastSyncErrorAt: Option[Instant],
-    retryCount: Int
+    retryCount: Int,
+    errorType: Option[String],
+    errorCode: Option[String],
+    errorMessage: Option[String],
+    errorDisplayMessage: Option[String],
+    errorRequestId: Option[String],
+    documentationUrl: Option[String],
+    suggestedAction: Option[String]
 )

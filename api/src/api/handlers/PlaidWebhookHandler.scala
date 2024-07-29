@@ -47,7 +47,7 @@ object PlaidWebhookHandler:
                                                 Jobs.enqueueJob(
                                                     Jobs.JobRequest
                                                         .JobSyncPlaidItem(
-                                                            itemId = plaidItem.id,
+                                                            itemId = plaidItem.id.toUUID,
                                                             syncType = Jobs.SyncType.Default,
                                                             environment = event.environment
                                                         )
@@ -57,7 +57,7 @@ object PlaidWebhookHandler:
                                                 Jobs.enqueueJob(
                                                     Jobs.JobRequest
                                                         .JobSyncPlaidItem(
-                                                            itemId = plaidItem.id,
+                                                            itemId = plaidItem.id.toUUID,
                                                             syncType = Jobs.SyncType.Historical,
                                                             environment = event.environment
                                                         )
@@ -67,7 +67,7 @@ object PlaidWebhookHandler:
                                                 Jobs.enqueueJob(
                                                     Jobs.JobRequest
                                                         .JobSyncPlaidItem(
-                                                            itemId = plaidItem.id,
+                                                            itemId = plaidItem.id.toUUID,
                                                             syncType = Jobs.SyncType.Initial,
                                                             environment = event.environment
                                                         )

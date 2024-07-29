@@ -11,6 +11,9 @@ import api.services.PlaidService
 import api.services.PlaidSyncService
 
 import java.util.UUID
+import scala.concurrent.ExecutionContext.global
+import scala.concurrent.Future
+import scala.jdk.CollectionConverters.*
 
 object PlaidItemHandler:
     def handlePlaidItemsGet(user: Profile): Either[AuthenticationError, DTOs.PlaidItemsGetResponse] =
@@ -42,18 +45,13 @@ object PlaidItemHandler:
         user: Profile,
         input: PlaidItemCreateRequest
     ): Either[AuthenticationError, DTOs.PlaidItemCreateResponse] =
+        val plaidClient = PlaidService.makePlaidClientFromEnv()
         val result =
             for
-                pubTokenData <- PlaidService.exchangePublicToken(
-                    client = PlaidService.makePlaidClientFromEnv(),
-                    publicToken = input.publicToken,
-                    userId = user.id
-                )
-                itemData <- PlaidService.getItem(
-                    client = PlaidService.makePlaidClientFromEnv(),
-                    accessToken = pubTokenData.getAccessToken(),
-                    userId = user.id
-                )
+                pubTokenData <- PlaidService
+                    .exchangePublicToken(plaidClient, publicToken = input.publicToken, userId = user.id)
+                itemData <- PlaidService
+                    .getItem(plaidClient, accessToken = pubTokenData.getAccessToken(), userId = user.id)
                 item <- PlaidItemRepository.getOrCreateItem(input =
                     CreateItemInput(
                         userId = user.id,
@@ -71,6 +69,18 @@ object PlaidItemHandler:
                 Logger.root.error(s"Error creating Plaid item", error)
                 Left(AuthenticationError(400))
             case Right(item) =>
+                Future {
+                    PlaidService
+                        .getAccounts(plaidClient, item)
+                        .map(accountsResp =>
+                            accountsResp
+                                .getAccounts
+                                .asScala
+                                .toList
+                                .map(account => PlaidSyncService.upsertAccount(item, account))
+                        )
+                }(global)
+
                 PlaidSyncService.sync(item.id)
 
                 Right(
@@ -94,7 +104,7 @@ object PlaidItemHandler:
 
     def handlePlaidItemsDelete(user: Profile, input: DTOs.PlaidItemDeleteRequest): Either[AuthenticationError, Unit] =
         PlaidService
-            .deleteItem(client = PlaidService.makePlaidClientFromEnv(), itemId = UUID.fromString(input.itemId))
+            .deleteItem(client = PlaidService.makePlaidClientFromEnv(), itemId = PlaidItemId(UUID.fromString(input.itemId)))
             .left
             .map(_ => AuthenticationError(400))
             .map(_ => Right(()))
