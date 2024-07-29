@@ -179,8 +179,8 @@ object PlaidSyncService:
                                                         institutionPrice = holding.getInstitutionPrice,
                                                         institutionPriceAsOf = Option(holding.getInstitutionPriceAsOf),
                                                         institutionPriceDateTime = Option(
-                                                            holding.getInstitutionPriceDatetime.toInstant()
-                                                        ),
+                                                            holding.getInstitutionPriceDatetime
+                                                        ).map(_.toInstant()),
                                                         institutionValue = holding.getInstitutionValue,
                                                         costBasis = Option(holding.getCostBasis),
                                                         quantity = holding.getQuantity,
