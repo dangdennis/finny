@@ -70,15 +70,7 @@ object PlaidItemHandler:
                 Left(AuthenticationError(400))
             case Right(item) =>
                 Future {
-                    PlaidService
-                        .getAccounts(plaidClient, item)
-                        .map(accountsResp =>
-                            accountsResp
-                                .getAccounts
-                                .asScala
-                                .toList
-                                .map(account => PlaidSyncService.upsertAccount(item, account))
-                        )
+                    PlaidSyncService.syncAccounts(item)
                 }(global)
 
                 PlaidSyncService.sync(item.id)
@@ -104,7 +96,10 @@ object PlaidItemHandler:
 
     def handlePlaidItemsDelete(user: Profile, input: DTOs.PlaidItemDeleteRequest): Either[AuthenticationError, Unit] =
         PlaidService
-            .deleteItem(client = PlaidService.makePlaidClientFromEnv(), itemId = PlaidItemId(UUID.fromString(input.itemId)))
+            .deleteItem(
+                client = PlaidService.makePlaidClientFromEnv(),
+                itemId = PlaidItemId(UUID.fromString(input.itemId))
+            )
             .left
             .map(_ => AuthenticationError(400))
             .map(_ => Right(()))
