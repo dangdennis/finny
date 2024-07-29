@@ -21,3 +21,10 @@ object AuthUserRepository:
                 .apply()
         }
     )
+
+    def deleteIdentitiesAdmin(userId: UserId): Either[Throwable, Int] =
+        Try(
+            DB.localTx { implicit session =>
+                sql"""delete from auth.identities where user_id = $userId""".update.apply()
+            }
+        ).toEither
