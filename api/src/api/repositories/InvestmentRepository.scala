@@ -7,6 +7,8 @@ import scalikejdbc.*
 import java.time.{Instant, LocalDate}
 import java.util.UUID
 import scala.util.Try
+import api.models.InvestmentSecurity
+import api.common.Logger
 
 object InvestmentRepository:
     case class InvestmentHoldingInput(
@@ -22,6 +24,50 @@ object InvestmentRepository:
         unofficialCurrencyCode: Option[String],
         vestedValue: Option[Double]
     )
+
+    def getInvestmentSecurityByPlaidSecurityId(plaidSecurityId: String): Either[Throwable, Option[InvestmentSecurity]] =
+        Try(
+            DB readOnly { implicit session =>
+                sql"""
+                SELECT 
+                    id,
+                    plaid_security_id,
+                    plaid_institution_security_id,
+                    plaid_institution_id,
+                    plaid_proxy_security_id,
+                    name,
+                    ticker_symbol,
+                    security_type
+                FROM investment_securities
+                WHERE plaid_security_id = $plaidSecurityId
+                """.map(rs =>
+                        InvestmentSecurity(
+                            id = UUID.fromString(rs.string("id")),
+                            plaidSecurityId = rs.string("plaid_security_id"),
+                            plaidInstitutionSecurityId = rs.stringOpt("plaid_institution_security_id"),
+                            plaidInstitutionId = rs.stringOpt("plaid_institution_id"),
+                            plaidProxySecurityId = rs.stringOpt("plaid_proxy_security_id"),
+                            name = rs.stringOpt("name"),
+                            tickerSymbol = rs.stringOpt("ticker_symbol"),
+                            securityType = rs
+                                .stringOpt("security_type")
+                                .flatMap(securityType =>
+                                    SecurityType.fromString(securityType) match
+                                        case Right(securityType) =>
+                                            Some(securityType)
+                                        case Left(_) =>
+                                            Logger.root.error(s"Invalid security type: $securityType")
+                                            None
+                                ),
+                            createdAt = rs.timestamp("created_at").toInstant,
+                            updatedAt = rs.timestamp("updated_at").toInstant,
+                            deletedAt = rs.timestampOpt("deleted_at").map(_.toInstant)
+                        )
+                    )
+                    .single
+                    .apply()
+            }
+        ).toEither
 
     def getInvestmentHoldings(accountId: UUID): Either[Throwable, List[InvestmentHolding]] =
         Try(
@@ -45,23 +91,27 @@ object InvestmentRepository:
                     deleted_at
                 FROM investment_holdings
                 WHERE account_id = $accountId
-            """.map(rs => InvestmentHolding(
-                id = UUID.fromString(rs.string("id")),
-                accountId = UUID.fromString(rs.string("account_id")),
-                investmentSecurityId = rs.string("investment_security_id"),
-                institutionPrice = rs.double("institution_price"),
-                institutionPriceAsOf = rs.timestampOpt("institution_price_as_of").map(_.toInstant),
-                institutionPriceDateTime = rs.timestampOpt("institution_price_date_time").map(_.toInstant),
-                institutionValue = rs.double("institution_value"),
-                costBasis = rs.doubleOpt("cost_basis"),
-                quantity = rs.double("quantity"),
-                isoCurrencyCode = rs.stringOpt("iso_currency_code"),
-                unofficialCurrencyCode = rs.stringOpt("unofficial_currency_code"),
-                vestedValue = rs.doubleOpt("vested_value"),
-                createdAt = rs.timestamp("created_at").toInstant,
-                updatedAt = rs.timestamp("updated_at").toInstant,
-                deletedAt = rs.timestampOpt("deleted_at").map(_.toInstant)
-            )).list.apply()
+            """.map(rs =>
+                        InvestmentHolding(
+                            id = UUID.fromString(rs.string("id")),
+                            accountId = UUID.fromString(rs.string("account_id")),
+                            investmentSecurityId = rs.string("investment_security_id"),
+                            institutionPrice = rs.double("institution_price"),
+                            institutionPriceAsOf = rs.timestampOpt("institution_price_as_of").map(_.toInstant),
+                            institutionPriceDateTime = rs.timestampOpt("institution_price_date_time").map(_.toInstant),
+                            institutionValue = rs.double("institution_value"),
+                            costBasis = rs.doubleOpt("cost_basis"),
+                            quantity = rs.double("quantity"),
+                            isoCurrencyCode = rs.stringOpt("iso_currency_code"),
+                            unofficialCurrencyCode = rs.stringOpt("unofficial_currency_code"),
+                            vestedValue = rs.doubleOpt("vested_value"),
+                            createdAt = rs.timestamp("created_at").toInstant,
+                            updatedAt = rs.timestamp("updated_at").toInstant,
+                            deletedAt = rs.timestampOpt("deleted_at").map(_.toInstant)
+                        )
+                    )
+                    .list
+                    .apply()
             }
         ).toEither
 

@@ -19,6 +19,7 @@ import scala.jdk.CollectionConverters.*
 import scala.util.Failure
 import scala.util.Success
 import api.repositories.InvestmentRepository
+import api.models.SecurityType
 
 object PlaidSyncService:
     given ec: ExecutionContext = ExecutionContext.global
@@ -139,39 +140,84 @@ object PlaidSyncService:
                                 currentTime = java.time.Instant.now()
                             )
                         case Right(resp) =>
-                            val accounts = resp.getAccounts().asScala
-                            for account <- accounts do
+                            for account <- resp.getAccounts().asScala do
                                 upsertAccount(item, account) match
                                     case Failure(error) =>
                                         Logger.root.error(s"Error upserting account: $error")
                                     case Success(accountId) =>
                                         Logger.root.info(s"Upserted account: $accountId")
+
+                            for security <- resp.getSecurities().asScala do
+                                InvestmentRepository.upsertInvestmentSecurity(
+                                    InvestmentRepository.InvestmentSecurityInput(
+                                        plaidSecurityId = security.getSecurityId(),
+                                        plaidInstitutionSecurityId = Option(security.getInstitutionSecurityId),
+                                        plaidInstitutionId = Option(security.getInstitutionId),
+                                        plaidProxySecurityId = Option(security.getProxySecurityId),
+                                        name = Option(security.getName),
+                                        tickerSymbol = Option(security.getTickerSymbol),
+                                        securityType =
+                                            SecurityType.fromString(security.getType()) match
+                                                case Right(securityType) =>
+                                                    Some(securityType)
+                                                case Left(error) =>
+                                                    Logger.root.error(s"Error parsing security type: $error")
+                                                    None
+                                    )
+                                )
+
                             val holdings = resp.getHoldings().asScala
                             for holding <- holdings do
-                                AccountRepository.getByPlaidAccountId(
-                                    itemId = item.id.toUUID,
-                                    plaidAccountId = holding.getAccountId()
-                                ) match
-                                    case Failure(error) =>
-                                        val msg =
-                                            s"Failed to upsert holdings for ${holding.getAccountId()} due to missing account: $error"
-                                        Logger.root.error(msg)
-                                    case Success(account) =>
-                                        InvestmentRepository.upsertInvestmentHoldings(
-                                            InvestmentRepository.InvestmentHoldingInput(
-                                                accountId = account.id,
-                                                investmentSecurityId = UUID.randomUUID(),
-                                                institutionPrice = holding.getInstitutionPrice,
-                                                institutionPriceAsOf = Option(holding.getInstitutionPriceAsOf),
-                                                institutionPriceDateTime = Option(holding.getInstitutionPriceDatetime.toInstant()),
-                                                institutionValue = holding.getInstitutionValue,
-                                                costBasis = Option(holding.getCostBasis),
-                                                quantity = holding.getQuantity,
-                                                isoCurrencyCode = Option(holding.getIsoCurrencyCode),
-                                                unofficialCurrencyCode = Option(holding.getUnofficialCurrencyCode),
-                                                vestedValue = Option(holding.getVestedValue)
+                                val result = AccountRepository
+                                    .getByPlaidAccountId(
+                                        itemId = item.id.toUUID,
+                                        plaidAccountId = holding.getAccountId()
+                                    )
+                                    .map(account =>
+                                        InvestmentRepository
+                                            .getInvestmentSecurityByPlaidSecurityId(plaidSecurityId =
+                                                Option(holding.getSecurityId()).get
                                             )
-                                        )
+                                            .map(securityOpt =>
+                                                securityOpt.map(security =>
+                                                    Logger.root.info(s"Upserting holding for account: ${account.id}")
+                                                    InvestmentRepository.upsertInvestmentHoldings(
+                                                        InvestmentRepository.InvestmentHoldingInput(
+                                                            accountId = account.id,
+                                                            investmentSecurityId = security.id,
+                                                            institutionPrice = holding.getInstitutionPrice,
+                                                            institutionPriceAsOf = Option(
+                                                                holding.getInstitutionPriceAsOf
+                                                            ),
+                                                            institutionPriceDateTime = Option(
+                                                                holding.getInstitutionPriceDatetime.toInstant()
+                                                            ),
+                                                            institutionValue = holding.getInstitutionValue,
+                                                            costBasis = Option(holding.getCostBasis),
+                                                            quantity = holding.getQuantity,
+                                                            isoCurrencyCode = Option(holding.getIsoCurrencyCode),
+                                                            unofficialCurrencyCode = Option(
+                                                                holding.getUnofficialCurrencyCode
+                                                            ),
+                                                            vestedValue = Option(holding.getVestedValue)
+                                                        )
+                                                    )
+                                                )
+                                            )
+                                    )
+
+                                // todo: refactor this nesting
+                                result match {
+                                    case scala.util.Success(Right(Some(Right(uuid)))) => // log success and continue
+                                    case scala.util.Success(Right(Some(Left(err)))) =>
+                                        Logger.root.error(s"Failed to upsert holding due to error", err)
+                                    case scala.util.Success(Right(None)) =>
+                                        Logger.root.error("No security found")
+                                    case scala.util.Success(Left(err)) =>
+                                        Logger.root.error("Failed to fetch security", err)
+                                    case scala.util.Failure(ex) =>
+                                        Logger.root.error(s"No account found", ex)
+                                }
                             ()
             )
 

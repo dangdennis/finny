@@ -50,25 +50,25 @@ object SecurityType:
             case SecurityType.Other =>
                 "other"
 
-    def fromString(s: String): Option[SecurityType] =
+    def fromString(s: String): Either[String,SecurityType] =
         s match
             case "cash" =>
-                Some(SecurityType.Cash)
+                Right(SecurityType.Cash)
             case "cryptocurrency" =>
-                Some(SecurityType.Cryptocurrency)
+                Right(SecurityType.Cryptocurrency)
             case "derivative" =>
-                Some(SecurityType.Derivative)
+                Right(SecurityType.Derivative)
             case "equity" =>
-                Some(SecurityType.Equity)
+                Right(SecurityType.Equity)
             case "etf" =>
-                Some(SecurityType.ETF)
+                Right(SecurityType.ETF)
             case "fixed income" =>
-                Some(SecurityType.FixedIncome)
+                Right(SecurityType.FixedIncome)
             case "loan" =>
-                Some(SecurityType.Loan)
+                Right(SecurityType.Loan)
             case "mutual fund" =>
-                Some(SecurityType.Mutual)
+                Right(SecurityType.Mutual)
             case "other" =>
-                Some(SecurityType.Other)
+                Right(SecurityType.Other)
             case _ =>
-                None
+                Left(s"Invalid security type: $s")
