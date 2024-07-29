@@ -9,5 +9,5 @@ CREATE TABLE IF NOT EXISTS goal_accounts(
   deleted_at TIMESTAMP
 );
 
-CREATE INDEX ix:goal_accounts.goal_id ON goal_accounts(goal_id);
-CREATE INDEX ix:goal_accounts.account_id ON goal_accounts(account_id);
+CREATE INDEX ix_goal_accounts_goal_id ON goal_accounts(goal_id);
+CREATE INDEX ix_goal_accounts_account_id ON goal_accounts(account_id);
