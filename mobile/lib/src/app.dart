@@ -154,7 +154,10 @@ class _MainViewState extends State<MainView> {
   @override
   void initState() {
     super.initState();
-    _widgetOptions = <Widget>[
+    _widgetOptions = [
+      AccountListView(
+        accountsController: widget.accountsController,
+      ),
       AccountListView(
         accountsController: widget.accountsController,
       ),
@@ -178,13 +181,17 @@ class _MainViewState extends State<MainView> {
     return Scaffold(
       body: _widgetOptions.elementAt(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
+        items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.account_balance_wallet),
+            icon: Icon(Icons.house),
+            label: 'Dashboard',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.layers),
             label: 'Accounts',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.list),
+            icon: Icon(Icons.credit_card),
             label: 'Transactions',
           ),
           BottomNavigationBarItem(
@@ -195,6 +202,12 @@ class _MainViewState extends State<MainView> {
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.amber[800],
         onTap: _onItemTapped,
+        type: BottomNavigationBarType.fixed,
+        iconSize: 20.0, // Smaller icon size
+        selectedIconTheme: const IconThemeData(size: 20.0),
+        unselectedIconTheme: const IconThemeData(size: 20.0),
+        selectedLabelStyle: const TextStyle(fontSize: 12.0),
+        unselectedLabelStyle: const TextStyle(fontSize: 12.0),
       ),
     );
   }
