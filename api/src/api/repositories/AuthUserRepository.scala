@@ -1,7 +1,6 @@
 package repositories
 
-import api.models.AuthUser
-import api.models.UserId
+import api.models.{AuthUser, AuthIdentity, UserId}
 import scalikejdbc.*
 
 import java.util.UUID
@@ -21,6 +20,23 @@ object AuthUserRepository:
                 .apply()
         }
     )
+
+    def getIdentities(userId: UserId): Either[Throwable, List[AuthIdentity]] =
+        Try(
+            DB readOnly { implicit session =>
+                sql"select * from auth.identities where user_id = $userId"
+                    .map(rs =>
+                        AuthIdentity(
+                            id = UUID.fromString(rs.string("id")),
+                            userId = UUID.fromString(rs.string("user_id")),
+                            providerId = rs.string("provider_id"),
+                            provider = rs.string("provider")
+                        )
+                    )
+                    .list
+                    .apply()
+            }
+        ).toEither
 
     def deleteIdentitiesAdmin(userId: UserId): Either[Throwable, Int] =
         Try(

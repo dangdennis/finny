@@ -1,4 +1,5 @@
 package test.services
+
 import api.models.PlaidItemStatus
 import api.repositories.AccountRepository
 import api.repositories.AccountRepository.UpsertAccountInput
@@ -82,6 +83,8 @@ class UserDeletionServiceSpec extends AnyFlatSpec, Matchers, EitherValues, Befor
             accounts should have size 1
             val transactions = TransactionRepository.getTransactionsByAccountId(accountId).get
             transactions should have size 1
+            val identities = AuthUserRepository.getIdentities(userId).value
+            identities should have size 1
 
             val k = UserDeletionService.deleteUserEverything(userId)
 
