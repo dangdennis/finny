@@ -6,9 +6,10 @@ import 'package:logging/logging.dart';
 class AccountsService {
   final Logger _logger = Logger('AccountsService');
 
-  Future<List<Account>> loadAccounts() async {
+  Future<List<Account>> getAccounts() async {
     try {
-      ResultSet accounts = await powersyncDb.getAll('SELECT * FROM accounts;');
+      ResultSet accounts = await powersyncDb
+          .getAll('SELECT * FROM accounts order by created_at asc');
 
       _logger.info('Accounts: ${accounts.length}');
 
