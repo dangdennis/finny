@@ -5,6 +5,8 @@ import 'package:finny/src/auth/auth_provider.dart';
 import 'package:finny/src/auth/login_view.dart';
 import 'package:finny/src/connections/connections_controller.dart';
 import 'package:finny/src/connections/connections_list_view.dart';
+import 'package:finny/src/dashboard/dashboard_controller.dart';
+import 'package:finny/src/dashboard/dashboard_view.dart';
 import 'package:finny/src/settings/settings_controller.dart';
 import 'package:finny/src/settings/settings_view.dart';
 import 'package:finny/src/transactions/transaction_details_view.dart';
@@ -18,17 +20,19 @@ import 'package:provider/provider.dart';
 class MyApp extends StatelessWidget {
   const MyApp({
     super.key,
-    required this.settingsController,
-    required this.accountsController,
-    required this.transactionsController,
-    required this.connectionsController,
     required this.authProvider,
+    required this.accountsController,
+    required this.connectionsController,
+    required this.dashboardController,
+    required this.settingsController,
+    required this.transactionsController,
   });
 
   final SettingsController settingsController;
   final AccountsController accountsController;
   final TransactionsController transactionsController;
   final ConnectionsController connectionsController;
+  final DashboardController dashboardController;
   final AuthProvider authProvider;
 
   @override
@@ -77,6 +81,7 @@ class MyApp extends StatelessWidget {
               if (authProvider.isLoggedIn) {
                 return MainView(
                   accountsController: accountsController,
+                  dashboardController: dashboardController,
                   settingsController: settingsController,
                   transactionsController: transactionsController,
                 );
@@ -93,12 +98,6 @@ class MyApp extends StatelessWidget {
               settings: routeSettings,
               builder: (BuildContext context) {
                 switch (routeSettings.name) {
-                  case LoginView.routeName:
-                    return LoginView(
-                      authProvider: authProvider,
-                    );
-                  case SettingsView.routeName:
-                    return SettingsView(settingsController: settingsController);
                   case AccountListView.routeName:
                     return AccountListView(
                         accountsController: accountsController);
@@ -106,15 +105,25 @@ class MyApp extends StatelessWidget {
                     return AccountDetailsView(
                       connectionsController: connectionsController,
                     );
-                  case TransactionListView.routeName:
-                    return TransactionListView(
-                      transactionsController: transactionsController,
-                    );
-                  case TransactionDetailsView.routeName:
-                    return const TransactionDetailsView();
                   case ConnectionsListView.routeName:
                     return ConnectionsListView(
                       connectionsController: connectionsController,
+                    );
+                  case DashboardView.routeName:
+                    return DashboardView(
+                      dashboardController: dashboardController,
+                    );
+                  case LoginView.routeName:
+                    return LoginView(
+                      authProvider: authProvider,
+                    );
+                  case SettingsView.routeName:
+                    return SettingsView(settingsController: settingsController);
+                  case TransactionDetailsView.routeName:
+                    return const TransactionDetailsView();
+                  case TransactionListView.routeName:
+                    return TransactionListView(
+                      transactionsController: transactionsController,
                     );
                   default:
                     return LoginView(
@@ -133,13 +142,15 @@ class MyApp extends StatelessWidget {
 class MainView extends StatefulWidget {
   const MainView({
     super.key,
-    required this.settingsController,
     required this.accountsController,
+    required this.dashboardController,
+    required this.settingsController,
     required this.transactionsController,
   });
 
-  final SettingsController settingsController;
   final AccountsController accountsController;
+  final DashboardController dashboardController;
+  final SettingsController settingsController;
   final TransactionsController transactionsController;
 
   @override
@@ -155,8 +166,8 @@ class _MainViewState extends State<MainView> {
   void initState() {
     super.initState();
     _widgetOptions = [
-      AccountListView(
-        accountsController: widget.accountsController,
+      DashboardView(
+        dashboardController: widget.dashboardController,
       ),
       AccountListView(
         accountsController: widget.accountsController,

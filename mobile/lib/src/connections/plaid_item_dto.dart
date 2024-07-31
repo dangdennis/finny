@@ -1,4 +1,4 @@
-import 'package:finny/src/accounts/account.dart';
+import 'package:finny/src/accounts/account_model.dart';
 import 'package:finny/src/connections/plaid_item.dart';
 
 class PlaidItemDto {

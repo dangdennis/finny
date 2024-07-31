@@ -13,4 +13,6 @@ class AppConfig {
   static final plaidLinksCreateUrl =
       Uri.parse("$apiBaseUrl/plaid-links/create");
   static final usersDeleteUrl = Uri.parse("$apiBaseUrl/users/delete");
+  static final powerSyncEventUpdateUrl =
+      Uri.parse("$apiBaseUrl/powersync/event/upload");
 }

@@ -1,4 +1,6 @@
 import 'package:finny/src/auth/auth_provider.dart';
+import 'package:finny/src/dashboard/dashboard_controller.dart';
+import 'package:finny/src/goals/goals_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
@@ -37,21 +39,27 @@ void main() async {
   await PowersyncSupabaseConnector.openDatabaseAndInitSupabase();
 
   // services
+  final goalsService = GoalsService();
   final settingsService = SettingsService();
   final accountsService = AccountsService();
   final authService = AuthService();
   final connectionsService =
       ConnectionsService(accountsService: accountsService);
 
-  // controllers and providers
+  // providers
   final authProvider = AuthProvider(authService: authService);
+
+  // controllers
+  final accountsController = AccountsController(AccountsService());
+  final connectionsController = ConnectionsController(connectionsService);
+  final dashboardController = DashboardController(
+    goalsService: goalsService,
+  );
+  final transactionsController = TransactionsController();
   final settingsController = SettingsController(
     settingsService: settingsService,
     authProvider: authProvider,
   );
-  final accountsController = AccountsController(AccountsService());
-  final transactionsController = TransactionsController();
-  final connectionsController = ConnectionsController(connectionsService);
 
   // Load the user's preferred theme while the splash screen is displayed.
   // This prevents a sudden theme change when the app is first displayed.
@@ -62,10 +70,11 @@ void main() async {
       providers: [ChangeNotifierProvider(create: (_) => authProvider)],
       child: MyApp(
         authProvider: authProvider,
-        settingsController: settingsController,
         accountsController: accountsController,
-        transactionsController: transactionsController,
         connectionsController: connectionsController,
+        dashboardController: dashboardController,
+        settingsController: settingsController,
+        transactionsController: transactionsController,
       ),
     ),
   );

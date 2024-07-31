@@ -3,7 +3,7 @@ import 'package:finny/src/connections/connections_list_view.dart';
 import 'package:flutter/material.dart';
 
 import '../routes.dart';
-import 'account.dart';
+import 'account_model.dart';
 
 class AccountListView extends StatefulWidget {
   const AccountListView({
@@ -88,7 +88,7 @@ class _AccountListViewState extends State<AccountListView> {
         child: Column(
           children: [
             Container(
-              height: 300,
+              height: 150,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [Colors.blue[800]!, Colors.blue[400]!],

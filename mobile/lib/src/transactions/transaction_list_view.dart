@@ -1,5 +1,5 @@
 import 'package:finny/src/common/string_utils.dart';
-import 'package:finny/src/transactions/transaction.dart';
+import 'package:finny/src/transactions/transaction_model.dart';
 import 'package:finny/src/transactions/transactions_controller.dart';
 import 'package:flutter/material.dart';
 
