@@ -3,7 +3,7 @@ import 'package:finny/src/connections/connections_list_view.dart';
 import 'package:flutter/material.dart';
 
 import '../routes.dart';
-import 'account.dart';
+import 'account_model.dart';
 
 class AccountListView extends StatefulWidget {
   const AccountListView({

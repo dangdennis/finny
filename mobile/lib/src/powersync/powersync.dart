@@ -1,4 +1,6 @@
 // This file performs setup of the PowerSync database and Supabase.
+import 'dart:convert';
+
 import 'package:finny/src/app_config.dart';
 import 'package:finny/src/powersync/schema.dart';
 import 'package:finny/src/supabase.dart';
@@ -7,6 +9,7 @@ import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:powersync/powersync.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:http/http.dart' as http;
 
 /// Global reference to the database
 late final PowerSyncDatabase powersyncDb;
@@ -68,11 +71,16 @@ class PowersyncSupabaseConnector extends PowerSyncBackendConnector {
   }
 
   // Upload pending changes to api.
+  // This function is called whenever there is data to upload, whether the
+  // device is online or offline.
+  // If this call throws an error, it is retried periodically.
   @override
   Future<void> uploadData(PowerSyncDatabase database) async {
-    // This function is called whenever there is data to upload, whether the
-    // device is online or offline.
-    // If this call throws an error, it is retried periodically.
+    final session = Supabase.instance.client.auth.currentSession;
+    if (session == null) {
+      return;
+    }
+
     final transaction = await database.getNextCrudTransaction();
     if (transaction == null) {
       return;
@@ -83,7 +91,6 @@ class PowersyncSupabaseConnector extends PowerSyncBackendConnector {
       // Note: If transactional consistency is important, use database functions
       // or edge functions to process the entire transaction in a single call.
 
-      // todo: make API request to API, send op as JSON.
       for (var op in transaction.crud) {
         lastOp = op;
         if (op.op == UpdateType.put) {
@@ -94,6 +101,9 @@ class PowersyncSupabaseConnector extends PowerSyncBackendConnector {
           logger.info('delete $op');
         }
       }
+
+      // await sendCrudEntry(
+      //     accessToken: session.accessToken, entries: transaction.crud);
 
       // All operations successful.
       await transaction.complete();
@@ -112,6 +122,31 @@ class PowersyncSupabaseConnector extends PowerSyncBackendConnector {
         // Throwing an error here causes this call to be retried after a delay.
         rethrow;
       }
+    }
+  }
+
+  Future<void> sendCrudEntry(
+      {required List<CrudEntry> entries, required String accessToken}) async {
+    final headers = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $accessToken',
+    };
+
+    try {
+      final response = await http.post(
+        AppConfig.powerSyncEventUpdateUrl,
+        headers: headers,
+        body: jsonEncode(entries),
+      );
+      if (response.statusCode == 200) {
+        logger.info('Crud entry sent successfully');
+      } else {
+        logger.warning('Error: ${response.statusCode} ${response.body}');
+        throw Exception('Failed to upload crud entry');
+      }
+    } catch (e) {
+      logger.warning('Exception: $e');
+      rethrow;
     }
   }
 

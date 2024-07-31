@@ -1,5 +1,6 @@
 import 'package:finny/src/auth/auth_provider.dart';
 import 'package:finny/src/dashboard/dashboard_controller.dart';
+import 'package:finny/src/goals/goals_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
@@ -38,6 +39,7 @@ void main() async {
   await PowersyncSupabaseConnector.openDatabaseAndInitSupabase();
 
   // services
+  final goalsService = GoalsService();
   final settingsService = SettingsService();
   final accountsService = AccountsService();
   final authService = AuthService();
@@ -50,7 +52,9 @@ void main() async {
   // controllers
   final accountsController = AccountsController(AccountsService());
   final connectionsController = ConnectionsController(connectionsService);
-  final dashboardController = DashboardController();
+  final dashboardController = DashboardController(
+    goalsService: goalsService,
+  );
   final transactionsController = TransactionsController();
   final settingsController = SettingsController(
     settingsService: settingsService,
