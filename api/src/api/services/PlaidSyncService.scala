@@ -140,11 +140,11 @@ object PlaidSyncService:
 
         Right(())
 
-    private def syncInvestmentAccounts(item: PlaidItem): Unit =
+    private def syncInvestmentAccounts(item: PlaidItem): Either[AppError, Unit] =
         Logger.root.info(s"Syncing investment accounts and holdings for item: ${item.id}")
         AccountRepository
             .getAccounts(item.userId)
-            .map(accounts =>
+            .flatMap(accounts =>
                 val investmentAccounts = accounts.filter(_.accountType.exists(_ == "investment"))
                 if investmentAccounts.nonEmpty then
                     PlaidService.getInvestmentHoldings(client = PlaidService.makePlaidClientFromEnv(), item) match
@@ -152,20 +152,10 @@ object PlaidSyncService:
                             Logger.root.error(s"Error syncing investment holdings", appError)
                             PlaidItemRepository.updateSyncError(
                                 itemId = item.id.toUUID,
-                                error =
-                                    appError match {
-                                        case AppError.DatabaseError(error) =>
-                                            error
-                                        case AppError.ServiceError(error) =>
-                                            error.errorMessage
-                                        case AppError.ValidationError(error) =>
-                                            error
-                                        case AppError.NetworkError(error) =>
-                                            error
-                                    },
+                                error = appError.toString(),
                                 currentTime = java.time.Instant.now()
                             )
-
+                            Left(appError)
                         case Right(resp) =>
                             for account <- resp.getAccounts().asScala do
                                 upsertAccount(item, account) match
@@ -245,7 +235,9 @@ object PlaidSyncService:
                                     case scala.util.Failure(ex) =>
                                         Logger.root.error(s"No account found", ex)
                                 }
-                            ()
+                            Right(())
+                else
+                    Right(())
             )
 
     private def handleItemResponse(item: PlaidItem, response: TransactionsSyncResponse): Unit =

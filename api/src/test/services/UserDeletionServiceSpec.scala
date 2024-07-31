@@ -79,7 +79,7 @@ class UserDeletionServiceSpec extends AnyFlatSpec, Matchers, EitherValues, Befor
 
             val items = PlaidItemRepository.debugGetItems().value
             items should have size 1
-            val accounts = AccountRepository.getAccounts(userId = userId).get
+            val accounts = AccountRepository.getAccounts(userId = userId).value
             accounts should have size 1
             val transactions = TransactionRepository.getTransactionsByAccountId(accountId).get
             transactions should have size 1
@@ -90,7 +90,7 @@ class UserDeletionServiceSpec extends AnyFlatSpec, Matchers, EitherValues, Befor
 
             val itemsAfterDeletion = PlaidItemRepository.debugGetItems().value
             itemsAfterDeletion should have size 0
-            val accountsAfterDeletion = AccountRepository.getAccounts(userId = userId).get
+            val accountsAfterDeletion = AccountRepository.getAccounts(userId = userId).value
             accountsAfterDeletion should have size 0
             val transactionsAfterDeletion = TransactionRepository.getTransactionsByAccountId(accountId).get
             transactionsAfterDeletion should have size 0

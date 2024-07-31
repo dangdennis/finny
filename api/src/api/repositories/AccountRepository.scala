@@ -7,6 +7,7 @@ import scalikejdbc.*
 
 import java.util.UUID
 import scala.util.Try
+import api.common.AppError
 
 object AccountRepository:
     case class UpsertAccountInput(
@@ -57,7 +58,7 @@ object AccountRepository:
         }
     )
 
-    def getAccounts(userId: UUID): Try[List[Account]] = Try(
+    def getAccounts(userId: UUID): Either[AppError, List[Account]] = Try(
         DB.readOnly { implicit session =>
             sql"""
           SELECT
@@ -103,7 +104,7 @@ object AccountRepository:
                 .list
                 .apply()
         }
-    )
+    ).toEither.left.map(ex => AppError.DatabaseError(ex.getMessage()))
 
     def deleteAccountsByItemId(itemId: PlaidItemId)(implicit session: DBSession): Either[Throwable, Int] =
         Try(sql"""DELETE FROM accounts WHERE item_id = ${itemId}""".update.apply()).toEither

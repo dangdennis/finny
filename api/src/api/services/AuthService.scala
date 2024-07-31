@@ -12,16 +12,16 @@ import io.circe.parser.*
 import io.circe.syntax.*
 import repositories.AuthUserRepository
 import sttp.client3.*
+import api.common.AppError
 
 object AuthService:
-    // Replace with your actual Supabase project URL and key
     val supabaseUrl = Environment.getSupabaseUrl
     val supabaseKey = Environment.getSupabaseKey
 
     case class AdminDeleteUserInput(should_soft_delete: Boolean)
     given Encoder[AdminDeleteUserInput] = deriveEncoder
 
-    def deleteUser(userId: UserId, shouldSoftDelete: Boolean): Either[String, Boolean] =
+    def deleteUser(userId: UserId, shouldSoftDelete: Boolean): Either[AppError, Boolean] =
         Logger.root.info(s"Deleting user with ID ${userId} via Supabase")
 
         val request = basicRequest
@@ -40,10 +40,10 @@ object AuthService:
                     .left
                     .map(err =>
                         Logger.root.error(s"Failed to soft delete user with ID ${userId} $err")
-                        s"Failed to enqueue job to delete user with ID ${userId}"
+                        AppError.NetworkError(s"Failed to enqueue job to delete user with ID ${userId}")
                     )
             case response =>
-                Left(s"Failed to delete user with ID ${userId}. ${response.body.toString()}")
+                Left(AppError.NetworkError(s"Failed to delete user with ID ${userId}. ${response.body.toString()}"))
 
     case class AdminCreateUserInput(email: String, password: String, email_confirm: Boolean)
     case class AdminCreateUserOutput(id: String, email: String)

@@ -13,10 +13,9 @@ import scala.util.Try
 import api.common.AppError
 
 object PlaidItemRepository:
-    def getItemsByUserId(userId: UserId): Either[Throwable, List[PlaidItem]] =
-        Try(
-            DB.readOnly { implicit session =>
-                sql"""
+    def getItemsByUserId(userId: UserId): Either[AppError.DatabaseError, List[PlaidItem]] = Try(
+        DB.readOnly { implicit session =>
+            sql"""
                 select
                   id,
                   user_id,
@@ -42,8 +41,8 @@ object PlaidItemRepository:
                   where
                   user_id = $userId
                 """.map(dbToModel).list.apply()
-            }
-        ).toEither
+        }
+    ).toEither.left.map(e => AppError.DatabaseError(e.getMessage))
 
     def getById(id: UUID): Either[AppError, PlaidItem] = Try(
         DB.readOnly { implicit session =>

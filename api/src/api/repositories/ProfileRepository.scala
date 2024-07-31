@@ -6,6 +6,7 @@ import scalikejdbc.*
 
 import java.util.UUID
 import scala.util.Try
+import api.common.AppError
 
 object ProfileRepository:
     def getProfiles(): Try[List[Profile]] = Try(
@@ -22,7 +23,7 @@ object ProfileRepository:
         }
     )
 
-    def getProfileByUserId(userId: UserId): Try[Option[Profile]] = Try(
+    def getProfileByUserId(userId: UserId): Either[AppError.DatabaseError, Option[Profile]] = Try(
         DB.readOnly { implicit session =>
             sql"select id, deleted_at from profiles where id = ${userId}"
                 .map(rs =>
@@ -34,6 +35,4 @@ object ProfileRepository:
                 .single
                 .apply()
         }
-    )
-
-    // def deleteProfileAndUser(userId: UUID): Try[Int] = Try(
+    ).toEither.left.map(ex => AppError.DatabaseError(ex.getMessage))

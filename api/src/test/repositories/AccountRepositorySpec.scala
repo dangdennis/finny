@@ -69,7 +69,7 @@ class AccountRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, BeforeA
         )
 
         // then
-        val accounts = AccountRepository.getAccounts(userId = user.id).get
+        val accounts = AccountRepository.getAccounts(userId = user.id).value
         accounts.size should be(1)
         accounts.head.availableBalance should be(200.0)
         accounts.head.currentBalance should be(150.0)

@@ -119,13 +119,16 @@ object Routes:
                 case Success(jwt) =>
                     val userId = UUID.fromString(jwt.getSubject())
                     ProfileRepository.getProfileByUserId(userId) match
-                        case Failure(error) =>
-                            Logger.root.error(s"Error fetching profile by user id", error)
+                        case Left(AppError.DatabaseError(msg)) =>
+                            Logger.root.error(s"Error fetching profile by user id", msg)
                             Left(AuthenticationError(500))
-                        case Success(None) =>
-                            Left(AuthenticationError(404))
-                        case Success(Some(profile)) =>
-                            Right(profile)
+                        case Right(profileOpt) =>
+                            profileOpt match
+                                case Some(profile) =>
+                                    Right(profile)
+                                case None =>
+                                    Logger.root.error(s"Profile not found for user id: $userId")
+                                    Left(AuthenticationError(404))
                 case Failure(error) =>
                     Logger.root.error(s"Error decoding JWT", error)
                     Left(AuthenticationError(400))
