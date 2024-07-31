@@ -4,9 +4,12 @@ import api.common.*
 import api.jobs.Jobs
 import api.models.PlaidItem
 import api.models.PlaidItemId
+import api.models.SecurityType
 import api.repositories.AccountRepository
+import api.repositories.InvestmentRepository
 import api.repositories.PlaidItemRepository
 import api.repositories.TransactionRepository
+import api.services.PlaidService.PlaidError
 import com.plaid.client.model.AccountBase
 import com.plaid.client.model.TransactionsSyncResponse
 import io.github.resilience4j.ratelimiter.*
@@ -18,9 +21,6 @@ import scala.concurrent.Future
 import scala.jdk.CollectionConverters.*
 import scala.util.Failure
 import scala.util.Success
-import api.repositories.InvestmentRepository
-import api.models.SecurityType
-import api.services.PlaidService.PlaidError
 
 object PlaidSyncService:
     given ec: ExecutionContext = ExecutionContext.global
@@ -54,10 +54,18 @@ object PlaidSyncService:
                     ) match
                         case Right(_) =>
                             Logger.root.info(s"Sync for item ${itemId} completed successfully.")
-                        case Left(PlaidError(requestId, errorType, errorCode, errorMessage)) =>
-                            Logger.root.error(s"Sync for item ${itemId} failed: $errorMessage")
-                        case Left(ex) =>
-                            Logger.root.error(s"Sync for item ${itemId} failed.", ex)
+                        case Left(error) =>
+                            error match
+                                case AppError.DatabaseError(message) =>
+                                    Logger.root.error(s"Sync for item ${itemId} failed.", message)
+                                case AppError.ValidationError(message) =>
+                                    Logger.root.error(s"Sync for item ${itemId} failed.", message)
+                                case AppError.ServiceError(error) =>
+                                    Logger.root.error(s"Sync for item ${itemId} failed.", error.errorMessage)
+                                case AppError.NetworkError(message) =>
+                                    Logger.root.error(s"Sync for item ${itemId} failed.", message)
+                                case error: Throwable =>
+                                    Logger.root.error(s"Sync for item ${itemId} failed.", error)
             )
         )
 
@@ -101,20 +109,30 @@ object PlaidSyncService:
                 }
             Thread.sleep(60000 * 60)
 
-    private def syncNonInvestmentAccounts(item: PlaidItem): Either[PlaidError, Unit] =
+    private def syncNonInvestmentAccounts(item: PlaidItem): Either[AppError, Unit] =
         Logger.root.info(s"Syncing non-investment accounts and transactions for item: ${item.id}")
         var cursor = item.transactionsCursor
         var hasMore = true
         while hasMore do
             PlaidService.getTransactionsSync(client = PlaidService.makePlaidClientFromEnv(), item = item) match
-                case Left(error) =>
-                    Logger.root.error(s"Error syncing transactions", error)
+                case Left(appError) =>
+                    Logger.root.error(s"Error syncing transactions", appError)
                     PlaidItemRepository.updateSyncError(
                         itemId = item.id.toUUID,
-                        error = error.errorMessage,
+                        error =
+                            appError match {
+                                case AppError.DatabaseError(error) =>
+                                    error
+                                case AppError.ServiceError(error) =>
+                                    error.errorMessage
+                                case AppError.ValidationError(error) =>
+                                    error
+                                case AppError.NetworkError(error) =>
+                                    error
+                            },
                         currentTime = java.time.Instant.now()
                     )
-                    return Left(error)
+                    return Left(appError)
                 case Right(resp) =>
                     handleItemResponse(item, resp)
                     hasMore = resp.getHasMore().booleanValue()
@@ -132,13 +150,24 @@ object PlaidSyncService:
                 val investmentAccounts = accounts.filter(_.accountType.exists(_ == "investment"))
                 if investmentAccounts.nonEmpty then
                     PlaidService.getInvestmentHoldings(client = PlaidService.makePlaidClientFromEnv(), item) match
-                        case Left(error) =>
-                            Logger.root.error(s"Error syncing investment holdings", error)
+                        case Left(appError) =>
+                            Logger.root.error(s"Error syncing investment holdings", appError)
                             PlaidItemRepository.updateSyncError(
                                 itemId = item.id.toUUID,
-                                error = error.errorMessage,
+                                error =
+                                    appError match {
+                                        case AppError.DatabaseError(error) =>
+                                            error
+                                        case AppError.ServiceError(error) =>
+                                            error.errorMessage
+                                        case AppError.DatabaseError(error) =>
+                                            error
+                                        case AppError.ValidationError(error) =>
+                                            error
+                                    },
                                 currentTime = java.time.Instant.now()
                             )
+
                         case Right(resp) =>
                             for account <- resp.getAccounts().asScala do
                                 upsertAccount(item, account) match

@@ -10,8 +10,8 @@ import io.circe.generic.semiauto.deriveDecoder
 import io.circe.generic.semiauto.deriveEncoder
 import io.circe.parser.*
 import io.circe.syntax.*
-import sttp.client3.*
 import repositories.AuthUserRepository
+import sttp.client3.*
 
 object AuthService:
     // Replace with your actual Supabase project URL and key

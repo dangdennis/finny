@@ -44,7 +44,7 @@ object PlaidItemRepository:
             }
         ).toEither
 
-    def getById(id: UUID) =
+    def getById(id: UUID): Either[Throwable, PlaidItem] =
         Try(
             DB.readOnly { implicit session =>
                 sql"""

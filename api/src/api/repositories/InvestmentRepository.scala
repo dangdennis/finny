@@ -1,14 +1,15 @@
 package api.repositories
 
+import api.common.Logger
 import api.models.InvestmentHolding
+import api.models.InvestmentSecurity
 import api.models.SecurityType
 import scalikejdbc.*
 
-import java.time.{Instant, LocalDate}
+import java.time.Instant
+import java.time.LocalDate
 import java.util.UUID
 import scala.util.Try
-import api.models.InvestmentSecurity
-import api.common.Logger
 
 object InvestmentRepository:
     case class InvestmentHoldingInput(

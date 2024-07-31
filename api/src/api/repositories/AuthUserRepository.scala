@@ -1,6 +1,8 @@
 package repositories
 
-import api.models.{AuthUser, AuthIdentity, UserId}
+import api.models.AuthIdentity
+import api.models.AuthUser
+import api.models.UserId
 import scalikejdbc.*
 
 import java.util.UUID
