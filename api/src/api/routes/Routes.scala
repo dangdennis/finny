@@ -71,8 +71,18 @@ object Routes:
             .post
             .in("plaid-links" / "create")
             .out(jsonBody[DTOs.PlaidLinkCreateResponse])
+
         val plaidLinkCreateServerEndpoint = plaidLinksCreateEndpoint
             .handle(profile => _ => PlaidLinkHandler.handler(userId = profile.id))
+
+        val powersyncEventUploadEndpoint = protectedApiRouteGroup
+            .post
+            .in("powersync" / "event" / "upload")
+            // .in(jsonBody[DTOs.PowersyncEventUploadRequest])
+            .in(stringJsonBody)
+
+        val powersyncEventUploadServerEndpoint = powersyncEventUploadEndpoint
+            .handle(profile => input => PowerSyncHandler.handleEventUpload(input = input, user = profile))
 
         val webhooksEndpoint = endpoint
             .post

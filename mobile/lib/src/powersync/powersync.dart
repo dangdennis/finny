@@ -132,11 +132,14 @@ class PowersyncSupabaseConnector extends PowerSyncBackendConnector {
       'Authorization': 'Bearer $accessToken',
     };
 
+    print('uploading entries: $entries');
+    print("jsonEncode({'data': entries}) ${jsonEncode({'data': entries})}");
+
     try {
       final response = await http.post(
         AppConfig.powerSyncEventUpdateUrl,
         headers: headers,
-        body: jsonEncode(entries),
+        body: jsonEncode({'data': entries}),
       );
       if (response.statusCode == 200) {
         logger.info('Crud entry sent successfully');

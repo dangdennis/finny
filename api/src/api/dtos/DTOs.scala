@@ -23,3 +23,5 @@ object DTOs:
         lastSyncErrorAt: Option[String],
         retryCount: Int
     ) derives Schema
+    case class PowersyncEventUploadRequest(data: List[PowersyncEventUploadData]) derives Schema
+    case class PowersyncEventUploadData() derives Schema
