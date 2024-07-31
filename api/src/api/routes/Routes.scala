@@ -91,12 +91,14 @@ object Routes:
             .out(stringBody)
             .handle(rawJson => PlaidWebhookHandler.handleWebhook(rawJson))
 
+        // REMEMBER TO ADD NEW ENDPOINTS TO THIS LIST.
         val secureServerEndpoints = List(
             plaidItemsCreateServerEndpoint,
             plaidItemsDeleteServerEndpoint,
             plaidItemsGetServerEndpoint,
             plaidLinkCreateServerEndpoint,
-            usersDeleteServerEndpoint
+            usersDeleteServerEndpoint,
+            powersyncEventUploadServerEndpoint
         )
         val serverEndpoints = List(indexEndpoint) ++ secureServerEndpoints
         val docEndpoints = SwaggerInterpreter().fromServerEndpoints[Identity](serverEndpoints, "finny-api", "1.0.0")
