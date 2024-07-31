@@ -47,6 +47,8 @@ class _LoginViewState extends State<LoginView> {
           const Text('Sign in via the magic link with your email below'),
           const SizedBox(height: 18),
           TextFormField(
+            keyboardType: TextInputType.emailAddress,
+            autofillHints: const [AutofillHints.email],
             controller: _emailController,
             decoration: const InputDecoration(labelText: 'Email'),
           ),
