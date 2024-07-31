@@ -28,12 +28,21 @@ class _DashboardViewState extends State<DashboardView> {
   final TextEditingController _retirementAgeController =
       TextEditingController();
 
+  final FocusNode _nameFocusNode = FocusNode();
+  final FocusNode _amountFocusNode = FocusNode();
+  final FocusNode _currentAgeFocusNode = FocusNode();
+  final FocusNode _retirementAgeFocusNode = FocusNode();
+
   @override
   void dispose() {
     _nameController.dispose();
     _amountController.dispose();
     _currentAgeController.dispose();
     _retirementAgeController.dispose();
+    _nameFocusNode.dispose();
+    _amountFocusNode.dispose();
+    _currentAgeFocusNode.dispose();
+    _retirementAgeFocusNode.dispose();
     super.dispose();
   }
 
@@ -59,154 +68,168 @@ class _DashboardViewState extends State<DashboardView> {
     return widget.dashboardController.getGoals();
   }
 
+  void _unfocusAll() {
+    _nameFocusNode.unfocus();
+    _amountFocusNode.unfocus();
+    _currentAgeFocusNode.unfocus();
+    _retirementAgeFocusNode.unfocus();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Dashboard'),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Set Your Goals',
-                      style: Theme.of(context).textTheme.headlineSmall,
-                    ),
-                    const SizedBox(height: 20.0),
-                    TextFormField(
-                      controller: _nameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Goal Name',
-                        border: OutlineInputBorder(),
-                        contentPadding: EdgeInsets.all(16),
+      body: GestureDetector(
+        onTap: _unfocusAll,
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Set Your Goals',
+                        style: Theme.of(context).textTheme.headlineSmall,
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter a goal name';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 20.0),
-                    TextFormField(
-                      controller: _amountController,
-                      decoration: const InputDecoration(
-                        labelText: 'Amount (default is 0)',
-                        border: OutlineInputBorder(),
-                        contentPadding: EdgeInsets.all(16),
-                        prefixText: '\$',
-                        suffixIcon: Tooltip(
-                          message:
-                              'Amount is optional, and if not provided, will be computed based on your spending.',
-                          triggerMode: TooltipTriggerMode.tap,
-                          showDuration: Duration(seconds: 5),
-                          child: Icon(Icons.info_outline),
+                      const SizedBox(height: 20.0),
+                      TextFormField(
+                        controller: _nameController,
+                        focusNode: _nameFocusNode,
+                        decoration: const InputDecoration(
+                          labelText: 'Goal Name',
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.all(16),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter a goal name';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 20.0),
+                      TextFormField(
+                        controller: _amountController,
+                        focusNode: _amountFocusNode,
+                        decoration: const InputDecoration(
+                          labelText: 'Amount (default is 0)',
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.all(16),
+                          prefixText: '\$',
+                          suffixIcon: Tooltip(
+                            message:
+                                'Amount is optional, and if not provided, will be computed based on your spending.',
+                            triggerMode: TooltipTriggerMode.tap,
+                            showDuration: Duration(seconds: 5),
+                            child: Icon(Icons.info_outline),
+                          ),
+                        ),
+                        keyboardType: TextInputType.number,
+                        validator: (value) {
+                          if (value != null &&
+                              value.isNotEmpty &&
+                              double.tryParse(value) == null) {
+                            return 'Please enter a valid number';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 20.0),
+                      TextFormField(
+                        controller: _currentAgeController,
+                        focusNode: _currentAgeFocusNode,
+                        decoration: const InputDecoration(
+                          labelText: 'Current Age',
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.all(16),
+                        ),
+                        keyboardType: TextInputType.number,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your current age';
+                          }
+                          if (int.tryParse(value) == null) {
+                            return 'Please enter a valid number';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 20.0),
+                      TextFormField(
+                        controller: _retirementAgeController,
+                        focusNode: _retirementAgeFocusNode,
+                        decoration: const InputDecoration(
+                          labelText: 'Retirement Age',
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.all(16),
+                        ),
+                        keyboardType: TextInputType.number,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your retirement age';
+                          }
+                          if (int.tryParse(value) == null) {
+                            return 'Please enter a valid number';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 20.0),
+                      ElevatedButton(
+                        onPressed: _addGoal,
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16.0),
+                          textStyle: Theme.of(context).textTheme.labelLarge,
+                        ),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.add),
+                            Text('Add goal'),
+                          ],
                         ),
                       ),
-                      keyboardType: TextInputType.number,
-                      validator: (value) {
-                        if (value != null &&
-                            value.isNotEmpty &&
-                            double.tryParse(value) == null) {
-                          return 'Please enter a valid number';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 20.0),
-                    TextFormField(
-                      controller: _currentAgeController,
-                      decoration: const InputDecoration(
-                        labelText: 'Current Age',
-                        border: OutlineInputBorder(),
-                        contentPadding: EdgeInsets.all(16),
-                      ),
-                      keyboardType: TextInputType.number,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your current age';
-                        }
-                        if (int.tryParse(value) == null) {
-                          return 'Please enter a valid number';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 20.0),
-                    TextFormField(
-                      controller: _retirementAgeController,
-                      decoration: const InputDecoration(
-                        labelText: 'Retirement Age',
-                        border: OutlineInputBorder(),
-                        contentPadding: EdgeInsets.all(16),
-                      ),
-                      keyboardType: TextInputType.number,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your retirement age';
-                        }
-                        if (int.tryParse(value) == null) {
-                          return 'Please enter a valid number';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 20.0),
-                    ElevatedButton(
-                      onPressed: _addGoal,
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16.0),
-                        textStyle: Theme.of(context).textTheme.labelLarge,
-                      ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.add),
-                          Text('Add goal'),
-                        ],
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 40.0),
-              FutureBuilder<List<Goal>>(
-                future: _fetchGoals(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (snapshot.hasError) {
-                    return const Center(child: Text('Failed to load goals'));
-                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Center(child: Text('No goals added yet'));
-                  } else {
-                    final goals = snapshot.data!;
-                    return ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: goals.length,
-                      itemBuilder: (context, index) {
-                        final goal = goals[index];
-                        return ListTile(
-                          title: Text(goal.name),
-                          subtitle: Text(
-                            'Amount: \$${goal.amount.toStringAsFixed(2)}, Date: ${DateFormat.yMMMd().format(goal.targetDate)}',
-                          ),
-                        );
-                      },
-                    );
-                  }
-                },
-              ),
-            ],
+                const SizedBox(height: 40.0),
+                FutureBuilder<List<Goal>>(
+                  future: _fetchGoals(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    } else if (snapshot.hasError) {
+                      return const Center(child: Text('Failed to load goals'));
+                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return const Center(child: Text('No goals added yet'));
+                    } else {
+                      final goals = snapshot.data!;
+                      return ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: goals.length,
+                        itemBuilder: (context, index) {
+                          final goal = goals[index];
+                          return ListTile(
+                            title: Text(goal.name),
+                            subtitle: Text(
+                              'Amount: \$${goal.amount.toStringAsFixed(2)}, Date: ${DateFormat.yMMMd().format(goal.targetDate)}',
+                            ),
+                          );
+                        },
+                      );
+                    }
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       ),
