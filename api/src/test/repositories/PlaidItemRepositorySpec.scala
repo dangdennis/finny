@@ -135,10 +135,11 @@ class PlaidItemRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, Befor
         val lastSyncedGreater12HoursBy1Sec = currentTime
             .minus(java.time.Duration.ofHours(12))
             .minus(java.time.Duration.ofSeconds(1))
-        PlaidItemRepository.updateSyncError(item3.id.toUUID, currentTime = lastSyncedGreater12HoursBy1Sec, error = "error")
+        PlaidItemRepository
+            .updateSyncError(item3.id.toUUID, currentTime = lastSyncedGreater12HoursBy1Sec, error = "error")
 
         // when
-        val items = PlaidItemRepository.getItemsPendingSync(now = currentTime).get
+        val items = PlaidItemRepository.getItemsPendingSync(now = currentTime).value
 
         // then
         items.size should be(2)

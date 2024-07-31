@@ -281,10 +281,7 @@ object PlaidService:
                 DB.localTx { implicit session =>
                     val result =
                         for
-                            _ <- PlaidItemRepository
-                                .deleteItemById(itemId)
-                                .left
-                                .map(ex => AppError.DatabaseError(ex.getMessage))
+                            _ <- PlaidItemRepository.deleteItemById(itemId)
                             response <- handlePlaidResponse(
                                 Try(client.itemRemove(req).execute()),
                                 respBody =>
