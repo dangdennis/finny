@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 import 'src/app.dart';
 import 'src/accounts/accounts_controller.dart';
@@ -65,17 +66,39 @@ void main() async {
   // This prevents a sudden theme change when the app is first displayed.
   await settingsController.loadSettings();
 
-  runApp(
-    MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => authProvider)],
-      child: MyApp(
-        authProvider: authProvider,
-        accountsController: accountsController,
-        connectionsController: connectionsController,
-        dashboardController: dashboardController,
-        settingsController: settingsController,
-        transactionsController: transactionsController,
+  if (kReleaseMode) {
+    await SentryFlutter.init((options) {
+      options.dsn =
+          'https://75caf3fc5616317f736eb5b4daa28f57@o4507494754746368.ingest.us.sentry.io/4507692070535168';
+    },
+        appRunner: () => runApp(
+              MultiProvider(
+                providers: [
+                  ChangeNotifierProvider(create: (_) => authProvider)
+                ],
+                child: MyApp(
+                  authProvider: authProvider,
+                  accountsController: accountsController,
+                  connectionsController: connectionsController,
+                  dashboardController: dashboardController,
+                  settingsController: settingsController,
+                  transactionsController: transactionsController,
+                ),
+              ),
+            ));
+  } else {
+    runApp(
+      MultiProvider(
+        providers: [ChangeNotifierProvider(create: (_) => authProvider)],
+        child: MyApp(
+          authProvider: authProvider,
+          accountsController: accountsController,
+          connectionsController: connectionsController,
+          dashboardController: dashboardController,
+          settingsController: settingsController,
+          transactionsController: transactionsController,
+        ),
       ),
-    ),
-  );
+    );
+  }
 }

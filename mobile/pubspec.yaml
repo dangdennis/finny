@@ -23,6 +23,7 @@ dependencies:
   plaid_flutter: 3.1.8
   provider: ^6.1.2
   powersync: ^1.5.1
+  sentry_flutter: ^8.5.0
   supabase_flutter: ^2.5.7
   uuid: ^4.4.2
 
