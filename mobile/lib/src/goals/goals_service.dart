@@ -1,5 +1,6 @@
 import 'package:finny/src/goals/goal_model.dart';
 import 'package:finny/src/powersync/powersync.dart';
+import 'package:uuid/uuid.dart';
 
 class GoalsService {
   Future<List<Goal>> getGoals() async {
@@ -9,29 +10,36 @@ class GoalsService {
     return goals.map((row) {
       return Goal(
         id: row['id'],
-        amount: row['amount'],
         name: row['name'],
-        progress: row['progress'],
-        targetDate: row['target_date'],
-        userId: row['user_id'],
+        amount: row['amount'] as double,
+        progress: row['progress'] ?? 0,
+        targetDate: DateTime.parse(row['target_date']),
       );
     }).toList();
   }
 
   Future<void> addGoal(AddGoalInput input) async {
+    final String targetDateString = input.targetDate
+        .toIso8601String()
+        .substring(0, 10); // Extracting 'YYYY-MM-DD'
+
     await powersyncDb.writeTransaction((tx) async {
       return await tx.execute(
-        'INSERT INTO goals (name, amount, target_date) VALUES (?, ?, ?)',
-        [input.name, input.amount, input.targetDate],
+        'INSERT INTO goals (id, name, amount, target_date) VALUES (?, ?, ?, ?)',
+        [const Uuid().v4(), input.name, input.amount, targetDateString],
       );
     });
   }
 
   Future<void> updateGoal(Goal goal) async {
+    final String targetDateString = goal.targetDate
+        .toIso8601String()
+        .substring(0, 10); // Extracting 'YYYY-MM-DD'
+
     await powersyncDb.writeTransaction((tx) async {
       return await tx.execute(
         'UPDATE goals SET name = ?, amount = ?, target_date = ?, progress = ? WHERE id = ?',
-        [goal.name, goal.amount, goal.targetDate, goal.progress, goal.id],
+        [goal.name, goal.amount, targetDateString, goal.progress, goal.id],
       );
     });
   }

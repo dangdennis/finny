@@ -88,7 +88,7 @@ class _AccountListViewState extends State<AccountListView> {
         child: Column(
           children: [
             Container(
-              height: 300,
+              height: 150,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [Colors.blue[800]!, Colors.blue[400]!],

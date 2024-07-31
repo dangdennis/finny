@@ -12,6 +12,7 @@ class DashboardController {
 
   Future<List<Goal>> getGoals() async {
     try {
+      print("getGoals");
       return await _goalsService.getGoals();
     } catch (e, stacktrace) {
       _logger.severe('Failed to get goals', e, stacktrace);
