@@ -59,7 +59,7 @@ class UserDeletionServiceSpec extends AnyFlatSpec, Matchers, EitherValues, Befor
                             unofficialCurrencyCode = Some("USD")
                         )
                     )
-                    .get
+                    .value
             val transaction = TransactionRepository.upsertTransaction(input =
                 UpsertTransactionInput(
                     accountId = accountId,
@@ -95,5 +95,5 @@ class UserDeletionServiceSpec extends AnyFlatSpec, Matchers, EitherValues, Befor
             val transactionsAfterDeletion = TransactionRepository.getTransactionsByAccountId(accountId).get
             transactionsAfterDeletion should have size 0
 
-            val deletedUser = AuthUserRepository.getUser(userId).get
+            val deletedUser = AuthUserRepository.getUser(userId).value.get
             deletedUser should be(None)

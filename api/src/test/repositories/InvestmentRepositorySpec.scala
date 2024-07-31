@@ -57,7 +57,7 @@ class InvestmentRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, Befo
                         unofficialCurrencyCode = Some("USD")
                     )
                 )
-                .get
+                .value
 
         val plaidSecurityId = UUID.randomUUID().toString
         val investmentSecurityId =

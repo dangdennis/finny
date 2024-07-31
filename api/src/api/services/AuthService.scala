@@ -35,12 +35,15 @@ object AuthService:
         request.send(HttpClientSyncBackend()) match
             case response if response.isSuccess =>
                 Jobs.enqueueJob(JobRequest.JobDeleteUser(userId = userId))
-                    .flatMap(_ => AuthUserRepository.deleteIdentitiesAdmin(userId))
-                    .map(_ => true)
                     .left
                     .map(err =>
-                        Logger.root.error(s"Failed to soft delete user with ID ${userId} $err")
+                        Logger.root.error(s"Failed to enqueue job to delete user with ID ${userId} $err")
                         AppError.NetworkError(s"Failed to enqueue job to delete user with ID ${userId}")
+                    )
+                    .flatMap(_ => AuthUserRepository.deleteIdentitiesAdmin(userId))
+                    .map(err =>
+                        Logger.root.error(s"Failed to soft delete user with ID ${userId} $err")
+                        false
                     )
             case response =>
                 Left(AppError.NetworkError(s"Failed to delete user with ID ${userId}. ${response.body.toString()}"))

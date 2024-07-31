@@ -25,11 +25,11 @@ object AccountRepository:
         accountSubtype: Option[String]
     )
 
-    def getByPlaidAccountId(itemId: UUID, plaidAccountId: String): Try[AccountSimple] = Try(
+    def getByPlaidAccountId(itemId: UUID, plaidAccountId: String): Either[AppError.DatabaseError, AccountSimple] = Try(
         DB.readOnly { implicit session =>
             sql"""
-        SELECT id, item_id, user_id, plaid_account_id FROM accounts WHERE item_id = $itemId and plaid_account_id = $plaidAccountId;
-        """.map(rs =>
+            SELECT id, item_id, user_id, plaid_account_id FROM accounts WHERE item_id = $itemId and plaid_account_id = $plaidAccountId;
+            """.map(rs =>
                     AccountSimple(
                         id = UUID.fromString(rs.string("id")),
                         itemId = UUID.fromString(rs.string("item_id")),
@@ -41,9 +41,9 @@ object AccountRepository:
                 .apply()
                 .get
         }
-    )
+    ).toEither.left.map(e => AppError.DatabaseError(e.getMessage()))
 
-    def upsertAccount(input: UpsertAccountInput): Try[UUID] = Try(
+    def upsertAccount(input: UpsertAccountInput): Either[AppError.DatabaseError, UUID] = Try(
         DB.autoCommit { implicit session =>
             sql"""
         INSERT INTO accounts (item_id, user_id, plaid_account_id, name, mask, official_name, current_balance, available_balance, iso_currency_code, unofficial_currency_code, type, subtype)
@@ -56,7 +56,7 @@ object AccountRepository:
         RETURNING id;
         """.map(rs => UUID.fromString(rs.string("id"))).single.apply().get
         }
-    )
+    ).toEither.left.map(e => AppError.DatabaseError(e.getMessage()))
 
     def getAccounts(userId: UUID): Either[AppError, List[Account]] = Try(
         DB.readOnly { implicit session =>

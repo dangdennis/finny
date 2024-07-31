@@ -24,6 +24,6 @@ class AuthServiceSpec extends AnyFlatSpec, Matchers, EitherValues, BeforeAndAfte
         AuthService.deleteUser(userId, shouldSoftDelete = true)
 
         // then
-        val deletedUser = AuthUserRepository.getUser(userId).get.get
+        val deletedUser = AuthUserRepository.getUser(userId).value.get
         deletedUser.deletedAt should not be empty
     }

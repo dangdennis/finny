@@ -73,7 +73,7 @@ class TransactionRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, Bef
                         unofficialCurrencyCode = Some("USD")
                     )
                 )
-                .get
+                .value
 
         TransactionRepository.upsertTransaction(input =
             UpsertTransactionInput(
