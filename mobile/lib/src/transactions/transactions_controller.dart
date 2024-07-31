@@ -1,5 +1,5 @@
 import 'package:finny/src/powersync/powersync.dart';
-import 'package:finny/src/transactions/transaction.dart';
+import 'package:finny/src/transactions/transaction_model.dart';
 import 'package:logging/logging.dart';
 import 'package:powersync/sqlite3.dart';
 
