@@ -1,5 +1,6 @@
 package api.services
 
+import api.common.AppError
 import api.common.Environment
 import api.common.Logger
 import api.jobs.Jobs
@@ -12,7 +13,6 @@ import io.circe.parser.*
 import io.circe.syntax.*
 import repositories.AuthUserRepository
 import sttp.client3.*
-import api.common.AppError
 
 object AuthService:
     val supabaseUrl = Environment.getSupabaseUrl

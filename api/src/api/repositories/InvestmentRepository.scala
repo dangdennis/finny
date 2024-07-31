@@ -1,5 +1,6 @@
 package api.repositories
 
+import api.common.AppError
 import api.common.Logger
 import api.models.InvestmentHolding
 import api.models.InvestmentSecurity
@@ -10,7 +11,6 @@ import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 import scala.util.Try
-import api.common.AppError
 
 object InvestmentRepository:
     case class InvestmentHoldingInput(

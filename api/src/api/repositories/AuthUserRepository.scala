@@ -1,5 +1,6 @@
 package repositories
 
+import api.common.AppError
 import api.models.AuthIdentity
 import api.models.AuthUser
 import api.models.UserId
@@ -7,7 +8,6 @@ import scalikejdbc.*
 
 import java.util.UUID
 import scala.util.Try
-import api.common.AppError
 
 object AuthUserRepository:
     def getUser(userId: UserId): Either[AppError.DatabaseError, Option[AuthUser]] = Try(

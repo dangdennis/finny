@@ -1,5 +1,6 @@
 package api.repositories
 
+import api.common.AppError
 import api.models.Account
 import api.models.AccountSimple
 import api.models.PlaidItemId
@@ -7,7 +8,6 @@ import scalikejdbc.*
 
 import java.util.UUID
 import scala.util.Try
-import api.common.AppError
 
 object AccountRepository:
     case class UpsertAccountInput(

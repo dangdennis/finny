@@ -1,6 +1,8 @@
 package api.services
 
+import api.common.AppError
 import api.common.Logger
+import api.models.Profile
 import api.models.UserId
 import api.repositories.AccountRepository
 import api.repositories.PlaidItemRepository
@@ -8,11 +10,7 @@ import api.repositories.ProfileRepository
 import api.repositories.TransactionRepository
 import scalikejdbc.*
 
-import scala.util.Failure
-import scala.util.Success
 import scala.util.Try
-import api.common.AppError
-import api.models.Profile
 
 object UserDeletionService:
     def deleteUserEverything(userId: UserId): Either[AppError, Boolean] = ProfileRepository

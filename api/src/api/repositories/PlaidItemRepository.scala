@@ -1,5 +1,6 @@
 package api.repositories
 
+import api.common.AppError
 import api.models.PlaidItem
 import api.models.PlaidItemId
 import api.models.PlaidItemStatus
@@ -10,7 +11,6 @@ import java.time.Duration
 import java.time.Instant
 import java.util.UUID
 import scala.util.Try
-import api.common.AppError
 
 object PlaidItemRepository:
     def getItemsByUserId(userId: UserId): Either[AppError.DatabaseError, List[PlaidItem]] = Try(

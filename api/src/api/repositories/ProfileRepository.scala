@@ -1,12 +1,12 @@
 package api.repositories
 
+import api.common.AppError
 import api.models.Profile
 import api.models.UserId
 import scalikejdbc.*
 
 import java.util.UUID
 import scala.util.Try
-import api.common.AppError
 
 object ProfileRepository:
     def getProfiles(): Try[List[Profile]] = Try(
