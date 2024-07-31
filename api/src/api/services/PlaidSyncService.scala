@@ -64,8 +64,6 @@ object PlaidSyncService:
                                     Logger.root.error(s"Sync for item ${itemId} failed.", error.errorMessage)
                                 case AppError.NetworkError(message) =>
                                     Logger.root.error(s"Sync for item ${itemId} failed.", message)
-                                case error: Throwable =>
-                                    Logger.root.error(s"Sync for item ${itemId} failed.", error)
             )
         )
 
@@ -160,9 +158,9 @@ object PlaidSyncService:
                                             error
                                         case AppError.ServiceError(error) =>
                                             error.errorMessage
-                                        case AppError.DatabaseError(error) =>
-                                            error
                                         case AppError.ValidationError(error) =>
+                                            error
+                                        case AppError.NetworkError(error) =>
                                             error
                                     },
                                 currentTime = java.time.Instant.now()

@@ -10,6 +10,7 @@ import java.time.Duration
 import java.time.Instant
 import java.util.UUID
 import scala.util.Try
+import api.common.AppError
 
 object PlaidItemRepository:
     def getItemsByUserId(userId: UserId): Either[Throwable, List[PlaidItem]] =
@@ -44,10 +45,9 @@ object PlaidItemRepository:
             }
         ).toEither
 
-    def getById(id: UUID): Either[Throwable, PlaidItem] =
-        Try(
-            DB.readOnly { implicit session =>
-                sql"""
+    def getById(id: UUID): Either[AppError, PlaidItem] = Try(
+        DB.readOnly { implicit session =>
+            sql"""
         select
           id,
           user_id,
@@ -72,8 +72,8 @@ object PlaidItemRepository:
           plaid_items
         where
           id = ${id}""".map(dbToModel).single.apply().get
-            }
-        ).toEither
+        }
+    ).toEither.left.map(e => AppError.DatabaseError(e.getMessage))
 
     def getByItemId(itemId: String): Try[PlaidItem] = Try(
         DB.readOnly { implicit session =>

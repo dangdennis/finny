@@ -59,7 +59,7 @@ object PlaidService:
 
         apiClient.createService(classOf[PlaidApi])
 
-    def getAccounts(client: PlaidApi, item: PlaidItem) =
+    def getAccounts(client: PlaidApi, item: PlaidItem): Either[AppError, AccountsGetResponse] =
         val req = new AccountsGetRequest().accessToken(item.plaidAccessToken)
         val res = Try(client.accountsGet(req).execute())
 
@@ -195,7 +195,11 @@ object PlaidService:
                     )
         )
 
-    def exchangePublicToken(client: PlaidApi, publicToken: String, userId: UUID) =
+    def exchangePublicToken(
+        client: PlaidApi,
+        publicToken: String,
+        userId: UUID
+    ): Either[AppError, ItemPublicTokenExchangeResponse] =
         val req = ItemPublicTokenExchangeRequest().publicToken(publicToken)
         handlePlaidResponse(
             Try(client.itemPublicTokenExchange(req).execute()),
@@ -230,7 +234,7 @@ object PlaidService:
                     )
         )
 
-    def getItem(client: PlaidApi, accessToken: String, userId: UUID) =
+    def getItem(client: PlaidApi, accessToken: String, userId: UUID): Either[AppError, ItemGetResponse] =
         val req = ItemGetRequest().accessToken(accessToken)
         handlePlaidResponse(
             Try(client.itemGet(req).execute()),
@@ -269,7 +273,7 @@ object PlaidService:
                     )
         )
 
-    def deleteItem(client: PlaidApi, itemId: PlaidItemId): Either[Throwable, Unit] = PlaidItemRepository
+    def deleteItem(client: PlaidApi, itemId: PlaidItemId): Either[AppError, Unit] = PlaidItemRepository
         .getById(itemId.toUUID)
         .map(plaidItem =>
             val req = ItemRemoveRequest().accessToken(plaidItem.plaidAccessToken)
@@ -323,7 +327,7 @@ object PlaidService:
                                 )
                         yield response
                 }
-            )
+            ).toEither
         )
 
     def getInvestmentTransactions(
@@ -331,8 +335,6 @@ object PlaidService:
         itemId: PlaidItemId
     ): Either[AppError, InvestmentsTransactionsGetResponse] = PlaidItemRepository
         .getById(itemId.toUUID)
-        .left
-        .map(ex => AppError.DatabaseError(ex.getMessage))
         .flatMap(plaidItem =>
             val today = Time.nowUtc()
             val yearAgo = today.minusYears(1)
@@ -377,8 +379,6 @@ object PlaidService:
     def getInvestmentHoldings(client: PlaidApi, item: PlaidItem): Either[AppError, InvestmentsHoldingsGetResponse] =
         PlaidItemRepository
             .getById(item.id.toUUID)
-            .left
-            .map(ex => AppError.DatabaseError(ex.getMessage))
             .flatMap(plaidItem =>
                 val req = InvestmentsHoldingsGetRequest().accessToken(plaidItem.plaidAccessToken)
                 handlePlaidResponse(
