@@ -3,6 +3,7 @@ package test.services
 import api.models.PlaidItemStatus
 import api.repositories.AccountRepository
 import api.repositories.AccountRepository.UpsertAccountInput
+import api.repositories.GoalRepository
 import api.repositories.PlaidItemRepository
 import api.repositories.PlaidItemRepository.CreateItemInput
 import api.repositories.TransactionRepository
@@ -76,6 +77,19 @@ class UserDeletionServiceSpec extends AnyFlatSpec, Matchers, EitherValues, Befor
                     accountOwner = Some("Dennis")
                 )
             )
+            val goalId = UUID.randomUUID()
+            val goal =
+                GoalRepository
+                    .createGoal(
+                        GoalRepository.CreateGoalInput(
+                            id = goalId,
+                            userId = userId,
+                            name = "Retirement Fund",
+                            amount = 0.0,
+                            targetDate = java.time.Instant.now()
+                        )
+                    )
+                    .value
 
             val items = PlaidItemRepository.debugGetItems().value
             items should have size 1
@@ -85,6 +99,8 @@ class UserDeletionServiceSpec extends AnyFlatSpec, Matchers, EitherValues, Befor
             transactions should have size 1
             val identities = AuthUserRepository.getIdentities(userId).value
             identities should have size 1
+            val goals = GoalRepository.getGoalsByUserId(userId).value
+            goals should have size 1
 
             val k = UserDeletionService.deleteUserEverything(userId)
 
@@ -94,6 +110,10 @@ class UserDeletionServiceSpec extends AnyFlatSpec, Matchers, EitherValues, Befor
             accountsAfterDeletion should have size 0
             val transactionsAfterDeletion = TransactionRepository.getTransactionsByAccountId(accountId).value
             transactionsAfterDeletion should have size 0
+            val identitiesAfterDeletion = AuthUserRepository.getIdentities(userId).value
+            identitiesAfterDeletion should have size 0
+            val goalsAfterDeletion = GoalRepository.getGoalsByUserId(goalId).value
+            goalsAfterDeletion should have size 0
 
-            val deletedUser = AuthUserRepository.getUser(userId).value.get
+            val deletedUser = AuthUserRepository.getUser(userId).value
             deletedUser should be(None)

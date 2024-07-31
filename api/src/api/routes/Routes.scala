@@ -78,7 +78,6 @@ object Routes:
         val powersyncEventUploadEndpoint = protectedApiRouteGroup
             .post
             .in("powersync" / "event" / "upload")
-            // .in(jsonBody[DTOs.PowersyncEventUploadRequest])
             .in(stringJsonBody)
 
         val powersyncEventUploadServerEndpoint = powersyncEventUploadEndpoint
