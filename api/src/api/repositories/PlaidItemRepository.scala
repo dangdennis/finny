@@ -1,5 +1,6 @@
 package api.repositories
 
+import api.common.AppError
 import api.models.PlaidItem
 import api.models.PlaidItemId
 import api.models.PlaidItemStatus
@@ -12,10 +13,9 @@ import java.util.UUID
 import scala.util.Try
 
 object PlaidItemRepository:
-    def getItemsByUserId(userId: UserId): Either[Throwable, List[PlaidItem]] =
-        Try(
-            DB.readOnly { implicit session =>
-                sql"""
+    def getItemsByUserId(userId: UserId): Either[AppError.DatabaseError, List[PlaidItem]] = Try(
+        DB.readOnly { implicit session =>
+            sql"""
                 select
                   id,
                   user_id,
@@ -41,13 +41,12 @@ object PlaidItemRepository:
                   where
                   user_id = $userId
                 """.map(dbToModel).list.apply()
-            }
-        ).toEither
+        }
+    ).toEither.left.map(e => AppError.DatabaseError(e.getMessage))
 
-    def getById(id: UUID) =
-        Try(
-            DB.readOnly { implicit session =>
-                sql"""
+    def getById(id: UUID): Either[AppError, PlaidItem] = Try(
+        DB.readOnly { implicit session =>
+            sql"""
         select
           id,
           user_id,
@@ -72,10 +71,10 @@ object PlaidItemRepository:
           plaid_items
         where
           id = ${id}""".map(dbToModel).single.apply().get
-            }
-        ).toEither
+        }
+    ).toEither.left.map(e => AppError.DatabaseError(e.getMessage))
 
-    def getByItemId(itemId: String): Try[PlaidItem] = Try(
+    def getByItemId(itemId: String): Either[AppError.DatabaseError, PlaidItem] = Try(
         DB.readOnly { implicit session =>
             sql"""
           select
@@ -103,7 +102,7 @@ object PlaidItemRepository:
           where
               plaid_item_id = ${itemId}""".map(dbToModel).single.apply().get
         }
-    )
+    ).toEither.left.map(e => AppError.DatabaseError(e.getMessage))
 
     case class CreateItemInput(
         userId: UUID,
@@ -114,13 +113,12 @@ object PlaidItemRepository:
         transactionsCursor: Option[String]
     )
 
-    def getOrCreateItem(input: CreateItemInput): Either[Throwable, PlaidItem] =
-        Try(
-            DB.autoCommit { implicit session =>
-                val query =
-                    sql"""INSERT INTO plaid_items (user_id, plaid_access_token, plaid_item_id, plaid_institution_id, status, transactions_cursor)
+    def getOrCreateItem(input: CreateItemInput): Either[AppError.DatabaseError, PlaidItem] = Try(
+        DB.autoCommit { implicit session =>
+            val query =
+                sql"""INSERT INTO plaid_items (user_id, plaid_access_token, plaid_item_id, plaid_institution_id, status, transactions_cursor)
         VALUES (${input.userId}, ${input.plaidAccessToken}, ${input.plaidItemId}, ${input
-                            .plaidInstitutionId}, ${input.status.toString()}, ${input.transactionsCursor})
+                        .plaidInstitutionId}, ${input.status.toString()}, ${input.transactionsCursor})
         ON CONFLICT (plaid_item_id) DO UPDATE SET
           status = EXCLUDED.status,
           plaid_access_token = EXCLUDED.plaid_access_token
@@ -146,12 +144,12 @@ object PlaidItemRepository:
           suggested_action
         ;
         """
-                query.map(dbToModel).single.apply()
-            }
-        ).map(item => item.get).toEither
+            query.map(dbToModel).single.apply()
+        }
+    ).map(item => item.get).toEither.left.map(e => AppError.DatabaseError(e.getMessage))
 
     /// Returns items with sync times older than 12 hours
-    def getItemsPendingSync(now: Instant): Try[List[PlaidItem]] =
+    def getItemsPendingSync(now: Instant): Either[AppError.DatabaseError, List[PlaidItem]] =
         val threshold = now.minus(Duration.ofHours(12))
         Try(
             DB.readOnly { implicit session =>
@@ -184,18 +182,17 @@ object PlaidItemRepository:
               and retry_count < 5
            """.map(dbToModel).list.apply()
             }
-        )
+        ).toEither.left.map(e => AppError.DatabaseError(e.getMessage))
 
-    def updateTransactionCursor(itemId: UUID, cursor: Option[String]): Try[Unit] = Try(
+    def updateTransactionCursor(itemId: UUID, cursor: Option[String]): Either[AppError.DatabaseError, Int] = Try(
         DB.autoCommit { implicit session =>
             sql"""UPDATE plaid_items SET transactions_cursor = ${cursor} WHERE id = ${itemId}""".update.apply()
         }
-    )
+    ).toEither.left.map(e => AppError.DatabaseError(e.getMessage))
 
-    def updateSyncSuccess(itemId: UUID, currentTime: Instant): Either[Throwable, Int] =
-        Try(
-            DB.autoCommit { implicit session =>
-                sql"""
+    def updateSyncSuccess(itemId: UUID, currentTime: Instant): Either[AppError.DatabaseError, Int] = Try(
+        DB.autoCommit { implicit session =>
+            sql"""
            UPDATE plaid_items
            SET
               last_synced_at = ${currentTime},
@@ -204,13 +201,12 @@ object PlaidItemRepository:
               retry_count = 0
            WHERE
               id = ${itemId}""".update.apply()
-            }
-        ).toEither
+        }
+    ).toEither.left.map(e => AppError.DatabaseError(e.getMessage))
 
-    def updateSyncError(itemId: UUID, error: String, currentTime: Instant): Either[Throwable, Int] =
-        Try(
-            DB.autoCommit { implicit session =>
-                sql"""
+    def updateSyncError(itemId: UUID, error: String, currentTime: Instant): Either[AppError.DatabaseError, Int] = Try(
+        DB.autoCommit { implicit session =>
+            sql"""
            UPDATE plaid_items
            SET
               last_sync_error = ${error},
@@ -218,13 +214,12 @@ object PlaidItemRepository:
               retry_count = retry_count + 1
            WHERE
               id = ${itemId}""".update.apply()
-            }
-        ).toEither
+        }
+    ).toEither.left.map(e => AppError.DatabaseError(e.getMessage))
 
-    def debugGetItems(): Either[Throwable, List[PlaidItem]] =
-        Try(
-            DB.readOnly { implicit session =>
-                sql"""
+    def debugGetItems(): Either[AppError.DatabaseError, List[PlaidItem]] = Try(
+        DB.readOnly { implicit session =>
+            sql"""
           select
             id,
             user_id,
@@ -248,11 +243,12 @@ object PlaidItemRepository:
           from
               plaid_items
           """.map(dbToModel).list.apply()
-            }
-        ).toEither
+        }
+    ).toEither.left.map(e => AppError.DatabaseError(e.getMessage))
 
-    def deleteItemById(itemId: PlaidItemId)(implicit session: DBSession): Either[Throwable, Int] =
-        Try(sql"""DELETE FROM plaid_items WHERE id = $itemId""".update.apply()).toEither
+    def deleteItemById(itemId: PlaidItemId)(implicit session: DBSession): Either[AppError.DatabaseError, Int] = Try(
+        sql"""DELETE FROM plaid_items WHERE id = $itemId""".update.apply()
+    ).toEither.left.map(e => AppError.DatabaseError(e.getMessage))
 
     private def dbToModel(rs: WrappedResultSet) = PlaidItem(
         id = PlaidItemId(UUID.fromString(rs.string("id"))),

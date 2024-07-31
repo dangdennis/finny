@@ -1,6 +1,7 @@
 package test.repositories
 
 import api.common.Time
+import api.common.Time.*
 import api.models.PlaidItemStatus
 import api.models.SecurityType
 import api.repositories.AccountRepository
@@ -16,7 +17,6 @@ import org.scalatest.matchers.should.Matchers
 import test.helpers.*
 
 import java.util.UUID
-import api.common.Time.*
 
 class InvestmentRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, BeforeAndAfterAll, BeforeAndAfterEach:
     override protected def beforeAll(): Unit = TestHelper.beforeAll()
@@ -57,7 +57,7 @@ class InvestmentRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, Befo
                         unofficialCurrencyCode = Some("USD")
                     )
                 )
-                .get
+                .value
 
         val plaidSecurityId = UUID.randomUUID().toString
         val investmentSecurityId =

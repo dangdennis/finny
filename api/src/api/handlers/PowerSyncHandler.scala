@@ -1,9 +1,7 @@
 package api.handlers
-
-import api.dtos.DTOs
-import api.models.Profile
-import api.models.AuthenticationError
 import api.common.Logger
+import api.models.AuthenticationError
+import api.models.Profile
 
 object PowerSyncHandler:
     // def handleEventUpload(input: DTOs.PowersyncEventUploadRequest, user: Profile): Either[AuthenticationError, Unit] = {

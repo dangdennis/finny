@@ -2,6 +2,8 @@ PODS:
   - app_links (0.0.1):
     - Flutter
   - Flutter (1.0.0)
+  - package_info_plus (0.4.5):
+    - Flutter
   - path_provider_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
@@ -13,6 +15,11 @@ PODS:
   - powersync_flutter_libs (0.0.1):
     - Flutter
     - powersync-sqlite-core (~> 0.1.6)
+  - Sentry/HybridSDK (8.32.0)
+  - sentry_flutter (8.5.0):
+    - Flutter
+    - FlutterMacOS
+    - Sentry/HybridSDK (= 8.32.0)
   - shared_preferences_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
@@ -40,9 +47,11 @@ PODS:
 DEPENDENCIES:
   - app_links (from `.symlinks/plugins/app_links/ios`)
   - Flutter (from `Flutter`)
+  - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - plaid_flutter (from `.symlinks/plugins/plaid_flutter/ios`)
   - powersync_flutter_libs (from `.symlinks/plugins/powersync_flutter_libs/ios`)
+  - sentry_flutter (from `.symlinks/plugins/sentry_flutter/ios`)
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
   - sqlite3_flutter_libs (from `.symlinks/plugins/sqlite3_flutter_libs/ios`)
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
@@ -51,6 +60,7 @@ SPEC REPOS:
   trunk:
     - Plaid
     - powersync-sqlite-core
+    - Sentry
     - sqlite3
 
 EXTERNAL SOURCES:
@@ -58,12 +68,16 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/app_links/ios"
   Flutter:
     :path: Flutter
+  package_info_plus:
+    :path: ".symlinks/plugins/package_info_plus/ios"
   path_provider_foundation:
     :path: ".symlinks/plugins/path_provider_foundation/darwin"
   plaid_flutter:
     :path: ".symlinks/plugins/plaid_flutter/ios"
   powersync_flutter_libs:
     :path: ".symlinks/plugins/powersync_flutter_libs/ios"
+  sentry_flutter:
+    :path: ".symlinks/plugins/sentry_flutter/ios"
   shared_preferences_foundation:
     :path: ".symlinks/plugins/shared_preferences_foundation/darwin"
   sqlite3_flutter_libs:
@@ -74,11 +88,14 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   app_links: e70ca16b4b0f88253b3b3660200d4a10b4ea9795
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  package_info_plus: 58f0028419748fad15bf008b270aaa8e54380b1c
   path_provider_foundation: 2b6b4c569c0fb62ec74538f866245ac84301af46
   Plaid: b21002f53b0b7c418df45d4848e3b30b02ed9cd1
   plaid_flutter: 76d09038ab535549632be1ea108032ca86ac6862
   powersync-sqlite-core: 4c38c8f470f6dca61346789fd5436a6826d1e3dd
   powersync_flutter_libs: 5d6b132a398de442c0853a8b14bfbb62cd4ff5a1
+  Sentry: 96ae1dcdf01a644bc3a3b1dc279cecaf48a833fb
+  sentry_flutter: f1d86adcb93a959bc47a40d8d55059bdf7569bc5
   shared_preferences_foundation: fcdcbc04712aee1108ac7fda236f363274528f78
   sqlite3: 292c3e1bfe89f64e51ea7fc7dab9182a017c8630
   sqlite3_flutter_libs: c00457ebd31e59fa6bb830380ddba24d44fbcd3b

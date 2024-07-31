@@ -1,14 +1,16 @@
 package api.repositories
 
+import api.common.AppError
+import api.common.Logger
 import api.models.InvestmentHolding
+import api.models.InvestmentSecurity
 import api.models.SecurityType
 import scalikejdbc.*
 
-import java.time.{Instant, LocalDate}
+import java.time.Instant
+import java.time.LocalDate
 import java.util.UUID
 import scala.util.Try
-import api.models.InvestmentSecurity
-import api.common.Logger
 
 object InvestmentRepository:
     case class InvestmentHoldingInput(
@@ -25,7 +27,7 @@ object InvestmentRepository:
         vestedValue: Option[Double]
     )
 
-    def getInvestmentSecurityByPlaidSecurityId(plaidSecurityId: String): Either[Throwable, Option[InvestmentSecurity]] =
+    def getInvestmentSecurityByPlaidSecurityId(plaidSecurityId: String): Either[AppError.DatabaseError, Option[InvestmentSecurity]] =
         Try(
             DB readOnly { implicit session =>
                 sql"""
@@ -70,7 +72,7 @@ object InvestmentRepository:
                     .single
                     .apply()
             }
-        ).toEither
+        ).toEither.left.map(ex => AppError.DatabaseError(ex.getMessage))
 
     def getInvestmentHoldings(accountId: UUID): Either[Throwable, List[InvestmentHolding]] =
         Try(
@@ -118,7 +120,7 @@ object InvestmentRepository:
             }
         ).toEither
 
-    def upsertInvestmentHoldings(input: InvestmentHoldingInput): Either[Throwable, UUID] =
+    def upsertInvestmentHoldings(input: InvestmentHoldingInput): Either[AppError.DatabaseError, UUID] =
         Try(
             DB autoCommit { implicit session =>
                 sql"""
@@ -160,7 +162,7 @@ object InvestmentRepository:
                 RETURNING id
             """.map(rs => UUID.fromString(rs.string("id"))).single.apply().get
             }
-        ).toEither
+        ).toEither.left.map(ex => AppError.DatabaseError(ex.getMessage))
 
     case class InvestmentSecurityInput(
         plaidSecurityId: String,
@@ -172,10 +174,9 @@ object InvestmentRepository:
         securityType: Option[SecurityType]
     )
 
-    def upsertInvestmentSecurity(input: InvestmentSecurityInput): Either[Throwable, UUID] =
-        Try(
-            DB autoCommit { implicit session =>
-                sql"""
+    def upsertInvestmentSecurity(input: InvestmentSecurityInput): Either[AppError.DatabaseError, UUID] = Try(
+        DB autoCommit { implicit session =>
+            sql"""
                 INSERT INTO investment_securities (
                     plaid_security_id,
                     plaid_institution_security_id,
@@ -202,5 +203,5 @@ object InvestmentRepository:
                     security_type = EXCLUDED.security_type
                 RETURNING id
             """.map(rs => UUID.fromString(rs.string("id"))).single.apply().get
-            }
-        ).toEither
+        }
+    ).toEither.left.map(ex => AppError.DatabaseError(ex.getMessage))

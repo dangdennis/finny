@@ -1,6 +1,9 @@
 package api.common
 
-import java.time.{OffsetDateTime, Instant, LocalDate, ZoneId}
+import java.time.Instant
+import java.time.LocalDate
+import java.time.OffsetDateTime
+import java.time.ZoneId
 
 object Time:
     def now(): Instant = java.time.Instant.now().truncatedTo(java.time.temporal.ChronoUnit.MICROS)

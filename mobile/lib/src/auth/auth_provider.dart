@@ -14,13 +14,6 @@ class AuthProvider extends ChangeNotifier {
   }
 
   AuthService authService;
-  late final StreamSubscription<AuthState> _authStateSubscription;
-
-  @override
-  void dispose() {
-    _authStateSubscription.cancel();
-    super.dispose();
-  }
 
   bool _isLoading = false;
   bool _isLoggedIn = Supabase.instance.client.auth.currentSession != null;

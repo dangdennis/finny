@@ -1,5 +1,6 @@
 package api.repositories
 
+import api.common.AppError
 import api.models.Profile
 import api.models.UserId
 import scalikejdbc.*
@@ -8,7 +9,7 @@ import java.util.UUID
 import scala.util.Try
 
 object ProfileRepository:
-    def getProfiles(): Try[List[Profile]] = Try(
+    def getProfiles(): Either[AppError.DatabaseError, List[Profile]] = Try(
         DB.readOnly { implicit session =>
             sql"select id, deleted_at from profiles"
                 .map(rs =>
@@ -20,9 +21,9 @@ object ProfileRepository:
                 .list
                 .apply()
         }
-    )
+    ).toEither.left.map(ex => AppError.DatabaseError(ex.getMessage))
 
-    def getProfileByUserId(userId: UserId): Try[Option[Profile]] = Try(
+    def getProfileByUserId(userId: UserId): Either[AppError.DatabaseError, Option[Profile]] = Try(
         DB.readOnly { implicit session =>
             sql"select id, deleted_at from profiles where id = ${userId}"
                 .map(rs =>
@@ -34,6 +35,4 @@ object ProfileRepository:
                 .single
                 .apply()
         }
-    )
-
-    // def deleteProfileAndUser(userId: UUID): Try[Int] = Try(
+    ).toEither.left.map(ex => AppError.DatabaseError(ex.getMessage))
