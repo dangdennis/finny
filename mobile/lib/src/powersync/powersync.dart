@@ -102,8 +102,8 @@ class PowersyncSupabaseConnector extends PowerSyncBackendConnector {
         }
       }
 
-      // await sendCrudEntry(
-      //     accessToken: session.accessToken, entries: transaction.crud);
+      await sendCrudEntry(
+          accessToken: session.accessToken, entries: transaction.crud);
 
       // All operations successful.
       await transaction.complete();
