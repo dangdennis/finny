@@ -106,6 +106,8 @@ class _DashboardViewState extends State<DashboardView> {
                         suffixIcon: Tooltip(
                           message:
                               'Amount is optional, and if not provided, will be computed based on your spending.',
+                          triggerMode: TooltipTriggerMode.tap,
+                          showDuration: Duration(seconds: 5),
                           child: Icon(Icons.info_outline),
                         ),
                       ),
