@@ -38,9 +38,9 @@ object UserDeletionService:
             }
             _ <- Try(
                 DB.autoCommit { implicit session =>
-                    sql"delete from goals where user_id = $user.id".update.apply()
-                    sql"delete from assets where user_id = $user.id".update.apply()
-                    sql"delete from profiles where id = $user.id".update.apply()
+                    sql"delete from goals where user_id = ${user.id}".update.apply()
+                    sql"delete from assets where user_id = ${user.id}".update.apply()
+                    sql"delete from profiles where id = ${user.id}".update.apply()
                 }
             ).toEither.left.map(e => AppError.DatabaseError(e.getMessage))
             deletionRes <- AuthService.deleteUser(user.id, shouldSoftDelete = false)
