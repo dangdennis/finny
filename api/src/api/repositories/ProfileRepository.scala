@@ -9,7 +9,7 @@ import java.util.UUID
 import scala.util.Try
 
 object ProfileRepository:
-    def getProfiles(): Try[List[Profile]] = Try(
+    def getProfiles(): Either[AppError.DatabaseError, List[Profile]] = Try(
         DB.readOnly { implicit session =>
             sql"select id, deleted_at from profiles"
                 .map(rs =>
@@ -21,7 +21,7 @@ object ProfileRepository:
                 .list
                 .apply()
         }
-    )
+    ).toEither.left.map(ex => AppError.DatabaseError(ex.getMessage))
 
     def getProfileByUserId(userId: UserId): Either[AppError.DatabaseError, Option[Profile]] = Try(
         DB.readOnly { implicit session =>

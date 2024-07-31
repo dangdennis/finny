@@ -1,5 +1,6 @@
 package api.repositories
 
+import api.common.AppError
 import api.models.PlaidItemId
 import api.models.Transaction
 import scalikejdbc.*
@@ -24,7 +25,7 @@ object TransactionRepository {
         accountOwner: Option[String]
     )
 
-    def upsertTransaction(input: UpsertTransactionInput): Try[Transaction] = Try(
+    def upsertTransaction(input: UpsertTransactionInput): Either[AppError.DatabaseError, Transaction] = Try(
         DB.autoCommit { implicit session =>
             sql"""
             INSERT INTO transactions (
@@ -69,39 +70,42 @@ object TransactionRepository {
             RETURNING *
         """.map(toModel).single.apply().get
         }
-    )
+    ).toEither.left.map(e => AppError.DatabaseError(e.getMessage))
 
-    def deleteTransactionsByPlaidTransactionIds(plaidTransactionIds: List[String]): Try[Unit] =
+    def deleteTransactionsByPlaidTransactionIds(
+        plaidTransactionIds: List[String]
+    ): Either[AppError.DatabaseError, Boolean] =
         if plaidTransactionIds.isEmpty then
-            return Try(())
+            Right(true)
         else
             Try(
                 DB.autoCommit { implicit session =>
                     sql"""
-            DELETE FROM transactions
-            WHERE plaid_transaction_id IN ($plaidTransactionIds)
-        """.execute.apply()
+                      DELETE FROM transactions
+                      WHERE plaid_transaction_id IN ($plaidTransactionIds)
+                    """.execute.apply()
                 }
-            )
+            ).toEither.left.map(e => AppError.DatabaseError(e.getMessage))
 
-    def deleteTransactionsByItemId(itemId: PlaidItemId)(implicit session: DBSession): Either[Throwable, Boolean] =
-        Try(sql"""
+    def deleteTransactionsByItemId(itemId: PlaidItemId)(implicit
+        session: DBSession
+    ): Either[AppError.DatabaseError, Boolean] = Try(sql"""
             DELETE FROM transactions
             WHERE account_id IN (
                 SELECT accounts.id
                 FROM accounts
                 WHERE accounts.item_id = $itemId
             );
-        """.execute.apply()).toEither
+        """.execute.apply()).toEither.left.map(e => AppError.DatabaseError(e.getMessage))
 
-    def getTransactionsByAccountId(accountId: UUID): Try[List[Transaction]] = Try(
+    def getTransactionsByAccountId(accountId: UUID): Either[AppError.DatabaseError, List[Transaction]] = Try(
         DB.readOnly { implicit session =>
             sql"""
             SELECT * FROM transactions
             WHERE account_id = $accountId
         """.map(toModel).list.apply()
         }
-    )
+    ).toEither.left.map(e => AppError.DatabaseError(e.getMessage))
 
     def toModel(rs: WrappedResultSet): Transaction = Transaction(
         id = UUID.fromString(rs.string("id")),

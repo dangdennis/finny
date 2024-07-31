@@ -81,7 +81,7 @@ class UserDeletionServiceSpec extends AnyFlatSpec, Matchers, EitherValues, Befor
             items should have size 1
             val accounts = AccountRepository.getAccounts(userId = userId).value
             accounts should have size 1
-            val transactions = TransactionRepository.getTransactionsByAccountId(accountId).get
+            val transactions = TransactionRepository.getTransactionsByAccountId(accountId).value
             transactions should have size 1
             val identities = AuthUserRepository.getIdentities(userId).value
             identities should have size 1
@@ -92,7 +92,7 @@ class UserDeletionServiceSpec extends AnyFlatSpec, Matchers, EitherValues, Befor
             itemsAfterDeletion should have size 0
             val accountsAfterDeletion = AccountRepository.getAccounts(userId = userId).value
             accountsAfterDeletion should have size 0
-            val transactionsAfterDeletion = TransactionRepository.getTransactionsByAccountId(accountId).get
+            val transactionsAfterDeletion = TransactionRepository.getTransactionsByAccountId(accountId).value
             transactionsAfterDeletion should have size 0
 
             val deletedUser = AuthUserRepository.getUser(userId).value.get
