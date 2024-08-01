@@ -252,7 +252,8 @@ class _GoalsFormViewState extends State<GoalsFormView> {
                     } else if (snapshot.hasError) {
                       return const Center(child: Text('Failed to load goals'));
                     } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return const Center(child: Text('No goals added yet'));
+                      return const Center(
+                          child: Text('Still awaiting your first goal 🤠'));
                     } else {
                       final goals = snapshot.data!;
                       return ListView.builder(

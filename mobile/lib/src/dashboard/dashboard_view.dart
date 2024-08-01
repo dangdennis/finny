@@ -36,7 +36,13 @@ class _DashboardViewState extends State<DashboardView> {
   @override
   void initState() {
     super.initState();
-    _goalsFuture = _fetchGoals();
+    _fetchGoals();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _fetchGoals();
   }
 
   @override
@@ -52,14 +58,9 @@ class _DashboardViewState extends State<DashboardView> {
     super.dispose();
   }
 
-  Future<List<Goal>> _fetchGoals() async {
-    return widget.goalsController.getGoals();
-  }
-
-  Future<void> _deleteGoal(Goal goal) async {
-    await widget.goalsController.deleteGoal(goal);
+  void _fetchGoals() async {
     setState(() {
-      _goalsFuture = _fetchGoals();
+      _goalsFuture = widget.goalsController.getGoals();
     });
   }
 
@@ -70,32 +71,7 @@ class _DashboardViewState extends State<DashboardView> {
     _retirementAgeFocusNode.unfocus();
   }
 
-  void _confirmDeleteGoal(Goal goal) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Delete Goal'),
-          content: const Text('Are you sure you want to delete this goal?'),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: const Text('Delete'),
-              onPressed: () {
-                Navigator.of(context).pop();
-                _deleteGoal(goal);
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
+  static const _goalsCardHeight = 160.0;
 
   @override
   Widget build(BuildContext context) {
@@ -108,7 +84,7 @@ class _DashboardViewState extends State<DashboardView> {
           // navigate to the new goal form
           Navigator.of(context).pushNamed(Routes.goalsNew);
         },
-        label: const Text('Add Goal'),
+        label: const Text('Goals'),
         icon: const Icon(Icons.add),
       ),
       body: GestureDetector(
@@ -128,15 +104,14 @@ class _DashboardViewState extends State<DashboardView> {
                 ),
               ),
               Transform.translate(
-                  offset: const Offset(0, -100),
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Card(
-                            child: Padding(
-                          padding: const EdgeInsets.only(
-                              top: 8.0, left: 8.0, right: 8.0, bottom: 8.0),
+                offset: const Offset(0, -100),
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
                           child: Column(
                             children: [
                               Padding(
@@ -157,15 +132,52 @@ class _DashboardViewState extends State<DashboardView> {
                                 builder: (context, snapshot) {
                                   if (snapshot.connectionState ==
                                       ConnectionState.waiting) {
-                                    return const Center(
-                                        child: CircularProgressIndicator());
+                                    return const SizedBox(
+                                      height: _goalsCardHeight,
+                                      child: Column(
+                                        children: [
+                                          Expanded(
+                                              child: Center(
+                                                  child:
+                                                      CircularProgressIndicator())),
+                                        ],
+                                      ),
+                                    );
                                   } else if (snapshot.hasError) {
-                                    return const Center(
-                                        child: Text('Failed to load goals'));
+                                    return const SizedBox(
+                                      height: _goalsCardHeight,
+                                      child: Column(
+                                        children: [
+                                          Expanded(
+                                            child: Center(
+                                                child: Text(
+                                                    'Failed to load goals')),
+                                          ),
+                                        ],
+                                      ),
+                                    );
                                   } else if (!snapshot.hasData ||
                                       snapshot.data!.isEmpty) {
-                                    return const Center(
-                                        child: Text('No goals added yet'));
+                                    return SizedBox(
+                                      height: _goalsCardHeight,
+                                      child: Column(
+                                        children: [
+                                          Expanded(
+                                            child: Center(
+                                              child: OutlinedButton(
+                                                onPressed: () {
+                                                  Navigator.of(context)
+                                                      .pushNamed(
+                                                          Routes.goalsNew);
+                                                },
+                                                child: const Text(
+                                                    'Add your first goal'),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
                                   } else {
                                     final goals = snapshot.data!;
                                     return ListView.builder(
@@ -180,12 +192,6 @@ class _DashboardViewState extends State<DashboardView> {
                                           subtitle: Text(
                                             'Amount: \$${goal.amount.toStringAsFixed(2)}, Date: ${DateFormat.yMMMd().format(goal.targetDate)}',
                                           ),
-                                          trailing: IconButton(
-                                            icon: const Icon(
-                                                Icons.delete_outline),
-                                            onPressed: () =>
-                                                _confirmDeleteGoal(goal),
-                                          ),
                                         );
                                       },
                                     );
@@ -194,10 +200,12 @@ class _DashboardViewState extends State<DashboardView> {
                               ),
                             ],
                           ),
-                        )),
+                        ),
                       ),
-                    ],
-                  )),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),

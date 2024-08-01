@@ -12,7 +12,9 @@ class GoalsController {
 
   Future<List<Goal>> getGoals() async {
     try {
-      return await _goalsService.getGoals();
+      final goals = await _goalsService.getGoals();
+      _logger.info("Fetching goals: $goals");
+      return goals;
     } catch (e, stacktrace) {
       _logger.severe('Failed to get goals', e, stacktrace);
       rethrow;
