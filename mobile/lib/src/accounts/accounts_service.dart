@@ -11,8 +11,6 @@ class AccountsService {
       ResultSet accounts = await powersyncDb
           .getAll('SELECT * FROM accounts order by created_at asc');
 
-      _logger.info('Accounts: ${accounts.length}');
-
       return accounts.map((row) {
         try {
           return Account(

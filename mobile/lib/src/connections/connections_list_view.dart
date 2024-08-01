@@ -204,15 +204,15 @@ class _ConnectionsListViewState extends State<ConnectionsListView> {
           }
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(32.0)),
-        ),
-        onPressed: () {
-          widget.connectionsController.openPlaidLink();
-        },
-        child: const Icon(Icons.add),
-      ),
+      floatingActionButton: FloatingActionButton.extended(
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(32.0)),
+          ),
+          onPressed: () {
+            widget.connectionsController.openPlaidLink();
+          },
+          icon: const Icon(Icons.add),
+          label: const Text("Connect Institution")),
     );
   }
 }

@@ -6,4 +6,5 @@ class Routes {
   static const String transactionDetails = '/transactions/:id';
   static const String connections = '/connections';
   static const String dashboard = '/dashboard';
+  static const String goalsNew = '/goals/new';
 }

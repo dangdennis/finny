@@ -5,8 +5,9 @@ import 'package:finny/src/auth/auth_provider.dart';
 import 'package:finny/src/auth/login_view.dart';
 import 'package:finny/src/connections/connections_controller.dart';
 import 'package:finny/src/connections/connections_list_view.dart';
-import 'package:finny/src/dashboard/dashboard_controller.dart';
+import 'package:finny/src/goals/goals_controller.dart';
 import 'package:finny/src/dashboard/dashboard_view.dart';
+import 'package:finny/src/goals/goals_form_view.dart';
 import 'package:finny/src/settings/settings_controller.dart';
 import 'package:finny/src/settings/settings_view.dart';
 import 'package:finny/src/transactions/transaction_details_view.dart';
@@ -23,7 +24,7 @@ class MyApp extends StatelessWidget {
     required this.authProvider,
     required this.accountsController,
     required this.connectionsController,
-    required this.dashboardController,
+    required this.goalsController,
     required this.settingsController,
     required this.transactionsController,
   });
@@ -32,7 +33,7 @@ class MyApp extends StatelessWidget {
   final AccountsController accountsController;
   final TransactionsController transactionsController;
   final ConnectionsController connectionsController;
-  final DashboardController dashboardController;
+  final GoalsController goalsController;
   final AuthProvider authProvider;
 
   @override
@@ -81,7 +82,7 @@ class MyApp extends StatelessWidget {
               if (authProvider.isLoggedIn) {
                 return MainView(
                   accountsController: accountsController,
-                  dashboardController: dashboardController,
+                  goalsController: goalsController,
                   settingsController: settingsController,
                   transactionsController: transactionsController,
                 );
@@ -111,7 +112,11 @@ class MyApp extends StatelessWidget {
                     );
                   case DashboardView.routeName:
                     return DashboardView(
-                      dashboardController: dashboardController,
+                      goalsController: goalsController,
+                    );
+                  case GoalsFormView.routeName:
+                    return GoalsFormView(
+                      goalsController: goalsController,
                     );
                   case LoginView.routeName:
                     return LoginView(
@@ -143,13 +148,13 @@ class MainView extends StatefulWidget {
   const MainView({
     super.key,
     required this.accountsController,
-    required this.dashboardController,
+    required this.goalsController,
     required this.settingsController,
     required this.transactionsController,
   });
 
   final AccountsController accountsController;
-  final DashboardController dashboardController;
+  final GoalsController goalsController;
   final SettingsController settingsController;
   final TransactionsController transactionsController;
 
@@ -167,7 +172,7 @@ class _MainViewState extends State<MainView> {
     super.initState();
     _widgetOptions = [
       DashboardView(
-        dashboardController: widget.dashboardController,
+        goalsController: widget.goalsController,
       ),
       AccountListView(
         accountsController: widget.accountsController,

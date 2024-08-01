@@ -102,7 +102,7 @@ class PowersyncSupabaseConnector extends PowerSyncBackendConnector {
         }
       }
 
-      await sendCrudEntry(
+      await sendPowerSyncOp(
           accessToken: session.accessToken, entries: transaction.crud);
 
       // All operations successful.
@@ -125,7 +125,7 @@ class PowersyncSupabaseConnector extends PowerSyncBackendConnector {
     }
   }
 
-  Future<void> sendCrudEntry(
+  Future<void> sendPowerSyncOp(
       {required List<CrudEntry> entries, required String accessToken}) async {
     final headers = {
       'Content-Type': 'application/json',
