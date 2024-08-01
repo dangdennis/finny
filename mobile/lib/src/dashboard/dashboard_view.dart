@@ -1,6 +1,5 @@
-import 'package:finny/src/dashboard/dashboard_controller.dart';
+import 'package:finny/src/goals/goals_controller.dart';
 import 'package:finny/src/goals/goal_model.dart';
-import 'package:finny/src/goals/goals_service.dart';
 import 'package:finny/src/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -8,18 +7,17 @@ import 'package:intl/intl.dart';
 class DashboardView extends StatefulWidget {
   const DashboardView({
     super.key,
-    required this.dashboardController,
+    required this.goalsController,
   });
 
   static const routeName = Routes.dashboard;
-  final DashboardController dashboardController;
+  final GoalsController goalsController;
 
   @override
   State<DashboardView> createState() => _DashboardViewState();
 }
 
 class _DashboardViewState extends State<DashboardView> {
-  final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController =
       TextEditingController(text: 'Retirement Fund');
   final TextEditingController _amountController =
@@ -32,6 +30,14 @@ class _DashboardViewState extends State<DashboardView> {
   final FocusNode _amountFocusNode = FocusNode();
   final FocusNode _currentAgeFocusNode = FocusNode();
   final FocusNode _retirementAgeFocusNode = FocusNode();
+
+  late Future<List<Goal>> _goalsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _goalsFuture = _fetchGoals();
+  }
 
   @override
   void dispose() {
@@ -46,26 +52,15 @@ class _DashboardViewState extends State<DashboardView> {
     super.dispose();
   }
 
-  void _addGoal() async {
-    if (_formKey.currentState!.validate()) {
-      int currentAge = int.parse(_currentAgeController.text);
-      int retirementAge = int.parse(_retirementAgeController.text);
-      DateTime targetDate = DateTime.now()
-          .add(Duration(days: (retirementAge - currentAge) * 365));
-
-      double amount = double.tryParse(_amountController.text) ?? 0.0;
-
-      await widget.dashboardController.addGoal(AddGoalInput(
-        name: _nameController.text,
-        amount: amount,
-        targetDate: targetDate,
-      ));
-      setState(() {});
-    }
+  Future<List<Goal>> _fetchGoals() async {
+    return widget.goalsController.getGoals();
   }
 
-  Future<List<Goal>> _fetchGoals() async {
-    return widget.dashboardController.getGoals();
+  Future<void> _deleteGoal(Goal goal) async {
+    await widget.goalsController.deleteGoal(goal);
+    setState(() {
+      _goalsFuture = _fetchGoals();
+    });
   }
 
   void _unfocusAll() {
@@ -75,161 +70,135 @@ class _DashboardViewState extends State<DashboardView> {
     _retirementAgeFocusNode.unfocus();
   }
 
+  void _confirmDeleteGoal(Goal goal) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Delete Goal'),
+          content: const Text('Are you sure you want to delete this goal?'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Delete'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _deleteGoal(goal);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Dashboard'),
       ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          // navigate to the new goal form
+          Navigator.of(context).pushNamed(Routes.goalsNew);
+        },
+        label: const Text('Add Goal'),
+        icon: const Icon(Icons.add),
+      ),
       body: GestureDetector(
         onTap: _unfocusAll,
         child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Set Your Goals',
-                        style: Theme.of(context).textTheme.headlineSmall,
-                      ),
-                      const SizedBox(height: 20.0),
-                      TextFormField(
-                        controller: _nameController,
-                        focusNode: _nameFocusNode,
-                        decoration: const InputDecoration(
-                          labelText: 'Goal Name',
-                          border: OutlineInputBorder(),
-                          contentPadding: EdgeInsets.all(16),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter a goal name';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 20.0),
-                      TextFormField(
-                        controller: _amountController,
-                        focusNode: _amountFocusNode,
-                        decoration: const InputDecoration(
-                          labelText: 'Amount (default is 0)',
-                          border: OutlineInputBorder(),
-                          contentPadding: EdgeInsets.all(16),
-                          prefixText: '\$',
-                          suffixIcon: Tooltip(
-                            message:
-                                'Amount is optional, and if not provided, will be computed based on your spending.',
-                            triggerMode: TooltipTriggerMode.tap,
-                            showDuration: Duration(seconds: 5),
-                            child: Icon(Icons.info_outline),
-                          ),
-                        ),
-                        keyboardType: TextInputType.number,
-                        validator: (value) {
-                          if (value != null &&
-                              value.isNotEmpty &&
-                              double.tryParse(value) == null) {
-                            return 'Please enter a valid number';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 20.0),
-                      TextFormField(
-                        controller: _currentAgeController,
-                        focusNode: _currentAgeFocusNode,
-                        decoration: const InputDecoration(
-                          labelText: 'Current Age',
-                          border: OutlineInputBorder(),
-                          contentPadding: EdgeInsets.all(16),
-                        ),
-                        keyboardType: TextInputType.number,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter your current age';
-                          }
-                          if (int.tryParse(value) == null) {
-                            return 'Please enter a valid number';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 20.0),
-                      TextFormField(
-                        controller: _retirementAgeController,
-                        focusNode: _retirementAgeFocusNode,
-                        decoration: const InputDecoration(
-                          labelText: 'Retirement Age',
-                          border: OutlineInputBorder(),
-                          contentPadding: EdgeInsets.all(16),
-                        ),
-                        keyboardType: TextInputType.number,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter your retirement age';
-                          }
-                          if (int.tryParse(value) == null) {
-                            return 'Please enter a valid number';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 20.0),
-                      ElevatedButton(
-                        onPressed: _addGoal,
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16.0),
-                          textStyle: Theme.of(context).textTheme.labelLarge,
-                        ),
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.add),
-                            Text('Add goal'),
-                          ],
-                        ),
-                      ),
-                    ],
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                height: 150,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.blue[800]!, Colors.blue[400]!],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
                   ),
                 ),
-                const SizedBox(height: 40.0),
-                FutureBuilder<List<Goal>>(
-                  future: _fetchGoals(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    } else if (snapshot.hasError) {
-                      return const Center(child: Text('Failed to load goals'));
-                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return const Center(child: Text('No goals added yet'));
-                    } else {
-                      final goals = snapshot.data!;
-                      return ListView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: goals.length,
-                        itemBuilder: (context, index) {
-                          final goal = goals[index];
-                          return ListTile(
-                            title: Text(goal.name),
-                            subtitle: Text(
-                              'Amount: \$${goal.amount.toStringAsFixed(2)}, Date: ${DateFormat.yMMMd().format(goal.targetDate)}',
-                            ),
-                          );
-                        },
-                      );
-                    }
-                  },
-                ),
-              ],
-            ),
+              ),
+              Transform.translate(
+                  offset: const Offset(0, -100),
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Card(
+                            child: Padding(
+                          padding: const EdgeInsets.only(
+                              top: 8.0, left: 8.0, right: 8.0, bottom: 8.0),
+                          child: Column(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                    left: 8.0, right: 8.0),
+                                child: Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    "Goals",
+                                    textAlign: TextAlign.left,
+                                    style:
+                                        Theme.of(context).textTheme.titleMedium,
+                                  ),
+                                ),
+                              ),
+                              FutureBuilder<List<Goal>>(
+                                future: _goalsFuture,
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return const Center(
+                                        child: CircularProgressIndicator());
+                                  } else if (snapshot.hasError) {
+                                    return const Center(
+                                        child: Text('Failed to load goals'));
+                                  } else if (!snapshot.hasData ||
+                                      snapshot.data!.isEmpty) {
+                                    return const Center(
+                                        child: Text('No goals added yet'));
+                                  } else {
+                                    final goals = snapshot.data!;
+                                    return ListView.builder(
+                                      shrinkWrap: true,
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
+                                      itemCount: goals.length,
+                                      itemBuilder: (context, index) {
+                                        final goal = goals[index];
+                                        return ListTile(
+                                          title: Text(goal.name),
+                                          subtitle: Text(
+                                            'Amount: \$${goal.amount.toStringAsFixed(2)}, Date: ${DateFormat.yMMMd().format(goal.targetDate)}',
+                                          ),
+                                          trailing: IconButton(
+                                            icon: const Icon(
+                                                Icons.delete_outline),
+                                            onPressed: () =>
+                                                _confirmDeleteGoal(goal),
+                                          ),
+                                        );
+                                      },
+                                    );
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+                        )),
+                      ),
+                    ],
+                  )),
+            ],
           ),
         ),
       ),

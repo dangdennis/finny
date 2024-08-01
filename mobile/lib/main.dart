@@ -1,5 +1,5 @@
 import 'package:finny/src/auth/auth_provider.dart';
-import 'package:finny/src/dashboard/dashboard_controller.dart';
+import 'package:finny/src/goals/goals_controller.dart';
 import 'package:finny/src/goals/goals_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -53,7 +53,7 @@ void main() async {
   // controllers
   final accountsController = AccountsController(AccountsService());
   final connectionsController = ConnectionsController(connectionsService);
-  final dashboardController = DashboardController(
+  final goalsController = GoalsController(
     goalsService: goalsService,
   );
   final transactionsController = TransactionsController();
@@ -80,7 +80,7 @@ void main() async {
                   authProvider: authProvider,
                   accountsController: accountsController,
                   connectionsController: connectionsController,
-                  dashboardController: dashboardController,
+                  goalsController: goalsController,
                   settingsController: settingsController,
                   transactionsController: transactionsController,
                 ),
@@ -94,7 +94,7 @@ void main() async {
           authProvider: authProvider,
           accountsController: accountsController,
           connectionsController: connectionsController,
-          dashboardController: dashboardController,
+          goalsController: goalsController,
           settingsController: settingsController,
           transactionsController: transactionsController,
         ),
