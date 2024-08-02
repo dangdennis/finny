@@ -1,10 +1,13 @@
-import 'package:finny/src/powersync/powersync.dart';
 import 'package:finny/src/transactions/transaction_model.dart';
 import 'package:logging/logging.dart';
+import 'package:powersync/powersync.dart';
 import 'package:powersync/sqlite3.dart';
 
 class TransactionsController {
+  TransactionsController({required this.powersyncDb});
+
   final Logger _logger = Logger('TransactionsController');
+  final PowerSyncDatabase powersyncDb;
 
   Future<List<Transaction>> getTransactions() async {
     try {

@@ -1,4 +1,4 @@
-import 'package:finny/src/powersync/powersync.dart';
+import 'package:powersync/powersync.dart';
 
 class MonthlyAverageMoneyFlow {
   final DateTime month;
@@ -13,6 +13,10 @@ class MonthlyAverageMoneyFlow {
 }
 
 class Finalytics {
+  Finalytics({required this.powersyncDb});
+
+  final PowerSyncDatabase powersyncDb;
+
   Future<List<MonthlyAverageMoneyFlow>> getAverageInflowsAndOutflows() async {
     const sql = """
         SELECT

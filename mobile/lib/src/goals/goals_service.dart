@@ -1,8 +1,14 @@
 import 'package:finny/src/goals/goal_model.dart';
-import 'package:finny/src/powersync/powersync.dart';
+import 'package:finny/src/powersync/database.dart';
+import 'package:powersync/powersync.dart';
 import 'package:uuid/uuid.dart';
 
 class GoalsService {
+  GoalsService({required this.powersyncDb, required this.appDb});
+
+  final PowerSyncDatabase powersyncDb;
+  final AppDatabase appDb;
+
   Future<List<Goal>> getGoals() async {
     final goals =
         await powersyncDb.getAll('SELECT * FROM goals order by created_at asc');

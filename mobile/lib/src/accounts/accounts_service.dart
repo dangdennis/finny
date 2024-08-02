@@ -10,15 +10,10 @@ class AccountsService {
   final AppDatabase appDb;
 
   Stream<List<Account>> watchAccounts() {
-    try {
-      return (appDb.select(appDb.accountsDb)
-            ..orderBy([(a) => OrderingTerm(expression: a.createdAt)]))
-          .watch()
-          .map((rows) => rows.map(dbToDomain).toList());
-    } catch (e, stacktrace) {
-      _logger.severe('Failed to watch accounts', e, stacktrace);
-      rethrow;
-    }
+    return (appDb.select(appDb.accountsDb)
+          ..orderBy([(a) => OrderingTerm(expression: a.createdAt)]))
+        .watch()
+        .map((rows) => rows.map(dbToDomain).toList());
   }
 
   Future<List<Account>> getAccounts() async {
