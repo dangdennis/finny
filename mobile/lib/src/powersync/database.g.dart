@@ -3,12 +3,12 @@
 part of 'database.dart';
 
 // ignore_for_file: type=lint
-class $AccountsTableTable extends AccountsTable
-    with TableInfo<$AccountsTableTable, AccountsTableData> {
+class $AccountsDbTable extends AccountsDb
+    with TableInfo<$AccountsDbTable, AccountsDbData> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $AccountsTableTable(this.attachedDatabase, [this._alias]);
+  $AccountsDbTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _itemIdMeta = const VerificationMeta('itemId');
   @override
   late final GeneratedColumn<String> itemId = GeneratedColumn<String>(
@@ -111,7 +111,7 @@ class $AccountsTableTable extends AccountsTable
   String get actualTableName => $name;
   static const String $name = 'accounts';
   @override
-  VerificationContext validateIntegrity(Insertable<AccountsTableData> instance,
+  VerificationContext validateIntegrity(Insertable<AccountsDbData> instance,
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
@@ -187,9 +187,9 @@ class $AccountsTableTable extends AccountsTable
   @override
   Set<GeneratedColumn> get $primaryKey => const {};
   @override
-  AccountsTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
+  AccountsDbData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return AccountsTableData(
+    return AccountsDbData(
       itemId: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}item_id']),
       userId: attachedDatabase.typeMapping
@@ -223,13 +223,12 @@ class $AccountsTableTable extends AccountsTable
   }
 
   @override
-  $AccountsTableTable createAlias(String alias) {
-    return $AccountsTableTable(attachedDatabase, alias);
+  $AccountsDbTable createAlias(String alias) {
+    return $AccountsDbTable(attachedDatabase, alias);
   }
 }
 
-class AccountsTableData extends DataClass
-    implements Insertable<AccountsTableData> {
+class AccountsDbData extends DataClass implements Insertable<AccountsDbData> {
   final String? itemId;
   final String? userId;
   final String? name;
@@ -244,7 +243,7 @@ class AccountsTableData extends DataClass
   final String? createdAt;
   final String? updatedAt;
   final String? deletedAt;
-  const AccountsTableData(
+  const AccountsDbData(
       {this.itemId,
       this.userId,
       this.name,
@@ -308,8 +307,8 @@ class AccountsTableData extends DataClass
     return map;
   }
 
-  AccountsTableCompanion toCompanion(bool nullToAbsent) {
-    return AccountsTableCompanion(
+  AccountsDbCompanion toCompanion(bool nullToAbsent) {
+    return AccountsDbCompanion(
       itemId:
           itemId == null && nullToAbsent ? const Value.absent() : Value(itemId),
       userId:
@@ -347,10 +346,10 @@ class AccountsTableData extends DataClass
     );
   }
 
-  factory AccountsTableData.fromJson(Map<String, dynamic> json,
+  factory AccountsDbData.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return AccountsTableData(
+    return AccountsDbData(
       itemId: serializer.fromJson<String?>(json['itemId']),
       userId: serializer.fromJson<String?>(json['userId']),
       name: serializer.fromJson<String?>(json['name']),
@@ -390,7 +389,7 @@ class AccountsTableData extends DataClass
     };
   }
 
-  AccountsTableData copyWith(
+  AccountsDbData copyWith(
           {Value<String?> itemId = const Value.absent(),
           Value<String?> userId = const Value.absent(),
           Value<String?> name = const Value.absent(),
@@ -405,7 +404,7 @@ class AccountsTableData extends DataClass
           Value<String?> createdAt = const Value.absent(),
           Value<String?> updatedAt = const Value.absent(),
           Value<String?> deletedAt = const Value.absent()}) =>
-      AccountsTableData(
+      AccountsDbData(
         itemId: itemId.present ? itemId.value : this.itemId,
         userId: userId.present ? userId.value : this.userId,
         name: name.present ? name.value : this.name,
@@ -431,7 +430,7 @@ class AccountsTableData extends DataClass
       );
   @override
   String toString() {
-    return (StringBuffer('AccountsTableData(')
+    return (StringBuffer('AccountsDbData(')
           ..write('itemId: $itemId, ')
           ..write('userId: $userId, ')
           ..write('name: $name, ')
@@ -469,7 +468,7 @@ class AccountsTableData extends DataClass
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is AccountsTableData &&
+      (other is AccountsDbData &&
           other.itemId == this.itemId &&
           other.userId == this.userId &&
           other.name == this.name &&
@@ -486,7 +485,7 @@ class AccountsTableData extends DataClass
           other.deletedAt == this.deletedAt);
 }
 
-class AccountsTableCompanion extends UpdateCompanion<AccountsTableData> {
+class AccountsDbCompanion extends UpdateCompanion<AccountsDbData> {
   final Value<String?> itemId;
   final Value<String?> userId;
   final Value<String?> name;
@@ -502,7 +501,7 @@ class AccountsTableCompanion extends UpdateCompanion<AccountsTableData> {
   final Value<String?> updatedAt;
   final Value<String?> deletedAt;
   final Value<int> rowid;
-  const AccountsTableCompanion({
+  const AccountsDbCompanion({
     this.itemId = const Value.absent(),
     this.userId = const Value.absent(),
     this.name = const Value.absent(),
@@ -519,7 +518,7 @@ class AccountsTableCompanion extends UpdateCompanion<AccountsTableData> {
     this.deletedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-  AccountsTableCompanion.insert({
+  AccountsDbCompanion.insert({
     this.itemId = const Value.absent(),
     this.userId = const Value.absent(),
     this.name = const Value.absent(),
@@ -536,7 +535,7 @@ class AccountsTableCompanion extends UpdateCompanion<AccountsTableData> {
     this.deletedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-  static Insertable<AccountsTableData> custom({
+  static Insertable<AccountsDbData> custom({
     Expression<String>? itemId,
     Expression<String>? userId,
     Expression<String>? name,
@@ -573,7 +572,7 @@ class AccountsTableCompanion extends UpdateCompanion<AccountsTableData> {
     });
   }
 
-  AccountsTableCompanion copyWith(
+  AccountsDbCompanion copyWith(
       {Value<String?>? itemId,
       Value<String?>? userId,
       Value<String?>? name,
@@ -589,7 +588,7 @@ class AccountsTableCompanion extends UpdateCompanion<AccountsTableData> {
       Value<String?>? updatedAt,
       Value<String?>? deletedAt,
       Value<int>? rowid}) {
-    return AccountsTableCompanion(
+    return AccountsDbCompanion(
       itemId: itemId ?? this.itemId,
       userId: userId ?? this.userId,
       name: name ?? this.name,
@@ -663,7 +662,7 @@ class AccountsTableCompanion extends UpdateCompanion<AccountsTableData> {
 
   @override
   String toString() {
-    return (StringBuffer('AccountsTableCompanion(')
+    return (StringBuffer('AccountsDbCompanion(')
           ..write('itemId: $itemId, ')
           ..write('userId: $userId, ')
           ..write('name: $name, ')
@@ -684,12 +683,12 @@ class AccountsTableCompanion extends UpdateCompanion<AccountsTableData> {
   }
 }
 
-class $TransactionsTableTable extends TransactionsTable
-    with TableInfo<$TransactionsTableTable, TransactionsTableData> {
+class $TransactionsDbTable extends TransactionsDb
+    with TableInfo<$TransactionsDbTable, TransactionsDbData> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $TransactionsTableTable(this.attachedDatabase, [this._alias]);
+  $TransactionsDbTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _accountIdMeta =
       const VerificationMeta('accountId');
   @override
@@ -793,8 +792,7 @@ class $TransactionsTableTable extends TransactionsTable
   String get actualTableName => $name;
   static const String $name = 'transactions';
   @override
-  VerificationContext validateIntegrity(
-      Insertable<TransactionsTableData> instance,
+  VerificationContext validateIntegrity(Insertable<TransactionsDbData> instance,
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
@@ -868,9 +866,9 @@ class $TransactionsTableTable extends TransactionsTable
   @override
   Set<GeneratedColumn> get $primaryKey => const {};
   @override
-  TransactionsTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
+  TransactionsDbData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return TransactionsTableData(
+    return TransactionsDbData(
       accountId: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}account_id']),
       category: attachedDatabase.typeMapping
@@ -904,13 +902,13 @@ class $TransactionsTableTable extends TransactionsTable
   }
 
   @override
-  $TransactionsTableTable createAlias(String alias) {
-    return $TransactionsTableTable(attachedDatabase, alias);
+  $TransactionsDbTable createAlias(String alias) {
+    return $TransactionsDbTable(attachedDatabase, alias);
   }
 }
 
-class TransactionsTableData extends DataClass
-    implements Insertable<TransactionsTableData> {
+class TransactionsDbData extends DataClass
+    implements Insertable<TransactionsDbData> {
   final String? accountId;
   final String? category;
   final String? subcategory;
@@ -925,7 +923,7 @@ class TransactionsTableData extends DataClass
   final String? createdAt;
   final String? updatedAt;
   final String? deletedAt;
-  const TransactionsTableData(
+  const TransactionsDbData(
       {this.accountId,
       this.category,
       this.subcategory,
@@ -989,8 +987,8 @@ class TransactionsTableData extends DataClass
     return map;
   }
 
-  TransactionsTableCompanion toCompanion(bool nullToAbsent) {
-    return TransactionsTableCompanion(
+  TransactionsDbCompanion toCompanion(bool nullToAbsent) {
+    return TransactionsDbCompanion(
       accountId: accountId == null && nullToAbsent
           ? const Value.absent()
           : Value(accountId),
@@ -1029,10 +1027,10 @@ class TransactionsTableData extends DataClass
     );
   }
 
-  factory TransactionsTableData.fromJson(Map<String, dynamic> json,
+  factory TransactionsDbData.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return TransactionsTableData(
+    return TransactionsDbData(
       accountId: serializer.fromJson<String?>(json['accountId']),
       category: serializer.fromJson<String?>(json['category']),
       subcategory: serializer.fromJson<String?>(json['subcategory']),
@@ -1072,7 +1070,7 @@ class TransactionsTableData extends DataClass
     };
   }
 
-  TransactionsTableData copyWith(
+  TransactionsDbData copyWith(
           {Value<String?> accountId = const Value.absent(),
           Value<String?> category = const Value.absent(),
           Value<String?> subcategory = const Value.absent(),
@@ -1087,7 +1085,7 @@ class TransactionsTableData extends DataClass
           Value<String?> createdAt = const Value.absent(),
           Value<String?> updatedAt = const Value.absent(),
           Value<String?> deletedAt = const Value.absent()}) =>
-      TransactionsTableData(
+      TransactionsDbData(
         accountId: accountId.present ? accountId.value : this.accountId,
         category: category.present ? category.value : this.category,
         subcategory: subcategory.present ? subcategory.value : this.subcategory,
@@ -1110,7 +1108,7 @@ class TransactionsTableData extends DataClass
       );
   @override
   String toString() {
-    return (StringBuffer('TransactionsTableData(')
+    return (StringBuffer('TransactionsDbData(')
           ..write('accountId: $accountId, ')
           ..write('category: $category, ')
           ..write('subcategory: $subcategory, ')
@@ -1148,7 +1146,7 @@ class TransactionsTableData extends DataClass
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is TransactionsTableData &&
+      (other is TransactionsDbData &&
           other.accountId == this.accountId &&
           other.category == this.category &&
           other.subcategory == this.subcategory &&
@@ -1165,8 +1163,7 @@ class TransactionsTableData extends DataClass
           other.deletedAt == this.deletedAt);
 }
 
-class TransactionsTableCompanion
-    extends UpdateCompanion<TransactionsTableData> {
+class TransactionsDbCompanion extends UpdateCompanion<TransactionsDbData> {
   final Value<String?> accountId;
   final Value<String?> category;
   final Value<String?> subcategory;
@@ -1182,7 +1179,7 @@ class TransactionsTableCompanion
   final Value<String?> updatedAt;
   final Value<String?> deletedAt;
   final Value<int> rowid;
-  const TransactionsTableCompanion({
+  const TransactionsDbCompanion({
     this.accountId = const Value.absent(),
     this.category = const Value.absent(),
     this.subcategory = const Value.absent(),
@@ -1199,7 +1196,7 @@ class TransactionsTableCompanion
     this.deletedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-  TransactionsTableCompanion.insert({
+  TransactionsDbCompanion.insert({
     this.accountId = const Value.absent(),
     this.category = const Value.absent(),
     this.subcategory = const Value.absent(),
@@ -1216,7 +1213,7 @@ class TransactionsTableCompanion
     this.deletedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-  static Insertable<TransactionsTableData> custom({
+  static Insertable<TransactionsDbData> custom({
     Expression<String>? accountId,
     Expression<String>? category,
     Expression<String>? subcategory,
@@ -1253,7 +1250,7 @@ class TransactionsTableCompanion
     });
   }
 
-  TransactionsTableCompanion copyWith(
+  TransactionsDbCompanion copyWith(
       {Value<String?>? accountId,
       Value<String?>? category,
       Value<String?>? subcategory,
@@ -1269,7 +1266,7 @@ class TransactionsTableCompanion
       Value<String?>? updatedAt,
       Value<String?>? deletedAt,
       Value<int>? rowid}) {
-    return TransactionsTableCompanion(
+    return TransactionsDbCompanion(
       accountId: accountId ?? this.accountId,
       category: category ?? this.category,
       subcategory: subcategory ?? this.subcategory,
@@ -1343,7 +1340,7 @@ class TransactionsTableCompanion
 
   @override
   String toString() {
-    return (StringBuffer('TransactionsTableCompanion(')
+    return (StringBuffer('TransactionsDbCompanion(')
           ..write('accountId: $accountId, ')
           ..write('category: $category, ')
           ..write('subcategory: $subcategory, ')
@@ -1364,12 +1361,12 @@ class TransactionsTableCompanion
   }
 }
 
-class $InvestmentHoldingsTableTable extends InvestmentHoldingsTable
-    with TableInfo<$InvestmentHoldingsTableTable, InvestmentHoldingsTableData> {
+class $InvestmentHoldingsDbTable extends InvestmentHoldingsDb
+    with TableInfo<$InvestmentHoldingsDbTable, InvestmentHoldingsDbData> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $InvestmentHoldingsTableTable(this.attachedDatabase, [this._alias]);
+  $InvestmentHoldingsDbTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _accountIdMeta =
       const VerificationMeta('accountId');
   @override
@@ -1457,7 +1454,7 @@ class $InvestmentHoldingsTableTable extends InvestmentHoldingsTable
   static const String $name = 'investment_holdings';
   @override
   VerificationContext validateIntegrity(
-      Insertable<InvestmentHoldingsTableData> instance,
+      Insertable<InvestmentHoldingsDbData> instance,
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
@@ -1521,10 +1518,10 @@ class $InvestmentHoldingsTableTable extends InvestmentHoldingsTable
   @override
   Set<GeneratedColumn> get $primaryKey => const {};
   @override
-  InvestmentHoldingsTableData map(Map<String, dynamic> data,
+  InvestmentHoldingsDbData map(Map<String, dynamic> data,
       {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return InvestmentHoldingsTableData(
+    return InvestmentHoldingsDbData(
       accountId: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}account_id']),
       institutionPrice: attachedDatabase.typeMapping.read(
@@ -1552,13 +1549,13 @@ class $InvestmentHoldingsTableTable extends InvestmentHoldingsTable
   }
 
   @override
-  $InvestmentHoldingsTableTable createAlias(String alias) {
-    return $InvestmentHoldingsTableTable(attachedDatabase, alias);
+  $InvestmentHoldingsDbTable createAlias(String alias) {
+    return $InvestmentHoldingsDbTable(attachedDatabase, alias);
   }
 }
 
-class InvestmentHoldingsTableData extends DataClass
-    implements Insertable<InvestmentHoldingsTableData> {
+class InvestmentHoldingsDbData extends DataClass
+    implements Insertable<InvestmentHoldingsDbData> {
   final String? accountId;
   final double? institutionPrice;
   final String? institutionPriceAsOf;
@@ -1570,7 +1567,7 @@ class InvestmentHoldingsTableData extends DataClass
   final String? createdAt;
   final String? updatedAt;
   final String? deletedAt;
-  const InvestmentHoldingsTableData(
+  const InvestmentHoldingsDbData(
       {this.accountId,
       this.institutionPrice,
       this.institutionPriceAsOf,
@@ -1621,8 +1618,8 @@ class InvestmentHoldingsTableData extends DataClass
     return map;
   }
 
-  InvestmentHoldingsTableCompanion toCompanion(bool nullToAbsent) {
-    return InvestmentHoldingsTableCompanion(
+  InvestmentHoldingsDbCompanion toCompanion(bool nullToAbsent) {
+    return InvestmentHoldingsDbCompanion(
       accountId: accountId == null && nullToAbsent
           ? const Value.absent()
           : Value(accountId),
@@ -1659,10 +1656,10 @@ class InvestmentHoldingsTableData extends DataClass
     );
   }
 
-  factory InvestmentHoldingsTableData.fromJson(Map<String, dynamic> json,
+  factory InvestmentHoldingsDbData.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return InvestmentHoldingsTableData(
+    return InvestmentHoldingsDbData(
       accountId: serializer.fromJson<String?>(json['accountId']),
       institutionPrice: serializer.fromJson<double?>(json['institutionPrice']),
       institutionPriceAsOf:
@@ -1695,7 +1692,7 @@ class InvestmentHoldingsTableData extends DataClass
     };
   }
 
-  InvestmentHoldingsTableData copyWith(
+  InvestmentHoldingsDbData copyWith(
           {Value<String?> accountId = const Value.absent(),
           Value<double?> institutionPrice = const Value.absent(),
           Value<String?> institutionPriceAsOf = const Value.absent(),
@@ -1707,7 +1704,7 @@ class InvestmentHoldingsTableData extends DataClass
           Value<String?> createdAt = const Value.absent(),
           Value<String?> updatedAt = const Value.absent(),
           Value<String?> deletedAt = const Value.absent()}) =>
-      InvestmentHoldingsTableData(
+      InvestmentHoldingsDbData(
         accountId: accountId.present ? accountId.value : this.accountId,
         institutionPrice: institutionPrice.present
             ? institutionPrice.value
@@ -1730,7 +1727,7 @@ class InvestmentHoldingsTableData extends DataClass
       );
   @override
   String toString() {
-    return (StringBuffer('InvestmentHoldingsTableData(')
+    return (StringBuffer('InvestmentHoldingsDbData(')
           ..write('accountId: $accountId, ')
           ..write('institutionPrice: $institutionPrice, ')
           ..write('institutionPriceAsOf: $institutionPriceAsOf, ')
@@ -1762,7 +1759,7 @@ class InvestmentHoldingsTableData extends DataClass
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is InvestmentHoldingsTableData &&
+      (other is InvestmentHoldingsDbData &&
           other.accountId == this.accountId &&
           other.institutionPrice == this.institutionPrice &&
           other.institutionPriceAsOf == this.institutionPriceAsOf &&
@@ -1776,8 +1773,8 @@ class InvestmentHoldingsTableData extends DataClass
           other.deletedAt == this.deletedAt);
 }
 
-class InvestmentHoldingsTableCompanion
-    extends UpdateCompanion<InvestmentHoldingsTableData> {
+class InvestmentHoldingsDbCompanion
+    extends UpdateCompanion<InvestmentHoldingsDbData> {
   final Value<String?> accountId;
   final Value<double?> institutionPrice;
   final Value<String?> institutionPriceAsOf;
@@ -1790,7 +1787,7 @@ class InvestmentHoldingsTableCompanion
   final Value<String?> updatedAt;
   final Value<String?> deletedAt;
   final Value<int> rowid;
-  const InvestmentHoldingsTableCompanion({
+  const InvestmentHoldingsDbCompanion({
     this.accountId = const Value.absent(),
     this.institutionPrice = const Value.absent(),
     this.institutionPriceAsOf = const Value.absent(),
@@ -1804,7 +1801,7 @@ class InvestmentHoldingsTableCompanion
     this.deletedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-  InvestmentHoldingsTableCompanion.insert({
+  InvestmentHoldingsDbCompanion.insert({
     this.accountId = const Value.absent(),
     this.institutionPrice = const Value.absent(),
     this.institutionPriceAsOf = const Value.absent(),
@@ -1818,7 +1815,7 @@ class InvestmentHoldingsTableCompanion
     this.deletedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-  static Insertable<InvestmentHoldingsTableData> custom({
+  static Insertable<InvestmentHoldingsDbData> custom({
     Expression<String>? accountId,
     Expression<double>? institutionPrice,
     Expression<String>? institutionPriceAsOf,
@@ -1849,7 +1846,7 @@ class InvestmentHoldingsTableCompanion
     });
   }
 
-  InvestmentHoldingsTableCompanion copyWith(
+  InvestmentHoldingsDbCompanion copyWith(
       {Value<String?>? accountId,
       Value<double?>? institutionPrice,
       Value<String?>? institutionPriceAsOf,
@@ -1862,7 +1859,7 @@ class InvestmentHoldingsTableCompanion
       Value<String?>? updatedAt,
       Value<String?>? deletedAt,
       Value<int>? rowid}) {
-    return InvestmentHoldingsTableCompanion(
+    return InvestmentHoldingsDbCompanion(
       accountId: accountId ?? this.accountId,
       institutionPrice: institutionPrice ?? this.institutionPrice,
       institutionPriceAsOf: institutionPriceAsOf ?? this.institutionPriceAsOf,
@@ -1923,7 +1920,7 @@ class InvestmentHoldingsTableCompanion
 
   @override
   String toString() {
-    return (StringBuffer('InvestmentHoldingsTableCompanion(')
+    return (StringBuffer('InvestmentHoldingsDbCompanion(')
           ..write('accountId: $accountId, ')
           ..write('institutionPrice: $institutionPrice, ')
           ..write('institutionPriceAsOf: $institutionPriceAsOf, ')
@@ -1941,12 +1938,11 @@ class InvestmentHoldingsTableCompanion
   }
 }
 
-class $GoalsTableTable extends GoalsTable
-    with TableInfo<$GoalsTableTable, GoalsTableData> {
+class $GoalsDbTable extends GoalsDb with TableInfo<$GoalsDbTable, GoalsDbData> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $GoalsTableTable(this.attachedDatabase, [this._alias]);
+  $GoalsDbTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
@@ -2009,7 +2005,7 @@ class $GoalsTableTable extends GoalsTable
   String get actualTableName => $name;
   static const String $name = 'goals';
   @override
-  VerificationContext validateIntegrity(Insertable<GoalsTableData> instance,
+  VerificationContext validateIntegrity(Insertable<GoalsDbData> instance,
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
@@ -2053,9 +2049,9 @@ class $GoalsTableTable extends GoalsTable
   @override
   Set<GeneratedColumn> get $primaryKey => const {};
   @override
-  GoalsTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
+  GoalsDbData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return GoalsTableData(
+    return GoalsDbData(
       name: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}name']),
       amount: attachedDatabase.typeMapping
@@ -2076,12 +2072,12 @@ class $GoalsTableTable extends GoalsTable
   }
 
   @override
-  $GoalsTableTable createAlias(String alias) {
-    return $GoalsTableTable(attachedDatabase, alias);
+  $GoalsDbTable createAlias(String alias) {
+    return $GoalsDbTable(attachedDatabase, alias);
   }
 }
 
-class GoalsTableData extends DataClass implements Insertable<GoalsTableData> {
+class GoalsDbData extends DataClass implements Insertable<GoalsDbData> {
   final String? name;
   final double? amount;
   final String? targetDate;
@@ -2090,7 +2086,7 @@ class GoalsTableData extends DataClass implements Insertable<GoalsTableData> {
   final String? createdAt;
   final String? updatedAt;
   final String? deletedAt;
-  const GoalsTableData(
+  const GoalsDbData(
       {this.name,
       this.amount,
       this.targetDate,
@@ -2129,8 +2125,8 @@ class GoalsTableData extends DataClass implements Insertable<GoalsTableData> {
     return map;
   }
 
-  GoalsTableCompanion toCompanion(bool nullToAbsent) {
-    return GoalsTableCompanion(
+  GoalsDbCompanion toCompanion(bool nullToAbsent) {
+    return GoalsDbCompanion(
       name: name == null && nullToAbsent ? const Value.absent() : Value(name),
       amount:
           amount == null && nullToAbsent ? const Value.absent() : Value(amount),
@@ -2154,10 +2150,10 @@ class GoalsTableData extends DataClass implements Insertable<GoalsTableData> {
     );
   }
 
-  factory GoalsTableData.fromJson(Map<String, dynamic> json,
+  factory GoalsDbData.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return GoalsTableData(
+    return GoalsDbData(
       name: serializer.fromJson<String?>(json['name']),
       amount: serializer.fromJson<double?>(json['amount']),
       targetDate: serializer.fromJson<String?>(json['targetDate']),
@@ -2183,7 +2179,7 @@ class GoalsTableData extends DataClass implements Insertable<GoalsTableData> {
     };
   }
 
-  GoalsTableData copyWith(
+  GoalsDbData copyWith(
           {Value<String?> name = const Value.absent(),
           Value<double?> amount = const Value.absent(),
           Value<String?> targetDate = const Value.absent(),
@@ -2192,7 +2188,7 @@ class GoalsTableData extends DataClass implements Insertable<GoalsTableData> {
           Value<String?> createdAt = const Value.absent(),
           Value<String?> updatedAt = const Value.absent(),
           Value<String?> deletedAt = const Value.absent()}) =>
-      GoalsTableData(
+      GoalsDbData(
         name: name.present ? name.value : this.name,
         amount: amount.present ? amount.value : this.amount,
         targetDate: targetDate.present ? targetDate.value : this.targetDate,
@@ -2204,7 +2200,7 @@ class GoalsTableData extends DataClass implements Insertable<GoalsTableData> {
       );
   @override
   String toString() {
-    return (StringBuffer('GoalsTableData(')
+    return (StringBuffer('GoalsDbData(')
           ..write('name: $name, ')
           ..write('amount: $amount, ')
           ..write('targetDate: $targetDate, ')
@@ -2223,7 +2219,7 @@ class GoalsTableData extends DataClass implements Insertable<GoalsTableData> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is GoalsTableData &&
+      (other is GoalsDbData &&
           other.name == this.name &&
           other.amount == this.amount &&
           other.targetDate == this.targetDate &&
@@ -2234,7 +2230,7 @@ class GoalsTableData extends DataClass implements Insertable<GoalsTableData> {
           other.deletedAt == this.deletedAt);
 }
 
-class GoalsTableCompanion extends UpdateCompanion<GoalsTableData> {
+class GoalsDbCompanion extends UpdateCompanion<GoalsDbData> {
   final Value<String?> name;
   final Value<double?> amount;
   final Value<String?> targetDate;
@@ -2244,7 +2240,7 @@ class GoalsTableCompanion extends UpdateCompanion<GoalsTableData> {
   final Value<String?> updatedAt;
   final Value<String?> deletedAt;
   final Value<int> rowid;
-  const GoalsTableCompanion({
+  const GoalsDbCompanion({
     this.name = const Value.absent(),
     this.amount = const Value.absent(),
     this.targetDate = const Value.absent(),
@@ -2255,7 +2251,7 @@ class GoalsTableCompanion extends UpdateCompanion<GoalsTableData> {
     this.deletedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-  GoalsTableCompanion.insert({
+  GoalsDbCompanion.insert({
     this.name = const Value.absent(),
     this.amount = const Value.absent(),
     this.targetDate = const Value.absent(),
@@ -2266,7 +2262,7 @@ class GoalsTableCompanion extends UpdateCompanion<GoalsTableData> {
     this.deletedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-  static Insertable<GoalsTableData> custom({
+  static Insertable<GoalsDbData> custom({
     Expression<String>? name,
     Expression<double>? amount,
     Expression<String>? targetDate,
@@ -2290,7 +2286,7 @@ class GoalsTableCompanion extends UpdateCompanion<GoalsTableData> {
     });
   }
 
-  GoalsTableCompanion copyWith(
+  GoalsDbCompanion copyWith(
       {Value<String?>? name,
       Value<double?>? amount,
       Value<String?>? targetDate,
@@ -2300,7 +2296,7 @@ class GoalsTableCompanion extends UpdateCompanion<GoalsTableData> {
       Value<String?>? updatedAt,
       Value<String?>? deletedAt,
       Value<int>? rowid}) {
-    return GoalsTableCompanion(
+    return GoalsDbCompanion(
       name: name ?? this.name,
       amount: amount ?? this.amount,
       targetDate: targetDate ?? this.targetDate,
@@ -2348,7 +2344,7 @@ class GoalsTableCompanion extends UpdateCompanion<GoalsTableData> {
 
   @override
   String toString() {
-    return (StringBuffer('GoalsTableCompanion(')
+    return (StringBuffer('GoalsDbCompanion(')
           ..write('name: $name, ')
           ..write('amount: $amount, ')
           ..write('targetDate: $targetDate, ')
@@ -2363,12 +2359,12 @@ class GoalsTableCompanion extends UpdateCompanion<GoalsTableData> {
   }
 }
 
-class $GoalAccountsTableTable extends GoalAccountsTable
-    with TableInfo<$GoalAccountsTableTable, GoalAccountsTableData> {
+class $GoalAccountsDbTable extends GoalAccountsDb
+    with TableInfo<$GoalAccountsDbTable, GoalAccountsDbData> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $GoalAccountsTableTable(this.attachedDatabase, [this._alias]);
+  $GoalAccountsDbTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _goalIdMeta = const VerificationMeta('goalId');
   @override
   late final GeneratedColumn<String> goalId = GeneratedColumn<String>(
@@ -2418,8 +2414,7 @@ class $GoalAccountsTableTable extends GoalAccountsTable
   String get actualTableName => $name;
   static const String $name = 'goal_accounts';
   @override
-  VerificationContext validateIntegrity(
-      Insertable<GoalAccountsTableData> instance,
+  VerificationContext validateIntegrity(Insertable<GoalAccountsDbData> instance,
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
@@ -2459,9 +2454,9 @@ class $GoalAccountsTableTable extends GoalAccountsTable
   @override
   Set<GeneratedColumn> get $primaryKey => const {};
   @override
-  GoalAccountsTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
+  GoalAccountsDbData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return GoalAccountsTableData(
+    return GoalAccountsDbData(
       goalId: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}goal_id']),
       accountId: attachedDatabase.typeMapping
@@ -2480,13 +2475,13 @@ class $GoalAccountsTableTable extends GoalAccountsTable
   }
 
   @override
-  $GoalAccountsTableTable createAlias(String alias) {
-    return $GoalAccountsTableTable(attachedDatabase, alias);
+  $GoalAccountsDbTable createAlias(String alias) {
+    return $GoalAccountsDbTable(attachedDatabase, alias);
   }
 }
 
-class GoalAccountsTableData extends DataClass
-    implements Insertable<GoalAccountsTableData> {
+class GoalAccountsDbData extends DataClass
+    implements Insertable<GoalAccountsDbData> {
   final String? goalId;
   final String? accountId;
   final String? amount;
@@ -2494,7 +2489,7 @@ class GoalAccountsTableData extends DataClass
   final String? createdAt;
   final String? updatedAt;
   final String? deletedAt;
-  const GoalAccountsTableData(
+  const GoalAccountsDbData(
       {this.goalId,
       this.accountId,
       this.amount,
@@ -2529,8 +2524,8 @@ class GoalAccountsTableData extends DataClass
     return map;
   }
 
-  GoalAccountsTableCompanion toCompanion(bool nullToAbsent) {
-    return GoalAccountsTableCompanion(
+  GoalAccountsDbCompanion toCompanion(bool nullToAbsent) {
+    return GoalAccountsDbCompanion(
       goalId:
           goalId == null && nullToAbsent ? const Value.absent() : Value(goalId),
       accountId: accountId == null && nullToAbsent
@@ -2553,10 +2548,10 @@ class GoalAccountsTableData extends DataClass
     );
   }
 
-  factory GoalAccountsTableData.fromJson(Map<String, dynamic> json,
+  factory GoalAccountsDbData.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return GoalAccountsTableData(
+    return GoalAccountsDbData(
       goalId: serializer.fromJson<String?>(json['goalId']),
       accountId: serializer.fromJson<String?>(json['accountId']),
       amount: serializer.fromJson<String?>(json['amount']),
@@ -2580,7 +2575,7 @@ class GoalAccountsTableData extends DataClass
     };
   }
 
-  GoalAccountsTableData copyWith(
+  GoalAccountsDbData copyWith(
           {Value<String?> goalId = const Value.absent(),
           Value<String?> accountId = const Value.absent(),
           Value<String?> amount = const Value.absent(),
@@ -2588,7 +2583,7 @@ class GoalAccountsTableData extends DataClass
           Value<String?> createdAt = const Value.absent(),
           Value<String?> updatedAt = const Value.absent(),
           Value<String?> deletedAt = const Value.absent()}) =>
-      GoalAccountsTableData(
+      GoalAccountsDbData(
         goalId: goalId.present ? goalId.value : this.goalId,
         accountId: accountId.present ? accountId.value : this.accountId,
         amount: amount.present ? amount.value : this.amount,
@@ -2599,7 +2594,7 @@ class GoalAccountsTableData extends DataClass
       );
   @override
   String toString() {
-    return (StringBuffer('GoalAccountsTableData(')
+    return (StringBuffer('GoalAccountsDbData(')
           ..write('goalId: $goalId, ')
           ..write('accountId: $accountId, ')
           ..write('amount: $amount, ')
@@ -2617,7 +2612,7 @@ class GoalAccountsTableData extends DataClass
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is GoalAccountsTableData &&
+      (other is GoalAccountsDbData &&
           other.goalId == this.goalId &&
           other.accountId == this.accountId &&
           other.amount == this.amount &&
@@ -2627,8 +2622,7 @@ class GoalAccountsTableData extends DataClass
           other.deletedAt == this.deletedAt);
 }
 
-class GoalAccountsTableCompanion
-    extends UpdateCompanion<GoalAccountsTableData> {
+class GoalAccountsDbCompanion extends UpdateCompanion<GoalAccountsDbData> {
   final Value<String?> goalId;
   final Value<String?> accountId;
   final Value<String?> amount;
@@ -2637,7 +2631,7 @@ class GoalAccountsTableCompanion
   final Value<String?> updatedAt;
   final Value<String?> deletedAt;
   final Value<int> rowid;
-  const GoalAccountsTableCompanion({
+  const GoalAccountsDbCompanion({
     this.goalId = const Value.absent(),
     this.accountId = const Value.absent(),
     this.amount = const Value.absent(),
@@ -2647,7 +2641,7 @@ class GoalAccountsTableCompanion
     this.deletedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-  GoalAccountsTableCompanion.insert({
+  GoalAccountsDbCompanion.insert({
     this.goalId = const Value.absent(),
     this.accountId = const Value.absent(),
     this.amount = const Value.absent(),
@@ -2657,7 +2651,7 @@ class GoalAccountsTableCompanion
     this.deletedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-  static Insertable<GoalAccountsTableData> custom({
+  static Insertable<GoalAccountsDbData> custom({
     Expression<String>? goalId,
     Expression<String>? accountId,
     Expression<String>? amount,
@@ -2679,7 +2673,7 @@ class GoalAccountsTableCompanion
     });
   }
 
-  GoalAccountsTableCompanion copyWith(
+  GoalAccountsDbCompanion copyWith(
       {Value<String?>? goalId,
       Value<String?>? accountId,
       Value<String?>? amount,
@@ -2688,7 +2682,7 @@ class GoalAccountsTableCompanion
       Value<String?>? updatedAt,
       Value<String?>? deletedAt,
       Value<int>? rowid}) {
-    return GoalAccountsTableCompanion(
+    return GoalAccountsDbCompanion(
       goalId: goalId ?? this.goalId,
       accountId: accountId ?? this.accountId,
       amount: amount ?? this.amount,
@@ -2732,7 +2726,7 @@ class GoalAccountsTableCompanion
 
   @override
   String toString() {
-    return (StringBuffer('GoalAccountsTableCompanion(')
+    return (StringBuffer('GoalAccountsDbCompanion(')
           ..write('goalId: $goalId, ')
           ..write('accountId: $accountId, ')
           ..write('amount: $amount, ')
@@ -2749,29 +2743,26 @@ class GoalAccountsTableCompanion
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   _$AppDatabaseManager get managers => _$AppDatabaseManager(this);
-  late final $AccountsTableTable accountsTable = $AccountsTableTable(this);
-  late final $TransactionsTableTable transactionsTable =
-      $TransactionsTableTable(this);
-  late final $InvestmentHoldingsTableTable investmentHoldingsTable =
-      $InvestmentHoldingsTableTable(this);
-  late final $GoalsTableTable goalsTable = $GoalsTableTable(this);
-  late final $GoalAccountsTableTable goalAccountsTable =
-      $GoalAccountsTableTable(this);
+  late final $AccountsDbTable accountsDb = $AccountsDbTable(this);
+  late final $TransactionsDbTable transactionsDb = $TransactionsDbTable(this);
+  late final $InvestmentHoldingsDbTable investmentHoldingsDb =
+      $InvestmentHoldingsDbTable(this);
+  late final $GoalsDbTable goalsDb = $GoalsDbTable(this);
+  late final $GoalAccountsDbTable goalAccountsDb = $GoalAccountsDbTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
-        accountsTable,
-        transactionsTable,
-        investmentHoldingsTable,
-        goalsTable,
-        goalAccountsTable
+        accountsDb,
+        transactionsDb,
+        investmentHoldingsDb,
+        goalsDb,
+        goalAccountsDb
       ];
 }
 
-typedef $$AccountsTableTableInsertCompanionBuilder = AccountsTableCompanion
-    Function({
+typedef $$AccountsDbTableInsertCompanionBuilder = AccountsDbCompanion Function({
   Value<String?> itemId,
   Value<String?> userId,
   Value<String?> name,
@@ -2788,8 +2779,7 @@ typedef $$AccountsTableTableInsertCompanionBuilder = AccountsTableCompanion
   Value<String?> deletedAt,
   Value<int> rowid,
 });
-typedef $$AccountsTableTableUpdateCompanionBuilder = AccountsTableCompanion
-    Function({
+typedef $$AccountsDbTableUpdateCompanionBuilder = AccountsDbCompanion Function({
   Value<String?> itemId,
   Value<String?> userId,
   Value<String?> name,
@@ -2807,25 +2797,25 @@ typedef $$AccountsTableTableUpdateCompanionBuilder = AccountsTableCompanion
   Value<int> rowid,
 });
 
-class $$AccountsTableTableTableManager extends RootTableManager<
+class $$AccountsDbTableTableManager extends RootTableManager<
     _$AppDatabase,
-    $AccountsTableTable,
-    AccountsTableData,
-    $$AccountsTableTableFilterComposer,
-    $$AccountsTableTableOrderingComposer,
-    $$AccountsTableTableProcessedTableManager,
-    $$AccountsTableTableInsertCompanionBuilder,
-    $$AccountsTableTableUpdateCompanionBuilder> {
-  $$AccountsTableTableTableManager(_$AppDatabase db, $AccountsTableTable table)
+    $AccountsDbTable,
+    AccountsDbData,
+    $$AccountsDbTableFilterComposer,
+    $$AccountsDbTableOrderingComposer,
+    $$AccountsDbTableProcessedTableManager,
+    $$AccountsDbTableInsertCompanionBuilder,
+    $$AccountsDbTableUpdateCompanionBuilder> {
+  $$AccountsDbTableTableManager(_$AppDatabase db, $AccountsDbTable table)
       : super(TableManagerState(
           db: db,
           table: table,
           filteringComposer:
-              $$AccountsTableTableFilterComposer(ComposerState(db, table)),
+              $$AccountsDbTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
-              $$AccountsTableTableOrderingComposer(ComposerState(db, table)),
+              $$AccountsDbTableOrderingComposer(ComposerState(db, table)),
           getChildManagerBuilder: (p) =>
-              $$AccountsTableTableProcessedTableManager(p),
+              $$AccountsDbTableProcessedTableManager(p),
           getUpdateCompanionBuilder: ({
             Value<String?> itemId = const Value.absent(),
             Value<String?> userId = const Value.absent(),
@@ -2843,7 +2833,7 @@ class $$AccountsTableTableTableManager extends RootTableManager<
             Value<String?> deletedAt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
-              AccountsTableCompanion(
+              AccountsDbCompanion(
             itemId: itemId,
             userId: userId,
             name: name,
@@ -2877,7 +2867,7 @@ class $$AccountsTableTableTableManager extends RootTableManager<
             Value<String?> deletedAt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
-              AccountsTableCompanion.insert(
+              AccountsDbCompanion.insert(
             itemId: itemId,
             userId: userId,
             name: name,
@@ -2897,21 +2887,21 @@ class $$AccountsTableTableTableManager extends RootTableManager<
         ));
 }
 
-class $$AccountsTableTableProcessedTableManager extends ProcessedTableManager<
+class $$AccountsDbTableProcessedTableManager extends ProcessedTableManager<
     _$AppDatabase,
-    $AccountsTableTable,
-    AccountsTableData,
-    $$AccountsTableTableFilterComposer,
-    $$AccountsTableTableOrderingComposer,
-    $$AccountsTableTableProcessedTableManager,
-    $$AccountsTableTableInsertCompanionBuilder,
-    $$AccountsTableTableUpdateCompanionBuilder> {
-  $$AccountsTableTableProcessedTableManager(super.$state);
+    $AccountsDbTable,
+    AccountsDbData,
+    $$AccountsDbTableFilterComposer,
+    $$AccountsDbTableOrderingComposer,
+    $$AccountsDbTableProcessedTableManager,
+    $$AccountsDbTableInsertCompanionBuilder,
+    $$AccountsDbTableUpdateCompanionBuilder> {
+  $$AccountsDbTableProcessedTableManager(super.$state);
 }
 
-class $$AccountsTableTableFilterComposer
-    extends FilterComposer<_$AppDatabase, $AccountsTableTable> {
-  $$AccountsTableTableFilterComposer(super.$state);
+class $$AccountsDbTableFilterComposer
+    extends FilterComposer<_$AppDatabase, $AccountsDbTable> {
+  $$AccountsDbTableFilterComposer(super.$state);
   ColumnFilters<String> get itemId => $state.composableBuilder(
       column: $state.table.itemId,
       builder: (column, joinBuilders) =>
@@ -2983,9 +2973,9 @@ class $$AccountsTableTableFilterComposer
           ColumnFilters(column, joinBuilders: joinBuilders));
 }
 
-class $$AccountsTableTableOrderingComposer
-    extends OrderingComposer<_$AppDatabase, $AccountsTableTable> {
-  $$AccountsTableTableOrderingComposer(super.$state);
+class $$AccountsDbTableOrderingComposer
+    extends OrderingComposer<_$AppDatabase, $AccountsDbTable> {
+  $$AccountsDbTableOrderingComposer(super.$state);
   ColumnOrderings<String> get itemId => $state.composableBuilder(
       column: $state.table.itemId,
       builder: (column, joinBuilders) =>
@@ -3058,8 +3048,8 @@ class $$AccountsTableTableOrderingComposer
           ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
-typedef $$TransactionsTableTableInsertCompanionBuilder
-    = TransactionsTableCompanion Function({
+typedef $$TransactionsDbTableInsertCompanionBuilder = TransactionsDbCompanion
+    Function({
   Value<String?> accountId,
   Value<String?> category,
   Value<String?> subcategory,
@@ -3076,8 +3066,8 @@ typedef $$TransactionsTableTableInsertCompanionBuilder
   Value<String?> deletedAt,
   Value<int> rowid,
 });
-typedef $$TransactionsTableTableUpdateCompanionBuilder
-    = TransactionsTableCompanion Function({
+typedef $$TransactionsDbTableUpdateCompanionBuilder = TransactionsDbCompanion
+    Function({
   Value<String?> accountId,
   Value<String?> category,
   Value<String?> subcategory,
@@ -3095,26 +3085,26 @@ typedef $$TransactionsTableTableUpdateCompanionBuilder
   Value<int> rowid,
 });
 
-class $$TransactionsTableTableTableManager extends RootTableManager<
+class $$TransactionsDbTableTableManager extends RootTableManager<
     _$AppDatabase,
-    $TransactionsTableTable,
-    TransactionsTableData,
-    $$TransactionsTableTableFilterComposer,
-    $$TransactionsTableTableOrderingComposer,
-    $$TransactionsTableTableProcessedTableManager,
-    $$TransactionsTableTableInsertCompanionBuilder,
-    $$TransactionsTableTableUpdateCompanionBuilder> {
-  $$TransactionsTableTableTableManager(
-      _$AppDatabase db, $TransactionsTableTable table)
+    $TransactionsDbTable,
+    TransactionsDbData,
+    $$TransactionsDbTableFilterComposer,
+    $$TransactionsDbTableOrderingComposer,
+    $$TransactionsDbTableProcessedTableManager,
+    $$TransactionsDbTableInsertCompanionBuilder,
+    $$TransactionsDbTableUpdateCompanionBuilder> {
+  $$TransactionsDbTableTableManager(
+      _$AppDatabase db, $TransactionsDbTable table)
       : super(TableManagerState(
           db: db,
           table: table,
           filteringComposer:
-              $$TransactionsTableTableFilterComposer(ComposerState(db, table)),
-          orderingComposer: $$TransactionsTableTableOrderingComposer(
-              ComposerState(db, table)),
+              $$TransactionsDbTableFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $$TransactionsDbTableOrderingComposer(ComposerState(db, table)),
           getChildManagerBuilder: (p) =>
-              $$TransactionsTableTableProcessedTableManager(p),
+              $$TransactionsDbTableProcessedTableManager(p),
           getUpdateCompanionBuilder: ({
             Value<String?> accountId = const Value.absent(),
             Value<String?> category = const Value.absent(),
@@ -3132,7 +3122,7 @@ class $$TransactionsTableTableTableManager extends RootTableManager<
             Value<String?> deletedAt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
-              TransactionsTableCompanion(
+              TransactionsDbCompanion(
             accountId: accountId,
             category: category,
             subcategory: subcategory,
@@ -3166,7 +3156,7 @@ class $$TransactionsTableTableTableManager extends RootTableManager<
             Value<String?> deletedAt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
-              TransactionsTableCompanion.insert(
+              TransactionsDbCompanion.insert(
             accountId: accountId,
             category: category,
             subcategory: subcategory,
@@ -3186,22 +3176,21 @@ class $$TransactionsTableTableTableManager extends RootTableManager<
         ));
 }
 
-class $$TransactionsTableTableProcessedTableManager
-    extends ProcessedTableManager<
-        _$AppDatabase,
-        $TransactionsTableTable,
-        TransactionsTableData,
-        $$TransactionsTableTableFilterComposer,
-        $$TransactionsTableTableOrderingComposer,
-        $$TransactionsTableTableProcessedTableManager,
-        $$TransactionsTableTableInsertCompanionBuilder,
-        $$TransactionsTableTableUpdateCompanionBuilder> {
-  $$TransactionsTableTableProcessedTableManager(super.$state);
+class $$TransactionsDbTableProcessedTableManager extends ProcessedTableManager<
+    _$AppDatabase,
+    $TransactionsDbTable,
+    TransactionsDbData,
+    $$TransactionsDbTableFilterComposer,
+    $$TransactionsDbTableOrderingComposer,
+    $$TransactionsDbTableProcessedTableManager,
+    $$TransactionsDbTableInsertCompanionBuilder,
+    $$TransactionsDbTableUpdateCompanionBuilder> {
+  $$TransactionsDbTableProcessedTableManager(super.$state);
 }
 
-class $$TransactionsTableTableFilterComposer
-    extends FilterComposer<_$AppDatabase, $TransactionsTableTable> {
-  $$TransactionsTableTableFilterComposer(super.$state);
+class $$TransactionsDbTableFilterComposer
+    extends FilterComposer<_$AppDatabase, $TransactionsDbTable> {
+  $$TransactionsDbTableFilterComposer(super.$state);
   ColumnFilters<String> get accountId => $state.composableBuilder(
       column: $state.table.accountId,
       builder: (column, joinBuilders) =>
@@ -3273,9 +3262,9 @@ class $$TransactionsTableTableFilterComposer
           ColumnFilters(column, joinBuilders: joinBuilders));
 }
 
-class $$TransactionsTableTableOrderingComposer
-    extends OrderingComposer<_$AppDatabase, $TransactionsTableTable> {
-  $$TransactionsTableTableOrderingComposer(super.$state);
+class $$TransactionsDbTableOrderingComposer
+    extends OrderingComposer<_$AppDatabase, $TransactionsDbTable> {
+  $$TransactionsDbTableOrderingComposer(super.$state);
   ColumnOrderings<String> get accountId => $state.composableBuilder(
       column: $state.table.accountId,
       builder: (column, joinBuilders) =>
@@ -3348,8 +3337,8 @@ class $$TransactionsTableTableOrderingComposer
           ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
-typedef $$InvestmentHoldingsTableTableInsertCompanionBuilder
-    = InvestmentHoldingsTableCompanion Function({
+typedef $$InvestmentHoldingsDbTableInsertCompanionBuilder
+    = InvestmentHoldingsDbCompanion Function({
   Value<String?> accountId,
   Value<double?> institutionPrice,
   Value<String?> institutionPriceAsOf,
@@ -3363,8 +3352,8 @@ typedef $$InvestmentHoldingsTableTableInsertCompanionBuilder
   Value<String?> deletedAt,
   Value<int> rowid,
 });
-typedef $$InvestmentHoldingsTableTableUpdateCompanionBuilder
-    = InvestmentHoldingsTableCompanion Function({
+typedef $$InvestmentHoldingsDbTableUpdateCompanionBuilder
+    = InvestmentHoldingsDbCompanion Function({
   Value<String?> accountId,
   Value<double?> institutionPrice,
   Value<String?> institutionPriceAsOf,
@@ -3379,26 +3368,26 @@ typedef $$InvestmentHoldingsTableTableUpdateCompanionBuilder
   Value<int> rowid,
 });
 
-class $$InvestmentHoldingsTableTableTableManager extends RootTableManager<
+class $$InvestmentHoldingsDbTableTableManager extends RootTableManager<
     _$AppDatabase,
-    $InvestmentHoldingsTableTable,
-    InvestmentHoldingsTableData,
-    $$InvestmentHoldingsTableTableFilterComposer,
-    $$InvestmentHoldingsTableTableOrderingComposer,
-    $$InvestmentHoldingsTableTableProcessedTableManager,
-    $$InvestmentHoldingsTableTableInsertCompanionBuilder,
-    $$InvestmentHoldingsTableTableUpdateCompanionBuilder> {
-  $$InvestmentHoldingsTableTableTableManager(
-      _$AppDatabase db, $InvestmentHoldingsTableTable table)
+    $InvestmentHoldingsDbTable,
+    InvestmentHoldingsDbData,
+    $$InvestmentHoldingsDbTableFilterComposer,
+    $$InvestmentHoldingsDbTableOrderingComposer,
+    $$InvestmentHoldingsDbTableProcessedTableManager,
+    $$InvestmentHoldingsDbTableInsertCompanionBuilder,
+    $$InvestmentHoldingsDbTableUpdateCompanionBuilder> {
+  $$InvestmentHoldingsDbTableTableManager(
+      _$AppDatabase db, $InvestmentHoldingsDbTable table)
       : super(TableManagerState(
           db: db,
           table: table,
-          filteringComposer: $$InvestmentHoldingsTableTableFilterComposer(
+          filteringComposer: $$InvestmentHoldingsDbTableFilterComposer(
               ComposerState(db, table)),
-          orderingComposer: $$InvestmentHoldingsTableTableOrderingComposer(
+          orderingComposer: $$InvestmentHoldingsDbTableOrderingComposer(
               ComposerState(db, table)),
           getChildManagerBuilder: (p) =>
-              $$InvestmentHoldingsTableTableProcessedTableManager(p),
+              $$InvestmentHoldingsDbTableProcessedTableManager(p),
           getUpdateCompanionBuilder: ({
             Value<String?> accountId = const Value.absent(),
             Value<double?> institutionPrice = const Value.absent(),
@@ -3413,7 +3402,7 @@ class $$InvestmentHoldingsTableTableTableManager extends RootTableManager<
             Value<String?> deletedAt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
-              InvestmentHoldingsTableCompanion(
+              InvestmentHoldingsDbCompanion(
             accountId: accountId,
             institutionPrice: institutionPrice,
             institutionPriceAsOf: institutionPriceAsOf,
@@ -3441,7 +3430,7 @@ class $$InvestmentHoldingsTableTableTableManager extends RootTableManager<
             Value<String?> deletedAt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
-              InvestmentHoldingsTableCompanion.insert(
+              InvestmentHoldingsDbCompanion.insert(
             accountId: accountId,
             institutionPrice: institutionPrice,
             institutionPriceAsOf: institutionPriceAsOf,
@@ -3458,22 +3447,22 @@ class $$InvestmentHoldingsTableTableTableManager extends RootTableManager<
         ));
 }
 
-class $$InvestmentHoldingsTableTableProcessedTableManager
+class $$InvestmentHoldingsDbTableProcessedTableManager
     extends ProcessedTableManager<
         _$AppDatabase,
-        $InvestmentHoldingsTableTable,
-        InvestmentHoldingsTableData,
-        $$InvestmentHoldingsTableTableFilterComposer,
-        $$InvestmentHoldingsTableTableOrderingComposer,
-        $$InvestmentHoldingsTableTableProcessedTableManager,
-        $$InvestmentHoldingsTableTableInsertCompanionBuilder,
-        $$InvestmentHoldingsTableTableUpdateCompanionBuilder> {
-  $$InvestmentHoldingsTableTableProcessedTableManager(super.$state);
+        $InvestmentHoldingsDbTable,
+        InvestmentHoldingsDbData,
+        $$InvestmentHoldingsDbTableFilterComposer,
+        $$InvestmentHoldingsDbTableOrderingComposer,
+        $$InvestmentHoldingsDbTableProcessedTableManager,
+        $$InvestmentHoldingsDbTableInsertCompanionBuilder,
+        $$InvestmentHoldingsDbTableUpdateCompanionBuilder> {
+  $$InvestmentHoldingsDbTableProcessedTableManager(super.$state);
 }
 
-class $$InvestmentHoldingsTableTableFilterComposer
-    extends FilterComposer<_$AppDatabase, $InvestmentHoldingsTableTable> {
-  $$InvestmentHoldingsTableTableFilterComposer(super.$state);
+class $$InvestmentHoldingsDbTableFilterComposer
+    extends FilterComposer<_$AppDatabase, $InvestmentHoldingsDbTable> {
+  $$InvestmentHoldingsDbTableFilterComposer(super.$state);
   ColumnFilters<String> get accountId => $state.composableBuilder(
       column: $state.table.accountId,
       builder: (column, joinBuilders) =>
@@ -3530,9 +3519,9 @@ class $$InvestmentHoldingsTableTableFilterComposer
           ColumnFilters(column, joinBuilders: joinBuilders));
 }
 
-class $$InvestmentHoldingsTableTableOrderingComposer
-    extends OrderingComposer<_$AppDatabase, $InvestmentHoldingsTableTable> {
-  $$InvestmentHoldingsTableTableOrderingComposer(super.$state);
+class $$InvestmentHoldingsDbTableOrderingComposer
+    extends OrderingComposer<_$AppDatabase, $InvestmentHoldingsDbTable> {
+  $$InvestmentHoldingsDbTableOrderingComposer(super.$state);
   ColumnOrderings<String> get accountId => $state.composableBuilder(
       column: $state.table.accountId,
       builder: (column, joinBuilders) =>
@@ -3589,7 +3578,7 @@ class $$InvestmentHoldingsTableTableOrderingComposer
           ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
-typedef $$GoalsTableTableInsertCompanionBuilder = GoalsTableCompanion Function({
+typedef $$GoalsDbTableInsertCompanionBuilder = GoalsDbCompanion Function({
   Value<String?> name,
   Value<double?> amount,
   Value<String?> targetDate,
@@ -3600,7 +3589,7 @@ typedef $$GoalsTableTableInsertCompanionBuilder = GoalsTableCompanion Function({
   Value<String?> deletedAt,
   Value<int> rowid,
 });
-typedef $$GoalsTableTableUpdateCompanionBuilder = GoalsTableCompanion Function({
+typedef $$GoalsDbTableUpdateCompanionBuilder = GoalsDbCompanion Function({
   Value<String?> name,
   Value<double?> amount,
   Value<String?> targetDate,
@@ -3612,25 +3601,24 @@ typedef $$GoalsTableTableUpdateCompanionBuilder = GoalsTableCompanion Function({
   Value<int> rowid,
 });
 
-class $$GoalsTableTableTableManager extends RootTableManager<
+class $$GoalsDbTableTableManager extends RootTableManager<
     _$AppDatabase,
-    $GoalsTableTable,
-    GoalsTableData,
-    $$GoalsTableTableFilterComposer,
-    $$GoalsTableTableOrderingComposer,
-    $$GoalsTableTableProcessedTableManager,
-    $$GoalsTableTableInsertCompanionBuilder,
-    $$GoalsTableTableUpdateCompanionBuilder> {
-  $$GoalsTableTableTableManager(_$AppDatabase db, $GoalsTableTable table)
+    $GoalsDbTable,
+    GoalsDbData,
+    $$GoalsDbTableFilterComposer,
+    $$GoalsDbTableOrderingComposer,
+    $$GoalsDbTableProcessedTableManager,
+    $$GoalsDbTableInsertCompanionBuilder,
+    $$GoalsDbTableUpdateCompanionBuilder> {
+  $$GoalsDbTableTableManager(_$AppDatabase db, $GoalsDbTable table)
       : super(TableManagerState(
           db: db,
           table: table,
           filteringComposer:
-              $$GoalsTableTableFilterComposer(ComposerState(db, table)),
+              $$GoalsDbTableFilterComposer(ComposerState(db, table)),
           orderingComposer:
-              $$GoalsTableTableOrderingComposer(ComposerState(db, table)),
-          getChildManagerBuilder: (p) =>
-              $$GoalsTableTableProcessedTableManager(p),
+              $$GoalsDbTableOrderingComposer(ComposerState(db, table)),
+          getChildManagerBuilder: (p) => $$GoalsDbTableProcessedTableManager(p),
           getUpdateCompanionBuilder: ({
             Value<String?> name = const Value.absent(),
             Value<double?> amount = const Value.absent(),
@@ -3642,7 +3630,7 @@ class $$GoalsTableTableTableManager extends RootTableManager<
             Value<String?> deletedAt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
-              GoalsTableCompanion(
+              GoalsDbCompanion(
             name: name,
             amount: amount,
             targetDate: targetDate,
@@ -3664,7 +3652,7 @@ class $$GoalsTableTableTableManager extends RootTableManager<
             Value<String?> deletedAt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
-              GoalsTableCompanion.insert(
+              GoalsDbCompanion.insert(
             name: name,
             amount: amount,
             targetDate: targetDate,
@@ -3678,21 +3666,21 @@ class $$GoalsTableTableTableManager extends RootTableManager<
         ));
 }
 
-class $$GoalsTableTableProcessedTableManager extends ProcessedTableManager<
+class $$GoalsDbTableProcessedTableManager extends ProcessedTableManager<
     _$AppDatabase,
-    $GoalsTableTable,
-    GoalsTableData,
-    $$GoalsTableTableFilterComposer,
-    $$GoalsTableTableOrderingComposer,
-    $$GoalsTableTableProcessedTableManager,
-    $$GoalsTableTableInsertCompanionBuilder,
-    $$GoalsTableTableUpdateCompanionBuilder> {
-  $$GoalsTableTableProcessedTableManager(super.$state);
+    $GoalsDbTable,
+    GoalsDbData,
+    $$GoalsDbTableFilterComposer,
+    $$GoalsDbTableOrderingComposer,
+    $$GoalsDbTableProcessedTableManager,
+    $$GoalsDbTableInsertCompanionBuilder,
+    $$GoalsDbTableUpdateCompanionBuilder> {
+  $$GoalsDbTableProcessedTableManager(super.$state);
 }
 
-class $$GoalsTableTableFilterComposer
-    extends FilterComposer<_$AppDatabase, $GoalsTableTable> {
-  $$GoalsTableTableFilterComposer(super.$state);
+class $$GoalsDbTableFilterComposer
+    extends FilterComposer<_$AppDatabase, $GoalsDbTable> {
+  $$GoalsDbTableFilterComposer(super.$state);
   ColumnFilters<String> get name => $state.composableBuilder(
       column: $state.table.name,
       builder: (column, joinBuilders) =>
@@ -3734,9 +3722,9 @@ class $$GoalsTableTableFilterComposer
           ColumnFilters(column, joinBuilders: joinBuilders));
 }
 
-class $$GoalsTableTableOrderingComposer
-    extends OrderingComposer<_$AppDatabase, $GoalsTableTable> {
-  $$GoalsTableTableOrderingComposer(super.$state);
+class $$GoalsDbTableOrderingComposer
+    extends OrderingComposer<_$AppDatabase, $GoalsDbTable> {
+  $$GoalsDbTableOrderingComposer(super.$state);
   ColumnOrderings<String> get name => $state.composableBuilder(
       column: $state.table.name,
       builder: (column, joinBuilders) =>
@@ -3778,8 +3766,8 @@ class $$GoalsTableTableOrderingComposer
           ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
-typedef $$GoalAccountsTableTableInsertCompanionBuilder
-    = GoalAccountsTableCompanion Function({
+typedef $$GoalAccountsDbTableInsertCompanionBuilder = GoalAccountsDbCompanion
+    Function({
   Value<String?> goalId,
   Value<String?> accountId,
   Value<String?> amount,
@@ -3789,8 +3777,8 @@ typedef $$GoalAccountsTableTableInsertCompanionBuilder
   Value<String?> deletedAt,
   Value<int> rowid,
 });
-typedef $$GoalAccountsTableTableUpdateCompanionBuilder
-    = GoalAccountsTableCompanion Function({
+typedef $$GoalAccountsDbTableUpdateCompanionBuilder = GoalAccountsDbCompanion
+    Function({
   Value<String?> goalId,
   Value<String?> accountId,
   Value<String?> amount,
@@ -3801,26 +3789,26 @@ typedef $$GoalAccountsTableTableUpdateCompanionBuilder
   Value<int> rowid,
 });
 
-class $$GoalAccountsTableTableTableManager extends RootTableManager<
+class $$GoalAccountsDbTableTableManager extends RootTableManager<
     _$AppDatabase,
-    $GoalAccountsTableTable,
-    GoalAccountsTableData,
-    $$GoalAccountsTableTableFilterComposer,
-    $$GoalAccountsTableTableOrderingComposer,
-    $$GoalAccountsTableTableProcessedTableManager,
-    $$GoalAccountsTableTableInsertCompanionBuilder,
-    $$GoalAccountsTableTableUpdateCompanionBuilder> {
-  $$GoalAccountsTableTableTableManager(
-      _$AppDatabase db, $GoalAccountsTableTable table)
+    $GoalAccountsDbTable,
+    GoalAccountsDbData,
+    $$GoalAccountsDbTableFilterComposer,
+    $$GoalAccountsDbTableOrderingComposer,
+    $$GoalAccountsDbTableProcessedTableManager,
+    $$GoalAccountsDbTableInsertCompanionBuilder,
+    $$GoalAccountsDbTableUpdateCompanionBuilder> {
+  $$GoalAccountsDbTableTableManager(
+      _$AppDatabase db, $GoalAccountsDbTable table)
       : super(TableManagerState(
           db: db,
           table: table,
           filteringComposer:
-              $$GoalAccountsTableTableFilterComposer(ComposerState(db, table)),
-          orderingComposer: $$GoalAccountsTableTableOrderingComposer(
-              ComposerState(db, table)),
+              $$GoalAccountsDbTableFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $$GoalAccountsDbTableOrderingComposer(ComposerState(db, table)),
           getChildManagerBuilder: (p) =>
-              $$GoalAccountsTableTableProcessedTableManager(p),
+              $$GoalAccountsDbTableProcessedTableManager(p),
           getUpdateCompanionBuilder: ({
             Value<String?> goalId = const Value.absent(),
             Value<String?> accountId = const Value.absent(),
@@ -3831,7 +3819,7 @@ class $$GoalAccountsTableTableTableManager extends RootTableManager<
             Value<String?> deletedAt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
-              GoalAccountsTableCompanion(
+              GoalAccountsDbCompanion(
             goalId: goalId,
             accountId: accountId,
             amount: amount,
@@ -3851,7 +3839,7 @@ class $$GoalAccountsTableTableTableManager extends RootTableManager<
             Value<String?> deletedAt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
-              GoalAccountsTableCompanion.insert(
+              GoalAccountsDbCompanion.insert(
             goalId: goalId,
             accountId: accountId,
             amount: amount,
@@ -3864,22 +3852,21 @@ class $$GoalAccountsTableTableTableManager extends RootTableManager<
         ));
 }
 
-class $$GoalAccountsTableTableProcessedTableManager
-    extends ProcessedTableManager<
-        _$AppDatabase,
-        $GoalAccountsTableTable,
-        GoalAccountsTableData,
-        $$GoalAccountsTableTableFilterComposer,
-        $$GoalAccountsTableTableOrderingComposer,
-        $$GoalAccountsTableTableProcessedTableManager,
-        $$GoalAccountsTableTableInsertCompanionBuilder,
-        $$GoalAccountsTableTableUpdateCompanionBuilder> {
-  $$GoalAccountsTableTableProcessedTableManager(super.$state);
+class $$GoalAccountsDbTableProcessedTableManager extends ProcessedTableManager<
+    _$AppDatabase,
+    $GoalAccountsDbTable,
+    GoalAccountsDbData,
+    $$GoalAccountsDbTableFilterComposer,
+    $$GoalAccountsDbTableOrderingComposer,
+    $$GoalAccountsDbTableProcessedTableManager,
+    $$GoalAccountsDbTableInsertCompanionBuilder,
+    $$GoalAccountsDbTableUpdateCompanionBuilder> {
+  $$GoalAccountsDbTableProcessedTableManager(super.$state);
 }
 
-class $$GoalAccountsTableTableFilterComposer
-    extends FilterComposer<_$AppDatabase, $GoalAccountsTableTable> {
-  $$GoalAccountsTableTableFilterComposer(super.$state);
+class $$GoalAccountsDbTableFilterComposer
+    extends FilterComposer<_$AppDatabase, $GoalAccountsDbTable> {
+  $$GoalAccountsDbTableFilterComposer(super.$state);
   ColumnFilters<String> get goalId => $state.composableBuilder(
       column: $state.table.goalId,
       builder: (column, joinBuilders) =>
@@ -3916,9 +3903,9 @@ class $$GoalAccountsTableTableFilterComposer
           ColumnFilters(column, joinBuilders: joinBuilders));
 }
 
-class $$GoalAccountsTableTableOrderingComposer
-    extends OrderingComposer<_$AppDatabase, $GoalAccountsTableTable> {
-  $$GoalAccountsTableTableOrderingComposer(super.$state);
+class $$GoalAccountsDbTableOrderingComposer
+    extends OrderingComposer<_$AppDatabase, $GoalAccountsDbTable> {
+  $$GoalAccountsDbTableOrderingComposer(super.$state);
   ColumnOrderings<String> get goalId => $state.composableBuilder(
       column: $state.table.goalId,
       builder: (column, joinBuilders) =>
@@ -3958,15 +3945,14 @@ class $$GoalAccountsTableTableOrderingComposer
 class _$AppDatabaseManager {
   final _$AppDatabase _db;
   _$AppDatabaseManager(this._db);
-  $$AccountsTableTableTableManager get accountsTable =>
-      $$AccountsTableTableTableManager(_db, _db.accountsTable);
-  $$TransactionsTableTableTableManager get transactionsTable =>
-      $$TransactionsTableTableTableManager(_db, _db.transactionsTable);
-  $$InvestmentHoldingsTableTableTableManager get investmentHoldingsTable =>
-      $$InvestmentHoldingsTableTableTableManager(
-          _db, _db.investmentHoldingsTable);
-  $$GoalsTableTableTableManager get goalsTable =>
-      $$GoalsTableTableTableManager(_db, _db.goalsTable);
-  $$GoalAccountsTableTableTableManager get goalAccountsTable =>
-      $$GoalAccountsTableTableTableManager(_db, _db.goalAccountsTable);
+  $$AccountsDbTableTableManager get accountsDb =>
+      $$AccountsDbTableTableManager(_db, _db.accountsDb);
+  $$TransactionsDbTableTableManager get transactionsDb =>
+      $$TransactionsDbTableTableManager(_db, _db.transactionsDb);
+  $$InvestmentHoldingsDbTableTableManager get investmentHoldingsDb =>
+      $$InvestmentHoldingsDbTableTableManager(_db, _db.investmentHoldingsDb);
+  $$GoalsDbTableTableManager get goalsDb =>
+      $$GoalsDbTableTableManager(_db, _db.goalsDb);
+  $$GoalAccountsDbTableTableManager get goalAccountsDb =>
+      $$GoalAccountsDbTableTableManager(_db, _db.goalAccountsDb);
 }

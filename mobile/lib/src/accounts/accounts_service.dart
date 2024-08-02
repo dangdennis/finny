@@ -6,6 +6,10 @@ import 'package:logging/logging.dart';
 class AccountsService {
   final Logger _logger = Logger('AccountsService');
 
+  void getAccountsV2() async {
+    // appDb.
+  }
+
   Future<List<Account>> getAccounts() async {
     try {
       ResultSet accounts = await powersyncDb

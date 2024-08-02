@@ -9,11 +9,11 @@ part 'database.g.dart';
 
 @DriftDatabase(
   tables: [
-    AccountsTable,
-    TransactionsTable,
-    InvestmentHoldingsTable,
-    GoalsTable,
-    GoalAccountsTable,
+    AccountsDb,
+    TransactionsDb,
+    InvestmentHoldingsDb,
+    GoalsDb,
+    GoalAccountsDb,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -23,7 +23,7 @@ class AppDatabase extends _$AppDatabase {
   int get schemaVersion => 1;
 }
 
-class AccountsTable extends Table {
+class AccountsDb extends Table {
   @override
   String get tableName => 'accounts';
 
@@ -43,7 +43,7 @@ class AccountsTable extends Table {
   TextColumn get deletedAt => text().nullable()();
 }
 
-class TransactionsTable extends Table {
+class TransactionsDb extends Table {
   @override
   String get tableName => 'transactions';
 
@@ -63,7 +63,7 @@ class TransactionsTable extends Table {
   TextColumn get deletedAt => text().nullable()();
 }
 
-class InvestmentHoldingsTable extends Table {
+class InvestmentHoldingsDb extends Table {
   @override
   String get tableName => 'investment_holdings';
 
@@ -80,7 +80,7 @@ class InvestmentHoldingsTable extends Table {
   TextColumn get deletedAt => text().nullable()();
 }
 
-class GoalsTable extends Table {
+class GoalsDb extends Table {
   @override
   String get tableName => 'goals';
 
@@ -94,7 +94,7 @@ class GoalsTable extends Table {
   TextColumn get deletedAt => text().nullable()();
 }
 
-class GoalAccountsTable extends Table {
+class GoalAccountsDb extends Table {
   @override
   String get tableName => 'goal_accounts';
 
