@@ -61,6 +61,7 @@ void main() async {
   );
   final transactionsController = TransactionsController(
     powersyncDb: powersyncDb,
+    appDb: appDb,
   );
   final settingsController = SettingsController(
     settingsService: settingsService,

@@ -1,5 +1,5 @@
 // to regenerate database.g.dart run:
-// dart run build_runner build 
+// dart run build_runner build
 // dart run build_runner watch
 
 import 'package:drift_sqlite_async/drift_sqlite_async.dart';
@@ -55,19 +55,20 @@ class TransactionsDb extends Table {
   @override
   String get tableName => 'transactions';
 
-  TextColumn get accountId => text().nullable()();
-  TextColumn get category => text().nullable()();
+  TextColumn get id => text()();
+  TextColumn get accountId => text()();
+  TextColumn get category => text()();
   TextColumn get subcategory => text().nullable()();
-  TextColumn get type => text().nullable()();
-  TextColumn get name => text().nullable()();
-  RealColumn get amount => real().nullable()();
+  TextColumn get type => text()();
+  TextColumn get name => text()();
+  RealColumn get amount => real()();
   TextColumn get isoCurrencyCode => text().nullable()();
   TextColumn get unofficialCurrencyCode => text().nullable()();
-  TextColumn get date => text().nullable()();
-  IntColumn get pending => integer().nullable()();
+  TextColumn get date => text()();
+  IntColumn get pending => integer()();
   TextColumn get accountOwner => text().nullable()();
-  TextColumn get createdAt => text().nullable()();
-  TextColumn get updatedAt => text().nullable()();
+  TextColumn get createdAt => text()();
+  TextColumn get updatedAt => text()();
   TextColumn get deletedAt => text().nullable()();
 }
 
@@ -75,6 +76,7 @@ class InvestmentHoldingsDb extends Table {
   @override
   String get tableName => 'investment_holdings';
 
+  TextColumn get id => text()();
   TextColumn get accountId => text().nullable()();
   RealColumn get institutionPrice => real().nullable()();
   TextColumn get institutionPriceAsOf => text().nullable()();
@@ -92,13 +94,14 @@ class GoalsDb extends Table {
   @override
   String get tableName => 'goals';
 
-  TextColumn get name => text().nullable()();
-  RealColumn get amount => real().nullable()();
-  TextColumn get targetDate => text().nullable()();
-  TextColumn get userId => text().nullable()();
+  TextColumn get id => text()();
+  TextColumn get name => text()();
+  RealColumn get amount => real()();
+  TextColumn get targetDate => text()();
+  TextColumn get userId => text()();
   RealColumn get progress => real().nullable()();
-  TextColumn get createdAt => text().nullable()();
-  TextColumn get updatedAt => text().nullable()();
+  TextColumn get createdAt => text()();
+  TextColumn get updatedAt => text()();
   TextColumn get deletedAt => text().nullable()();
 }
 
@@ -106,11 +109,12 @@ class GoalAccountsDb extends Table {
   @override
   String get tableName => 'goal_accounts';
 
-  TextColumn get goalId => text().nullable()();
-  TextColumn get accountId => text().nullable()();
-  TextColumn get amount => text().nullable()();
-  TextColumn get percentage => text().nullable()();
-  TextColumn get createdAt => text().nullable()();
-  TextColumn get updatedAt => text().nullable()();
+  TextColumn get id => text()();
+  TextColumn get goalId => text()();
+  TextColumn get accountId => text()();
+  TextColumn get amount => text()();
+  TextColumn get percentage => text()();
+  TextColumn get createdAt => text()();
+  TextColumn get updatedAt => text()();
   TextColumn get deletedAt => text().nullable()();
 }

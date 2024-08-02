@@ -718,18 +718,23 @@ class $TransactionsDbTable extends TransactionsDb
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $TransactionsDbTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _accountIdMeta =
       const VerificationMeta('accountId');
   @override
   late final GeneratedColumn<String> accountId = GeneratedColumn<String>(
-      'account_id', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+      'account_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _categoryMeta =
       const VerificationMeta('category');
   @override
   late final GeneratedColumn<String> category = GeneratedColumn<String>(
-      'category', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+      'category', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _subcategoryMeta =
       const VerificationMeta('subcategory');
   @override
@@ -739,18 +744,18 @@ class $TransactionsDbTable extends TransactionsDb
   static const VerificationMeta _typeMeta = const VerificationMeta('type');
   @override
   late final GeneratedColumn<String> type = GeneratedColumn<String>(
-      'type', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+      'type', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
-      'name', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+      'name', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _amountMeta = const VerificationMeta('amount');
   @override
   late final GeneratedColumn<double> amount = GeneratedColumn<double>(
-      'amount', aliasedName, true,
-      type: DriftSqlType.double, requiredDuringInsert: false);
+      'amount', aliasedName, false,
+      type: DriftSqlType.double, requiredDuringInsert: true);
   static const VerificationMeta _isoCurrencyCodeMeta =
       const VerificationMeta('isoCurrencyCode');
   @override
@@ -766,14 +771,14 @@ class $TransactionsDbTable extends TransactionsDb
   static const VerificationMeta _dateMeta = const VerificationMeta('date');
   @override
   late final GeneratedColumn<String> date = GeneratedColumn<String>(
-      'date', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+      'date', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _pendingMeta =
       const VerificationMeta('pending');
   @override
   late final GeneratedColumn<int> pending = GeneratedColumn<int>(
-      'pending', aliasedName, true,
-      type: DriftSqlType.int, requiredDuringInsert: false);
+      'pending', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
   static const VerificationMeta _accountOwnerMeta =
       const VerificationMeta('accountOwner');
   @override
@@ -784,14 +789,14 @@ class $TransactionsDbTable extends TransactionsDb
       const VerificationMeta('createdAt');
   @override
   late final GeneratedColumn<String> createdAt = GeneratedColumn<String>(
-      'created_at', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+      'created_at', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _updatedAtMeta =
       const VerificationMeta('updatedAt');
   @override
   late final GeneratedColumn<String> updatedAt = GeneratedColumn<String>(
-      'updated_at', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+      'updated_at', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _deletedAtMeta =
       const VerificationMeta('deletedAt');
   @override
@@ -800,6 +805,7 @@ class $TransactionsDbTable extends TransactionsDb
       type: DriftSqlType.string, requiredDuringInsert: false);
   @override
   List<GeneratedColumn> get $columns => [
+        id,
         accountId,
         category,
         subcategory,
@@ -825,13 +831,22 @@ class $TransactionsDbTable extends TransactionsDb
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
     if (data.containsKey('account_id')) {
       context.handle(_accountIdMeta,
           accountId.isAcceptableOrUnknown(data['account_id']!, _accountIdMeta));
+    } else if (isInserting) {
+      context.missing(_accountIdMeta);
     }
     if (data.containsKey('category')) {
       context.handle(_categoryMeta,
           category.isAcceptableOrUnknown(data['category']!, _categoryMeta));
+    } else if (isInserting) {
+      context.missing(_categoryMeta);
     }
     if (data.containsKey('subcategory')) {
       context.handle(
@@ -842,14 +857,20 @@ class $TransactionsDbTable extends TransactionsDb
     if (data.containsKey('type')) {
       context.handle(
           _typeMeta, type.isAcceptableOrUnknown(data['type']!, _typeMeta));
+    } else if (isInserting) {
+      context.missing(_typeMeta);
     }
     if (data.containsKey('name')) {
       context.handle(
           _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+    } else if (isInserting) {
+      context.missing(_nameMeta);
     }
     if (data.containsKey('amount')) {
       context.handle(_amountMeta,
           amount.isAcceptableOrUnknown(data['amount']!, _amountMeta));
+    } else if (isInserting) {
+      context.missing(_amountMeta);
     }
     if (data.containsKey('iso_currency_code')) {
       context.handle(
@@ -866,10 +887,14 @@ class $TransactionsDbTable extends TransactionsDb
     if (data.containsKey('date')) {
       context.handle(
           _dateMeta, date.isAcceptableOrUnknown(data['date']!, _dateMeta));
+    } else if (isInserting) {
+      context.missing(_dateMeta);
     }
     if (data.containsKey('pending')) {
       context.handle(_pendingMeta,
           pending.isAcceptableOrUnknown(data['pending']!, _pendingMeta));
+    } else if (isInserting) {
+      context.missing(_pendingMeta);
     }
     if (data.containsKey('account_owner')) {
       context.handle(
@@ -880,10 +905,14 @@ class $TransactionsDbTable extends TransactionsDb
     if (data.containsKey('created_at')) {
       context.handle(_createdAtMeta,
           createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
     }
     if (data.containsKey('updated_at')) {
       context.handle(_updatedAtMeta,
           updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
     }
     if (data.containsKey('deleted_at')) {
       context.handle(_deletedAtMeta,
@@ -898,33 +927,35 @@ class $TransactionsDbTable extends TransactionsDb
   TransactionsDbData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return TransactionsDbData(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
       accountId: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}account_id']),
+          .read(DriftSqlType.string, data['${effectivePrefix}account_id'])!,
       category: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}category']),
+          .read(DriftSqlType.string, data['${effectivePrefix}category'])!,
       subcategory: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}subcategory']),
       type: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}type']),
+          .read(DriftSqlType.string, data['${effectivePrefix}type'])!,
       name: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}name']),
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
       amount: attachedDatabase.typeMapping
-          .read(DriftSqlType.double, data['${effectivePrefix}amount']),
+          .read(DriftSqlType.double, data['${effectivePrefix}amount'])!,
       isoCurrencyCode: attachedDatabase.typeMapping.read(
           DriftSqlType.string, data['${effectivePrefix}iso_currency_code']),
       unofficialCurrencyCode: attachedDatabase.typeMapping.read(
           DriftSqlType.string,
           data['${effectivePrefix}unofficial_currency_code']),
       date: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}date']),
+          .read(DriftSqlType.string, data['${effectivePrefix}date'])!,
       pending: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}pending']),
+          .read(DriftSqlType.int, data['${effectivePrefix}pending'])!,
       accountOwner: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}account_owner']),
       createdAt: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}created_at']),
+          .read(DriftSqlType.string, data['${effectivePrefix}created_at'])!,
       updatedAt: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}updated_at']),
+          .read(DriftSqlType.string, data['${effectivePrefix}updated_at'])!,
       deletedAt: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}deleted_at']),
     );
@@ -938,56 +969,49 @@ class $TransactionsDbTable extends TransactionsDb
 
 class TransactionsDbData extends DataClass
     implements Insertable<TransactionsDbData> {
-  final String? accountId;
-  final String? category;
+  final String id;
+  final String accountId;
+  final String category;
   final String? subcategory;
-  final String? type;
-  final String? name;
-  final double? amount;
+  final String type;
+  final String name;
+  final double amount;
   final String? isoCurrencyCode;
   final String? unofficialCurrencyCode;
-  final String? date;
-  final int? pending;
+  final String date;
+  final int pending;
   final String? accountOwner;
-  final String? createdAt;
-  final String? updatedAt;
+  final String createdAt;
+  final String updatedAt;
   final String? deletedAt;
   const TransactionsDbData(
-      {this.accountId,
-      this.category,
+      {required this.id,
+      required this.accountId,
+      required this.category,
       this.subcategory,
-      this.type,
-      this.name,
-      this.amount,
+      required this.type,
+      required this.name,
+      required this.amount,
       this.isoCurrencyCode,
       this.unofficialCurrencyCode,
-      this.date,
-      this.pending,
+      required this.date,
+      required this.pending,
       this.accountOwner,
-      this.createdAt,
-      this.updatedAt,
+      required this.createdAt,
+      required this.updatedAt,
       this.deletedAt});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (!nullToAbsent || accountId != null) {
-      map['account_id'] = Variable<String>(accountId);
-    }
-    if (!nullToAbsent || category != null) {
-      map['category'] = Variable<String>(category);
-    }
+    map['id'] = Variable<String>(id);
+    map['account_id'] = Variable<String>(accountId);
+    map['category'] = Variable<String>(category);
     if (!nullToAbsent || subcategory != null) {
       map['subcategory'] = Variable<String>(subcategory);
     }
-    if (!nullToAbsent || type != null) {
-      map['type'] = Variable<String>(type);
-    }
-    if (!nullToAbsent || name != null) {
-      map['name'] = Variable<String>(name);
-    }
-    if (!nullToAbsent || amount != null) {
-      map['amount'] = Variable<double>(amount);
-    }
+    map['type'] = Variable<String>(type);
+    map['name'] = Variable<String>(name);
+    map['amount'] = Variable<double>(amount);
     if (!nullToAbsent || isoCurrencyCode != null) {
       map['iso_currency_code'] = Variable<String>(isoCurrencyCode);
     }
@@ -995,21 +1019,13 @@ class TransactionsDbData extends DataClass
       map['unofficial_currency_code'] =
           Variable<String>(unofficialCurrencyCode);
     }
-    if (!nullToAbsent || date != null) {
-      map['date'] = Variable<String>(date);
-    }
-    if (!nullToAbsent || pending != null) {
-      map['pending'] = Variable<int>(pending);
-    }
+    map['date'] = Variable<String>(date);
+    map['pending'] = Variable<int>(pending);
     if (!nullToAbsent || accountOwner != null) {
       map['account_owner'] = Variable<String>(accountOwner);
     }
-    if (!nullToAbsent || createdAt != null) {
-      map['created_at'] = Variable<String>(createdAt);
-    }
-    if (!nullToAbsent || updatedAt != null) {
-      map['updated_at'] = Variable<String>(updatedAt);
-    }
+    map['created_at'] = Variable<String>(createdAt);
+    map['updated_at'] = Variable<String>(updatedAt);
     if (!nullToAbsent || deletedAt != null) {
       map['deleted_at'] = Variable<String>(deletedAt);
     }
@@ -1018,38 +1034,28 @@ class TransactionsDbData extends DataClass
 
   TransactionsDbCompanion toCompanion(bool nullToAbsent) {
     return TransactionsDbCompanion(
-      accountId: accountId == null && nullToAbsent
-          ? const Value.absent()
-          : Value(accountId),
-      category: category == null && nullToAbsent
-          ? const Value.absent()
-          : Value(category),
+      id: Value(id),
+      accountId: Value(accountId),
+      category: Value(category),
       subcategory: subcategory == null && nullToAbsent
           ? const Value.absent()
           : Value(subcategory),
-      type: type == null && nullToAbsent ? const Value.absent() : Value(type),
-      name: name == null && nullToAbsent ? const Value.absent() : Value(name),
-      amount:
-          amount == null && nullToAbsent ? const Value.absent() : Value(amount),
+      type: Value(type),
+      name: Value(name),
+      amount: Value(amount),
       isoCurrencyCode: isoCurrencyCode == null && nullToAbsent
           ? const Value.absent()
           : Value(isoCurrencyCode),
       unofficialCurrencyCode: unofficialCurrencyCode == null && nullToAbsent
           ? const Value.absent()
           : Value(unofficialCurrencyCode),
-      date: date == null && nullToAbsent ? const Value.absent() : Value(date),
-      pending: pending == null && nullToAbsent
-          ? const Value.absent()
-          : Value(pending),
+      date: Value(date),
+      pending: Value(pending),
       accountOwner: accountOwner == null && nullToAbsent
           ? const Value.absent()
           : Value(accountOwner),
-      createdAt: createdAt == null && nullToAbsent
-          ? const Value.absent()
-          : Value(createdAt),
-      updatedAt: updatedAt == null && nullToAbsent
-          ? const Value.absent()
-          : Value(updatedAt),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
       deletedAt: deletedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(deletedAt),
@@ -1060,20 +1066,21 @@ class TransactionsDbData extends DataClass
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return TransactionsDbData(
-      accountId: serializer.fromJson<String?>(json['accountId']),
-      category: serializer.fromJson<String?>(json['category']),
+      id: serializer.fromJson<String>(json['id']),
+      accountId: serializer.fromJson<String>(json['accountId']),
+      category: serializer.fromJson<String>(json['category']),
       subcategory: serializer.fromJson<String?>(json['subcategory']),
-      type: serializer.fromJson<String?>(json['type']),
-      name: serializer.fromJson<String?>(json['name']),
-      amount: serializer.fromJson<double?>(json['amount']),
+      type: serializer.fromJson<String>(json['type']),
+      name: serializer.fromJson<String>(json['name']),
+      amount: serializer.fromJson<double>(json['amount']),
       isoCurrencyCode: serializer.fromJson<String?>(json['isoCurrencyCode']),
       unofficialCurrencyCode:
           serializer.fromJson<String?>(json['unofficialCurrencyCode']),
-      date: serializer.fromJson<String?>(json['date']),
-      pending: serializer.fromJson<int?>(json['pending']),
+      date: serializer.fromJson<String>(json['date']),
+      pending: serializer.fromJson<int>(json['pending']),
       accountOwner: serializer.fromJson<String?>(json['accountOwner']),
-      createdAt: serializer.fromJson<String?>(json['createdAt']),
-      updatedAt: serializer.fromJson<String?>(json['updatedAt']),
+      createdAt: serializer.fromJson<String>(json['createdAt']),
+      updatedAt: serializer.fromJson<String>(json['updatedAt']),
       deletedAt: serializer.fromJson<String?>(json['deletedAt']),
     );
   }
@@ -1081,63 +1088,67 @@ class TransactionsDbData extends DataClass
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'accountId': serializer.toJson<String?>(accountId),
-      'category': serializer.toJson<String?>(category),
+      'id': serializer.toJson<String>(id),
+      'accountId': serializer.toJson<String>(accountId),
+      'category': serializer.toJson<String>(category),
       'subcategory': serializer.toJson<String?>(subcategory),
-      'type': serializer.toJson<String?>(type),
-      'name': serializer.toJson<String?>(name),
-      'amount': serializer.toJson<double?>(amount),
+      'type': serializer.toJson<String>(type),
+      'name': serializer.toJson<String>(name),
+      'amount': serializer.toJson<double>(amount),
       'isoCurrencyCode': serializer.toJson<String?>(isoCurrencyCode),
       'unofficialCurrencyCode':
           serializer.toJson<String?>(unofficialCurrencyCode),
-      'date': serializer.toJson<String?>(date),
-      'pending': serializer.toJson<int?>(pending),
+      'date': serializer.toJson<String>(date),
+      'pending': serializer.toJson<int>(pending),
       'accountOwner': serializer.toJson<String?>(accountOwner),
-      'createdAt': serializer.toJson<String?>(createdAt),
-      'updatedAt': serializer.toJson<String?>(updatedAt),
+      'createdAt': serializer.toJson<String>(createdAt),
+      'updatedAt': serializer.toJson<String>(updatedAt),
       'deletedAt': serializer.toJson<String?>(deletedAt),
     };
   }
 
   TransactionsDbData copyWith(
-          {Value<String?> accountId = const Value.absent(),
-          Value<String?> category = const Value.absent(),
+          {String? id,
+          String? accountId,
+          String? category,
           Value<String?> subcategory = const Value.absent(),
-          Value<String?> type = const Value.absent(),
-          Value<String?> name = const Value.absent(),
-          Value<double?> amount = const Value.absent(),
+          String? type,
+          String? name,
+          double? amount,
           Value<String?> isoCurrencyCode = const Value.absent(),
           Value<String?> unofficialCurrencyCode = const Value.absent(),
-          Value<String?> date = const Value.absent(),
-          Value<int?> pending = const Value.absent(),
+          String? date,
+          int? pending,
           Value<String?> accountOwner = const Value.absent(),
-          Value<String?> createdAt = const Value.absent(),
-          Value<String?> updatedAt = const Value.absent(),
+          String? createdAt,
+          String? updatedAt,
           Value<String?> deletedAt = const Value.absent()}) =>
       TransactionsDbData(
-        accountId: accountId.present ? accountId.value : this.accountId,
-        category: category.present ? category.value : this.category,
+        id: id ?? this.id,
+        accountId: accountId ?? this.accountId,
+        category: category ?? this.category,
         subcategory: subcategory.present ? subcategory.value : this.subcategory,
-        type: type.present ? type.value : this.type,
-        name: name.present ? name.value : this.name,
-        amount: amount.present ? amount.value : this.amount,
+        type: type ?? this.type,
+        name: name ?? this.name,
+        amount: amount ?? this.amount,
         isoCurrencyCode: isoCurrencyCode.present
             ? isoCurrencyCode.value
             : this.isoCurrencyCode,
         unofficialCurrencyCode: unofficialCurrencyCode.present
             ? unofficialCurrencyCode.value
             : this.unofficialCurrencyCode,
-        date: date.present ? date.value : this.date,
-        pending: pending.present ? pending.value : this.pending,
+        date: date ?? this.date,
+        pending: pending ?? this.pending,
         accountOwner:
             accountOwner.present ? accountOwner.value : this.accountOwner,
-        createdAt: createdAt.present ? createdAt.value : this.createdAt,
-        updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
+        createdAt: createdAt ?? this.createdAt,
+        updatedAt: updatedAt ?? this.updatedAt,
         deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
       );
   @override
   String toString() {
     return (StringBuffer('TransactionsDbData(')
+          ..write('id: $id, ')
           ..write('accountId: $accountId, ')
           ..write('category: $category, ')
           ..write('subcategory: $subcategory, ')
@@ -1158,6 +1169,7 @@ class TransactionsDbData extends DataClass
 
   @override
   int get hashCode => Object.hash(
+      id,
       accountId,
       category,
       subcategory,
@@ -1176,6 +1188,7 @@ class TransactionsDbData extends DataClass
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is TransactionsDbData &&
+          other.id == this.id &&
           other.accountId == this.accountId &&
           other.category == this.category &&
           other.subcategory == this.subcategory &&
@@ -1193,22 +1206,24 @@ class TransactionsDbData extends DataClass
 }
 
 class TransactionsDbCompanion extends UpdateCompanion<TransactionsDbData> {
-  final Value<String?> accountId;
-  final Value<String?> category;
+  final Value<String> id;
+  final Value<String> accountId;
+  final Value<String> category;
   final Value<String?> subcategory;
-  final Value<String?> type;
-  final Value<String?> name;
-  final Value<double?> amount;
+  final Value<String> type;
+  final Value<String> name;
+  final Value<double> amount;
   final Value<String?> isoCurrencyCode;
   final Value<String?> unofficialCurrencyCode;
-  final Value<String?> date;
-  final Value<int?> pending;
+  final Value<String> date;
+  final Value<int> pending;
   final Value<String?> accountOwner;
-  final Value<String?> createdAt;
-  final Value<String?> updatedAt;
+  final Value<String> createdAt;
+  final Value<String> updatedAt;
   final Value<String?> deletedAt;
   final Value<int> rowid;
   const TransactionsDbCompanion({
+    this.id = const Value.absent(),
     this.accountId = const Value.absent(),
     this.category = const Value.absent(),
     this.subcategory = const Value.absent(),
@@ -1226,23 +1241,34 @@ class TransactionsDbCompanion extends UpdateCompanion<TransactionsDbData> {
     this.rowid = const Value.absent(),
   });
   TransactionsDbCompanion.insert({
-    this.accountId = const Value.absent(),
-    this.category = const Value.absent(),
+    required String id,
+    required String accountId,
+    required String category,
     this.subcategory = const Value.absent(),
-    this.type = const Value.absent(),
-    this.name = const Value.absent(),
-    this.amount = const Value.absent(),
+    required String type,
+    required String name,
+    required double amount,
     this.isoCurrencyCode = const Value.absent(),
     this.unofficialCurrencyCode = const Value.absent(),
-    this.date = const Value.absent(),
-    this.pending = const Value.absent(),
+    required String date,
+    required int pending,
     this.accountOwner = const Value.absent(),
-    this.createdAt = const Value.absent(),
-    this.updatedAt = const Value.absent(),
+    required String createdAt,
+    required String updatedAt,
     this.deletedAt = const Value.absent(),
     this.rowid = const Value.absent(),
-  });
+  })  : id = Value(id),
+        accountId = Value(accountId),
+        category = Value(category),
+        type = Value(type),
+        name = Value(name),
+        amount = Value(amount),
+        date = Value(date),
+        pending = Value(pending),
+        createdAt = Value(createdAt),
+        updatedAt = Value(updatedAt);
   static Insertable<TransactionsDbData> custom({
+    Expression<String>? id,
     Expression<String>? accountId,
     Expression<String>? category,
     Expression<String>? subcategory,
@@ -1260,6 +1286,7 @@ class TransactionsDbCompanion extends UpdateCompanion<TransactionsDbData> {
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
+      if (id != null) 'id': id,
       if (accountId != null) 'account_id': accountId,
       if (category != null) 'category': category,
       if (subcategory != null) 'subcategory': subcategory,
@@ -1280,22 +1307,24 @@ class TransactionsDbCompanion extends UpdateCompanion<TransactionsDbData> {
   }
 
   TransactionsDbCompanion copyWith(
-      {Value<String?>? accountId,
-      Value<String?>? category,
+      {Value<String>? id,
+      Value<String>? accountId,
+      Value<String>? category,
       Value<String?>? subcategory,
-      Value<String?>? type,
-      Value<String?>? name,
-      Value<double?>? amount,
+      Value<String>? type,
+      Value<String>? name,
+      Value<double>? amount,
       Value<String?>? isoCurrencyCode,
       Value<String?>? unofficialCurrencyCode,
-      Value<String?>? date,
-      Value<int?>? pending,
+      Value<String>? date,
+      Value<int>? pending,
       Value<String?>? accountOwner,
-      Value<String?>? createdAt,
-      Value<String?>? updatedAt,
+      Value<String>? createdAt,
+      Value<String>? updatedAt,
       Value<String?>? deletedAt,
       Value<int>? rowid}) {
     return TransactionsDbCompanion(
+      id: id ?? this.id,
       accountId: accountId ?? this.accountId,
       category: category ?? this.category,
       subcategory: subcategory ?? this.subcategory,
@@ -1318,6 +1347,9 @@ class TransactionsDbCompanion extends UpdateCompanion<TransactionsDbData> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
     if (accountId.present) {
       map['account_id'] = Variable<String>(accountId.value);
     }
@@ -1370,6 +1402,7 @@ class TransactionsDbCompanion extends UpdateCompanion<TransactionsDbData> {
   @override
   String toString() {
     return (StringBuffer('TransactionsDbCompanion(')
+          ..write('id: $id, ')
           ..write('accountId: $accountId, ')
           ..write('category: $category, ')
           ..write('subcategory: $subcategory, ')
@@ -1396,6 +1429,11 @@ class $InvestmentHoldingsDbTable extends InvestmentHoldingsDb
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $InvestmentHoldingsDbTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _accountIdMeta =
       const VerificationMeta('accountId');
   @override
@@ -1464,6 +1502,7 @@ class $InvestmentHoldingsDbTable extends InvestmentHoldingsDb
       type: DriftSqlType.string, requiredDuringInsert: false);
   @override
   List<GeneratedColumn> get $columns => [
+        id,
         accountId,
         institutionPrice,
         institutionPriceAsOf,
@@ -1487,6 +1526,11 @@ class $InvestmentHoldingsDbTable extends InvestmentHoldingsDb
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
     if (data.containsKey('account_id')) {
       context.handle(_accountIdMeta,
           accountId.isAcceptableOrUnknown(data['account_id']!, _accountIdMeta));
@@ -1551,6 +1595,8 @@ class $InvestmentHoldingsDbTable extends InvestmentHoldingsDb
       {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return InvestmentHoldingsDbData(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
       accountId: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}account_id']),
       institutionPrice: attachedDatabase.typeMapping.read(
@@ -1585,6 +1631,7 @@ class $InvestmentHoldingsDbTable extends InvestmentHoldingsDb
 
 class InvestmentHoldingsDbData extends DataClass
     implements Insertable<InvestmentHoldingsDbData> {
+  final String id;
   final String? accountId;
   final double? institutionPrice;
   final String? institutionPriceAsOf;
@@ -1597,7 +1644,8 @@ class InvestmentHoldingsDbData extends DataClass
   final String? updatedAt;
   final String? deletedAt;
   const InvestmentHoldingsDbData(
-      {this.accountId,
+      {required this.id,
+      this.accountId,
       this.institutionPrice,
       this.institutionPriceAsOf,
       this.institutionValue,
@@ -1611,6 +1659,7 @@ class InvestmentHoldingsDbData extends DataClass
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
     if (!nullToAbsent || accountId != null) {
       map['account_id'] = Variable<String>(accountId);
     }
@@ -1649,6 +1698,7 @@ class InvestmentHoldingsDbData extends DataClass
 
   InvestmentHoldingsDbCompanion toCompanion(bool nullToAbsent) {
     return InvestmentHoldingsDbCompanion(
+      id: Value(id),
       accountId: accountId == null && nullToAbsent
           ? const Value.absent()
           : Value(accountId),
@@ -1689,6 +1739,7 @@ class InvestmentHoldingsDbData extends DataClass
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return InvestmentHoldingsDbData(
+      id: serializer.fromJson<String>(json['id']),
       accountId: serializer.fromJson<String?>(json['accountId']),
       institutionPrice: serializer.fromJson<double?>(json['institutionPrice']),
       institutionPriceAsOf:
@@ -1707,6 +1758,7 @@ class InvestmentHoldingsDbData extends DataClass
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
       'accountId': serializer.toJson<String?>(accountId),
       'institutionPrice': serializer.toJson<double?>(institutionPrice),
       'institutionPriceAsOf': serializer.toJson<String?>(institutionPriceAsOf),
@@ -1722,7 +1774,8 @@ class InvestmentHoldingsDbData extends DataClass
   }
 
   InvestmentHoldingsDbData copyWith(
-          {Value<String?> accountId = const Value.absent(),
+          {String? id,
+          Value<String?> accountId = const Value.absent(),
           Value<double?> institutionPrice = const Value.absent(),
           Value<String?> institutionPriceAsOf = const Value.absent(),
           Value<double?> institutionValue = const Value.absent(),
@@ -1734,6 +1787,7 @@ class InvestmentHoldingsDbData extends DataClass
           Value<String?> updatedAt = const Value.absent(),
           Value<String?> deletedAt = const Value.absent()}) =>
       InvestmentHoldingsDbData(
+        id: id ?? this.id,
         accountId: accountId.present ? accountId.value : this.accountId,
         institutionPrice: institutionPrice.present
             ? institutionPrice.value
@@ -1757,6 +1811,7 @@ class InvestmentHoldingsDbData extends DataClass
   @override
   String toString() {
     return (StringBuffer('InvestmentHoldingsDbData(')
+          ..write('id: $id, ')
           ..write('accountId: $accountId, ')
           ..write('institutionPrice: $institutionPrice, ')
           ..write('institutionPriceAsOf: $institutionPriceAsOf, ')
@@ -1774,6 +1829,7 @@ class InvestmentHoldingsDbData extends DataClass
 
   @override
   int get hashCode => Object.hash(
+      id,
       accountId,
       institutionPrice,
       institutionPriceAsOf,
@@ -1789,6 +1845,7 @@ class InvestmentHoldingsDbData extends DataClass
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is InvestmentHoldingsDbData &&
+          other.id == this.id &&
           other.accountId == this.accountId &&
           other.institutionPrice == this.institutionPrice &&
           other.institutionPriceAsOf == this.institutionPriceAsOf &&
@@ -1804,6 +1861,7 @@ class InvestmentHoldingsDbData extends DataClass
 
 class InvestmentHoldingsDbCompanion
     extends UpdateCompanion<InvestmentHoldingsDbData> {
+  final Value<String> id;
   final Value<String?> accountId;
   final Value<double?> institutionPrice;
   final Value<String?> institutionPriceAsOf;
@@ -1817,6 +1875,7 @@ class InvestmentHoldingsDbCompanion
   final Value<String?> deletedAt;
   final Value<int> rowid;
   const InvestmentHoldingsDbCompanion({
+    this.id = const Value.absent(),
     this.accountId = const Value.absent(),
     this.institutionPrice = const Value.absent(),
     this.institutionPriceAsOf = const Value.absent(),
@@ -1831,6 +1890,7 @@ class InvestmentHoldingsDbCompanion
     this.rowid = const Value.absent(),
   });
   InvestmentHoldingsDbCompanion.insert({
+    required String id,
     this.accountId = const Value.absent(),
     this.institutionPrice = const Value.absent(),
     this.institutionPriceAsOf = const Value.absent(),
@@ -1843,8 +1903,9 @@ class InvestmentHoldingsDbCompanion
     this.updatedAt = const Value.absent(),
     this.deletedAt = const Value.absent(),
     this.rowid = const Value.absent(),
-  });
+  }) : id = Value(id);
   static Insertable<InvestmentHoldingsDbData> custom({
+    Expression<String>? id,
     Expression<String>? accountId,
     Expression<double>? institutionPrice,
     Expression<String>? institutionPriceAsOf,
@@ -1859,6 +1920,7 @@ class InvestmentHoldingsDbCompanion
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
+      if (id != null) 'id': id,
       if (accountId != null) 'account_id': accountId,
       if (institutionPrice != null) 'institution_price': institutionPrice,
       if (institutionPriceAsOf != null)
@@ -1876,7 +1938,8 @@ class InvestmentHoldingsDbCompanion
   }
 
   InvestmentHoldingsDbCompanion copyWith(
-      {Value<String?>? accountId,
+      {Value<String>? id,
+      Value<String?>? accountId,
       Value<double?>? institutionPrice,
       Value<String?>? institutionPriceAsOf,
       Value<double?>? institutionValue,
@@ -1889,6 +1952,7 @@ class InvestmentHoldingsDbCompanion
       Value<String?>? deletedAt,
       Value<int>? rowid}) {
     return InvestmentHoldingsDbCompanion(
+      id: id ?? this.id,
       accountId: accountId ?? this.accountId,
       institutionPrice: institutionPrice ?? this.institutionPrice,
       institutionPriceAsOf: institutionPriceAsOf ?? this.institutionPriceAsOf,
@@ -1907,6 +1971,9 @@ class InvestmentHoldingsDbCompanion
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
     if (accountId.present) {
       map['account_id'] = Variable<String>(accountId.value);
     }
@@ -1950,6 +2017,7 @@ class InvestmentHoldingsDbCompanion
   @override
   String toString() {
     return (StringBuffer('InvestmentHoldingsDbCompanion(')
+          ..write('id: $id, ')
           ..write('accountId: $accountId, ')
           ..write('institutionPrice: $institutionPrice, ')
           ..write('institutionPriceAsOf: $institutionPriceAsOf, ')
@@ -1972,27 +2040,32 @@ class $GoalsDbTable extends GoalsDb with TableInfo<$GoalsDbTable, GoalsDbData> {
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $GoalsDbTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
-      'name', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+      'name', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _amountMeta = const VerificationMeta('amount');
   @override
   late final GeneratedColumn<double> amount = GeneratedColumn<double>(
-      'amount', aliasedName, true,
-      type: DriftSqlType.double, requiredDuringInsert: false);
+      'amount', aliasedName, false,
+      type: DriftSqlType.double, requiredDuringInsert: true);
   static const VerificationMeta _targetDateMeta =
       const VerificationMeta('targetDate');
   @override
   late final GeneratedColumn<String> targetDate = GeneratedColumn<String>(
-      'target_date', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+      'target_date', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
   @override
   late final GeneratedColumn<String> userId = GeneratedColumn<String>(
-      'user_id', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+      'user_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _progressMeta =
       const VerificationMeta('progress');
   @override
@@ -2003,14 +2076,14 @@ class $GoalsDbTable extends GoalsDb with TableInfo<$GoalsDbTable, GoalsDbData> {
       const VerificationMeta('createdAt');
   @override
   late final GeneratedColumn<String> createdAt = GeneratedColumn<String>(
-      'created_at', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+      'created_at', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _updatedAtMeta =
       const VerificationMeta('updatedAt');
   @override
   late final GeneratedColumn<String> updatedAt = GeneratedColumn<String>(
-      'updated_at', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+      'updated_at', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _deletedAtMeta =
       const VerificationMeta('deletedAt');
   @override
@@ -2019,6 +2092,7 @@ class $GoalsDbTable extends GoalsDb with TableInfo<$GoalsDbTable, GoalsDbData> {
       type: DriftSqlType.string, requiredDuringInsert: false);
   @override
   List<GeneratedColumn> get $columns => [
+        id,
         name,
         amount,
         targetDate,
@@ -2038,23 +2112,36 @@ class $GoalsDbTable extends GoalsDb with TableInfo<$GoalsDbTable, GoalsDbData> {
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
     if (data.containsKey('name')) {
       context.handle(
           _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+    } else if (isInserting) {
+      context.missing(_nameMeta);
     }
     if (data.containsKey('amount')) {
       context.handle(_amountMeta,
           amount.isAcceptableOrUnknown(data['amount']!, _amountMeta));
+    } else if (isInserting) {
+      context.missing(_amountMeta);
     }
     if (data.containsKey('target_date')) {
       context.handle(
           _targetDateMeta,
           targetDate.isAcceptableOrUnknown(
               data['target_date']!, _targetDateMeta));
+    } else if (isInserting) {
+      context.missing(_targetDateMeta);
     }
     if (data.containsKey('user_id')) {
       context.handle(_userIdMeta,
           userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta));
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
     }
     if (data.containsKey('progress')) {
       context.handle(_progressMeta,
@@ -2063,10 +2150,14 @@ class $GoalsDbTable extends GoalsDb with TableInfo<$GoalsDbTable, GoalsDbData> {
     if (data.containsKey('created_at')) {
       context.handle(_createdAtMeta,
           createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
     }
     if (data.containsKey('updated_at')) {
       context.handle(_updatedAtMeta,
           updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
     }
     if (data.containsKey('deleted_at')) {
       context.handle(_deletedAtMeta,
@@ -2081,20 +2172,22 @@ class $GoalsDbTable extends GoalsDb with TableInfo<$GoalsDbTable, GoalsDbData> {
   GoalsDbData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return GoalsDbData(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
       name: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}name']),
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
       amount: attachedDatabase.typeMapping
-          .read(DriftSqlType.double, data['${effectivePrefix}amount']),
+          .read(DriftSqlType.double, data['${effectivePrefix}amount'])!,
       targetDate: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}target_date']),
+          .read(DriftSqlType.string, data['${effectivePrefix}target_date'])!,
       userId: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}user_id']),
+          .read(DriftSqlType.string, data['${effectivePrefix}user_id'])!,
       progress: attachedDatabase.typeMapping
           .read(DriftSqlType.double, data['${effectivePrefix}progress']),
       createdAt: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}created_at']),
+          .read(DriftSqlType.string, data['${effectivePrefix}created_at'])!,
       updatedAt: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}updated_at']),
+          .read(DriftSqlType.string, data['${effectivePrefix}updated_at'])!,
       deletedAt: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}deleted_at']),
     );
@@ -2107,47 +2200,38 @@ class $GoalsDbTable extends GoalsDb with TableInfo<$GoalsDbTable, GoalsDbData> {
 }
 
 class GoalsDbData extends DataClass implements Insertable<GoalsDbData> {
-  final String? name;
-  final double? amount;
-  final String? targetDate;
-  final String? userId;
+  final String id;
+  final String name;
+  final double amount;
+  final String targetDate;
+  final String userId;
   final double? progress;
-  final String? createdAt;
-  final String? updatedAt;
+  final String createdAt;
+  final String updatedAt;
   final String? deletedAt;
   const GoalsDbData(
-      {this.name,
-      this.amount,
-      this.targetDate,
-      this.userId,
+      {required this.id,
+      required this.name,
+      required this.amount,
+      required this.targetDate,
+      required this.userId,
       this.progress,
-      this.createdAt,
-      this.updatedAt,
+      required this.createdAt,
+      required this.updatedAt,
       this.deletedAt});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (!nullToAbsent || name != null) {
-      map['name'] = Variable<String>(name);
-    }
-    if (!nullToAbsent || amount != null) {
-      map['amount'] = Variable<double>(amount);
-    }
-    if (!nullToAbsent || targetDate != null) {
-      map['target_date'] = Variable<String>(targetDate);
-    }
-    if (!nullToAbsent || userId != null) {
-      map['user_id'] = Variable<String>(userId);
-    }
+    map['id'] = Variable<String>(id);
+    map['name'] = Variable<String>(name);
+    map['amount'] = Variable<double>(amount);
+    map['target_date'] = Variable<String>(targetDate);
+    map['user_id'] = Variable<String>(userId);
     if (!nullToAbsent || progress != null) {
       map['progress'] = Variable<double>(progress);
     }
-    if (!nullToAbsent || createdAt != null) {
-      map['created_at'] = Variable<String>(createdAt);
-    }
-    if (!nullToAbsent || updatedAt != null) {
-      map['updated_at'] = Variable<String>(updatedAt);
-    }
+    map['created_at'] = Variable<String>(createdAt);
+    map['updated_at'] = Variable<String>(updatedAt);
     if (!nullToAbsent || deletedAt != null) {
       map['deleted_at'] = Variable<String>(deletedAt);
     }
@@ -2156,23 +2240,16 @@ class GoalsDbData extends DataClass implements Insertable<GoalsDbData> {
 
   GoalsDbCompanion toCompanion(bool nullToAbsent) {
     return GoalsDbCompanion(
-      name: name == null && nullToAbsent ? const Value.absent() : Value(name),
-      amount:
-          amount == null && nullToAbsent ? const Value.absent() : Value(amount),
-      targetDate: targetDate == null && nullToAbsent
-          ? const Value.absent()
-          : Value(targetDate),
-      userId:
-          userId == null && nullToAbsent ? const Value.absent() : Value(userId),
+      id: Value(id),
+      name: Value(name),
+      amount: Value(amount),
+      targetDate: Value(targetDate),
+      userId: Value(userId),
       progress: progress == null && nullToAbsent
           ? const Value.absent()
           : Value(progress),
-      createdAt: createdAt == null && nullToAbsent
-          ? const Value.absent()
-          : Value(createdAt),
-      updatedAt: updatedAt == null && nullToAbsent
-          ? const Value.absent()
-          : Value(updatedAt),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
       deletedAt: deletedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(deletedAt),
@@ -2183,13 +2260,14 @@ class GoalsDbData extends DataClass implements Insertable<GoalsDbData> {
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return GoalsDbData(
-      name: serializer.fromJson<String?>(json['name']),
-      amount: serializer.fromJson<double?>(json['amount']),
-      targetDate: serializer.fromJson<String?>(json['targetDate']),
-      userId: serializer.fromJson<String?>(json['userId']),
+      id: serializer.fromJson<String>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      amount: serializer.fromJson<double>(json['amount']),
+      targetDate: serializer.fromJson<String>(json['targetDate']),
+      userId: serializer.fromJson<String>(json['userId']),
       progress: serializer.fromJson<double?>(json['progress']),
-      createdAt: serializer.fromJson<String?>(json['createdAt']),
-      updatedAt: serializer.fromJson<String?>(json['updatedAt']),
+      createdAt: serializer.fromJson<String>(json['createdAt']),
+      updatedAt: serializer.fromJson<String>(json['updatedAt']),
       deletedAt: serializer.fromJson<String?>(json['deletedAt']),
     );
   }
@@ -2197,39 +2275,43 @@ class GoalsDbData extends DataClass implements Insertable<GoalsDbData> {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'name': serializer.toJson<String?>(name),
-      'amount': serializer.toJson<double?>(amount),
-      'targetDate': serializer.toJson<String?>(targetDate),
-      'userId': serializer.toJson<String?>(userId),
+      'id': serializer.toJson<String>(id),
+      'name': serializer.toJson<String>(name),
+      'amount': serializer.toJson<double>(amount),
+      'targetDate': serializer.toJson<String>(targetDate),
+      'userId': serializer.toJson<String>(userId),
       'progress': serializer.toJson<double?>(progress),
-      'createdAt': serializer.toJson<String?>(createdAt),
-      'updatedAt': serializer.toJson<String?>(updatedAt),
+      'createdAt': serializer.toJson<String>(createdAt),
+      'updatedAt': serializer.toJson<String>(updatedAt),
       'deletedAt': serializer.toJson<String?>(deletedAt),
     };
   }
 
   GoalsDbData copyWith(
-          {Value<String?> name = const Value.absent(),
-          Value<double?> amount = const Value.absent(),
-          Value<String?> targetDate = const Value.absent(),
-          Value<String?> userId = const Value.absent(),
+          {String? id,
+          String? name,
+          double? amount,
+          String? targetDate,
+          String? userId,
           Value<double?> progress = const Value.absent(),
-          Value<String?> createdAt = const Value.absent(),
-          Value<String?> updatedAt = const Value.absent(),
+          String? createdAt,
+          String? updatedAt,
           Value<String?> deletedAt = const Value.absent()}) =>
       GoalsDbData(
-        name: name.present ? name.value : this.name,
-        amount: amount.present ? amount.value : this.amount,
-        targetDate: targetDate.present ? targetDate.value : this.targetDate,
-        userId: userId.present ? userId.value : this.userId,
+        id: id ?? this.id,
+        name: name ?? this.name,
+        amount: amount ?? this.amount,
+        targetDate: targetDate ?? this.targetDate,
+        userId: userId ?? this.userId,
         progress: progress.present ? progress.value : this.progress,
-        createdAt: createdAt.present ? createdAt.value : this.createdAt,
-        updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
+        createdAt: createdAt ?? this.createdAt,
+        updatedAt: updatedAt ?? this.updatedAt,
         deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
       );
   @override
   String toString() {
     return (StringBuffer('GoalsDbData(')
+          ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('amount: $amount, ')
           ..write('targetDate: $targetDate, ')
@@ -2243,12 +2325,13 @@ class GoalsDbData extends DataClass implements Insertable<GoalsDbData> {
   }
 
   @override
-  int get hashCode => Object.hash(name, amount, targetDate, userId, progress,
-      createdAt, updatedAt, deletedAt);
+  int get hashCode => Object.hash(id, name, amount, targetDate, userId,
+      progress, createdAt, updatedAt, deletedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is GoalsDbData &&
+          other.id == this.id &&
           other.name == this.name &&
           other.amount == this.amount &&
           other.targetDate == this.targetDate &&
@@ -2260,16 +2343,18 @@ class GoalsDbData extends DataClass implements Insertable<GoalsDbData> {
 }
 
 class GoalsDbCompanion extends UpdateCompanion<GoalsDbData> {
-  final Value<String?> name;
-  final Value<double?> amount;
-  final Value<String?> targetDate;
-  final Value<String?> userId;
+  final Value<String> id;
+  final Value<String> name;
+  final Value<double> amount;
+  final Value<String> targetDate;
+  final Value<String> userId;
   final Value<double?> progress;
-  final Value<String?> createdAt;
-  final Value<String?> updatedAt;
+  final Value<String> createdAt;
+  final Value<String> updatedAt;
   final Value<String?> deletedAt;
   final Value<int> rowid;
   const GoalsDbCompanion({
+    this.id = const Value.absent(),
     this.name = const Value.absent(),
     this.amount = const Value.absent(),
     this.targetDate = const Value.absent(),
@@ -2281,17 +2366,25 @@ class GoalsDbCompanion extends UpdateCompanion<GoalsDbData> {
     this.rowid = const Value.absent(),
   });
   GoalsDbCompanion.insert({
-    this.name = const Value.absent(),
-    this.amount = const Value.absent(),
-    this.targetDate = const Value.absent(),
-    this.userId = const Value.absent(),
+    required String id,
+    required String name,
+    required double amount,
+    required String targetDate,
+    required String userId,
     this.progress = const Value.absent(),
-    this.createdAt = const Value.absent(),
-    this.updatedAt = const Value.absent(),
+    required String createdAt,
+    required String updatedAt,
     this.deletedAt = const Value.absent(),
     this.rowid = const Value.absent(),
-  });
+  })  : id = Value(id),
+        name = Value(name),
+        amount = Value(amount),
+        targetDate = Value(targetDate),
+        userId = Value(userId),
+        createdAt = Value(createdAt),
+        updatedAt = Value(updatedAt);
   static Insertable<GoalsDbData> custom({
+    Expression<String>? id,
     Expression<String>? name,
     Expression<double>? amount,
     Expression<String>? targetDate,
@@ -2303,6 +2396,7 @@ class GoalsDbCompanion extends UpdateCompanion<GoalsDbData> {
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
+      if (id != null) 'id': id,
       if (name != null) 'name': name,
       if (amount != null) 'amount': amount,
       if (targetDate != null) 'target_date': targetDate,
@@ -2316,16 +2410,18 @@ class GoalsDbCompanion extends UpdateCompanion<GoalsDbData> {
   }
 
   GoalsDbCompanion copyWith(
-      {Value<String?>? name,
-      Value<double?>? amount,
-      Value<String?>? targetDate,
-      Value<String?>? userId,
+      {Value<String>? id,
+      Value<String>? name,
+      Value<double>? amount,
+      Value<String>? targetDate,
+      Value<String>? userId,
       Value<double?>? progress,
-      Value<String?>? createdAt,
-      Value<String?>? updatedAt,
+      Value<String>? createdAt,
+      Value<String>? updatedAt,
       Value<String?>? deletedAt,
       Value<int>? rowid}) {
     return GoalsDbCompanion(
+      id: id ?? this.id,
       name: name ?? this.name,
       amount: amount ?? this.amount,
       targetDate: targetDate ?? this.targetDate,
@@ -2341,6 +2437,9 @@ class GoalsDbCompanion extends UpdateCompanion<GoalsDbData> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
     if (name.present) {
       map['name'] = Variable<String>(name.value);
     }
@@ -2374,6 +2473,7 @@ class GoalsDbCompanion extends UpdateCompanion<GoalsDbData> {
   @override
   String toString() {
     return (StringBuffer('GoalsDbCompanion(')
+          ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('amount: $amount, ')
           ..write('targetDate: $targetDate, ')
@@ -2394,40 +2494,45 @@ class $GoalAccountsDbTable extends GoalAccountsDb
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $GoalAccountsDbTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _goalIdMeta = const VerificationMeta('goalId');
   @override
   late final GeneratedColumn<String> goalId = GeneratedColumn<String>(
-      'goal_id', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+      'goal_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _accountIdMeta =
       const VerificationMeta('accountId');
   @override
   late final GeneratedColumn<String> accountId = GeneratedColumn<String>(
-      'account_id', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+      'account_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _amountMeta = const VerificationMeta('amount');
   @override
   late final GeneratedColumn<String> amount = GeneratedColumn<String>(
-      'amount', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+      'amount', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _percentageMeta =
       const VerificationMeta('percentage');
   @override
   late final GeneratedColumn<String> percentage = GeneratedColumn<String>(
-      'percentage', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+      'percentage', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _createdAtMeta =
       const VerificationMeta('createdAt');
   @override
   late final GeneratedColumn<String> createdAt = GeneratedColumn<String>(
-      'created_at', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+      'created_at', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _updatedAtMeta =
       const VerificationMeta('updatedAt');
   @override
   late final GeneratedColumn<String> updatedAt = GeneratedColumn<String>(
-      'updated_at', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+      'updated_at', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _deletedAtMeta =
       const VerificationMeta('deletedAt');
   @override
@@ -2435,8 +2540,16 @@ class $GoalAccountsDbTable extends GoalAccountsDb
       'deleted_at', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
   @override
-  List<GeneratedColumn> get $columns =>
-      [goalId, accountId, amount, percentage, createdAt, updatedAt, deletedAt];
+  List<GeneratedColumn> get $columns => [
+        id,
+        goalId,
+        accountId,
+        amount,
+        percentage,
+        createdAt,
+        updatedAt,
+        deletedAt
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -2447,31 +2560,48 @@ class $GoalAccountsDbTable extends GoalAccountsDb
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
     if (data.containsKey('goal_id')) {
       context.handle(_goalIdMeta,
           goalId.isAcceptableOrUnknown(data['goal_id']!, _goalIdMeta));
+    } else if (isInserting) {
+      context.missing(_goalIdMeta);
     }
     if (data.containsKey('account_id')) {
       context.handle(_accountIdMeta,
           accountId.isAcceptableOrUnknown(data['account_id']!, _accountIdMeta));
+    } else if (isInserting) {
+      context.missing(_accountIdMeta);
     }
     if (data.containsKey('amount')) {
       context.handle(_amountMeta,
           amount.isAcceptableOrUnknown(data['amount']!, _amountMeta));
+    } else if (isInserting) {
+      context.missing(_amountMeta);
     }
     if (data.containsKey('percentage')) {
       context.handle(
           _percentageMeta,
           percentage.isAcceptableOrUnknown(
               data['percentage']!, _percentageMeta));
+    } else if (isInserting) {
+      context.missing(_percentageMeta);
     }
     if (data.containsKey('created_at')) {
       context.handle(_createdAtMeta,
           createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
     }
     if (data.containsKey('updated_at')) {
       context.handle(_updatedAtMeta,
           updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
     }
     if (data.containsKey('deleted_at')) {
       context.handle(_deletedAtMeta,
@@ -2486,18 +2616,20 @@ class $GoalAccountsDbTable extends GoalAccountsDb
   GoalAccountsDbData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return GoalAccountsDbData(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
       goalId: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}goal_id']),
+          .read(DriftSqlType.string, data['${effectivePrefix}goal_id'])!,
       accountId: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}account_id']),
+          .read(DriftSqlType.string, data['${effectivePrefix}account_id'])!,
       amount: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}amount']),
+          .read(DriftSqlType.string, data['${effectivePrefix}amount'])!,
       percentage: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}percentage']),
+          .read(DriftSqlType.string, data['${effectivePrefix}percentage'])!,
       createdAt: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}created_at']),
+          .read(DriftSqlType.string, data['${effectivePrefix}created_at'])!,
       updatedAt: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}updated_at']),
+          .read(DriftSqlType.string, data['${effectivePrefix}updated_at'])!,
       deletedAt: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}deleted_at']),
     );
@@ -2511,42 +2643,33 @@ class $GoalAccountsDbTable extends GoalAccountsDb
 
 class GoalAccountsDbData extends DataClass
     implements Insertable<GoalAccountsDbData> {
-  final String? goalId;
-  final String? accountId;
-  final String? amount;
-  final String? percentage;
-  final String? createdAt;
-  final String? updatedAt;
+  final String id;
+  final String goalId;
+  final String accountId;
+  final String amount;
+  final String percentage;
+  final String createdAt;
+  final String updatedAt;
   final String? deletedAt;
   const GoalAccountsDbData(
-      {this.goalId,
-      this.accountId,
-      this.amount,
-      this.percentage,
-      this.createdAt,
-      this.updatedAt,
+      {required this.id,
+      required this.goalId,
+      required this.accountId,
+      required this.amount,
+      required this.percentage,
+      required this.createdAt,
+      required this.updatedAt,
       this.deletedAt});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (!nullToAbsent || goalId != null) {
-      map['goal_id'] = Variable<String>(goalId);
-    }
-    if (!nullToAbsent || accountId != null) {
-      map['account_id'] = Variable<String>(accountId);
-    }
-    if (!nullToAbsent || amount != null) {
-      map['amount'] = Variable<String>(amount);
-    }
-    if (!nullToAbsent || percentage != null) {
-      map['percentage'] = Variable<String>(percentage);
-    }
-    if (!nullToAbsent || createdAt != null) {
-      map['created_at'] = Variable<String>(createdAt);
-    }
-    if (!nullToAbsent || updatedAt != null) {
-      map['updated_at'] = Variable<String>(updatedAt);
-    }
+    map['id'] = Variable<String>(id);
+    map['goal_id'] = Variable<String>(goalId);
+    map['account_id'] = Variable<String>(accountId);
+    map['amount'] = Variable<String>(amount);
+    map['percentage'] = Variable<String>(percentage);
+    map['created_at'] = Variable<String>(createdAt);
+    map['updated_at'] = Variable<String>(updatedAt);
     if (!nullToAbsent || deletedAt != null) {
       map['deleted_at'] = Variable<String>(deletedAt);
     }
@@ -2555,22 +2678,13 @@ class GoalAccountsDbData extends DataClass
 
   GoalAccountsDbCompanion toCompanion(bool nullToAbsent) {
     return GoalAccountsDbCompanion(
-      goalId:
-          goalId == null && nullToAbsent ? const Value.absent() : Value(goalId),
-      accountId: accountId == null && nullToAbsent
-          ? const Value.absent()
-          : Value(accountId),
-      amount:
-          amount == null && nullToAbsent ? const Value.absent() : Value(amount),
-      percentage: percentage == null && nullToAbsent
-          ? const Value.absent()
-          : Value(percentage),
-      createdAt: createdAt == null && nullToAbsent
-          ? const Value.absent()
-          : Value(createdAt),
-      updatedAt: updatedAt == null && nullToAbsent
-          ? const Value.absent()
-          : Value(updatedAt),
+      id: Value(id),
+      goalId: Value(goalId),
+      accountId: Value(accountId),
+      amount: Value(amount),
+      percentage: Value(percentage),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
       deletedAt: deletedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(deletedAt),
@@ -2581,12 +2695,13 @@ class GoalAccountsDbData extends DataClass
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return GoalAccountsDbData(
-      goalId: serializer.fromJson<String?>(json['goalId']),
-      accountId: serializer.fromJson<String?>(json['accountId']),
-      amount: serializer.fromJson<String?>(json['amount']),
-      percentage: serializer.fromJson<String?>(json['percentage']),
-      createdAt: serializer.fromJson<String?>(json['createdAt']),
-      updatedAt: serializer.fromJson<String?>(json['updatedAt']),
+      id: serializer.fromJson<String>(json['id']),
+      goalId: serializer.fromJson<String>(json['goalId']),
+      accountId: serializer.fromJson<String>(json['accountId']),
+      amount: serializer.fromJson<String>(json['amount']),
+      percentage: serializer.fromJson<String>(json['percentage']),
+      createdAt: serializer.fromJson<String>(json['createdAt']),
+      updatedAt: serializer.fromJson<String>(json['updatedAt']),
       deletedAt: serializer.fromJson<String?>(json['deletedAt']),
     );
   }
@@ -2594,36 +2709,40 @@ class GoalAccountsDbData extends DataClass
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'goalId': serializer.toJson<String?>(goalId),
-      'accountId': serializer.toJson<String?>(accountId),
-      'amount': serializer.toJson<String?>(amount),
-      'percentage': serializer.toJson<String?>(percentage),
-      'createdAt': serializer.toJson<String?>(createdAt),
-      'updatedAt': serializer.toJson<String?>(updatedAt),
+      'id': serializer.toJson<String>(id),
+      'goalId': serializer.toJson<String>(goalId),
+      'accountId': serializer.toJson<String>(accountId),
+      'amount': serializer.toJson<String>(amount),
+      'percentage': serializer.toJson<String>(percentage),
+      'createdAt': serializer.toJson<String>(createdAt),
+      'updatedAt': serializer.toJson<String>(updatedAt),
       'deletedAt': serializer.toJson<String?>(deletedAt),
     };
   }
 
   GoalAccountsDbData copyWith(
-          {Value<String?> goalId = const Value.absent(),
-          Value<String?> accountId = const Value.absent(),
-          Value<String?> amount = const Value.absent(),
-          Value<String?> percentage = const Value.absent(),
-          Value<String?> createdAt = const Value.absent(),
-          Value<String?> updatedAt = const Value.absent(),
+          {String? id,
+          String? goalId,
+          String? accountId,
+          String? amount,
+          String? percentage,
+          String? createdAt,
+          String? updatedAt,
           Value<String?> deletedAt = const Value.absent()}) =>
       GoalAccountsDbData(
-        goalId: goalId.present ? goalId.value : this.goalId,
-        accountId: accountId.present ? accountId.value : this.accountId,
-        amount: amount.present ? amount.value : this.amount,
-        percentage: percentage.present ? percentage.value : this.percentage,
-        createdAt: createdAt.present ? createdAt.value : this.createdAt,
-        updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
+        id: id ?? this.id,
+        goalId: goalId ?? this.goalId,
+        accountId: accountId ?? this.accountId,
+        amount: amount ?? this.amount,
+        percentage: percentage ?? this.percentage,
+        createdAt: createdAt ?? this.createdAt,
+        updatedAt: updatedAt ?? this.updatedAt,
         deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
       );
   @override
   String toString() {
     return (StringBuffer('GoalAccountsDbData(')
+          ..write('id: $id, ')
           ..write('goalId: $goalId, ')
           ..write('accountId: $accountId, ')
           ..write('amount: $amount, ')
@@ -2636,12 +2755,13 @@ class GoalAccountsDbData extends DataClass
   }
 
   @override
-  int get hashCode => Object.hash(
-      goalId, accountId, amount, percentage, createdAt, updatedAt, deletedAt);
+  int get hashCode => Object.hash(id, goalId, accountId, amount, percentage,
+      createdAt, updatedAt, deletedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is GoalAccountsDbData &&
+          other.id == this.id &&
           other.goalId == this.goalId &&
           other.accountId == this.accountId &&
           other.amount == this.amount &&
@@ -2652,15 +2772,17 @@ class GoalAccountsDbData extends DataClass
 }
 
 class GoalAccountsDbCompanion extends UpdateCompanion<GoalAccountsDbData> {
-  final Value<String?> goalId;
-  final Value<String?> accountId;
-  final Value<String?> amount;
-  final Value<String?> percentage;
-  final Value<String?> createdAt;
-  final Value<String?> updatedAt;
+  final Value<String> id;
+  final Value<String> goalId;
+  final Value<String> accountId;
+  final Value<String> amount;
+  final Value<String> percentage;
+  final Value<String> createdAt;
+  final Value<String> updatedAt;
   final Value<String?> deletedAt;
   final Value<int> rowid;
   const GoalAccountsDbCompanion({
+    this.id = const Value.absent(),
     this.goalId = const Value.absent(),
     this.accountId = const Value.absent(),
     this.amount = const Value.absent(),
@@ -2671,16 +2793,24 @@ class GoalAccountsDbCompanion extends UpdateCompanion<GoalAccountsDbData> {
     this.rowid = const Value.absent(),
   });
   GoalAccountsDbCompanion.insert({
-    this.goalId = const Value.absent(),
-    this.accountId = const Value.absent(),
-    this.amount = const Value.absent(),
-    this.percentage = const Value.absent(),
-    this.createdAt = const Value.absent(),
-    this.updatedAt = const Value.absent(),
+    required String id,
+    required String goalId,
+    required String accountId,
+    required String amount,
+    required String percentage,
+    required String createdAt,
+    required String updatedAt,
     this.deletedAt = const Value.absent(),
     this.rowid = const Value.absent(),
-  });
+  })  : id = Value(id),
+        goalId = Value(goalId),
+        accountId = Value(accountId),
+        amount = Value(amount),
+        percentage = Value(percentage),
+        createdAt = Value(createdAt),
+        updatedAt = Value(updatedAt);
   static Insertable<GoalAccountsDbData> custom({
+    Expression<String>? id,
     Expression<String>? goalId,
     Expression<String>? accountId,
     Expression<String>? amount,
@@ -2691,6 +2821,7 @@ class GoalAccountsDbCompanion extends UpdateCompanion<GoalAccountsDbData> {
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
+      if (id != null) 'id': id,
       if (goalId != null) 'goal_id': goalId,
       if (accountId != null) 'account_id': accountId,
       if (amount != null) 'amount': amount,
@@ -2703,15 +2834,17 @@ class GoalAccountsDbCompanion extends UpdateCompanion<GoalAccountsDbData> {
   }
 
   GoalAccountsDbCompanion copyWith(
-      {Value<String?>? goalId,
-      Value<String?>? accountId,
-      Value<String?>? amount,
-      Value<String?>? percentage,
-      Value<String?>? createdAt,
-      Value<String?>? updatedAt,
+      {Value<String>? id,
+      Value<String>? goalId,
+      Value<String>? accountId,
+      Value<String>? amount,
+      Value<String>? percentage,
+      Value<String>? createdAt,
+      Value<String>? updatedAt,
       Value<String?>? deletedAt,
       Value<int>? rowid}) {
     return GoalAccountsDbCompanion(
+      id: id ?? this.id,
       goalId: goalId ?? this.goalId,
       accountId: accountId ?? this.accountId,
       amount: amount ?? this.amount,
@@ -2726,6 +2859,9 @@ class GoalAccountsDbCompanion extends UpdateCompanion<GoalAccountsDbData> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
     if (goalId.present) {
       map['goal_id'] = Variable<String>(goalId.value);
     }
@@ -2756,6 +2892,7 @@ class GoalAccountsDbCompanion extends UpdateCompanion<GoalAccountsDbData> {
   @override
   String toString() {
     return (StringBuffer('GoalAccountsDbCompanion(')
+          ..write('id: $id, ')
           ..write('goalId: $goalId, ')
           ..write('accountId: $accountId, ')
           ..write('amount: $amount, ')
@@ -3095,37 +3232,39 @@ class $$AccountsDbTableOrderingComposer
 
 typedef $$TransactionsDbTableInsertCompanionBuilder = TransactionsDbCompanion
     Function({
-  Value<String?> accountId,
-  Value<String?> category,
+  required String id,
+  required String accountId,
+  required String category,
   Value<String?> subcategory,
-  Value<String?> type,
-  Value<String?> name,
-  Value<double?> amount,
+  required String type,
+  required String name,
+  required double amount,
   Value<String?> isoCurrencyCode,
   Value<String?> unofficialCurrencyCode,
-  Value<String?> date,
-  Value<int?> pending,
+  required String date,
+  required int pending,
   Value<String?> accountOwner,
-  Value<String?> createdAt,
-  Value<String?> updatedAt,
+  required String createdAt,
+  required String updatedAt,
   Value<String?> deletedAt,
   Value<int> rowid,
 });
 typedef $$TransactionsDbTableUpdateCompanionBuilder = TransactionsDbCompanion
     Function({
-  Value<String?> accountId,
-  Value<String?> category,
+  Value<String> id,
+  Value<String> accountId,
+  Value<String> category,
   Value<String?> subcategory,
-  Value<String?> type,
-  Value<String?> name,
-  Value<double?> amount,
+  Value<String> type,
+  Value<String> name,
+  Value<double> amount,
   Value<String?> isoCurrencyCode,
   Value<String?> unofficialCurrencyCode,
-  Value<String?> date,
-  Value<int?> pending,
+  Value<String> date,
+  Value<int> pending,
   Value<String?> accountOwner,
-  Value<String?> createdAt,
-  Value<String?> updatedAt,
+  Value<String> createdAt,
+  Value<String> updatedAt,
   Value<String?> deletedAt,
   Value<int> rowid,
 });
@@ -3151,23 +3290,25 @@ class $$TransactionsDbTableTableManager extends RootTableManager<
           getChildManagerBuilder: (p) =>
               $$TransactionsDbTableProcessedTableManager(p),
           getUpdateCompanionBuilder: ({
-            Value<String?> accountId = const Value.absent(),
-            Value<String?> category = const Value.absent(),
+            Value<String> id = const Value.absent(),
+            Value<String> accountId = const Value.absent(),
+            Value<String> category = const Value.absent(),
             Value<String?> subcategory = const Value.absent(),
-            Value<String?> type = const Value.absent(),
-            Value<String?> name = const Value.absent(),
-            Value<double?> amount = const Value.absent(),
+            Value<String> type = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<double> amount = const Value.absent(),
             Value<String?> isoCurrencyCode = const Value.absent(),
             Value<String?> unofficialCurrencyCode = const Value.absent(),
-            Value<String?> date = const Value.absent(),
-            Value<int?> pending = const Value.absent(),
+            Value<String> date = const Value.absent(),
+            Value<int> pending = const Value.absent(),
             Value<String?> accountOwner = const Value.absent(),
-            Value<String?> createdAt = const Value.absent(),
-            Value<String?> updatedAt = const Value.absent(),
+            Value<String> createdAt = const Value.absent(),
+            Value<String> updatedAt = const Value.absent(),
             Value<String?> deletedAt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               TransactionsDbCompanion(
+            id: id,
             accountId: accountId,
             category: category,
             subcategory: subcategory,
@@ -3185,23 +3326,25 @@ class $$TransactionsDbTableTableManager extends RootTableManager<
             rowid: rowid,
           ),
           getInsertCompanionBuilder: ({
-            Value<String?> accountId = const Value.absent(),
-            Value<String?> category = const Value.absent(),
+            required String id,
+            required String accountId,
+            required String category,
             Value<String?> subcategory = const Value.absent(),
-            Value<String?> type = const Value.absent(),
-            Value<String?> name = const Value.absent(),
-            Value<double?> amount = const Value.absent(),
+            required String type,
+            required String name,
+            required double amount,
             Value<String?> isoCurrencyCode = const Value.absent(),
             Value<String?> unofficialCurrencyCode = const Value.absent(),
-            Value<String?> date = const Value.absent(),
-            Value<int?> pending = const Value.absent(),
+            required String date,
+            required int pending,
             Value<String?> accountOwner = const Value.absent(),
-            Value<String?> createdAt = const Value.absent(),
-            Value<String?> updatedAt = const Value.absent(),
+            required String createdAt,
+            required String updatedAt,
             Value<String?> deletedAt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               TransactionsDbCompanion.insert(
+            id: id,
             accountId: accountId,
             category: category,
             subcategory: subcategory,
@@ -3236,6 +3379,11 @@ class $$TransactionsDbTableProcessedTableManager extends ProcessedTableManager<
 class $$TransactionsDbTableFilterComposer
     extends FilterComposer<_$AppDatabase, $TransactionsDbTable> {
   $$TransactionsDbTableFilterComposer(super.$state);
+  ColumnFilters<String> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
   ColumnFilters<String> get accountId => $state.composableBuilder(
       column: $state.table.accountId,
       builder: (column, joinBuilders) =>
@@ -3310,6 +3458,11 @@ class $$TransactionsDbTableFilterComposer
 class $$TransactionsDbTableOrderingComposer
     extends OrderingComposer<_$AppDatabase, $TransactionsDbTable> {
   $$TransactionsDbTableOrderingComposer(super.$state);
+  ColumnOrderings<String> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
   ColumnOrderings<String> get accountId => $state.composableBuilder(
       column: $state.table.accountId,
       builder: (column, joinBuilders) =>
@@ -3384,6 +3537,7 @@ class $$TransactionsDbTableOrderingComposer
 
 typedef $$InvestmentHoldingsDbTableInsertCompanionBuilder
     = InvestmentHoldingsDbCompanion Function({
+  required String id,
   Value<String?> accountId,
   Value<double?> institutionPrice,
   Value<String?> institutionPriceAsOf,
@@ -3399,6 +3553,7 @@ typedef $$InvestmentHoldingsDbTableInsertCompanionBuilder
 });
 typedef $$InvestmentHoldingsDbTableUpdateCompanionBuilder
     = InvestmentHoldingsDbCompanion Function({
+  Value<String> id,
   Value<String?> accountId,
   Value<double?> institutionPrice,
   Value<String?> institutionPriceAsOf,
@@ -3434,6 +3589,7 @@ class $$InvestmentHoldingsDbTableTableManager extends RootTableManager<
           getChildManagerBuilder: (p) =>
               $$InvestmentHoldingsDbTableProcessedTableManager(p),
           getUpdateCompanionBuilder: ({
+            Value<String> id = const Value.absent(),
             Value<String?> accountId = const Value.absent(),
             Value<double?> institutionPrice = const Value.absent(),
             Value<String?> institutionPriceAsOf = const Value.absent(),
@@ -3448,6 +3604,7 @@ class $$InvestmentHoldingsDbTableTableManager extends RootTableManager<
             Value<int> rowid = const Value.absent(),
           }) =>
               InvestmentHoldingsDbCompanion(
+            id: id,
             accountId: accountId,
             institutionPrice: institutionPrice,
             institutionPriceAsOf: institutionPriceAsOf,
@@ -3462,6 +3619,7 @@ class $$InvestmentHoldingsDbTableTableManager extends RootTableManager<
             rowid: rowid,
           ),
           getInsertCompanionBuilder: ({
+            required String id,
             Value<String?> accountId = const Value.absent(),
             Value<double?> institutionPrice = const Value.absent(),
             Value<String?> institutionPriceAsOf = const Value.absent(),
@@ -3476,6 +3634,7 @@ class $$InvestmentHoldingsDbTableTableManager extends RootTableManager<
             Value<int> rowid = const Value.absent(),
           }) =>
               InvestmentHoldingsDbCompanion.insert(
+            id: id,
             accountId: accountId,
             institutionPrice: institutionPrice,
             institutionPriceAsOf: institutionPriceAsOf,
@@ -3508,6 +3667,11 @@ class $$InvestmentHoldingsDbTableProcessedTableManager
 class $$InvestmentHoldingsDbTableFilterComposer
     extends FilterComposer<_$AppDatabase, $InvestmentHoldingsDbTable> {
   $$InvestmentHoldingsDbTableFilterComposer(super.$state);
+  ColumnFilters<String> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
   ColumnFilters<String> get accountId => $state.composableBuilder(
       column: $state.table.accountId,
       builder: (column, joinBuilders) =>
@@ -3567,6 +3731,11 @@ class $$InvestmentHoldingsDbTableFilterComposer
 class $$InvestmentHoldingsDbTableOrderingComposer
     extends OrderingComposer<_$AppDatabase, $InvestmentHoldingsDbTable> {
   $$InvestmentHoldingsDbTableOrderingComposer(super.$state);
+  ColumnOrderings<String> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
   ColumnOrderings<String> get accountId => $state.composableBuilder(
       column: $state.table.accountId,
       builder: (column, joinBuilders) =>
@@ -3624,24 +3793,26 @@ class $$InvestmentHoldingsDbTableOrderingComposer
 }
 
 typedef $$GoalsDbTableInsertCompanionBuilder = GoalsDbCompanion Function({
-  Value<String?> name,
-  Value<double?> amount,
-  Value<String?> targetDate,
-  Value<String?> userId,
+  required String id,
+  required String name,
+  required double amount,
+  required String targetDate,
+  required String userId,
   Value<double?> progress,
-  Value<String?> createdAt,
-  Value<String?> updatedAt,
+  required String createdAt,
+  required String updatedAt,
   Value<String?> deletedAt,
   Value<int> rowid,
 });
 typedef $$GoalsDbTableUpdateCompanionBuilder = GoalsDbCompanion Function({
-  Value<String?> name,
-  Value<double?> amount,
-  Value<String?> targetDate,
-  Value<String?> userId,
+  Value<String> id,
+  Value<String> name,
+  Value<double> amount,
+  Value<String> targetDate,
+  Value<String> userId,
   Value<double?> progress,
-  Value<String?> createdAt,
-  Value<String?> updatedAt,
+  Value<String> createdAt,
+  Value<String> updatedAt,
   Value<String?> deletedAt,
   Value<int> rowid,
 });
@@ -3665,17 +3836,19 @@ class $$GoalsDbTableTableManager extends RootTableManager<
               $$GoalsDbTableOrderingComposer(ComposerState(db, table)),
           getChildManagerBuilder: (p) => $$GoalsDbTableProcessedTableManager(p),
           getUpdateCompanionBuilder: ({
-            Value<String?> name = const Value.absent(),
-            Value<double?> amount = const Value.absent(),
-            Value<String?> targetDate = const Value.absent(),
-            Value<String?> userId = const Value.absent(),
+            Value<String> id = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<double> amount = const Value.absent(),
+            Value<String> targetDate = const Value.absent(),
+            Value<String> userId = const Value.absent(),
             Value<double?> progress = const Value.absent(),
-            Value<String?> createdAt = const Value.absent(),
-            Value<String?> updatedAt = const Value.absent(),
+            Value<String> createdAt = const Value.absent(),
+            Value<String> updatedAt = const Value.absent(),
             Value<String?> deletedAt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               GoalsDbCompanion(
+            id: id,
             name: name,
             amount: amount,
             targetDate: targetDate,
@@ -3687,17 +3860,19 @@ class $$GoalsDbTableTableManager extends RootTableManager<
             rowid: rowid,
           ),
           getInsertCompanionBuilder: ({
-            Value<String?> name = const Value.absent(),
-            Value<double?> amount = const Value.absent(),
-            Value<String?> targetDate = const Value.absent(),
-            Value<String?> userId = const Value.absent(),
+            required String id,
+            required String name,
+            required double amount,
+            required String targetDate,
+            required String userId,
             Value<double?> progress = const Value.absent(),
-            Value<String?> createdAt = const Value.absent(),
-            Value<String?> updatedAt = const Value.absent(),
+            required String createdAt,
+            required String updatedAt,
             Value<String?> deletedAt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               GoalsDbCompanion.insert(
+            id: id,
             name: name,
             amount: amount,
             targetDate: targetDate,
@@ -3726,6 +3901,11 @@ class $$GoalsDbTableProcessedTableManager extends ProcessedTableManager<
 class $$GoalsDbTableFilterComposer
     extends FilterComposer<_$AppDatabase, $GoalsDbTable> {
   $$GoalsDbTableFilterComposer(super.$state);
+  ColumnFilters<String> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
   ColumnFilters<String> get name => $state.composableBuilder(
       column: $state.table.name,
       builder: (column, joinBuilders) =>
@@ -3770,6 +3950,11 @@ class $$GoalsDbTableFilterComposer
 class $$GoalsDbTableOrderingComposer
     extends OrderingComposer<_$AppDatabase, $GoalsDbTable> {
   $$GoalsDbTableOrderingComposer(super.$state);
+  ColumnOrderings<String> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
   ColumnOrderings<String> get name => $state.composableBuilder(
       column: $state.table.name,
       builder: (column, joinBuilders) =>
@@ -3813,23 +3998,25 @@ class $$GoalsDbTableOrderingComposer
 
 typedef $$GoalAccountsDbTableInsertCompanionBuilder = GoalAccountsDbCompanion
     Function({
-  Value<String?> goalId,
-  Value<String?> accountId,
-  Value<String?> amount,
-  Value<String?> percentage,
-  Value<String?> createdAt,
-  Value<String?> updatedAt,
+  required String id,
+  required String goalId,
+  required String accountId,
+  required String amount,
+  required String percentage,
+  required String createdAt,
+  required String updatedAt,
   Value<String?> deletedAt,
   Value<int> rowid,
 });
 typedef $$GoalAccountsDbTableUpdateCompanionBuilder = GoalAccountsDbCompanion
     Function({
-  Value<String?> goalId,
-  Value<String?> accountId,
-  Value<String?> amount,
-  Value<String?> percentage,
-  Value<String?> createdAt,
-  Value<String?> updatedAt,
+  Value<String> id,
+  Value<String> goalId,
+  Value<String> accountId,
+  Value<String> amount,
+  Value<String> percentage,
+  Value<String> createdAt,
+  Value<String> updatedAt,
   Value<String?> deletedAt,
   Value<int> rowid,
 });
@@ -3855,16 +4042,18 @@ class $$GoalAccountsDbTableTableManager extends RootTableManager<
           getChildManagerBuilder: (p) =>
               $$GoalAccountsDbTableProcessedTableManager(p),
           getUpdateCompanionBuilder: ({
-            Value<String?> goalId = const Value.absent(),
-            Value<String?> accountId = const Value.absent(),
-            Value<String?> amount = const Value.absent(),
-            Value<String?> percentage = const Value.absent(),
-            Value<String?> createdAt = const Value.absent(),
-            Value<String?> updatedAt = const Value.absent(),
+            Value<String> id = const Value.absent(),
+            Value<String> goalId = const Value.absent(),
+            Value<String> accountId = const Value.absent(),
+            Value<String> amount = const Value.absent(),
+            Value<String> percentage = const Value.absent(),
+            Value<String> createdAt = const Value.absent(),
+            Value<String> updatedAt = const Value.absent(),
             Value<String?> deletedAt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               GoalAccountsDbCompanion(
+            id: id,
             goalId: goalId,
             accountId: accountId,
             amount: amount,
@@ -3875,16 +4064,18 @@ class $$GoalAccountsDbTableTableManager extends RootTableManager<
             rowid: rowid,
           ),
           getInsertCompanionBuilder: ({
-            Value<String?> goalId = const Value.absent(),
-            Value<String?> accountId = const Value.absent(),
-            Value<String?> amount = const Value.absent(),
-            Value<String?> percentage = const Value.absent(),
-            Value<String?> createdAt = const Value.absent(),
-            Value<String?> updatedAt = const Value.absent(),
+            required String id,
+            required String goalId,
+            required String accountId,
+            required String amount,
+            required String percentage,
+            required String createdAt,
+            required String updatedAt,
             Value<String?> deletedAt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               GoalAccountsDbCompanion.insert(
+            id: id,
             goalId: goalId,
             accountId: accountId,
             amount: amount,
@@ -3912,6 +4103,11 @@ class $$GoalAccountsDbTableProcessedTableManager extends ProcessedTableManager<
 class $$GoalAccountsDbTableFilterComposer
     extends FilterComposer<_$AppDatabase, $GoalAccountsDbTable> {
   $$GoalAccountsDbTableFilterComposer(super.$state);
+  ColumnFilters<String> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
   ColumnFilters<String> get goalId => $state.composableBuilder(
       column: $state.table.goalId,
       builder: (column, joinBuilders) =>
@@ -3951,6 +4147,11 @@ class $$GoalAccountsDbTableFilterComposer
 class $$GoalAccountsDbTableOrderingComposer
     extends OrderingComposer<_$AppDatabase, $GoalAccountsDbTable> {
   $$GoalAccountsDbTableOrderingComposer(super.$state);
+  ColumnOrderings<String> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
   ColumnOrderings<String> get goalId => $state.composableBuilder(
       column: $state.table.goalId,
       builder: (column, joinBuilders) =>
