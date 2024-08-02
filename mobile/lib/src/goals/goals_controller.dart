@@ -10,6 +10,17 @@ class GoalsController {
   final Logger _logger = Logger('GoalsController');
   final GoalsService goalsService;
 
+  Stream<List<Goal>> watchGoals() {
+    try {
+      final goals = goalsService.watchGoals();
+      _logger.info("Watching goals: $goals");
+      return goals;
+    } catch (e, stacktrace) {
+      _logger.severe('Failed to watch goals', e, stacktrace);
+      rethrow;
+    }
+  }
+
   Future<List<Goal>> getGoals() async {
     try {
       final goals = await goalsService.getGoals();

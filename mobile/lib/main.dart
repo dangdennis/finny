@@ -41,12 +41,13 @@ void main() async {
 
   // services
   final goalsService = GoalsService(
-    powersyncDb: powersyncDb,
     appDb: appDb,
   );
   final settingsService = SettingsService();
   final accountsService = AccountsService(appDb: appDb);
-  final authService = AuthService();
+  final authService = AuthService(
+    powersyncDb: powersyncDb,
+  );
   final connectionsService =
       ConnectionsService(accountsService: accountsService);
 

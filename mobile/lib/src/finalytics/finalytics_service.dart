@@ -1,11 +1,12 @@
-import 'package:powersync/powersync.dart';
+import 'package:drift/drift.dart';
+import 'package:finny/src/powersync/database.dart';
 
-class MonthlyAverageMoneyFlow {
+class MonthlyTransactionSummary {
   final DateTime month;
   final double averageInflows;
   final double averageOutflows;
 
-  MonthlyAverageMoneyFlow({
+  MonthlyTransactionSummary({
     required this.month,
     required this.averageInflows,
     required this.averageOutflows,
@@ -13,45 +14,47 @@ class MonthlyAverageMoneyFlow {
 }
 
 class Finalytics {
-  Finalytics({required this.powersyncDb});
+  Finalytics({required this.appDb});
 
-  final PowerSyncDatabase powersyncDb;
+  final AppDatabase appDb;
 
-  Future<List<MonthlyAverageMoneyFlow>> getAverageInflowsAndOutflows() async {
-    const sql = """
-        SELECT
-          date_trunc('month', date) AS month,
-          avg(
-            CASE WHEN amount < 0 THEN
-              amount
-            ELSE
-              0
-            END) AS average_inflows,
-          avg(
-            CASE WHEN amount > 0 THEN
-              amount
-            ELSE
-              0
-            END) AS average_outflows
-        FROM
-          transactions
-          JOIN accounts ON transactions.account_id = accounts.id
-        WHERE
-          accounts.user_id = '5eaa8ae7-dbcb-445e-8058-dbd51a912c8d'
-        GROUP BY
-          month
-        ORDER BY
-          month;
-    """;
+  Future<List<MonthlyTransactionSummary>> getMonthlyTransactionSummary(
+      String userId) async {
+    final result = await appDb.customSelect(
+      '''
+      SELECT
+        date_trunc('month', date) AS month,
+        avg(
+          CASE WHEN amount < 0 THEN
+            amount
+          ELSE
+            0
+          END) AS average_inflows,
+        avg(
+          CASE WHEN amount > 0 THEN
+            amount
+          ELSE
+            0
+          END) AS average_outflows
+      FROM
+        transactions
+        JOIN accounts ON transactions.account_id = accounts.id
+      WHERE
+        accounts.user_id = ?
+      GROUP BY
+        month
+      ORDER BY
+        month;
+      ''',
+      variables: [Variable.withString(userId)],
+    ).get();
 
-    final resultSet = await powersyncDb.getAll(sql);
-
-    return resultSet
-        .map((row) => MonthlyAverageMoneyFlow(
-              month: DateTime.parse(row['month']),
-              averageInflows: row['average_inflows'],
-              averageOutflows: row['average_outflows'],
-            ))
-        .toList();
+    return result.map((row) {
+      return MonthlyTransactionSummary(
+        month: row.read<DateTime>('month'),
+        averageInflows: row.read<double>('average_inflows'),
+        averageOutflows: row.read<double>('average_outflows'),
+      );
+    }).toList();
   }
 }
