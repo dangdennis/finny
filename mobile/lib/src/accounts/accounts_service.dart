@@ -1,17 +1,24 @@
 import 'package:drift/drift.dart';
 import 'package:finny/src/accounts/account_model.dart';
 import 'package:finny/src/powersync/database.dart';
-import 'package:finny/src/powersync/powersync.dart';
 import 'package:logging/logging.dart';
 
 class AccountsService {
+  AccountsService({required this.appDb});
+
   final Logger _logger = Logger('AccountsService');
+  final AppDatabase appDb;
 
   Stream<List<Account>> watchAccounts() {
-    return (appDb.select(appDb.accountsDb)
-          ..orderBy([(a) => OrderingTerm(expression: a.createdAt)]))
-        .watch()
-        .map((rows) => rows.map(dbToDomain).toList());
+    try {
+      return (appDb.select(appDb.accountsDb)
+            ..orderBy([(a) => OrderingTerm(expression: a.createdAt)]))
+          .watch()
+          .map((rows) => rows.map(dbToDomain).toList());
+    } catch (e, stacktrace) {
+      _logger.severe('Failed to watch accounts', e, stacktrace);
+      rethrow;
+    }
   }
 
   Future<List<Account>> getAccounts() async {

@@ -1,4 +1,5 @@
-// dart run build_runner build to regenerate database.g.dart
+// to regenerate database.g.dart run:
+// dart run build_runner build 
 // dart run build_runner watch
 
 import 'package:drift_sqlite_async/drift_sqlite_async.dart';
@@ -37,14 +38,14 @@ class AccountsDb extends Table {
   TextColumn get itemId => text()();
   TextColumn get userId => text()();
   TextColumn get name => text()();
-  TextColumn get mask => text()();
-  TextColumn get officialName => text()();
+  TextColumn get mask => text().nullable()();
+  TextColumn get officialName => text().nullable()();
   RealColumn get currentBalance => real()();
   RealColumn get availableBalance => real()();
-  TextColumn get isoCurrencyCode => text()();
+  TextColumn get isoCurrencyCode => text().nullable()();
   TextColumn get unofficialCurrencyCode => text().nullable()();
-  TextColumn get type => text()();
-  TextColumn get subtype => text()();
+  TextColumn get type => text().nullable()();
+  TextColumn get subtype => text().nullable()();
   TextColumn get createdAt => text()();
   TextColumn get updatedAt => text()();
   TextColumn get deletedAt => text().nullable()();

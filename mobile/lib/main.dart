@@ -42,7 +42,7 @@ void main() async {
   // services
   final goalsService = GoalsService();
   final settingsService = SettingsService();
-  final accountsService = AccountsService();
+  final accountsService = AccountsService(appDb: appDb);
   final authService = AuthService();
   final connectionsService =
       ConnectionsService(accountsService: accountsService);
@@ -51,7 +51,7 @@ void main() async {
   final authProvider = AuthProvider(authService: authService);
 
   // controllers
-  final accountsController = AccountsController(AccountsService());
+  final accountsController = AccountsController(accountsService);
   final connectionsController = ConnectionsController(connectionsService);
   final goalsController = GoalsController(
     goalsService: goalsService,
