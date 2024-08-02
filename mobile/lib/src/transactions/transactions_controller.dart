@@ -1,12 +1,10 @@
 import 'package:drift/drift.dart';
 import 'package:finny/src/powersync/database.dart';
 import 'package:finny/src/transactions/transaction_model.dart';
-import 'package:powersync/powersync.dart';
 
 class TransactionsController {
-  TransactionsController({required this.powersyncDb, required this.appDb});
+  TransactionsController({required this.appDb});
 
-  final PowerSyncDatabase powersyncDb;
   final AppDatabase appDb;
 
   Stream<List<Transaction>> watchTransactions() {

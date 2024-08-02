@@ -33,6 +33,8 @@ class GoalsService {
       amount: Value(input.amount),
       targetDate: Value(targetDateString),
       progress: const Value(0),
+      userId: Value(const Uuid()
+          .v4()), // random id because it will be replaced with the correct one. this makes drift happy.
       createdAt: Value(DateTime.now().toIso8601String()),
       updatedAt: Value(DateTime.now().toIso8601String()),
     );
