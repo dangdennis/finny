@@ -9,50 +9,55 @@ class $AccountsDbTable extends AccountsDb
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $AccountsDbTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _itemIdMeta = const VerificationMeta('itemId');
   @override
   late final GeneratedColumn<String> itemId = GeneratedColumn<String>(
-      'item_id', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+      'item_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
   @override
   late final GeneratedColumn<String> userId = GeneratedColumn<String>(
-      'user_id', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+      'user_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
-      'name', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+      'name', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _maskMeta = const VerificationMeta('mask');
   @override
   late final GeneratedColumn<String> mask = GeneratedColumn<String>(
-      'mask', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+      'mask', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _officialNameMeta =
       const VerificationMeta('officialName');
   @override
   late final GeneratedColumn<String> officialName = GeneratedColumn<String>(
-      'official_name', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+      'official_name', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _currentBalanceMeta =
       const VerificationMeta('currentBalance');
   @override
   late final GeneratedColumn<double> currentBalance = GeneratedColumn<double>(
-      'current_balance', aliasedName, true,
-      type: DriftSqlType.double, requiredDuringInsert: false);
+      'current_balance', aliasedName, false,
+      type: DriftSqlType.double, requiredDuringInsert: true);
   static const VerificationMeta _availableBalanceMeta =
       const VerificationMeta('availableBalance');
   @override
   late final GeneratedColumn<double> availableBalance = GeneratedColumn<double>(
-      'available_balance', aliasedName, true,
-      type: DriftSqlType.double, requiredDuringInsert: false);
+      'available_balance', aliasedName, false,
+      type: DriftSqlType.double, requiredDuringInsert: true);
   static const VerificationMeta _isoCurrencyCodeMeta =
       const VerificationMeta('isoCurrencyCode');
   @override
   late final GeneratedColumn<String> isoCurrencyCode = GeneratedColumn<String>(
-      'iso_currency_code', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+      'iso_currency_code', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _unofficialCurrencyCodeMeta =
       const VerificationMeta('unofficialCurrencyCode');
   @override
@@ -62,26 +67,26 @@ class $AccountsDbTable extends AccountsDb
   static const VerificationMeta _typeMeta = const VerificationMeta('type');
   @override
   late final GeneratedColumn<String> type = GeneratedColumn<String>(
-      'type', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+      'type', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _subtypeMeta =
       const VerificationMeta('subtype');
   @override
   late final GeneratedColumn<String> subtype = GeneratedColumn<String>(
-      'subtype', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+      'subtype', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _createdAtMeta =
       const VerificationMeta('createdAt');
   @override
   late final GeneratedColumn<String> createdAt = GeneratedColumn<String>(
-      'created_at', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+      'created_at', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _updatedAtMeta =
       const VerificationMeta('updatedAt');
   @override
   late final GeneratedColumn<String> updatedAt = GeneratedColumn<String>(
-      'updated_at', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+      'updated_at', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _deletedAtMeta =
       const VerificationMeta('deletedAt');
   @override
@@ -90,6 +95,7 @@ class $AccountsDbTable extends AccountsDb
       type: DriftSqlType.string, requiredDuringInsert: false);
   @override
   List<GeneratedColumn> get $columns => [
+        id,
         itemId,
         userId,
         name,
@@ -115,45 +121,66 @@ class $AccountsDbTable extends AccountsDb
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
     if (data.containsKey('item_id')) {
       context.handle(_itemIdMeta,
           itemId.isAcceptableOrUnknown(data['item_id']!, _itemIdMeta));
+    } else if (isInserting) {
+      context.missing(_itemIdMeta);
     }
     if (data.containsKey('user_id')) {
       context.handle(_userIdMeta,
           userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta));
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
     }
     if (data.containsKey('name')) {
       context.handle(
           _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+    } else if (isInserting) {
+      context.missing(_nameMeta);
     }
     if (data.containsKey('mask')) {
       context.handle(
           _maskMeta, mask.isAcceptableOrUnknown(data['mask']!, _maskMeta));
+    } else if (isInserting) {
+      context.missing(_maskMeta);
     }
     if (data.containsKey('official_name')) {
       context.handle(
           _officialNameMeta,
           officialName.isAcceptableOrUnknown(
               data['official_name']!, _officialNameMeta));
+    } else if (isInserting) {
+      context.missing(_officialNameMeta);
     }
     if (data.containsKey('current_balance')) {
       context.handle(
           _currentBalanceMeta,
           currentBalance.isAcceptableOrUnknown(
               data['current_balance']!, _currentBalanceMeta));
+    } else if (isInserting) {
+      context.missing(_currentBalanceMeta);
     }
     if (data.containsKey('available_balance')) {
       context.handle(
           _availableBalanceMeta,
           availableBalance.isAcceptableOrUnknown(
               data['available_balance']!, _availableBalanceMeta));
+    } else if (isInserting) {
+      context.missing(_availableBalanceMeta);
     }
     if (data.containsKey('iso_currency_code')) {
       context.handle(
           _isoCurrencyCodeMeta,
           isoCurrencyCode.isAcceptableOrUnknown(
               data['iso_currency_code']!, _isoCurrencyCodeMeta));
+    } else if (isInserting) {
+      context.missing(_isoCurrencyCodeMeta);
     }
     if (data.containsKey('unofficial_currency_code')) {
       context.handle(
@@ -164,18 +191,26 @@ class $AccountsDbTable extends AccountsDb
     if (data.containsKey('type')) {
       context.handle(
           _typeMeta, type.isAcceptableOrUnknown(data['type']!, _typeMeta));
+    } else if (isInserting) {
+      context.missing(_typeMeta);
     }
     if (data.containsKey('subtype')) {
       context.handle(_subtypeMeta,
           subtype.isAcceptableOrUnknown(data['subtype']!, _subtypeMeta));
+    } else if (isInserting) {
+      context.missing(_subtypeMeta);
     }
     if (data.containsKey('created_at')) {
       context.handle(_createdAtMeta,
           createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
     }
     if (data.containsKey('updated_at')) {
       context.handle(_updatedAtMeta,
           updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
     }
     if (data.containsKey('deleted_at')) {
       context.handle(_deletedAtMeta,
@@ -190,33 +225,35 @@ class $AccountsDbTable extends AccountsDb
   AccountsDbData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return AccountsDbData(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
       itemId: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}item_id']),
+          .read(DriftSqlType.string, data['${effectivePrefix}item_id'])!,
       userId: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}user_id']),
+          .read(DriftSqlType.string, data['${effectivePrefix}user_id'])!,
       name: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}name']),
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
       mask: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}mask']),
+          .read(DriftSqlType.string, data['${effectivePrefix}mask'])!,
       officialName: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}official_name']),
-      currentBalance: attachedDatabase.typeMapping
-          .read(DriftSqlType.double, data['${effectivePrefix}current_balance']),
+          .read(DriftSqlType.string, data['${effectivePrefix}official_name'])!,
+      currentBalance: attachedDatabase.typeMapping.read(
+          DriftSqlType.double, data['${effectivePrefix}current_balance'])!,
       availableBalance: attachedDatabase.typeMapping.read(
-          DriftSqlType.double, data['${effectivePrefix}available_balance']),
+          DriftSqlType.double, data['${effectivePrefix}available_balance'])!,
       isoCurrencyCode: attachedDatabase.typeMapping.read(
-          DriftSqlType.string, data['${effectivePrefix}iso_currency_code']),
+          DriftSqlType.string, data['${effectivePrefix}iso_currency_code'])!,
       unofficialCurrencyCode: attachedDatabase.typeMapping.read(
           DriftSqlType.string,
           data['${effectivePrefix}unofficial_currency_code']),
       type: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}type']),
+          .read(DriftSqlType.string, data['${effectivePrefix}type'])!,
       subtype: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}subtype']),
+          .read(DriftSqlType.string, data['${effectivePrefix}subtype'])!,
       createdAt: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}created_at']),
+          .read(DriftSqlType.string, data['${effectivePrefix}created_at'])!,
       updatedAt: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}updated_at']),
+          .read(DriftSqlType.string, data['${effectivePrefix}updated_at'])!,
       deletedAt: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}deleted_at']),
     );
@@ -229,78 +266,57 @@ class $AccountsDbTable extends AccountsDb
 }
 
 class AccountsDbData extends DataClass implements Insertable<AccountsDbData> {
-  final String? itemId;
-  final String? userId;
-  final String? name;
-  final String? mask;
-  final String? officialName;
-  final double? currentBalance;
-  final double? availableBalance;
-  final String? isoCurrencyCode;
+  final String id;
+  final String itemId;
+  final String userId;
+  final String name;
+  final String mask;
+  final String officialName;
+  final double currentBalance;
+  final double availableBalance;
+  final String isoCurrencyCode;
   final String? unofficialCurrencyCode;
-  final String? type;
-  final String? subtype;
-  final String? createdAt;
-  final String? updatedAt;
+  final String type;
+  final String subtype;
+  final String createdAt;
+  final String updatedAt;
   final String? deletedAt;
   const AccountsDbData(
-      {this.itemId,
-      this.userId,
-      this.name,
-      this.mask,
-      this.officialName,
-      this.currentBalance,
-      this.availableBalance,
-      this.isoCurrencyCode,
+      {required this.id,
+      required this.itemId,
+      required this.userId,
+      required this.name,
+      required this.mask,
+      required this.officialName,
+      required this.currentBalance,
+      required this.availableBalance,
+      required this.isoCurrencyCode,
       this.unofficialCurrencyCode,
-      this.type,
-      this.subtype,
-      this.createdAt,
-      this.updatedAt,
+      required this.type,
+      required this.subtype,
+      required this.createdAt,
+      required this.updatedAt,
       this.deletedAt});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (!nullToAbsent || itemId != null) {
-      map['item_id'] = Variable<String>(itemId);
-    }
-    if (!nullToAbsent || userId != null) {
-      map['user_id'] = Variable<String>(userId);
-    }
-    if (!nullToAbsent || name != null) {
-      map['name'] = Variable<String>(name);
-    }
-    if (!nullToAbsent || mask != null) {
-      map['mask'] = Variable<String>(mask);
-    }
-    if (!nullToAbsent || officialName != null) {
-      map['official_name'] = Variable<String>(officialName);
-    }
-    if (!nullToAbsent || currentBalance != null) {
-      map['current_balance'] = Variable<double>(currentBalance);
-    }
-    if (!nullToAbsent || availableBalance != null) {
-      map['available_balance'] = Variable<double>(availableBalance);
-    }
-    if (!nullToAbsent || isoCurrencyCode != null) {
-      map['iso_currency_code'] = Variable<String>(isoCurrencyCode);
-    }
+    map['id'] = Variable<String>(id);
+    map['item_id'] = Variable<String>(itemId);
+    map['user_id'] = Variable<String>(userId);
+    map['name'] = Variable<String>(name);
+    map['mask'] = Variable<String>(mask);
+    map['official_name'] = Variable<String>(officialName);
+    map['current_balance'] = Variable<double>(currentBalance);
+    map['available_balance'] = Variable<double>(availableBalance);
+    map['iso_currency_code'] = Variable<String>(isoCurrencyCode);
     if (!nullToAbsent || unofficialCurrencyCode != null) {
       map['unofficial_currency_code'] =
           Variable<String>(unofficialCurrencyCode);
     }
-    if (!nullToAbsent || type != null) {
-      map['type'] = Variable<String>(type);
-    }
-    if (!nullToAbsent || subtype != null) {
-      map['subtype'] = Variable<String>(subtype);
-    }
-    if (!nullToAbsent || createdAt != null) {
-      map['created_at'] = Variable<String>(createdAt);
-    }
-    if (!nullToAbsent || updatedAt != null) {
-      map['updated_at'] = Variable<String>(updatedAt);
-    }
+    map['type'] = Variable<String>(type);
+    map['subtype'] = Variable<String>(subtype);
+    map['created_at'] = Variable<String>(createdAt);
+    map['updated_at'] = Variable<String>(updatedAt);
     if (!nullToAbsent || deletedAt != null) {
       map['deleted_at'] = Variable<String>(deletedAt);
     }
@@ -309,37 +325,22 @@ class AccountsDbData extends DataClass implements Insertable<AccountsDbData> {
 
   AccountsDbCompanion toCompanion(bool nullToAbsent) {
     return AccountsDbCompanion(
-      itemId:
-          itemId == null && nullToAbsent ? const Value.absent() : Value(itemId),
-      userId:
-          userId == null && nullToAbsent ? const Value.absent() : Value(userId),
-      name: name == null && nullToAbsent ? const Value.absent() : Value(name),
-      mask: mask == null && nullToAbsent ? const Value.absent() : Value(mask),
-      officialName: officialName == null && nullToAbsent
-          ? const Value.absent()
-          : Value(officialName),
-      currentBalance: currentBalance == null && nullToAbsent
-          ? const Value.absent()
-          : Value(currentBalance),
-      availableBalance: availableBalance == null && nullToAbsent
-          ? const Value.absent()
-          : Value(availableBalance),
-      isoCurrencyCode: isoCurrencyCode == null && nullToAbsent
-          ? const Value.absent()
-          : Value(isoCurrencyCode),
+      id: Value(id),
+      itemId: Value(itemId),
+      userId: Value(userId),
+      name: Value(name),
+      mask: Value(mask),
+      officialName: Value(officialName),
+      currentBalance: Value(currentBalance),
+      availableBalance: Value(availableBalance),
+      isoCurrencyCode: Value(isoCurrencyCode),
       unofficialCurrencyCode: unofficialCurrencyCode == null && nullToAbsent
           ? const Value.absent()
           : Value(unofficialCurrencyCode),
-      type: type == null && nullToAbsent ? const Value.absent() : Value(type),
-      subtype: subtype == null && nullToAbsent
-          ? const Value.absent()
-          : Value(subtype),
-      createdAt: createdAt == null && nullToAbsent
-          ? const Value.absent()
-          : Value(createdAt),
-      updatedAt: updatedAt == null && nullToAbsent
-          ? const Value.absent()
-          : Value(updatedAt),
+      type: Value(type),
+      subtype: Value(subtype),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
       deletedAt: deletedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(deletedAt),
@@ -350,20 +351,21 @@ class AccountsDbData extends DataClass implements Insertable<AccountsDbData> {
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return AccountsDbData(
-      itemId: serializer.fromJson<String?>(json['itemId']),
-      userId: serializer.fromJson<String?>(json['userId']),
-      name: serializer.fromJson<String?>(json['name']),
-      mask: serializer.fromJson<String?>(json['mask']),
-      officialName: serializer.fromJson<String?>(json['officialName']),
-      currentBalance: serializer.fromJson<double?>(json['currentBalance']),
-      availableBalance: serializer.fromJson<double?>(json['availableBalance']),
-      isoCurrencyCode: serializer.fromJson<String?>(json['isoCurrencyCode']),
+      id: serializer.fromJson<String>(json['id']),
+      itemId: serializer.fromJson<String>(json['itemId']),
+      userId: serializer.fromJson<String>(json['userId']),
+      name: serializer.fromJson<String>(json['name']),
+      mask: serializer.fromJson<String>(json['mask']),
+      officialName: serializer.fromJson<String>(json['officialName']),
+      currentBalance: serializer.fromJson<double>(json['currentBalance']),
+      availableBalance: serializer.fromJson<double>(json['availableBalance']),
+      isoCurrencyCode: serializer.fromJson<String>(json['isoCurrencyCode']),
       unofficialCurrencyCode:
           serializer.fromJson<String?>(json['unofficialCurrencyCode']),
-      type: serializer.fromJson<String?>(json['type']),
-      subtype: serializer.fromJson<String?>(json['subtype']),
-      createdAt: serializer.fromJson<String?>(json['createdAt']),
-      updatedAt: serializer.fromJson<String?>(json['updatedAt']),
+      type: serializer.fromJson<String>(json['type']),
+      subtype: serializer.fromJson<String>(json['subtype']),
+      createdAt: serializer.fromJson<String>(json['createdAt']),
+      updatedAt: serializer.fromJson<String>(json['updatedAt']),
       deletedAt: serializer.fromJson<String?>(json['deletedAt']),
     );
   }
@@ -371,66 +373,64 @@ class AccountsDbData extends DataClass implements Insertable<AccountsDbData> {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'itemId': serializer.toJson<String?>(itemId),
-      'userId': serializer.toJson<String?>(userId),
-      'name': serializer.toJson<String?>(name),
-      'mask': serializer.toJson<String?>(mask),
-      'officialName': serializer.toJson<String?>(officialName),
-      'currentBalance': serializer.toJson<double?>(currentBalance),
-      'availableBalance': serializer.toJson<double?>(availableBalance),
-      'isoCurrencyCode': serializer.toJson<String?>(isoCurrencyCode),
+      'id': serializer.toJson<String>(id),
+      'itemId': serializer.toJson<String>(itemId),
+      'userId': serializer.toJson<String>(userId),
+      'name': serializer.toJson<String>(name),
+      'mask': serializer.toJson<String>(mask),
+      'officialName': serializer.toJson<String>(officialName),
+      'currentBalance': serializer.toJson<double>(currentBalance),
+      'availableBalance': serializer.toJson<double>(availableBalance),
+      'isoCurrencyCode': serializer.toJson<String>(isoCurrencyCode),
       'unofficialCurrencyCode':
           serializer.toJson<String?>(unofficialCurrencyCode),
-      'type': serializer.toJson<String?>(type),
-      'subtype': serializer.toJson<String?>(subtype),
-      'createdAt': serializer.toJson<String?>(createdAt),
-      'updatedAt': serializer.toJson<String?>(updatedAt),
+      'type': serializer.toJson<String>(type),
+      'subtype': serializer.toJson<String>(subtype),
+      'createdAt': serializer.toJson<String>(createdAt),
+      'updatedAt': serializer.toJson<String>(updatedAt),
       'deletedAt': serializer.toJson<String?>(deletedAt),
     };
   }
 
   AccountsDbData copyWith(
-          {Value<String?> itemId = const Value.absent(),
-          Value<String?> userId = const Value.absent(),
-          Value<String?> name = const Value.absent(),
-          Value<String?> mask = const Value.absent(),
-          Value<String?> officialName = const Value.absent(),
-          Value<double?> currentBalance = const Value.absent(),
-          Value<double?> availableBalance = const Value.absent(),
-          Value<String?> isoCurrencyCode = const Value.absent(),
+          {String? id,
+          String? itemId,
+          String? userId,
+          String? name,
+          String? mask,
+          String? officialName,
+          double? currentBalance,
+          double? availableBalance,
+          String? isoCurrencyCode,
           Value<String?> unofficialCurrencyCode = const Value.absent(),
-          Value<String?> type = const Value.absent(),
-          Value<String?> subtype = const Value.absent(),
-          Value<String?> createdAt = const Value.absent(),
-          Value<String?> updatedAt = const Value.absent(),
+          String? type,
+          String? subtype,
+          String? createdAt,
+          String? updatedAt,
           Value<String?> deletedAt = const Value.absent()}) =>
       AccountsDbData(
-        itemId: itemId.present ? itemId.value : this.itemId,
-        userId: userId.present ? userId.value : this.userId,
-        name: name.present ? name.value : this.name,
-        mask: mask.present ? mask.value : this.mask,
-        officialName:
-            officialName.present ? officialName.value : this.officialName,
-        currentBalance:
-            currentBalance.present ? currentBalance.value : this.currentBalance,
-        availableBalance: availableBalance.present
-            ? availableBalance.value
-            : this.availableBalance,
-        isoCurrencyCode: isoCurrencyCode.present
-            ? isoCurrencyCode.value
-            : this.isoCurrencyCode,
+        id: id ?? this.id,
+        itemId: itemId ?? this.itemId,
+        userId: userId ?? this.userId,
+        name: name ?? this.name,
+        mask: mask ?? this.mask,
+        officialName: officialName ?? this.officialName,
+        currentBalance: currentBalance ?? this.currentBalance,
+        availableBalance: availableBalance ?? this.availableBalance,
+        isoCurrencyCode: isoCurrencyCode ?? this.isoCurrencyCode,
         unofficialCurrencyCode: unofficialCurrencyCode.present
             ? unofficialCurrencyCode.value
             : this.unofficialCurrencyCode,
-        type: type.present ? type.value : this.type,
-        subtype: subtype.present ? subtype.value : this.subtype,
-        createdAt: createdAt.present ? createdAt.value : this.createdAt,
-        updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
+        type: type ?? this.type,
+        subtype: subtype ?? this.subtype,
+        createdAt: createdAt ?? this.createdAt,
+        updatedAt: updatedAt ?? this.updatedAt,
         deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
       );
   @override
   String toString() {
     return (StringBuffer('AccountsDbData(')
+          ..write('id: $id, ')
           ..write('itemId: $itemId, ')
           ..write('userId: $userId, ')
           ..write('name: $name, ')
@@ -451,6 +451,7 @@ class AccountsDbData extends DataClass implements Insertable<AccountsDbData> {
 
   @override
   int get hashCode => Object.hash(
+      id,
       itemId,
       userId,
       name,
@@ -469,6 +470,7 @@ class AccountsDbData extends DataClass implements Insertable<AccountsDbData> {
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is AccountsDbData &&
+          other.id == this.id &&
           other.itemId == this.itemId &&
           other.userId == this.userId &&
           other.name == this.name &&
@@ -486,22 +488,24 @@ class AccountsDbData extends DataClass implements Insertable<AccountsDbData> {
 }
 
 class AccountsDbCompanion extends UpdateCompanion<AccountsDbData> {
-  final Value<String?> itemId;
-  final Value<String?> userId;
-  final Value<String?> name;
-  final Value<String?> mask;
-  final Value<String?> officialName;
-  final Value<double?> currentBalance;
-  final Value<double?> availableBalance;
-  final Value<String?> isoCurrencyCode;
+  final Value<String> id;
+  final Value<String> itemId;
+  final Value<String> userId;
+  final Value<String> name;
+  final Value<String> mask;
+  final Value<String> officialName;
+  final Value<double> currentBalance;
+  final Value<double> availableBalance;
+  final Value<String> isoCurrencyCode;
   final Value<String?> unofficialCurrencyCode;
-  final Value<String?> type;
-  final Value<String?> subtype;
-  final Value<String?> createdAt;
-  final Value<String?> updatedAt;
+  final Value<String> type;
+  final Value<String> subtype;
+  final Value<String> createdAt;
+  final Value<String> updatedAt;
   final Value<String?> deletedAt;
   final Value<int> rowid;
   const AccountsDbCompanion({
+    this.id = const Value.absent(),
     this.itemId = const Value.absent(),
     this.userId = const Value.absent(),
     this.name = const Value.absent(),
@@ -519,23 +523,37 @@ class AccountsDbCompanion extends UpdateCompanion<AccountsDbData> {
     this.rowid = const Value.absent(),
   });
   AccountsDbCompanion.insert({
-    this.itemId = const Value.absent(),
-    this.userId = const Value.absent(),
-    this.name = const Value.absent(),
-    this.mask = const Value.absent(),
-    this.officialName = const Value.absent(),
-    this.currentBalance = const Value.absent(),
-    this.availableBalance = const Value.absent(),
-    this.isoCurrencyCode = const Value.absent(),
+    required String id,
+    required String itemId,
+    required String userId,
+    required String name,
+    required String mask,
+    required String officialName,
+    required double currentBalance,
+    required double availableBalance,
+    required String isoCurrencyCode,
     this.unofficialCurrencyCode = const Value.absent(),
-    this.type = const Value.absent(),
-    this.subtype = const Value.absent(),
-    this.createdAt = const Value.absent(),
-    this.updatedAt = const Value.absent(),
+    required String type,
+    required String subtype,
+    required String createdAt,
+    required String updatedAt,
     this.deletedAt = const Value.absent(),
     this.rowid = const Value.absent(),
-  });
+  })  : id = Value(id),
+        itemId = Value(itemId),
+        userId = Value(userId),
+        name = Value(name),
+        mask = Value(mask),
+        officialName = Value(officialName),
+        currentBalance = Value(currentBalance),
+        availableBalance = Value(availableBalance),
+        isoCurrencyCode = Value(isoCurrencyCode),
+        type = Value(type),
+        subtype = Value(subtype),
+        createdAt = Value(createdAt),
+        updatedAt = Value(updatedAt);
   static Insertable<AccountsDbData> custom({
+    Expression<String>? id,
     Expression<String>? itemId,
     Expression<String>? userId,
     Expression<String>? name,
@@ -553,6 +571,7 @@ class AccountsDbCompanion extends UpdateCompanion<AccountsDbData> {
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
+      if (id != null) 'id': id,
       if (itemId != null) 'item_id': itemId,
       if (userId != null) 'user_id': userId,
       if (name != null) 'name': name,
@@ -573,22 +592,24 @@ class AccountsDbCompanion extends UpdateCompanion<AccountsDbData> {
   }
 
   AccountsDbCompanion copyWith(
-      {Value<String?>? itemId,
-      Value<String?>? userId,
-      Value<String?>? name,
-      Value<String?>? mask,
-      Value<String?>? officialName,
-      Value<double?>? currentBalance,
-      Value<double?>? availableBalance,
-      Value<String?>? isoCurrencyCode,
+      {Value<String>? id,
+      Value<String>? itemId,
+      Value<String>? userId,
+      Value<String>? name,
+      Value<String>? mask,
+      Value<String>? officialName,
+      Value<double>? currentBalance,
+      Value<double>? availableBalance,
+      Value<String>? isoCurrencyCode,
       Value<String?>? unofficialCurrencyCode,
-      Value<String?>? type,
-      Value<String?>? subtype,
-      Value<String?>? createdAt,
-      Value<String?>? updatedAt,
+      Value<String>? type,
+      Value<String>? subtype,
+      Value<String>? createdAt,
+      Value<String>? updatedAt,
       Value<String?>? deletedAt,
       Value<int>? rowid}) {
     return AccountsDbCompanion(
+      id: id ?? this.id,
       itemId: itemId ?? this.itemId,
       userId: userId ?? this.userId,
       name: name ?? this.name,
@@ -611,6 +632,9 @@ class AccountsDbCompanion extends UpdateCompanion<AccountsDbData> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
     if (itemId.present) {
       map['item_id'] = Variable<String>(itemId.value);
     }
@@ -663,6 +687,7 @@ class AccountsDbCompanion extends UpdateCompanion<AccountsDbData> {
   @override
   String toString() {
     return (StringBuffer('AccountsDbCompanion(')
+          ..write('id: $id, ')
           ..write('itemId: $itemId, ')
           ..write('userId: $userId, ')
           ..write('name: $name, ')
@@ -2763,36 +2788,38 @@ abstract class _$AppDatabase extends GeneratedDatabase {
 }
 
 typedef $$AccountsDbTableInsertCompanionBuilder = AccountsDbCompanion Function({
-  Value<String?> itemId,
-  Value<String?> userId,
-  Value<String?> name,
-  Value<String?> mask,
-  Value<String?> officialName,
-  Value<double?> currentBalance,
-  Value<double?> availableBalance,
-  Value<String?> isoCurrencyCode,
+  required String id,
+  required String itemId,
+  required String userId,
+  required String name,
+  required String mask,
+  required String officialName,
+  required double currentBalance,
+  required double availableBalance,
+  required String isoCurrencyCode,
   Value<String?> unofficialCurrencyCode,
-  Value<String?> type,
-  Value<String?> subtype,
-  Value<String?> createdAt,
-  Value<String?> updatedAt,
+  required String type,
+  required String subtype,
+  required String createdAt,
+  required String updatedAt,
   Value<String?> deletedAt,
   Value<int> rowid,
 });
 typedef $$AccountsDbTableUpdateCompanionBuilder = AccountsDbCompanion Function({
-  Value<String?> itemId,
-  Value<String?> userId,
-  Value<String?> name,
-  Value<String?> mask,
-  Value<String?> officialName,
-  Value<double?> currentBalance,
-  Value<double?> availableBalance,
-  Value<String?> isoCurrencyCode,
+  Value<String> id,
+  Value<String> itemId,
+  Value<String> userId,
+  Value<String> name,
+  Value<String> mask,
+  Value<String> officialName,
+  Value<double> currentBalance,
+  Value<double> availableBalance,
+  Value<String> isoCurrencyCode,
   Value<String?> unofficialCurrencyCode,
-  Value<String?> type,
-  Value<String?> subtype,
-  Value<String?> createdAt,
-  Value<String?> updatedAt,
+  Value<String> type,
+  Value<String> subtype,
+  Value<String> createdAt,
+  Value<String> updatedAt,
   Value<String?> deletedAt,
   Value<int> rowid,
 });
@@ -2817,23 +2844,25 @@ class $$AccountsDbTableTableManager extends RootTableManager<
           getChildManagerBuilder: (p) =>
               $$AccountsDbTableProcessedTableManager(p),
           getUpdateCompanionBuilder: ({
-            Value<String?> itemId = const Value.absent(),
-            Value<String?> userId = const Value.absent(),
-            Value<String?> name = const Value.absent(),
-            Value<String?> mask = const Value.absent(),
-            Value<String?> officialName = const Value.absent(),
-            Value<double?> currentBalance = const Value.absent(),
-            Value<double?> availableBalance = const Value.absent(),
-            Value<String?> isoCurrencyCode = const Value.absent(),
+            Value<String> id = const Value.absent(),
+            Value<String> itemId = const Value.absent(),
+            Value<String> userId = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<String> mask = const Value.absent(),
+            Value<String> officialName = const Value.absent(),
+            Value<double> currentBalance = const Value.absent(),
+            Value<double> availableBalance = const Value.absent(),
+            Value<String> isoCurrencyCode = const Value.absent(),
             Value<String?> unofficialCurrencyCode = const Value.absent(),
-            Value<String?> type = const Value.absent(),
-            Value<String?> subtype = const Value.absent(),
-            Value<String?> createdAt = const Value.absent(),
-            Value<String?> updatedAt = const Value.absent(),
+            Value<String> type = const Value.absent(),
+            Value<String> subtype = const Value.absent(),
+            Value<String> createdAt = const Value.absent(),
+            Value<String> updatedAt = const Value.absent(),
             Value<String?> deletedAt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               AccountsDbCompanion(
+            id: id,
             itemId: itemId,
             userId: userId,
             name: name,
@@ -2851,23 +2880,25 @@ class $$AccountsDbTableTableManager extends RootTableManager<
             rowid: rowid,
           ),
           getInsertCompanionBuilder: ({
-            Value<String?> itemId = const Value.absent(),
-            Value<String?> userId = const Value.absent(),
-            Value<String?> name = const Value.absent(),
-            Value<String?> mask = const Value.absent(),
-            Value<String?> officialName = const Value.absent(),
-            Value<double?> currentBalance = const Value.absent(),
-            Value<double?> availableBalance = const Value.absent(),
-            Value<String?> isoCurrencyCode = const Value.absent(),
+            required String id,
+            required String itemId,
+            required String userId,
+            required String name,
+            required String mask,
+            required String officialName,
+            required double currentBalance,
+            required double availableBalance,
+            required String isoCurrencyCode,
             Value<String?> unofficialCurrencyCode = const Value.absent(),
-            Value<String?> type = const Value.absent(),
-            Value<String?> subtype = const Value.absent(),
-            Value<String?> createdAt = const Value.absent(),
-            Value<String?> updatedAt = const Value.absent(),
+            required String type,
+            required String subtype,
+            required String createdAt,
+            required String updatedAt,
             Value<String?> deletedAt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               AccountsDbCompanion.insert(
+            id: id,
             itemId: itemId,
             userId: userId,
             name: name,
@@ -2902,6 +2933,11 @@ class $$AccountsDbTableProcessedTableManager extends ProcessedTableManager<
 class $$AccountsDbTableFilterComposer
     extends FilterComposer<_$AppDatabase, $AccountsDbTable> {
   $$AccountsDbTableFilterComposer(super.$state);
+  ColumnFilters<String> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
   ColumnFilters<String> get itemId => $state.composableBuilder(
       column: $state.table.itemId,
       builder: (column, joinBuilders) =>
@@ -2976,6 +3012,11 @@ class $$AccountsDbTableFilterComposer
 class $$AccountsDbTableOrderingComposer
     extends OrderingComposer<_$AppDatabase, $AccountsDbTable> {
   $$AccountsDbTableOrderingComposer(super.$state);
+  ColumnOrderings<String> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
   ColumnOrderings<String> get itemId => $state.composableBuilder(
       column: $state.table.itemId,
       builder: (column, joinBuilders) =>

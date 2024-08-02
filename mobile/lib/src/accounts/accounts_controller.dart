@@ -27,6 +27,10 @@ class AccountsController {
 
   final AccountsService accountsService;
 
+  Stream<List<Account>> watchAccounts() {
+    return accountsService.watchAccounts();
+  }
+
   Future<List<Account>> getAccounts() async {
     return await accountsService.getAccounts();
   }
