@@ -13,3 +13,17 @@ class Goal {
   final DateTime targetDate;
   final double? progress;
 }
+
+class GoalAccount {
+  GoalAccount({
+    required this.id,
+    required this.goalId,
+    required this.accountId,
+    required this.percentage,
+  });
+
+  final String id;
+  final String goalId;
+  final String accountId;
+  final double percentage;
+}

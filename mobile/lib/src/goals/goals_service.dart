@@ -12,7 +12,7 @@ class GoalsService {
     return appDb
         .select(appDb.goalsDb)
         .watch()
-        .map((event) => event.map(dbToDomain).toList());
+        .map((event) => event.map(goalDbToDomain).toList());
   }
 
   Future<List<Goal>> getGoals() async {
@@ -20,7 +20,7 @@ class GoalsService {
           ..orderBy([(g) => OrderingTerm(expression: g.createdAt)]))
         .get();
 
-    return goalsDbData.map(dbToDomain).toList();
+    return goalsDbData.map(goalDbToDomain).toList();
   }
 
   Future<void> addGoal(AddGoalInput input) async {
@@ -64,8 +64,75 @@ class GoalsService {
         .go();
   }
 
+  Future<void> assignAccountToGoal(AssignAccountToGoalInput input) async {
+    // Make sure the account cannot be allocated greater than 100% across all goals
+    final accountAssignedAcrossAllGoals =
+        await (appDb.select(appDb.goalAccountsDb)
+              ..where((tbl) => tbl.accountId.equals(input.accountId)))
+            .get();
+
+    double allocatedPercentage = accountAssignedAcrossAllGoals
+        .map((e) => e.percentage)
+        .fold(0, (previousValue, element) => previousValue + element);
+
+    if (allocatedPercentage + input.percentage > 100) {
+      throw Exception('The total percentage cannot exceed 100%');
+    }
+
+    final goalAccountData = await (appDb.select(appDb.goalAccountsDb)
+          ..where((tbl) => tbl.goalId.equals(input.goalId))
+          ..where((tbl) => tbl.accountId.equals(input.accountId)))
+        .getSingleOrNull();
+
+    // If the goal account already exists, update the percentage
+    // Otherwise, insert the new goal account instead.
+    // If the input percentage is 0, delete the goal account.
+    if (goalAccountData != null) {
+      final goalAccount = goalAccountDbToDomain(goalAccountData);
+
+      if (input.percentage == 0) {
+        return deleteGoalAccount(goalAccount);
+      }
+
+      final goalAccountCompanion = GoalAccountsDbCompanion(
+        percentage: Value(input.percentage),
+      );
+
+      await (appDb.update(appDb.goalAccountsDb)
+            ..where((tbl) => tbl.id.equals(goalAccountData.id)))
+          .write(goalAccountCompanion);
+    } else {
+      final goalAccountCompanion = GoalAccountsDbCompanion(
+        id: Value(const Uuid().v4()),
+        goalId: Value(input.goalId),
+        accountId: Value(input.accountId),
+        percentage: Value(input.percentage),
+      );
+
+      await appDb.into(appDb.goalAccountsDb).insert(goalAccountCompanion);
+    }
+  }
+
+  Future<void> deleteGoalAccount(GoalAccount goalAccount) async {
+    await (appDb.delete(appDb.goalAccountsDb)
+          ..where((tbl) => tbl.id.equals(goalAccount.id)))
+        .go();
+  }
+
+  Future<List<GoalAccount>> getAssignedAccounts(Goal goal) async {
+    final goalAccountsDbData = await (appDb.select(appDb.goalAccountsDb)
+          ..where((tbl) => tbl.goalId.equals(goal.id))
+          ..orderBy([
+            (g) =>
+                OrderingTerm(expression: g.percentage, mode: OrderingMode.desc)
+          ]))
+        .get();
+
+    return goalAccountsDbData.map(goalAccountDbToDomain).toList();
+  }
+
   // Helper method to convert GoalsDbData to Goal domain model
-  Goal dbToDomain(GoalsDbData dbData) {
+  Goal goalDbToDomain(GoalsDbData dbData) {
     return Goal(
       id: dbData.id,
       name: dbData.name,
@@ -74,64 +141,16 @@ class GoalsService {
       targetDate: DateTime.parse(dbData.targetDate),
     );
   }
+
+  GoalAccount goalAccountDbToDomain(GoalAccountsDbData dbData) {
+    return GoalAccount(
+      id: dbData.id,
+      goalId: dbData.goalId,
+      accountId: dbData.accountId,
+      percentage: dbData.percentage,
+    );
+  }
 }
-
-// class GoalsService {
-//   GoalsService({required this.powersyncDb, required this.appDb});
-
-//   final PowerSyncDatabase powersyncDb;
-//   final AppDatabase appDb;
-
-//   Future<List<Goal>> getGoals() async {
-//     final goals =
-//         await powersyncDb.getAll('SELECT * FROM goals order by created_at asc');
-
-//     return goals.map((row) {
-//       return Goal(
-//         id: row['id'],
-//         name: row['name'],
-//         amount: row['amount'] as double,
-//         progress: row['progress'] ?? 0,
-//         targetDate: DateTime.parse(row['target_date']),
-//       );
-//     }).toList();
-//   }
-
-//   Future<void> addGoal(AddGoalInput input) async {
-//     final String targetDateString = input.targetDate
-//         .toIso8601String()
-//         .substring(0, 10); // Extracting 'YYYY-MM-DD'
-
-//     await powersyncDb.writeTransaction((tx) async {
-//       return await tx.execute(
-//         'INSERT INTO goals (id, name, amount, target_date) VALUES (?, ?, ?, ?)',
-//         [const Uuid().v4(), input.name, input.amount, targetDateString],
-//       );
-//     });
-//   }
-
-//   Future<void> updateGoal(Goal goal) async {
-//     final String targetDateString = goal.targetDate
-//         .toIso8601String()
-//         .substring(0, 10); // Extracting 'YYYY-MM-DD'
-
-//     await powersyncDb.writeTransaction((tx) async {
-//       return await tx.execute(
-//         'UPDATE goals SET name = ?, amount = ?, target_date = ?, progress = ? WHERE id = ?',
-//         [goal.name, goal.amount, targetDateString, goal.progress, goal.id],
-//       );
-//     });
-//   }
-
-//   Future<void> deleteGoal(Goal goal) async {
-//     await powersyncDb.writeTransaction((tx) async {
-//       return await tx.execute(
-//         'DELETE FROM goals WHERE id = ?',
-//         [goal.id],
-//       );
-//     });
-//   }
-// }
 
 class AddGoalInput {
   final String name;
@@ -142,5 +161,17 @@ class AddGoalInput {
     required this.name,
     required this.amount,
     required this.targetDate,
+  });
+}
+
+class AssignAccountToGoalInput {
+  final String goalId;
+  final String accountId;
+  final double percentage;
+
+  AssignAccountToGoalInput({
+    required this.goalId,
+    required this.accountId,
+    required this.percentage,
   });
 }
