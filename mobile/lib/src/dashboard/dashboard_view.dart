@@ -1,8 +1,8 @@
+import 'package:finny/src/dashboard/goals_list.dart';
 import 'package:finny/src/goals/goals_controller.dart';
 import 'package:finny/src/goals/goal_model.dart';
 import 'package:finny/src/routes.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 class DashboardView extends StatefulWidget {
   const DashboardView({
@@ -67,8 +67,7 @@ class _DashboardViewState extends State<DashboardView> {
                                 child: Text(
                                   "Goals",
                                   textAlign: TextAlign.left,
-                                  style:
-                                      Theme.of(context).textTheme.titleMedium,
+                                  style: Theme.of(context).textTheme.titleLarge,
                                 ),
                               ),
                             ),
@@ -122,24 +121,11 @@ class _DashboardViewState extends State<DashboardView> {
                                       ],
                                     ),
                                   );
-                                } else {
-                                  final goals = snapshot.data!;
-                                  return ListView.builder(
-                                    shrinkWrap: true,
-                                    physics:
-                                        const NeverScrollableScrollPhysics(),
-                                    itemCount: goals.length,
-                                    itemBuilder: (context, index) {
-                                      final goal = goals[index];
-                                      return ListTile(
-                                        title: Text(goal.name),
-                                        subtitle: Text(
-                                          'Amount: \$${goal.amount.toStringAsFixed(2)}, Date: ${DateFormat.yMMMd().format(goal.targetDate)}',
-                                        ),
-                                      );
-                                    },
-                                  );
                                 }
+
+                                final goals = snapshot.data!;
+
+                                return GoalsList(goals: goals);
                               },
                             ),
                           ],
