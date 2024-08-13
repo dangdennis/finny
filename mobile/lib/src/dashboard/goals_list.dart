@@ -2,7 +2,6 @@ import 'package:finny/src/goals/goal_model.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-// Usage within a ListView.builder
 class GoalsList extends StatelessWidget {
   final List<Goal> goals;
 
@@ -32,7 +31,7 @@ class GoalsList extends StatelessWidget {
   }
 }
 
-class GoalItem extends StatelessWidget {
+class GoalItem extends StatefulWidget {
   final String name;
   final double amount;
   final DateTime targetDate;
@@ -47,6 +46,19 @@ class GoalItem extends StatelessWidget {
   });
 
   @override
+  State<GoalItem> createState() => _GoalItemState();
+}
+
+class _GoalItemState extends State<GoalItem> {
+  bool _showProgressText = false;
+
+  void _toggleProgressView() {
+    setState(() {
+      _showProgressText = !_showProgressText;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -57,11 +69,11 @@ class GoalItem extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                name,
+                widget.name,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               Text(
-                '\$${amount.toStringAsFixed(2)}',
+                '\$${widget.amount.toStringAsFixed(2)}',
                 style: Theme.of(context).textTheme.labelMedium,
               ),
             ],
@@ -75,38 +87,37 @@ class GoalItem extends StatelessWidget {
                     CrossAxisAlignment.start, // Align text to start
                 children: [
                   Text(
-                    'Target ${DateFormat.yMMMd().format(targetDate)}',
+                    'Target ${DateFormat.yMMMd().format(widget.targetDate)}',
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                   Text(
-                    'Actual ${DateFormat.yMMMd().format(targetDate)}',
+                    'Actual ${DateFormat.yMMMd().format(widget.targetDate)}',
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ],
               ),
               const SizedBox(width: 16), // Add space between the two columns
-              Row(
-                children: [
-                  SizedBox(
-                    height: 24,
-                    width: 24,
-                    child: CircularProgressIndicator(
-                      value: progress, // Progress value between 0.0 and 1.0
-                      backgroundColor: Colors.grey[200],
-                      valueColor:
-                          const AlwaysStoppedAnimation<Color>(Colors.blue),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    '${((progress ?? 0) * 100).toStringAsFixed(1)}%',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                ],
+              GestureDetector(
+                onTap: _toggleProgressView,
+                child: _showProgressText
+                    ? Text(
+                        '${((widget.progress ?? 0) * 100).toStringAsFixed(1)}%',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      )
+                    : SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(
+                          value: widget.progress,
+                          strokeWidth: 4.0,
+                          backgroundColor: Colors.grey[400],
+                          valueColor:
+                              const AlwaysStoppedAnimation<Color>(Colors.blue),
+                        ),
+                      ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
         ],
       ),
     );
