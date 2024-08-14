@@ -29,6 +29,14 @@ class GoalsService {
     return goalsDbData.map(goalDbToDomain).toList();
   }
 
+  Future<Goal> getGoal(String goalId) async {
+    final goalDbData = await (appDb.select(appDb.goalsDb)
+          ..where((g) => g.id.equals(goalId)))
+        .getSingle();
+
+    return goalDbToDomain(goalDbData);
+  }
+
   Future<void> addGoal(AddGoalInput input) async {
     final String targetDateString =
         input.targetDate.toIso8601String().substring(0, 10);

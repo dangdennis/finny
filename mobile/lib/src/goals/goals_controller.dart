@@ -45,6 +45,16 @@ class GoalsController {
     }
   }
 
+  Future<Goal> getGoal(String goalId) async {
+    try {
+      final goal = await _goalsService.getGoal(goalId);
+      return goal;
+    } catch (e, stacktrace) {
+      _logger.severe('Failed to get goal', e, stacktrace);
+      rethrow;
+    }
+  }
+
   Future<void> addGoal(AddGoalInput input) async {
     try {
       await _goalsService.addGoal(input);

@@ -94,7 +94,7 @@ class _GoalDetailsEditState extends State<GoalDetailsEdit> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Name:',
+                    'Name',
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                   const SizedBox(height: 8),
@@ -112,7 +112,7 @@ class _GoalDetailsEditState extends State<GoalDetailsEdit> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Amount:',
+                    'Target Amount',
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                   const SizedBox(height: 8),
@@ -130,7 +130,7 @@ class _GoalDetailsEditState extends State<GoalDetailsEdit> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Target Date:',
+                    'Target Date',
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                   const SizedBox(height: 8),
@@ -161,7 +161,7 @@ class _GoalDetailsEditState extends State<GoalDetailsEdit> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  'Amount Left to Save:',
+                  'Amount Left to Save',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 const SizedBox(height: 8),
@@ -172,7 +172,7 @@ class _GoalDetailsEditState extends State<GoalDetailsEdit> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Progress:',
+                  'Progress',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 const SizedBox(height: 8),

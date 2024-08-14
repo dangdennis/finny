@@ -55,7 +55,7 @@ class _GoalDetailsAssignedAccountsState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Assigned Accounts',
+                      'Assign Accounts',
                       style: Theme.of(context)
                           .textTheme
                           .bodyLarge
