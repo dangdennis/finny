@@ -2,14 +2,18 @@ import 'package:finny/src/powersync/powersync.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
+import 'package:powersync/powersync.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:finny/src/context_extension.dart';
 import 'package:finny/src/app_config.dart';
 import 'package:http/http.dart' as http;
 
 class AuthService {
+  AuthService({required this.powersyncDb});
+
   bool _authListenerInitialized = false;
   final Logger _logger = Logger('AuthService');
+  final PowerSyncDatabase powersyncDb;
 
   Future<void> signInWithEmail(
       String email, Function(String, {bool isError}) showSnackBar) async {
@@ -102,9 +106,13 @@ class AuthService {
       },
       onError: (error) {
         if (error is AuthException) {
-          context.showSnackBar(error.message, isError: true);
+          if (context.mounted) {
+            context.showSnackBar(error.message, isError: true);
+          }
         } else {
-          context.showSnackBar('Unexpected error occurred', isError: true);
+          if (context.mounted) {
+            context.showSnackBar('Unexpected error occurred', isError: true);
+          }
         }
       },
     );

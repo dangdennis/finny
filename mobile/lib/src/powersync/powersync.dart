@@ -2,7 +2,8 @@
 import 'dart:convert';
 
 import 'package:finny/src/app_config.dart';
-import 'package:finny/src/powersync/schema.dart';
+import 'package:finny/src/powersync/database.dart';
+import 'package:finny/src/powersync/powersync_schema.dart';
 import 'package:finny/src/supabase.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart';
@@ -13,6 +14,7 @@ import 'package:http/http.dart' as http;
 
 /// Global reference to the database
 late final PowerSyncDatabase powersyncDb;
+late final AppDatabase appDb;
 
 /// Use Supabase for authentication.
 /// Uses API for data updates.
@@ -132,14 +134,13 @@ class PowersyncSupabaseConnector extends PowerSyncBackendConnector {
       'Authorization': 'Bearer $accessToken',
     };
 
-    print('uploading entries: $entries');
-    print("jsonEncode({'data': entries}) ${jsonEncode({'data': entries})}");
-
     try {
+      final body = jsonEncode({'data': entries});
+      // print('Sending to PowerSync: $body');
       final response = await http.post(
         AppConfig.powerSyncEventUpdateUrl,
         headers: headers,
-        body: jsonEncode({'data': entries}),
+        body: body,
       );
       if (response.statusCode == 200) {
         logger.info('Crud entry sent successfully');
@@ -163,6 +164,7 @@ class PowersyncSupabaseConnector extends PowerSyncBackendConnector {
     powersyncDb = PowerSyncDatabase(
         schema: schema, path: await getDatabasePath(), logger: attachedLogger);
     await powersyncDb.initialize();
+    appDb = AppDatabase(powersyncDb);
 
     await SupabaseService.loadSupabase();
 

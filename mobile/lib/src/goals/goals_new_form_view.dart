@@ -5,8 +5,8 @@ import 'package:finny/src/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-class GoalsFormView extends StatefulWidget {
-  const GoalsFormView({
+class GoalsNewFormView extends StatefulWidget {
+  const GoalsNewFormView({
     super.key,
     required this.goalsController,
   });
@@ -15,10 +15,10 @@ class GoalsFormView extends StatefulWidget {
   final GoalsController goalsController;
 
   @override
-  State<GoalsFormView> createState() => _GoalsFormViewState();
+  State<GoalsNewFormView> createState() => _GoalsNewFormViewState();
 }
 
-class _GoalsFormViewState extends State<GoalsFormView> {
+class _GoalsNewFormViewState extends State<GoalsNewFormView> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController =
       TextEditingController(text: 'Retirement Fund');
@@ -32,14 +32,6 @@ class _GoalsFormViewState extends State<GoalsFormView> {
   final FocusNode _amountFocusNode = FocusNode();
   final FocusNode _currentAgeFocusNode = FocusNode();
   final FocusNode _retirementAgeFocusNode = FocusNode();
-
-  late Future<List<Goal>> _goalsFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _goalsFuture = _fetchGoals();
-  }
 
   @override
   void dispose() {
@@ -68,21 +60,11 @@ class _GoalsFormViewState extends State<GoalsFormView> {
         amount: amount,
         targetDate: targetDate,
       ));
-      setState(() {
-        _goalsFuture = _fetchGoals();
-      });
     }
-  }
-
-  Future<List<Goal>> _fetchGoals() async {
-    return widget.goalsController.getGoals();
   }
 
   Future<void> _deleteGoal(Goal goal) async {
     await widget.goalsController.deleteGoal(goal);
-    setState(() {
-      _goalsFuture = _fetchGoals();
-    });
   }
 
   void _unfocusAll() {
@@ -123,7 +105,7 @@ class _GoalsFormViewState extends State<GoalsFormView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Dashboard'),
+        title: const Text('Goals Form'),
       ),
       body: GestureDetector(
         onTap: _unfocusAll,
@@ -139,7 +121,7 @@ class _GoalsFormViewState extends State<GoalsFormView> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Goals',
+                        'Add a New Goal',
                         style: Theme.of(context).textTheme.headlineSmall,
                       ),
                       const SizedBox(height: 20.0),
@@ -236,7 +218,7 @@ class _GoalsFormViewState extends State<GoalsFormView> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(Icons.add),
-                            Text('Add goal'),
+                            Text('Add Goal'),
                           ],
                         ),
                       ),
@@ -244,8 +226,8 @@ class _GoalsFormViewState extends State<GoalsFormView> {
                   ),
                 ),
                 const SizedBox(height: 40.0),
-                FutureBuilder<List<Goal>>(
-                  future: _goalsFuture,
+                StreamBuilder<List<Goal>>(
+                  stream: widget.goalsController.watchGoals(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
@@ -265,7 +247,7 @@ class _GoalsFormViewState extends State<GoalsFormView> {
                           return ListTile(
                             title: Text(goal.name),
                             subtitle: Text(
-                              'Amount: \$${goal.amount.toStringAsFixed(2)}, Date: ${DateFormat.yMMMd().format(goal.targetDate)}',
+                              'Amount: \$${goal.targetAmount.toStringAsFixed(2)}, Date: ${DateFormat.yMMMd().format(goal.targetDate)}',
                             ),
                             trailing: IconButton(
                               icon: const Icon(Icons.delete_outline),

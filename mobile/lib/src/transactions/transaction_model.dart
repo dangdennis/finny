@@ -24,7 +24,7 @@ class Transaction {
   final String type;
   final String name;
   final double amount;
-  final String isoCurrencyCode;
+  final String? isoCurrencyCode;
   final String? unofficialCurrencyCode;
   final String date;
   final int pending;

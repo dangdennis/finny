@@ -27,8 +27,8 @@ class AccountsController {
 
   final AccountsService accountsService;
 
-  Future<List<Account>> getAccounts() async {
-    return await accountsService.getAccounts();
+  Stream<List<Account>> watchAccounts() {
+    return accountsService.watchAccounts();
   }
 
   List<Account> filterDepositoryAccounts(List<Account> accounts) {

@@ -86,3 +86,17 @@ object GoalRepository:
             sql"""delete from goals where id = ${id}""".update.apply()
         }
     ).toEither.left.map(e => AppError.DatabaseError(e.getMessage))
+
+    def updateGoal(
+        id: UUID,
+        name: String,
+        amount: Double,
+        targetDate: Instant,
+        userId: UUID
+    ): Either[AppError.DatabaseError, Int] = Try(
+        DB autoCommit { implicit session =>
+            sql"""update goals set name = ${name}, amount = ${amount}, target_date = ${targetDate} where id = ${id} and user_id = ${userId}"""
+                .update
+                .apply()
+        }
+    ).toEither.left.map(e => AppError.DatabaseError(e.getMessage))

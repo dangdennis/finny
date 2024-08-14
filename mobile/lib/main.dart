@@ -40,10 +40,14 @@ void main() async {
   await PowersyncSupabaseConnector.openDatabaseAndInitSupabase();
 
   // services
-  final goalsService = GoalsService();
+  final goalsService = GoalsService(
+    appDb: appDb,
+  );
   final settingsService = SettingsService();
-  final accountsService = AccountsService();
-  final authService = AuthService();
+  final accountsService = AccountsService(appDb: appDb);
+  final authService = AuthService(
+    powersyncDb: powersyncDb,
+  );
   final connectionsService =
       ConnectionsService(accountsService: accountsService);
 
@@ -51,12 +55,15 @@ void main() async {
   final authProvider = AuthProvider(authService: authService);
 
   // controllers
-  final accountsController = AccountsController(AccountsService());
+  final accountsController = AccountsController(accountsService);
   final connectionsController = ConnectionsController(connectionsService);
   final goalsController = GoalsController(
+    accountsService: accountsService,
     goalsService: goalsService,
   );
-  final transactionsController = TransactionsController();
+  final transactionsController = TransactionsController(
+    appDb: appDb,
+  );
   final settingsController = SettingsController(
     settingsService: settingsService,
     authProvider: authProvider,

@@ -1,43 +1,60 @@
+import 'package:drift/drift.dart';
 import 'package:finny/src/accounts/account_model.dart';
-import 'package:finny/src/powersync/powersync.dart';
-import 'package:powersync/sqlite3.dart';
+import 'package:finny/src/powersync/database.dart';
 import 'package:logging/logging.dart';
 
 class AccountsService {
+  AccountsService({required this.appDb});
+
   final Logger _logger = Logger('AccountsService');
+  final AppDatabase appDb;
 
-  Future<List<Account>> getAccounts() async {
+  Stream<List<Account>> watchAccounts() {
+    return (appDb.select(appDb.accountsDb)
+          ..orderBy([(a) => OrderingTerm(expression: a.createdAt)]))
+        .watch()
+        .map((rows) => rows.map(dbToDomain).toList());
+  }
+
+  Future<List<Account>> getAccounts(GetAccountsInput? input) async {
     try {
-      ResultSet accounts = await powersyncDb
-          .getAll('SELECT * FROM accounts order by created_at asc');
-
-      return accounts.map((row) {
-        try {
-          return Account(
-            id: row['id'],
-            itemId: row['item_id'],
-            userId: row['user_id'],
-            name: row['name'],
-            mask: row['mask'],
-            officialName: row['official_name'],
-            currentBalance: row['current_balance'],
-            availableBalance: row['available_balance'],
-            isoCurrencyCode: row['iso_currency_code'],
-            unofficialCurrencyCode: row['unofficial_currency_code'],
-            type: row['type'],
-            subtype: row['subtype'],
-            createdAt: row['created_at'],
-            updatedAt: row['updated_at'],
-            deletedAt: row['deleted_at'],
-          );
-        } catch (e, stacktrace) {
-          _logger.severe('Failed to map row: $row', e, stacktrace);
-          rethrow;
-        }
-      }).toList();
+      final query = appDb.select(appDb.accountsDb);
+      if (input?.accountIds != null) {
+        query.where((tbl) => tbl.id.isIn(input!.accountIds!));
+      }
+      final accounts = await query.get();
+      return accounts.map(dbToDomain).toList();
     } catch (e, stacktrace) {
       _logger.severe('Failed to load accounts', e, stacktrace);
       rethrow;
     }
   }
+
+  Account dbToDomain(AccountsDbData dbData) {
+    return Account(
+      id: dbData.id,
+      itemId: dbData.itemId,
+      userId: dbData.userId,
+      name: dbData.name,
+      mask: dbData.mask,
+      officialName: dbData.officialName,
+      currentBalance: dbData.currentBalance,
+      availableBalance: dbData.availableBalance,
+      isoCurrencyCode: dbData.isoCurrencyCode,
+      unofficialCurrencyCode: dbData.unofficialCurrencyCode,
+      type: dbData.type,
+      subtype: dbData.subtype,
+      createdAt: dbData.createdAt,
+      updatedAt: dbData.updatedAt,
+      deletedAt: dbData.deletedAt,
+    );
+  }
+}
+
+class GetAccountsInput {
+  GetAccountsInput({
+    this.accountIds,
+  });
+
+  final List<String>? accountIds;
 }
