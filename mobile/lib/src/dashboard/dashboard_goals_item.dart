@@ -1,7 +1,7 @@
 import 'package:finny/src/accounts/account_model.dart';
 import 'package:finny/src/dashboard/goal_progress_indicator.dart';
+import 'package:finny/src/goals/goal_details_view.dart';
 import 'package:finny/src/goals/goal_model.dart';
-import 'package:finny/src/goals/goals_detail_view.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -26,7 +26,7 @@ class _DashboardGoalItemState extends State<DashboardGoalItem> {
       onTap: () {
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (context) => GoalsDetailView(goal: widget.goal),
+            builder: (context) => GoalDetailView(goal: widget.goal),
           ),
         );
       },
@@ -43,7 +43,7 @@ class _DashboardGoalItemState extends State<DashboardGoalItem> {
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 Text(
-                  '\$${widget.goal.amount.toStringAsFixed(2)}',
+                  '\$${widget.goal.targetAmount.toStringAsFixed(2)}',
                   style: Theme.of(context).textTheme.labelMedium,
                 ),
               ],

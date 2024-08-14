@@ -2,7 +2,6 @@ import 'package:finny/src/dashboard/dashboard_goals_list.dart';
 import 'package:finny/src/goals/goals_controller.dart';
 import 'package:finny/src/goals/goal_model.dart';
 import 'package:finny/src/routes.dart';
-import 'package:finny/src/widgets/banner_overlay.dart';
 import 'package:finny/src/widgets/gradient_banner.dart';
 import 'package:flutter/material.dart';
 

@@ -247,7 +247,7 @@ class _GoalsFormViewState extends State<GoalsFormView> {
                           return ListTile(
                             title: Text(goal.name),
                             subtitle: Text(
-                              'Amount: \$${goal.amount.toStringAsFixed(2)}, Date: ${DateFormat.yMMMd().format(goal.targetDate)}',
+                              'Amount: \$${goal.targetAmount.toStringAsFixed(2)}, Date: ${DateFormat.yMMMd().format(goal.targetDate)}',
                             ),
                             trailing: IconButton(
                               icon: const Icon(Icons.delete_outline),

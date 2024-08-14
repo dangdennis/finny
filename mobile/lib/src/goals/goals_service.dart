@@ -49,7 +49,7 @@ class GoalsService {
     final goalCompanion = GoalsDbCompanion(
       id: Value(goal.id),
       name: Value(goal.name),
-      amount: Value(goal.amount),
+      amount: Value(goal.targetAmount),
       targetDate: Value(targetDateString),
       progress: Value(goal.progress ?? 0),
       updatedAt: Value(DateTime.now().toIso8601String()),
@@ -136,7 +136,7 @@ class GoalsService {
     return Goal(
       id: dbData.id,
       name: dbData.name,
-      amount: dbData.amount,
+      targetAmount: dbData.amount,
       progress: dbData.progress,
       targetDate: DateTime.parse(dbData.targetDate),
     );
