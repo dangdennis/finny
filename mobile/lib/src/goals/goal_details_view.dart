@@ -1,5 +1,5 @@
-import 'package:finny/src/accounts/account_model.dart';
 import 'package:finny/src/accounts/accounts_service.dart';
+import 'package:finny/src/goals/goal_details_assigned_accounts.dart';
 import 'package:finny/src/goals/goal_details_edit.dart';
 import 'package:finny/src/goals/goal_model.dart';
 import 'package:finny/src/goals/goals_controller.dart';
@@ -60,51 +60,8 @@ class _GoalDetailViewState extends State<GoalDetailView> {
                   ),
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.all(16),
-                child: Card(
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: StreamBuilder<List<Account>>(
-                    stream: widget._goalsController.watchAccounts(),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-
-                      if (snapshot.hasError) {
-                        return Center(child: Text('Error: ${snapshot.error}'));
-                      }
-
-                      if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                        return const Center(
-                            child: Text('No accounts available.'));
-                      }
-
-                      return Column(
-                          children: snapshot.data!.map((account) {
-                        return ListTile(
-                          title: Text(account.name),
-                          subtitle: Text(account.type ?? ''),
-                          trailing: Text(
-                            '\$${account.currentBalance.toStringAsFixed(2)}',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyLarge
-                                ?.copyWith(
-                                    color: account.currentBalance < 0
-                                        ? Colors.red
-                                        : Colors.green,
-                                    fontWeight: FontWeight.bold),
-                          ),
-                        );
-                      }).toList());
-                    },
-                  ),
-                ),
-              ),
+              GoalDetailsAssignedAccounts(
+                  goalsController: widget._goalsController),
             ],
           ),
         ),
