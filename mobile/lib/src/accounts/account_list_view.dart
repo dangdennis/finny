@@ -2,6 +2,7 @@ import 'package:finny/src/accounts/account_model.dart';
 import 'package:finny/src/accounts/accounts_controller.dart';
 import 'package:finny/src/connections/connections_list_view.dart';
 import 'package:finny/src/routes.dart';
+import 'package:finny/src/widgets/gradient_banner.dart';
 import 'package:flutter/material.dart';
 
 class AccountListView extends StatelessWidget {
@@ -32,24 +33,18 @@ class AccountListView extends StatelessWidget {
         stream: accountsController.watchAccounts(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            // Show a loading indicator while waiting for data
             return const Center(child: CircularProgressIndicator());
           }
 
           if (snapshot.hasError) {
-            // Handle any errors
             return Center(child: Text('Error: ${snapshot.error}'));
           }
 
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            // Handle the case where no data is available
             return const Center(child: Text('No accounts available.'));
           }
 
-          // Data is available
           final accounts = snapshot.data!;
-
-          // Filter accounts by type using your controller
           final cashAccounts =
               accountsController.filterDepositoryAccounts(accounts);
           final investmentAccounts =
@@ -59,62 +54,47 @@ class AccountListView extends StatelessWidget {
           final loanAccounts = accountsController.filterLoanAccounts(accounts);
 
           return SingleChildScrollView(
-            child: Column(
-              children: [
-                Container(
-                  height: 150,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.blue[800]!, Colors.blue[400]!],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
+            child: GradientBanner(
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: AccountsListCard(
+                      title: "Cash",
+                      accounts: cashAccounts,
+                      isLoading:
+                          snapshot.connectionState == ConnectionState.waiting,
                     ),
                   ),
-                ),
-                Transform.translate(
-                  offset: const Offset(0.0, -100.0),
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: AccountsListCard(
-                          title: "Cash",
-                          accounts: cashAccounts,
-                          isLoading: snapshot.connectionState ==
-                              ConnectionState.waiting,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: AccountsListCard(
-                          title: "Investments",
-                          accounts: investmentAccounts,
-                          isLoading: snapshot.connectionState ==
-                              ConnectionState.waiting,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: AccountsListCard(
-                          title: "Credit Cards",
-                          accounts: creditCards,
-                          isLoading: snapshot.connectionState ==
-                              ConnectionState.waiting,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: AccountsListCard(
-                          title: "Loans",
-                          accounts: loanAccounts,
-                          isLoading: snapshot.connectionState ==
-                              ConnectionState.waiting,
-                        ),
-                      ),
-                    ],
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: AccountsListCard(
+                      title: "Investments",
+                      accounts: investmentAccounts,
+                      isLoading:
+                          snapshot.connectionState == ConnectionState.waiting,
+                    ),
                   ),
-                ),
-              ],
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: AccountsListCard(
+                      title: "Credit Cards",
+                      accounts: creditCards,
+                      isLoading:
+                          snapshot.connectionState == ConnectionState.waiting,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: AccountsListCard(
+                      title: "Loans",
+                      accounts: loanAccounts,
+                      isLoading:
+                          snapshot.connectionState == ConnectionState.waiting,
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         },

@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'package:finny/src/accounts/account_model.dart';
 import 'package:finny/src/dashboard/goal_progress_indicator.dart';
 import 'package:finny/src/goals/goal_model.dart';
@@ -89,25 +88,6 @@ class _DashboardGoalItemState extends State<DashboardGoalItem> {
                             left: index == 0 ? 0 : -15), // Overlapping effect
                         child: Stack(
                           children: [
-                            Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                gradient: LinearGradient(
-                                  colors: [
-                                    Colors.primaries[Random()
-                                            .nextInt(Colors.primaries.length)]
-                                        .withOpacity(0.5),
-                                    Colors.primaries[Random()
-                                            .nextInt(Colors.primaries.length)]
-                                        .withOpacity(0.5),
-                                  ],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ),
-                              ),
-                            ),
                             Positioned.fill(
                               child: Center(
                                 child: Text(

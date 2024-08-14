@@ -2,6 +2,8 @@ import 'package:finny/src/dashboard/dashboard_goals_list.dart';
 import 'package:finny/src/goals/goals_controller.dart';
 import 'package:finny/src/goals/goal_model.dart';
 import 'package:finny/src/routes.dart';
+import 'package:finny/src/widgets/banner_overlay.dart';
+import 'package:finny/src/widgets/gradient_banner.dart';
 import 'package:flutter/material.dart';
 
 class DashboardView extends StatefulWidget {
@@ -38,18 +40,7 @@ class _DashboardViewState extends State<DashboardView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              height: 150,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.blue[800]!, Colors.blue[400]!],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
-              ),
-            ),
-            Transform.translate(
-              offset: const Offset(0, -100),
+            GradientBanner(
               child: Column(
                 children: [
                   Padding(
