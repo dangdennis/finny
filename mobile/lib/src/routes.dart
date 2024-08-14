@@ -7,5 +7,4 @@ class Routes {
   static const String connections = '/connections';
   static const String dashboard = '/dashboard';
   static const String goalsNew = '/goals/new';
-  static const String goalDetails = '/goals/:id';
 }

@@ -31,10 +31,6 @@ class AccountsController {
     return accountsService.watchAccounts();
   }
 
-  Future<List<Account>> getAccounts() async {
-    return await accountsService.getAccounts(GetAccountsInput());
-  }
-
   List<Account> filterDepositoryAccounts(List<Account> accounts) {
     return accounts
         .where((account) =>

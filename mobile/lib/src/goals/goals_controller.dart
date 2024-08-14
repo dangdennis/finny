@@ -74,4 +74,8 @@ class GoalsController {
       rethrow;
     }
   }
+
+  Stream<List<Account>> watchAccounts() {
+    return _accountsService.watchAccounts();
+  }
 }

@@ -1,17 +1,27 @@
 import 'dart:math';
 
+import 'package:finny/src/accounts/account_model.dart';
+import 'package:finny/src/accounts/accounts_service.dart';
 import 'package:finny/src/goals/goal_model.dart';
-import 'package:finny/src/routes.dart';
+import 'package:finny/src/goals/goals_controller.dart';
+import 'package:finny/src/goals/goals_service.dart';
+import 'package:finny/src/powersync/powersync.dart';
 import 'package:finny/src/widgets/gradient_banner.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class GoalDetailView extends StatefulWidget {
-  const GoalDetailView({super.key, required this.goal});
+  GoalDetailView({super.key, required this.goal});
 
   final Goal goal;
-
-  static const routeName = Routes.goalDetails;
+  final GoalsController _goalsController = GoalsController(
+    accountsService: AccountsService(
+      appDb: appDb,
+    ),
+    goalsService: GoalsService(
+      appDb: appDb,
+    ),
+  );
 
   @override
   State<GoalDetailView> createState() => _GoalDetailViewState();
@@ -83,79 +93,38 @@ class _GoalDetailViewState extends State<GoalDetailView> {
       ),
       body: GestureDetector(
         onTap: _unfocusAll,
-        child: GradientBanner(
-          child: SingleChildScrollView(
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              child: Card(
-                elevation: 4,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Padding(
+        child: SingleChildScrollView(
+          child: GradientBanner(
+            child: Column(
+              children: [
+                Container(
                   padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  child: Card(
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Name:',
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                ),
-                                const SizedBox(height: 8),
-                                TextFormField(
-                                  controller: nameController,
-                                  focusNode: _nameFocusNode,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyLarge
-                                      ?.copyWith(fontWeight: FontWeight.bold),
-                                  decoration: const InputDecoration(
-                                    border: UnderlineInputBorder(),
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  'Amount:',
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                ),
-                                const SizedBox(height: 8),
-                                TextFormField(
-                                  controller: amountController,
-                                  focusNode: _targetAmountFocusNode,
-                                  keyboardType: TextInputType.number,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyLarge
-                                      ?.copyWith(
-                                          color: Colors.green,
-                                          fontWeight: FontWeight.bold),
-                                  decoration: const InputDecoration(
-                                    border: UnderlineInputBorder(),
-                                    prefixText: '\$',
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  'Target Date:',
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                ),
-                                const SizedBox(height: 8),
-                                GestureDetector(
-                                  onTap: () => _selectDate(context),
-                                  child: AbsorbPointer(
-                                    child: TextFormField(
-                                      focusNode: _targetDateFocusNode,
-                                      controller: TextEditingController(
-                                        text: DateFormat.yMMMd()
-                                            .format(targetDate),
-                                      ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Name:',
+                                      style:
+                                          Theme.of(context).textTheme.bodySmall,
+                                    ),
+                                    const SizedBox(height: 8),
+                                    TextFormField(
+                                      controller: nameController,
+                                      focusNode: _nameFocusNode,
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodyLarge
@@ -163,63 +132,163 @@ class _GoalDetailViewState extends State<GoalDetailView> {
                                               fontWeight: FontWeight.bold),
                                       decoration: const InputDecoration(
                                         border: UnderlineInputBorder(),
-                                        suffixIcon: Icon(Icons.calendar_today),
                                       ),
                                     ),
-                                  ),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      'Amount:',
+                                      style:
+                                          Theme.of(context).textTheme.bodySmall,
+                                    ),
+                                    const SizedBox(height: 8),
+                                    TextFormField(
+                                      controller: amountController,
+                                      focusNode: _targetAmountFocusNode,
+                                      keyboardType: TextInputType.number,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge
+                                          ?.copyWith(
+                                              color: Colors.green,
+                                              fontWeight: FontWeight.bold),
+                                      decoration: const InputDecoration(
+                                        border: UnderlineInputBorder(),
+                                        prefixText: '\$',
+                                      ),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      'Target Date:',
+                                      style:
+                                          Theme.of(context).textTheme.bodySmall,
+                                    ),
+                                    const SizedBox(height: 8),
+                                    GestureDetector(
+                                      onTap: () => _selectDate(context),
+                                      child: AbsorbPointer(
+                                        child: TextFormField(
+                                          focusNode: _targetDateFocusNode,
+                                          controller: TextEditingController(
+                                            text: DateFormat.yMMMd()
+                                                .format(targetDate),
+                                          ),
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyLarge
+                                              ?.copyWith(
+                                                  fontWeight: FontWeight.bold),
+                                          decoration: const InputDecoration(
+                                            border: UnderlineInputBorder(),
+                                            suffixIcon:
+                                                Icon(Icons.calendar_today),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(
-                              width: 16), // Add some space between columns
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text(
-                                'Amount Left to Save:',
-                                style: Theme.of(context).textTheme.bodySmall,
                               ),
-                              const SizedBox(height: 8),
-                              Text(
-                                '\$${amountLeft.toStringAsFixed(2)}',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyLarge
-                                    ?.copyWith(
-                                        color: Colors.red,
-                                        fontWeight: FontWeight.bold),
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                'Progress:',
-                                style: Theme.of(context).textTheme.bodySmall,
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                '${progressPercentage.toStringAsFixed(2)}%',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyLarge
-                                    ?.copyWith(fontWeight: FontWeight.bold),
+                              const SizedBox(
+                                  width: 16), // Add some space between columns
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    'Amount Left to Save:',
+                                    style:
+                                        Theme.of(context).textTheme.bodySmall,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    '\$${amountLeft.toStringAsFixed(2)}',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyLarge
+                                        ?.copyWith(
+                                            color: Colors.red,
+                                            fontWeight: FontWeight.bold),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'Progress:',
+                                    style:
+                                        Theme.of(context).textTheme.bodySmall,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    '${progressPercentage.toStringAsFixed(2)}%',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyLarge
+                                        ?.copyWith(fontWeight: FontWeight.bold),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
+                          const SizedBox(height: 24),
+                          LinearProgressIndicator(
+                            borderRadius: BorderRadius.circular(10),
+                            value: max(0.03, widget.goal.progress ?? 0),
+                            minHeight: 10,
+                            backgroundColor: Colors.grey[400],
+                            valueColor: const AlwaysStoppedAnimation<Color>(
+                                Colors.blue),
+                          ),
                         ],
                       ),
-                      const SizedBox(height: 24),
-                      LinearProgressIndicator(
-                        borderRadius: BorderRadius.circular(10),
-                        value: max(0.03, widget.goal.progress ?? 0),
-                        minHeight: 10,
-                        backgroundColor: Colors.grey[400],
-                        valueColor:
-                            const AlwaysStoppedAnimation<Color>(Colors.blue),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  child: Card(
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: StreamBuilder<List<Account>>(
+                      stream: widget._goalsController.watchAccounts(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                              child: CircularProgressIndicator());
+                        }
+
+                        if (snapshot.hasError) {
+                          return Center(
+                              child: Text('Error: ${snapshot.error}'));
+                        }
+
+                        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                          return const Center(
+                              child: Text('No accounts available.'));
+                        }
+
+                        return Column(
+                            children: snapshot.data!.map((account) {
+                          return ListTile(
+                            title: Text(account.name),
+                            subtitle: Text(account.type ?? ''),
+                            trailing: Text(
+                              '\$${account.currentBalance.toStringAsFixed(2)}',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyLarge
+                                  ?.copyWith(
+                                      color: account.currentBalance < 0
+                                          ? Colors.red
+                                          : Colors.green,
+                                      fontWeight: FontWeight.bold),
+                            ),
+                          );
+                        }).toList());
+                      },
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
