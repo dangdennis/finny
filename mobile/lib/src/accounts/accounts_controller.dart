@@ -32,7 +32,7 @@ class AccountsController {
   }
 
   Future<List<Account>> getAccounts() async {
-    return await accountsService.getAccounts();
+    return await accountsService.getAccounts(GetAccountsInput());
   }
 
   List<Account> filterDepositoryAccounts(List<Account> accounts) {

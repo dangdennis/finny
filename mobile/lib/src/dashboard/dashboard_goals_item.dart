@@ -1,3 +1,5 @@
+import 'dart:math';
+import 'package:finny/src/accounts/account_model.dart';
 import 'package:finny/src/dashboard/goal_progress_indicator.dart';
 import 'package:finny/src/goals/goal_model.dart';
 import 'package:finny/src/goals/goals_detail_view.dart';
@@ -5,11 +7,14 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class DashboardGoalItem extends StatefulWidget {
-  final Goal goal;
   const DashboardGoalItem({
     required this.goal,
+    required this.getAssignedAccounts,
     super.key,
   });
+
+  final Goal goal;
+  final Future<List<Account>> Function(Goal) getAssignedAccounts;
 
   @override
   State<DashboardGoalItem> createState() => _DashboardGoalItemState();
@@ -49,8 +54,7 @@ class _DashboardGoalItemState extends State<DashboardGoalItem> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start, // Align text to start
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Target ${DateFormat.yMMMd().format(widget.goal.targetDate)}',
@@ -64,6 +68,65 @@ class _DashboardGoalItemState extends State<DashboardGoalItem> {
                 ),
                 GoalProgressIndicator(progress: widget.goal.progress ?? 0),
               ],
+            ),
+            const SizedBox(height: 8),
+            FutureBuilder<List<Account>>(
+              future: widget.getAssignedAccounts(widget.goal),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const CircularProgressIndicator();
+                } else if (snapshot.hasError) {
+                  return Text('Error: ${snapshot.error}');
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Text('');
+                } else {
+                  return Row(
+                    children: snapshot.data!.asMap().entries.map((entry) {
+                      int index = entry.key;
+                      Account account = entry.value;
+                      return Padding(
+                        padding: EdgeInsets.only(
+                            left: index == 0 ? 0 : -15), // Overlapping effect
+                        child: Stack(
+                          children: [
+                            Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Colors.primaries[Random()
+                                            .nextInt(Colors.primaries.length)]
+                                        .withOpacity(0.5),
+                                    Colors.primaries[Random()
+                                            .nextInt(Colors.primaries.length)]
+                                        .withOpacity(0.5),
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                              ),
+                            ),
+                            Positioned.fill(
+                              child: Center(
+                                child: Text(
+                                  account.name[0]
+                                      .toUpperCase(), // Initial letter
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  );
+                }
+              },
             ),
           ],
         ),

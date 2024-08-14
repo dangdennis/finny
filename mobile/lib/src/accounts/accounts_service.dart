@@ -16,9 +16,13 @@ class AccountsService {
         .map((rows) => rows.map(dbToDomain).toList());
   }
 
-  Future<List<Account>> getAccounts() async {
+  Future<List<Account>> getAccounts(GetAccountsInput? input) async {
     try {
-      final accounts = await appDb.select(appDb.accountsDb).get();
+      final query = appDb.select(appDb.accountsDb);
+      if (input?.accountIds != null) {
+        query.where((tbl) => tbl.id.isIn(input!.accountIds!));
+      }
+      final accounts = await query.get();
       return accounts.map(dbToDomain).toList();
     } catch (e, stacktrace) {
       _logger.severe('Failed to load accounts', e, stacktrace);
@@ -45,4 +49,12 @@ class AccountsService {
       deletedAt: dbData.deletedAt,
     );
   }
+}
+
+class GetAccountsInput {
+  GetAccountsInput({
+    this.accountIds,
+  });
+
+  final List<String>? accountIds;
 }

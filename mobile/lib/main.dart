@@ -58,6 +58,7 @@ void main() async {
   final accountsController = AccountsController(accountsService);
   final connectionsController = ConnectionsController(connectionsService);
   final goalsController = GoalsController(
+    accountsService: accountsService,
     goalsService: goalsService,
   );
   final transactionsController = TransactionsController(

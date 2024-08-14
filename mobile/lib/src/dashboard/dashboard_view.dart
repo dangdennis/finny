@@ -126,7 +126,9 @@ class _DashboardViewState extends State<DashboardView> {
 
                                 final goals = snapshot.data!;
 
-                                return DashboardGoalsList(goals: goals);
+                                return DashboardGoalsList(
+                                    goals: goals,
+                                    goalsController: widget.goalsController);
                               },
                             ),
                           ],

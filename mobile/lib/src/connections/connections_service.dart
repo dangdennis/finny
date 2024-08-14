@@ -120,7 +120,7 @@ class ConnectionsService {
     };
 
     try {
-      var accounts = await accountsService.getAccounts();
+      var accounts = await accountsService.getAccounts(GetAccountsInput());
       final response =
           await http.get(AppConfig.plaidItemsListUrl, headers: headers);
       if (response.statusCode == 200) {
