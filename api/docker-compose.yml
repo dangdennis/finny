@@ -1,12 +1,13 @@
 services:
+  lavinmq:
+    image: cloudamqp/lavinmq
+    ports:
+      - "5672:5672" # main port
+      - "15672:15672" # management UI
+
+
   # redis:
   #   image: redis:latest
   #   container_name: finny-redis
   #   ports:
   #     - "6379:6379"
-
-  lavinmq:
-    image: cloudamqp/lavinmq
-    ports:
-      - "5672:5672"   # main port
-      - "15672:15672" # management UI

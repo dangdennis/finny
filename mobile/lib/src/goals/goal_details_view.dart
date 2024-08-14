@@ -23,7 +23,6 @@ class GoalDetailView extends StatefulWidget {
   );
 
   Future<void> _handleGoalSave(Goal goal) async {
-    print("save goal at goal details parent $goal");
     await _goalsController.updateGoal(goal);
   }
 
