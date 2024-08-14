@@ -5,8 +5,8 @@ import 'package:finny/src/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-class GoalsFormView extends StatefulWidget {
-  const GoalsFormView({
+class GoalsNewFormView extends StatefulWidget {
+  const GoalsNewFormView({
     super.key,
     required this.goalsController,
   });
@@ -15,10 +15,10 @@ class GoalsFormView extends StatefulWidget {
   final GoalsController goalsController;
 
   @override
-  State<GoalsFormView> createState() => _GoalsFormViewState();
+  State<GoalsNewFormView> createState() => _GoalsNewFormViewState();
 }
 
-class _GoalsFormViewState extends State<GoalsFormView> {
+class _GoalsNewFormViewState extends State<GoalsNewFormView> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController =
       TextEditingController(text: 'Retirement Fund');

@@ -75,7 +75,13 @@ class GoalsController {
     }
   }
 
-  Stream<List<Account>> watchAccounts() {
-    return _accountsService.watchAccounts();
+  Future<List<Account>> getAccounts() async {
+    try {
+      final accounts = await _accountsService.getAccounts(GetAccountsInput());
+      return accounts;
+    } catch (e, stacktrace) {
+      _logger.severe('Failed to get accounts', e, stacktrace);
+      rethrow;
+    }
   }
 }

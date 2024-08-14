@@ -31,15 +31,6 @@ class _GoalDetailViewState extends State<GoalDetailView> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.goal.name),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: () {
-              // Implement save functionality here, e.g., update the goal object and save it to a database.
-              print("Save changes");
-            },
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         child: GradientBanner(

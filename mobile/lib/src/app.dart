@@ -7,7 +7,7 @@ import 'package:finny/src/connections/connections_controller.dart';
 import 'package:finny/src/connections/connections_list_view.dart';
 import 'package:finny/src/goals/goals_controller.dart';
 import 'package:finny/src/dashboard/dashboard_view.dart';
-import 'package:finny/src/goals/goals_form_view.dart';
+import 'package:finny/src/goals/goals_new_form_view.dart';
 import 'package:finny/src/settings/settings_controller.dart';
 import 'package:finny/src/settings/settings_view.dart';
 import 'package:finny/src/transactions/transaction_details_view.dart';
@@ -114,8 +114,8 @@ class MyApp extends StatelessWidget {
                     return DashboardView(
                       goalsController: goalsController,
                     );
-                  case GoalsFormView.routeName:
-                    return GoalsFormView(
+                  case GoalsNewFormView.routeName:
+                    return GoalsNewFormView(
                       goalsController: goalsController,
                     );
                   case LoginView.routeName:
