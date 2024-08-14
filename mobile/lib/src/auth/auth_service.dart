@@ -106,9 +106,13 @@ class AuthService {
       },
       onError: (error) {
         if (error is AuthException) {
-          context.showSnackBar(error.message, isError: true);
+          if (context.mounted) {
+            context.showSnackBar(error.message, isError: true);
+          }
         } else {
-          context.showSnackBar('Unexpected error occurred', isError: true);
+          if (context.mounted) {
+            context.showSnackBar('Unexpected error occurred', isError: true);
+          }
         }
       },
     );

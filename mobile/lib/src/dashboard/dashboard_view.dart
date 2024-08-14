@@ -1,4 +1,4 @@
-import 'package:finny/src/dashboard/goals_list.dart';
+import 'package:finny/src/dashboard/dashboard_goals_list.dart';
 import 'package:finny/src/goals/goals_controller.dart';
 import 'package:finny/src/goals/goal_model.dart';
 import 'package:finny/src/routes.dart';
@@ -67,7 +67,8 @@ class _DashboardViewState extends State<DashboardView> {
                                 child: Text(
                                   "Goals",
                                   textAlign: TextAlign.left,
-                                  style: Theme.of(context).textTheme.titleLarge,
+                                  style:
+                                      Theme.of(context).textTheme.titleMedium,
                                 ),
                               ),
                             ),
@@ -125,7 +126,7 @@ class _DashboardViewState extends State<DashboardView> {
 
                                 final goals = snapshot.data!;
 
-                                return GoalsList(goals: goals);
+                                return DashboardGoalsList(goals: goals);
                               },
                             ),
                           ],
