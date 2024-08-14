@@ -8,6 +8,12 @@ class GoalsService {
 
   final AppDatabase appDb;
 
+  Stream<Goal> watchGoal(String goalId) {
+    return (appDb.select(appDb.goalsDb)..where((g) => g.id.equals(goalId)))
+        .watchSingle()
+        .map(goalDbToDomain);
+  }
+
   Stream<List<Goal>> watchGoals() {
     return appDb
         .select(appDb.goalsDb)

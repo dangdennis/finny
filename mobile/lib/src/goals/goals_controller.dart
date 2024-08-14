@@ -25,6 +25,16 @@ class GoalsController {
     }
   }
 
+  Stream<Goal> watchGoal(String goalId) {
+    try {
+      final goal = _goalsService.watchGoal(goalId);
+      return goal;
+    } catch (e, stacktrace) {
+      _logger.severe('Failed to watch goal', e, stacktrace);
+      rethrow;
+    }
+  }
+
   Future<List<Goal>> getGoals() async {
     try {
       final goals = await _goalsService.getGoals();

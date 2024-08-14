@@ -26,7 +26,7 @@ class _DashboardGoalItemState extends State<DashboardGoalItem> {
       onTap: () {
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (context) => GoalDetailView(goal: widget.goal),
+            builder: (context) => GoalDetailView(goalId: widget.goal.id),
           ),
         );
       },
