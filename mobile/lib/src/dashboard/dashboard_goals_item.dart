@@ -77,7 +77,7 @@ class _DashboardGoalItemState extends State<DashboardGoalItem> {
                 } else if (snapshot.hasError) {
                   return Text('Error: ${snapshot.error}');
                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Text('');
+                  return const Text('Assign Accounts');
                 } else {
                   return Row(
                     children: snapshot.data!.asMap().entries.map((entry) {
