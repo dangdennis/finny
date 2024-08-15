@@ -2,29 +2,26 @@ package api.handlers
 
 import api.common.AppError
 import api.common.Logger
-import api.models.AuthenticationError
+import api.models.HttpError
 import api.models.Profile
 import api.repositories.GoalRepository
 import io.circe.Decoder
 import io.circe.generic.semiauto.deriveDecoder
-import io.circe.parser._
+import io.circe.parser.*
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.UUID
 
 object PowerSyncHandler:
-
-    def handleEventUpload(input: String, user: Profile): Either[AuthenticationError, Unit] =
+    def handleEventUpload(input: String, user: Profile): Either[HttpError, Unit] =
         Logger.root.info(s"Received powersync event upload $input")
-
-        decode[EventUploadRequest](input)
-            .left
-            .map(err => AppError.ValidationError(err.getMessage))
-            .flatMap(processEventUploadRequest(_, user))
-            .left
-            .map(handleError)
-            .map(_ => ())
+        decode[EventUploadRequest](input).flatMap(processEventUploadRequest(_, user)) match
+            case Left(error) =>
+                Logger.root.error(s"Error handling event upload: $error")
+                Right(())
+            case Right(_) =>
+                Right(())
 
     private def processEventUploadRequest(request: EventUploadRequest, user: Profile): Either[AppError, Unit] = request
         .data
@@ -36,27 +33,27 @@ object PowerSyncHandler:
             case ("goals", "PUT") =>
                 event
                     .data
-                    .flatMap(_.as[GoalPutData].toOption)
-                    .map(goalData => handleGoalPut(event.id, goalData, user))
-                    .getOrElse(Right(()))
+                    .toRight(AppError.ValidationError("No data found for Goal PUT operation"))
+                    .flatMap(_.as[GoalPutData].left.map(err => AppError.ValidationError(err.getMessage)))
+                    .flatMap(goalData => handleGoalPut(event.id, goalData, user))
             case ("goals", "DELETE") =>
                 handleGoalDelete(event.id)
             case ("goals", "PATCH") =>
                 event
                     .data
-                    .flatMap(_.as[GoalPatchData].toOption)
+                    .toRight(AppError.ValidationError("No data found for Goal PATCH operation"))
+                    .flatMap(_.as[GoalPatchData].left.map(err => AppError.ValidationError(err.getMessage)))
                     .map(goalData => handleGoalPatch(event.id, goalData, user))
-                    .getOrElse(Right(()))
             case _ =>
                 Logger.root.info(s"Skipping event ${event.op} ${event.`type`} ${event.id}")
                 Right(())
 
-    private def handleGoalPut(eventId: String, data: GoalPutData, user: Profile): Either[AppError, Unit] =
-        Logger.root.info(s"Inserting goal $data")
+    private def handleGoalPut(recordId: String, data: GoalPutData, user: Profile): Either[AppError, Unit] =
+        Logger.root.info(s"Creating goal $data")
         GoalRepository
             .createGoal(
                 GoalRepository.CreateGoalInput(
-                    id = UUID.fromString(eventId),
+                    id = UUID.fromString(recordId),
                     userId = user.id,
                     name = data.name,
                     amount = data.amount,
@@ -68,40 +65,28 @@ object PowerSyncHandler:
             )
             .map(_ => ())
 
-    private def handleGoalDelete(eventId: String): Either[AppError, Unit] =
-        Logger.root.info(s"Deleting goal $eventId")
-        GoalRepository.deleteGoal(UUID.fromString(eventId)).map(_ => ())
+    private def handleGoalDelete(recordId: String): Either[AppError, Unit] =
+        Logger.root.info(s"Deleting goal $recordId")
+        GoalRepository.deleteGoal(UUID.fromString(recordId)).right.map(_ => ())
 
-    private def handleGoalPatch(eventId: String, data: GoalPatchData, user: Profile): Either[AppError, Unit] =
-        Logger.root.info(s"Inserting goal $data")
+    private def handleGoalPatch(recordId: String, data: GoalPatchData, user: Profile): Either[AppError, Unit] =
+        Logger.root.info(s"Updating goal $data")
         GoalRepository
             .updateGoal(
-                id = UUID.fromString(eventId),
+                id = UUID.fromString(recordId),
                 name = data.name,
                 amount = data.amount,
-                targetDate = LocalDate
-                    .parse(data.target_date, DateTimeFormatter.ISO_LOCAL_DATE)
-                    .atStartOfDay()
-                    .toInstant(java.time.ZoneOffset.UTC),
+                targetDate = data
+                    .target_date
+                    .map(
+                        LocalDate
+                            .parse(_, DateTimeFormatter.ISO_LOCAL_DATE)
+                            .atStartOfDay()
+                            .toInstant(java.time.ZoneOffset.UTC)
+                    ),
                 userId = user.id
             )
             .map(_ => ())
-
-    private def handleError(err: AppError): AuthenticationError =
-        err match
-            // todo: is there a way to not have to handle all these error cases?
-            case err: AppError.DatabaseError =>
-                Logger.root.error(s"Failed to handle powersync op: ${err.message}")
-            case err: AppError.ValidationError =>
-                Logger.root.error(s"Failed to handle powersync op: ${err.message}")
-            case err: AppError.NetworkError =>
-                Logger.root.error(s"Failed to handle powersync op: ${err.message}")
-            case err: AppError.ServiceError =>
-                Logger.root.error(s"Failed to handle powersync op: ${err.error.errorMessage}")
-            case err: AppError.NotFoundError =>
-                Logger.root.error(s"Failed to handle powersync op: ${err.message}")
-
-        AuthenticationError(200)
 
     case class EventUploadRequest(data: List[EventUpload])
     object EventUploadRequest:
@@ -115,6 +100,6 @@ object PowerSyncHandler:
     object GoalPutData:
         given Decoder[GoalPutData] = deriveDecoder
 
-    case class GoalPatchData(amount: Double, name: String, target_date: String)
+    case class GoalPatchData(amount: Option[Double], name: Option[String], target_date: Option[String])
     object GoalPatchData:
         given Decoder[GoalPatchData] = deriveDecoder

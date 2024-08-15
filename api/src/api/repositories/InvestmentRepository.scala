@@ -27,10 +27,11 @@ object InvestmentRepository:
         vestedValue: Option[Double]
     )
 
-    def getInvestmentSecurityByPlaidSecurityId(plaidSecurityId: String): Either[AppError.DatabaseError, Option[InvestmentSecurity]] =
-        Try(
-            DB readOnly { implicit session =>
-                sql"""
+    def getInvestmentSecurityByPlaidSecurityId(
+        plaidSecurityId: String
+    ): Either[AppError.DatabaseError, Option[InvestmentSecurity]] = Try(
+        DB readOnly { implicit session =>
+            sql"""
                 SELECT
                     id,
                     plaid_security_id,
@@ -45,34 +46,35 @@ object InvestmentRepository:
                     deleted_at
                 FROM investment_securities
                 WHERE plaid_security_id = $plaidSecurityId
-                """.map(rs =>
-                        InvestmentSecurity(
-                            id = UUID.fromString(rs.string("id")),
-                            plaidSecurityId = rs.string("plaid_security_id"),
-                            plaidInstitutionSecurityId = rs.stringOpt("plaid_institution_security_id"),
-                            plaidInstitutionId = rs.stringOpt("plaid_institution_id"),
-                            plaidProxySecurityId = rs.stringOpt("plaid_proxy_security_id"),
-                            name = rs.stringOpt("name"),
-                            tickerSymbol = rs.stringOpt("ticker_symbol"),
-                            securityType = rs
-                                .stringOpt("security_type")
-                                .flatMap(securityType =>
-                                    SecurityType.fromString(securityType) match
-                                        case Right(securityType) =>
-                                            Some(securityType)
-                                        case Left(_) =>
-                                            Logger.root.error(s"Invalid security type: $securityType")
-                                            None
-                                ),
-                            createdAt = rs.timestamp("created_at").toInstant,
-                            updatedAt = rs.timestamp("updated_at").toInstant,
-                            deletedAt = rs.timestampOpt("deleted_at").map(_.toInstant)
-                        )
+                """
+                .map(rs =>
+                    InvestmentSecurity(
+                        id = UUID.fromString(rs.string("id")),
+                        plaidSecurityId = rs.string("plaid_security_id"),
+                        plaidInstitutionSecurityId = rs.stringOpt("plaid_institution_security_id"),
+                        plaidInstitutionId = rs.stringOpt("plaid_institution_id"),
+                        plaidProxySecurityId = rs.stringOpt("plaid_proxy_security_id"),
+                        name = rs.stringOpt("name"),
+                        tickerSymbol = rs.stringOpt("ticker_symbol"),
+                        securityType = rs
+                            .stringOpt("security_type")
+                            .flatMap(securityType =>
+                                SecurityType.fromString(securityType) match
+                                    case Right(securityType) =>
+                                        Some(securityType)
+                                    case Left(_) =>
+                                        Logger.root.error(s"Invalid security type: $securityType")
+                                        None
+                            ),
+                        createdAt = rs.timestamp("created_at").toInstant,
+                        updatedAt = rs.timestamp("updated_at").toInstant,
+                        deletedAt = rs.timestampOpt("deleted_at").map(_.toInstant)
                     )
-                    .single
-                    .apply()
-            }
-        ).toEither.left.map(ex => AppError.DatabaseError(ex.getMessage))
+                )
+                .single
+                .apply()
+        }
+    ).toEither.left.map(ex => AppError.DatabaseError(ex.getMessage))
 
     def getInvestmentHoldings(accountId: UUID): Either[Throwable, List[InvestmentHolding]] =
         Try(
@@ -120,10 +122,9 @@ object InvestmentRepository:
             }
         ).toEither
 
-    def upsertInvestmentHoldings(input: InvestmentHoldingInput): Either[AppError.DatabaseError, UUID] =
-        Try(
-            DB autoCommit { implicit session =>
-                sql"""
+    def upsertInvestmentHoldings(input: InvestmentHoldingInput): Either[AppError.DatabaseError, UUID] = Try(
+        DB autoCommit { implicit session =>
+            sql"""
                 INSERT INTO investment_holdings (
                     account_id,
                     investment_security_id,
@@ -161,8 +162,8 @@ object InvestmentRepository:
                     vested_value = EXCLUDED.vested_value
                 RETURNING id
             """.map(rs => UUID.fromString(rs.string("id"))).single.apply().get
-            }
-        ).toEither.left.map(ex => AppError.DatabaseError(ex.getMessage))
+        }
+    ).toEither.left.map(ex => AppError.DatabaseError(ex.getMessage))
 
     case class InvestmentSecurityInput(
         plaidSecurityId: String,

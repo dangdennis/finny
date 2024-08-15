@@ -16,35 +16,34 @@ import scala.concurrent.Future
 import scala.jdk.CollectionConverters.*
 
 object PlaidItemHandler:
-    def handlePlaidItemsGet(user: Profile): Either[AuthenticationError, DTOs.PlaidItemsGetResponse] =
-        PlaidItemRepository
-            .getItemsByUserId(userId = user.id)
-            .left
-            .map(_ => AuthenticationError(400))
-            .map(items =>
-                DTOs.PlaidItemsGetResponse(items =
-                    items.map(item =>
-                        DTOs.PlaidItemDTO(
-                            id = item.id.toString(),
-                            institutionId = item.plaidInstitutionId,
-                            status = item.status.toString(),
-                            createdAt = item.createdAt.toString(),
-                            // lastSyncedAt = item.lastSyncedAt.map(_.toString()),
-                            lastSyncedAt = None,
-                            // lastSyncError = item.lastSyncError,
-                            lastSyncError = None,
-                            // lastSyncErrorAt = item.lastSyncErrorAt.map(_.toString()),
-                            lastSyncErrorAt = None,
-                            retryCount = 2
-                        )
+    def handlePlaidItemsGet(user: Profile): Either[HttpError, DTOs.PlaidItemsGetResponse] = PlaidItemRepository
+        .getItemsByUserId(userId = user.id)
+        .left
+        .map(_ => HttpError(400))
+        .map(items =>
+            DTOs.PlaidItemsGetResponse(items =
+                items.map(item =>
+                    DTOs.PlaidItemDTO(
+                        id = item.id.toString(),
+                        institutionId = item.plaidInstitutionId,
+                        status = item.status.toString(),
+                        createdAt = item.createdAt.toString(),
+                        // lastSyncedAt = item.lastSyncedAt.map(_.toString()),
+                        lastSyncedAt = None,
+                        // lastSyncError = item.lastSyncError,
+                        lastSyncError = None,
+                        // lastSyncErrorAt = item.lastSyncErrorAt.map(_.toString()),
+                        lastSyncErrorAt = None,
+                        retryCount = 2
                     )
                 )
             )
+        )
 
     def handlePlaidItemsCreate(
         user: Profile,
         input: PlaidItemCreateRequest
-    ): Either[AuthenticationError, DTOs.PlaidItemCreateResponse] =
+    ): Either[HttpError, DTOs.PlaidItemCreateResponse] =
         val plaidClient = PlaidService.makePlaidClientFromEnv()
         val result =
             for
@@ -67,7 +66,7 @@ object PlaidItemHandler:
         result match
             case Left(error) =>
                 Logger.root.error(s"Error creating Plaid item", error)
-                Left(AuthenticationError(400))
+                Left(HttpError(400))
             case Right(item) =>
                 Future {
                     PlaidSyncService.syncAccounts(item)
@@ -84,22 +83,21 @@ object PlaidItemHandler:
                     )
                 )
 
-    def handlePlaidItemsSync(user: Profile, input: PlaidItemSyncRequest): Either[AuthenticationError, Unit] =
-        PlaidItemRepository
-            .getById(id = UUID.fromString(input.itemId))
-            .left
-            .map(_ => AuthenticationError(400))
-            .map(item =>
-                PlaidSyncService.sync(item.id)
-                Right(())
-            )
+    def handlePlaidItemsSync(user: Profile, input: PlaidItemSyncRequest): Either[HttpError, Unit] = PlaidItemRepository
+        .getById(id = UUID.fromString(input.itemId))
+        .left
+        .map(_ => HttpError(400))
+        .map(item =>
+            PlaidSyncService.sync(item.id)
+            Right(())
+        )
 
-    def handlePlaidItemsDelete(user: Profile, input: DTOs.PlaidItemDeleteRequest): Either[AuthenticationError, Unit] =
+    def handlePlaidItemsDelete(user: Profile, input: DTOs.PlaidItemDeleteRequest): Either[HttpError, Unit] =
         PlaidService
             .deleteItem(
                 client = PlaidService.makePlaidClientFromEnv(),
                 itemId = PlaidItemId(UUID.fromString(input.itemId))
             )
             .left
-            .map(_ => AuthenticationError(400))
+            .map(_ => HttpError(400))
             .map(_ => Right(()))

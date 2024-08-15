@@ -49,7 +49,7 @@ object PlaidSyncService:
                             item <- PlaidItemRepository.getById(itemId.toUUID)
                             _ <- syncAccounts(item)
                             _ <- syncNonInvestmentAccounts(item)
-                            _ <- Right(syncInvestmentAccounts(item))
+                            _ <- syncInvestmentAccounts(item)
                         yield ()
                     ) match
                         case Right(_) =>
@@ -145,14 +145,25 @@ object PlaidSyncService:
         Right(())
 
     private def syncInvestmentAccounts(item: PlaidItem): Either[AppError, Unit] =
-        Logger.root.info(s"Syncing investment accounts and holdings for item: ${item.id}")
+        Logger.root.info(s"Attempt investment accounts and holdings for item: ${item.id}")
         AccountRepository
-            .getAccounts(item.userId)
+            .getAccountsByItemId(itemId = item.id, userId = item.userId)
             .flatMap(accounts =>
-                val investmentAccounts = accounts.filter(_.accountType.exists(_ == "investment"))
+                val investmentAccounts = accounts.filter(account => {
+                    account.accountType match
+                        case Some(actType) =>
+                            actType == "investment"
+                        case None =>
+                            false
+                })
+                Logger.root.info(s"Found ${investmentAccounts.size} investment accounts for item: ${item.id}")
+                Logger.root.info(s"Is investmentAccounts empty: ${investmentAccounts.isEmpty}")
                 if investmentAccounts.isEmpty then
+                    Logger.root.info(s"No investment accounts found for item: ${item.id}")
+                    Logger.root.info("Skipping investment account sync")
                     Right(())
                 else
+                    Logger.root.info(s"Syncing investment accounts and holdings for item: ${item.id}")
                     PlaidService.getInvestmentHoldings(client = PlaidService.makePlaidClientFromEnv(), item) match
                         case Left(appError) =>
                             Logger.root.error(s"Error syncing investment holdings", appError)

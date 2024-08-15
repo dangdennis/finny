@@ -27,7 +27,7 @@ object Routes:
         val protectedApiRouteGroup = endpoint
             .tag("Finny API")
             .securityIn(auth.bearer[String]().mapTo[AuthenticationToken])
-            .errorOut(plainBody[Int].mapTo[AuthenticationError])
+            .errorOut(plainBody[Int].mapTo[HttpError])
             .handleSecurity(makeAuthenticator(authConfig))
 
         val usersDeleteRoute = protectedApiRouteGroup.delete.in("users" / "delete")
@@ -109,7 +109,7 @@ object Routes:
 
     case class AuthConfig(jwtSecret: String, jwtIssuer: String)
 
-    private def makeAuthenticator(authConfig: AuthConfig): AuthenticationToken => Either[AuthenticationError, Profile] =
+    private def makeAuthenticator(authConfig: AuthConfig): AuthenticationToken => Either[HttpError, Profile] =
         val algorithm = Algorithm.HMAC256(authConfig.jwtSecret)
         (token: AuthenticationToken) =>
             val verifier = JWT.require(algorithm).withIssuer(authConfig.jwtIssuer).build()
@@ -120,14 +120,14 @@ object Routes:
                     ProfileRepository.getProfileByUserId(userId) match
                         case Left(AppError.DatabaseError(msg)) =>
                             Logger.root.error(s"Error fetching profile by user id", msg)
-                            Left(AuthenticationError(500))
+                            Left(HttpError(500))
                         case Right(profileOpt) =>
                             profileOpt match
                                 case Some(profile) =>
                                     Right(profile)
                                 case None =>
                                     Logger.root.error(s"Profile not found for user id: $userId")
-                                    Left(AuthenticationError(404))
+                                    Left(HttpError(404))
                 case Failure(error) =>
                     Logger.root.error(s"Error decoding JWT", error)
-                    Left(AuthenticationError(400))
+                    Left(HttpError(400))

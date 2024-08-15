@@ -1,11 +1,24 @@
 import 'package:finny/src/accounts/account_model.dart';
-import 'package:finny/src/goals/goals_controller.dart';
+import 'package:finny/src/goals/goal_model.dart';
 import 'package:flutter/material.dart';
 
 class GoalDetailsAssignedAccounts extends StatefulWidget {
-  const GoalDetailsAssignedAccounts({super.key, required this.goalsController});
+  const GoalDetailsAssignedAccounts({
+    super.key,
+    required this.goalId,
+    required this.getAccounts,
+    required this.onAccountAssignOrUpdate,
+    required this.onAccountUnassign,
+  });
 
-  final GoalsController goalsController;
+  final String goalId;
+  final Function(
+      {required GoalId goalId,
+      required AccountId accountId,
+      double? progress}) onAccountAssignOrUpdate;
+  final Function({required GoalId goalId, required AccountId accountId})
+      onAccountUnassign;
+  final Function() getAccounts;
 
   @override
   State<GoalDetailsAssignedAccounts> createState() =>
@@ -26,16 +39,61 @@ class _GoalDetailsAssignedAccountsState
 
   Future<void> _loadAccounts() async {
     try {
-      final accounts = await widget.goalsController.getAccounts();
+      final accounts = await widget.getAccounts();
       setState(() {
-        _cachedAccounts = accounts;
+        _cachedAccounts = accounts
+            .where((account) =>
+                account.type == "investment" || account.type == "depository")
+            .toList();
       });
     } catch (error) {
-      // Handle the error appropriately (e.g., show a snackbar)
+      final ctx = context;
+      if (ctx.mounted) {
+        ScaffoldMessenger.of(ctx).showSnackBar(
+          SnackBar(
+            content: Text('Unable to load accounts: $error'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+
       setState(() {
         _cachedAccounts = [];
       });
     }
+  }
+
+  void _handleAccountToggle(
+      {required GoalId goalId,
+      required AccountId accountId,
+      required bool value}) {
+    if (value) {
+      widget.onAccountAssignOrUpdate(
+        goalId: goalId,
+        accountId: accountId,
+        progress: _progressValues[accountId] ?? 0,
+      );
+    } else {
+      widget.onAccountUnassign(goalId: goalId, accountId: accountId);
+    }
+
+    setState(() {
+      _enabledStates[accountId] = value;
+    });
+  }
+
+  void _handleProgressChange(
+      {required AccountId accountId, required double progress}) {
+    widget.onAccountAssignOrUpdate(
+      goalId: widget.goalId,
+      accountId: accountId,
+      progress: progress,
+    );
+
+    setState(() {
+      _progressValues[accountId] = progress;
+      _enabledStates[accountId] = progress > 0;
+    });
   }
 
   @override
@@ -73,19 +131,23 @@ class _GoalDetailsAssignedAccountsState
                         progressValue: _progressValues[accountId]!,
                         isEnabled: _enabledStates[accountId]!,
                         onToggle: (bool value) {
-                          setState(() {
-                            _enabledStates[accountId] = value;
-                          });
+                          _handleAccountToggle(
+                            goalId: widget.goalId,
+                            accountId: accountId,
+                            value: value,
+                          );
                         },
                         onSliderChanged: (double value) {
-                          setState(() {
-                            _progressValues[accountId] = value;
-                          });
+                          _handleProgressChange(
+                            accountId: accountId,
+                            progress: value,
+                          );
                         },
                         onSegmentChanged: (int value) {
-                          setState(() {
-                            _progressValues[accountId] = value.toDouble();
-                          });
+                          _handleProgressChange(
+                            accountId: accountId,
+                            progress: value.toDouble(),
+                          );
                         },
                       );
                     }),

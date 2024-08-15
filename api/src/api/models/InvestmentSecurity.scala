@@ -50,7 +50,7 @@ object SecurityType:
             case SecurityType.Other =>
                 "other"
 
-    def fromString(s: String): Either[String,SecurityType] =
+    def fromString(s: String): Either[String, SecurityType] =
         s match
             case "cash" =>
                 Right(SecurityType.Cash)

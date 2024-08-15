@@ -1,3 +1,5 @@
+typedef AccountId = String;
+
 class Account {
   const Account({
     required this.id,
