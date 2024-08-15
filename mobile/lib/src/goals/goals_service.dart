@@ -123,6 +123,9 @@ class GoalsService {
         goalId: Value(input.goalId),
         accountId: Value(input.accountId),
         percentage: Value(input.percentage),
+        amount: const Value(0),
+        createdAt: Value(DateTime.now().toIso8601String()),
+        updatedAt: Value(DateTime.now().toIso8601String()),
       );
 
       await appDb.into(appDb.goalAccountsDb).insert(goalAccountCompanion);
