@@ -10,8 +10,7 @@ class TransactionsController {
   Stream<List<Transaction>> watchTransactions() {
     return (appDb.select(appDb.transactionsDb)
           ..orderBy([
-            (a) =>
-                OrderingTerm(expression: a.createdAt, mode: OrderingMode.desc)
+            (a) => OrderingTerm(expression: a.date, mode: OrderingMode.desc)
           ]))
         .watch()
         .map((rows) => rows.map(dbToDomain).toList());
