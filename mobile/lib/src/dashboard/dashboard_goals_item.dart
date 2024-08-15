@@ -13,7 +13,7 @@ class DashboardGoalItem extends StatefulWidget {
   });
 
   final Goal goal;
-  final Future<List<Account>> Function(Goal) getAssignedAccounts;
+  final Future<List<Account>> Function(GoalId) getAssignedAccounts;
 
   @override
   State<DashboardGoalItem> createState() => _DashboardGoalItemState();
@@ -70,7 +70,7 @@ class _DashboardGoalItemState extends State<DashboardGoalItem> {
             ),
             const SizedBox(height: 8),
             FutureBuilder<List<Account>>(
-              future: widget.getAssignedAccounts(widget.goal),
+              future: widget.getAssignedAccounts(widget.goal.id),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const CircularProgressIndicator();

@@ -136,7 +136,7 @@ class PowersyncSupabaseConnector extends PowerSyncBackendConnector {
 
     try {
       final body = jsonEncode({'data': entries});
-      print('Sending to PowerSync: $body');
+      Logger.root.info('Sending to PowerSync: $body');
       final response = await http.post(
         AppConfig.powerSyncEventUpdateUrl,
         headers: headers,

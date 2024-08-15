@@ -140,9 +140,9 @@ class GoalsService {
         .go();
   }
 
-  Future<List<GoalAccount>> getAssignedAccounts(Goal goal) async {
+  Future<List<GoalAccount>> getAssignedAccounts(GoalId goalId) async {
     final goalAccountsDbData = await (appDb.select(appDb.goalAccountsDb)
-          ..where((tbl) => tbl.goalId.equals(goal.id))
+          ..where((tbl) => tbl.goalId.equals(goalId))
           ..orderBy([
             (g) =>
                 OrderingTerm(expression: g.percentage, mode: OrderingMode.desc)
