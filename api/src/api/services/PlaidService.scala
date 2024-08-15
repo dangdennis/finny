@@ -25,6 +25,7 @@ import scala.reflect.ClassTag
 import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
+import api.models.UserId
 
 object PlaidService:
     def makePlaidClient(clientId: String, secret: String, env: AppEnv) =
@@ -273,7 +274,7 @@ object PlaidService:
                     )
         )
 
-    def deleteItem(client: PlaidApi, itemId: PlaidItemId): Either[AppError, Unit] = PlaidItemRepository
+    def deleteItem(client: PlaidApi, itemId: PlaidItemId, userId: UserId): Either[AppError, Unit] = PlaidItemRepository
         .getById(itemId.toUUID)
         .map(plaidItem =>
             val req = ItemRemoveRequest().accessToken(plaidItem.plaidAccessToken)
@@ -281,7 +282,7 @@ object PlaidService:
                 DB.localTx { implicit session =>
                     val result =
                         for
-                            _ <- PlaidItemRepository.deleteItemById(itemId)
+                            _ <- PlaidItemRepository.deleteItemById(itemId, userId)
                             response <- handlePlaidResponse(
                                 Try(client.itemRemove(req).execute()),
                                 respBody =>

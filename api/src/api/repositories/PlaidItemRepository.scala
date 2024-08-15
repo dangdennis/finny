@@ -246,8 +246,10 @@ object PlaidItemRepository:
         }
     ).toEither.left.map(e => AppError.DatabaseError(e.getMessage))
 
-    def deleteItemById(itemId: PlaidItemId)(implicit session: DBSession): Either[AppError.DatabaseError, Int] = Try(
-        sql"""DELETE FROM plaid_items WHERE id = $itemId""".update.apply()
+    def deleteItemById(itemId: PlaidItemId, userId: UserId)(using
+        session: DBSession
+    ): Either[AppError.DatabaseError, Int] = Try(
+        sql"""DELETE FROM plaid_items WHERE id = $itemId and user_id = $userId""".update.apply()
     ).toEither.left.map(e => AppError.DatabaseError(e.getMessage))
 
     private def dbToModel(rs: WrappedResultSet) = PlaidItem(

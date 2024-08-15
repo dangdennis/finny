@@ -96,7 +96,8 @@ object PlaidItemHandler:
         PlaidService
             .deleteItem(
                 client = PlaidService.makePlaidClientFromEnv(),
-                itemId = PlaidItemId(UUID.fromString(input.itemId))
+                itemId = PlaidItemId(UUID.fromString(input.itemId)),
+                userId = user.id
             )
             .left
             .map(_ => HttpError(400))

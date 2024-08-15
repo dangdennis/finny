@@ -24,12 +24,15 @@ object Cli {
         args match
             case Seq() =>
                 println("Please provide a command")
-            case command :: itemId :: _ =>
+            case command :: itemId :: userId :: _ =>
                 command match
                     case "delete-item" =>
                         val results =
-                            for res <- PlaidService
-                                    .deleteItem(client = plaidClient, itemId = PlaidItemId(UUID.fromString(itemId)))
+                            for res <- PlaidService.deleteItem(
+                                    client = plaidClient,
+                                    itemId = PlaidItemId(UUID.fromString(itemId)),
+                                    userId = UUID.fromString(userId)
+                                )
                             yield res
                         println(results)
                     case _ =>
