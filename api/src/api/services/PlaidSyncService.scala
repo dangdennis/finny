@@ -149,7 +149,15 @@ object PlaidSyncService:
         AccountRepository
             .getAccounts(item.userId)
             .flatMap(accounts =>
-                val investmentAccounts = accounts.filter(_.accountType.exists(_ == "investment"))
+                val investmentAccounts = accounts.filter(account => {
+                    account.accountType match
+                        case Some(actType) =>
+                            actType == "investment"
+                        case None =>
+                            false
+                })
+                Logger.root.info(s"Found ${investmentAccounts.size} investment accounts for item: ${item.id}")
+                Logger.root.info(s"Is investmentAccounts empty: ${investmentAccounts.isEmpty}")
                 if investmentAccounts.isEmpty then
                     Logger.root.info(s"No investment accounts found for item: ${item.id}")
                     Logger.root.info("Skipping investment account sync")

@@ -7,7 +7,7 @@ import api.models.Profile
 import api.repositories.GoalRepository
 import io.circe.Decoder
 import io.circe.generic.semiauto.deriveDecoder
-import io.circe.parser._
+import io.circe.parser.*
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
