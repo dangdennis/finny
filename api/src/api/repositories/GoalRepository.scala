@@ -157,6 +157,12 @@ object GoalRepository:
 
     def deleteGoalAccount(id: UUID, userId: UserId): Either[AppError.DatabaseError, Int] = Try(
         DB autoCommit { implicit session =>
-            sql"""delete from goals where id = ${id} and user_id = ${userId}""".update.apply()
+            sql"""
+                DELETE FROM goal_accounts
+                USING goals
+                WHERE goal_accounts.goal_id = goals.id
+                    AND goal_accounts.id = ${id}
+                    AND goals.user_id = ${userId};
+                """.update.apply()
         }
     ).toEither.left.map(e => AppError.DatabaseError(e.getMessage))

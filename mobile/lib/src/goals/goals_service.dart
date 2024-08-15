@@ -82,9 +82,7 @@ class GoalsService {
   Future<void> assignOrUpdateGoalAccount(AssignAccountToGoalInput input) async {
     // Make sure the account cannot be allocated greater than 100% across all goals
     final accountAssignedAcrossAllGoals =
-        await (appDb.select(appDb.goalAccountsDb)
-              ..where((tbl) => tbl.accountId.equals(input.accountId)))
-            .get();
+        await getGoalAccountsByAccountId(input.accountId);
 
     double allocatedPercentage = accountAssignedAcrossAllGoals
         .map((e) => e.percentage)
@@ -111,7 +109,7 @@ class GoalsService {
       }
 
       final goalAccountCompanion = GoalAccountsDbCompanion(
-        percentage: Value(input.percentage),
+        percentage: Value(input.percentage.toString()),
       );
 
       await (appDb.update(appDb.goalAccountsDb)
@@ -122,8 +120,8 @@ class GoalsService {
         id: Value(const Uuid().v4()),
         goalId: Value(input.goalId),
         accountId: Value(input.accountId),
-        percentage: Value(input.percentage),
-        amount: const Value(0),
+        percentage: Value(input.percentage.toString()),
+        amount: Value(0.toString()),
         createdAt: Value(DateTime.now().toIso8601String()),
         updatedAt: Value(DateTime.now().toIso8601String()),
       );
@@ -140,9 +138,22 @@ class GoalsService {
         .go();
   }
 
-  Future<List<GoalAccount>> getAssignedAccounts(GoalId goalId) async {
+  Future<List<GoalAccount>> getGoalAccounts(GoalId goalId) async {
     final goalAccountsDbData = await (appDb.select(appDb.goalAccountsDb)
           ..where((tbl) => tbl.goalId.equals(goalId))
+          ..orderBy([
+            (g) =>
+                OrderingTerm(expression: g.percentage, mode: OrderingMode.desc)
+          ]))
+        .get();
+
+    return goalAccountsDbData.map(goalAccountDbToDomain).toList();
+  }
+
+  Future<List<GoalAccount>> getGoalAccountsByAccountId(
+      AccountId accountId) async {
+    final goalAccountsDbData = await (appDb.select(appDb.goalAccountsDb)
+          ..where((tbl) => tbl.accountId.equals(accountId))
           ..orderBy([
             (g) =>
                 OrderingTerm(expression: g.percentage, mode: OrderingMode.desc)
@@ -164,11 +175,12 @@ class GoalsService {
   }
 
   GoalAccount goalAccountDbToDomain(GoalAccountsDbData dbData) {
+    print('goalAccountDbToDomain $dbData');
     return GoalAccount(
       id: dbData.id,
       goalId: dbData.goalId,
       accountId: dbData.accountId,
-      percentage: dbData.percentage,
+      percentage: double.parse(dbData.percentage),
     );
   }
 }

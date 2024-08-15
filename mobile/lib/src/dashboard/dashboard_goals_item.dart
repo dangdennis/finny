@@ -57,56 +57,16 @@ class _DashboardGoalItemState extends State<DashboardGoalItem> {
                   children: [
                     Text(
                       'Target ${DateFormat.yMMMd().format(widget.goal.targetDate)}',
-                      style: Theme.of(context).textTheme.bodySmall,
+                      style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     Text(
                       'Actual ${DateFormat.yMMMd().format(widget.goal.targetDate)}',
-                      style: Theme.of(context).textTheme.bodySmall,
+                      style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   ],
                 ),
                 GoalProgressIndicator(progress: widget.goal.progress ?? 0),
               ],
-            ),
-            const SizedBox(height: 8),
-            FutureBuilder<List<Account>>(
-              future: widget.getAssignedAccounts(widget.goal.id),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const CircularProgressIndicator();
-                } else if (snapshot.hasError) {
-                  return Text('Error: ${snapshot.error}');
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Text('Assign Accounts');
-                } else {
-                  return Row(
-                    children: snapshot.data!.asMap().entries.map((entry) {
-                      int index = entry.key;
-                      Account account = entry.value;
-                      return Padding(
-                        padding: EdgeInsets.only(
-                            left: index == 0 ? 0 : -15), // Overlapping effect
-                        child: Stack(
-                          children: [
-                            Positioned.fill(
-                              child: Center(
-                                child: Text(
-                                  account.name[0]
-                                      .toUpperCase(), // Initial letter
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                  );
-                }
-              },
             ),
           ],
         ),
