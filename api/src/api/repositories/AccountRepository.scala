@@ -8,6 +8,7 @@ import scalikejdbc.*
 
 import java.util.UUID
 import scala.util.Try
+import api.models.UserId
 
 object AccountRepository:
     case class UpsertAccountInput(
@@ -82,6 +83,55 @@ object AccountRepository:
             accounts
           WHERE
             user_id = ${userId}
+            and deleted_at is null;
+          """.map(rs =>
+                    Account(
+                        id = UUID.fromString(rs.string("id")),
+                        itemId = UUID.fromString(rs.string("item_id")),
+                        userId = UUID.fromString(rs.string("user_id")),
+                        plaidAccountId = rs.string("plaid_account_id"),
+                        name = rs.string("name"),
+                        mask = rs.stringOpt("mask"),
+                        officialName = rs.stringOpt("official_name"),
+                        currentBalance = rs.double("current_balance"),
+                        availableBalance = rs.double("available_balance"),
+                        isoCurrencyCode = rs.stringOpt("iso_currency_code"),
+                        unofficialCurrencyCode = rs.stringOpt("unofficial_currency_code"),
+                        accountType = rs.stringOpt("type"),
+                        accountSubtype = rs.stringOpt("subtype"),
+                        createdAt = rs.timestamp("created_at").toInstant
+                    )
+                )
+                .list
+                .apply()
+        }
+    ).toEither.left.map(ex => AppError.DatabaseError(ex.getMessage()))
+
+    def getAccountsByItemId(itemId: PlaidItemId, userId: UserId): Either[AppError, List[Account]] = Try(
+        DB.readOnly { implicit session =>
+            sql"""
+          SELECT
+            id,
+            item_id,
+            user_id,
+            plaid_account_id,
+            name,
+            mask,
+            official_name,
+            current_balance,
+            available_balance,
+            iso_currency_code,
+            unofficial_currency_code,
+            type,
+            subtype,
+            created_at,
+            updated_at,
+            deleted_at
+          FROM
+            accounts
+          WHERE
+            item_id = ${itemId}
+            and user_id = ${userId}
             and deleted_at is null;
           """.map(rs =>
                     Account(
