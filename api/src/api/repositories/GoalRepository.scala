@@ -8,6 +8,7 @@ import scalikejdbc.*
 import java.time.Instant
 import java.util.UUID
 import scala.util.Try
+import api.common.Logger
 
 object GoalRepository:
     def getGoal(id: UUID): Either[AppError.DatabaseError, Option[Goal]] = Try(
@@ -89,14 +90,27 @@ object GoalRepository:
 
     def updateGoal(
         id: UUID,
-        name: String,
-        amount: Double,
-        targetDate: Instant,
+        name: Option[String],
+        amount: Option[Double],
+        targetDate: Option[Instant],
         userId: UUID
-    ): Either[AppError.DatabaseError, Int] = Try(
+    ): Either[AppError.DatabaseError, Int] = Try {
         DB autoCommit { implicit session =>
-            sql"""update goals set name = ${name}, amount = ${amount}, target_date = ${targetDate} where id = ${id} and user_id = ${userId}"""
-                .update
-                .apply()
+            val setClause = Seq(
+                name.map(n => sqls"name = ${n}"),
+                amount.map(a => sqls"amount = ${a}"),
+                targetDate.map(td => sqls"target_date = ${td}")
+            ).flatten.reduceOption((a, b) => sqls"$a, $b").getOrElse(sqls"1 = 1")
+
+            val query =
+                sql"""
+                    update goals
+                    set $setClause
+                    where id = ${id} and user_id = ${userId}
+                """
+
+            Logger.root.info(s"Executing query: ${query.statement}")
+            query.update.apply()
         }
-    ).toEither.left.map(e => AppError.DatabaseError(e.getMessage))
+
+    }.toEither.left.map(e => AppError.DatabaseError(e.getMessage))

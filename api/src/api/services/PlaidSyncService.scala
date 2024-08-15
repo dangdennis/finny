@@ -147,7 +147,7 @@ object PlaidSyncService:
     private def syncInvestmentAccounts(item: PlaidItem): Either[AppError, Unit] =
         Logger.root.info(s"Attempt investment accounts and holdings for item: ${item.id}")
         AccountRepository
-            .getAccountsByItemId(itemId=item.id, userId=item.userId)
+            .getAccountsByItemId(itemId = item.id, userId = item.userId)
             .flatMap(accounts =>
                 val investmentAccounts = accounts.filter(account => {
                     account.accountType match
