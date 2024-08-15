@@ -81,12 +81,11 @@ class GoalsService {
 
   Future<void> assignOrUpdateGoalAccount(AssignAccountToGoalInput input) async {
     // Make sure the account cannot be allocated greater than 100% across all goals
-    final accountAssignedAcrossAllGoals =
-        await (appDb.select(appDb.goalAccountsDb)
-              ..where((tbl) => tbl.accountId.equals(input.accountId)))
-            .get();
+    final allGoalAccountsOfAccount =
+        await getGoalAccountsByAccountIdExceptCurrentGoal(
+            input.accountId, input.goalId);
 
-    double allocatedPercentage = accountAssignedAcrossAllGoals
+    double allocatedPercentage = allGoalAccountsOfAccount
         .map((e) => e.percentage)
         .fold(0, (previousValue, element) => previousValue + element);
 
@@ -111,7 +110,7 @@ class GoalsService {
       }
 
       final goalAccountCompanion = GoalAccountsDbCompanion(
-        percentage: Value(input.percentage),
+        percentage: Value(input.percentage.toString()),
       );
 
       await (appDb.update(appDb.goalAccountsDb)
@@ -122,8 +121,8 @@ class GoalsService {
         id: Value(const Uuid().v4()),
         goalId: Value(input.goalId),
         accountId: Value(input.accountId),
-        percentage: Value(input.percentage),
-        amount: const Value(0),
+        percentage: Value(input.percentage.toString()),
+        amount: Value(0.toString()),
         createdAt: Value(DateTime.now().toIso8601String()),
         updatedAt: Value(DateTime.now().toIso8601String()),
       );
@@ -140,9 +139,23 @@ class GoalsService {
         .go();
   }
 
-  Future<List<GoalAccount>> getAssignedAccounts(Goal goal) async {
+  Future<List<GoalAccount>> getGoalAccounts(GoalId goalId) async {
     final goalAccountsDbData = await (appDb.select(appDb.goalAccountsDb)
-          ..where((tbl) => tbl.goalId.equals(goal.id))
+          ..where((tbl) => tbl.goalId.equals(goalId))
+          ..orderBy([
+            (g) =>
+                OrderingTerm(expression: g.percentage, mode: OrderingMode.desc)
+          ]))
+        .get();
+
+    return goalAccountsDbData.map(goalAccountDbToDomain).toList();
+  }
+
+  Future<List<GoalAccount>> getGoalAccountsByAccountIdExceptCurrentGoal(
+      AccountId accountId, GoalId goalId) async {
+    final goalAccountsDbData = await (appDb.select(appDb.goalAccountsDb)
+          ..where((tbl) => tbl.accountId.equals(accountId))
+          ..where((tbl) => tbl.goalId.isNotValue(goalId))
           ..orderBy([
             (g) =>
                 OrderingTerm(expression: g.percentage, mode: OrderingMode.desc)
@@ -168,7 +181,7 @@ class GoalsService {
       id: dbData.id,
       goalId: dbData.goalId,
       accountId: dbData.accountId,
-      percentage: dbData.percentage,
+      percentage: double.parse(dbData.percentage),
     );
   }
 }

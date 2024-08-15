@@ -30,9 +30,9 @@ object UserDeletionService:
             _ = items.foreach { item =>
                 Try(
                     DB.localTx { implicit session =>
-                        TransactionRepository.deleteTransactionsByItemId(item.id)
-                        AccountRepository.deleteAccountsByItemId(item.id)
-                        PlaidItemRepository.deleteItemById(item.id)
+                        TransactionRepository.deleteTransactionsByItemId(item.id, user.id)
+                        AccountRepository.deleteAccountsByItemId(item.id, user.id)
+                        PlaidItemRepository.deleteItemById(item.id, user.id)
                     }
                 ).toEither.left.map(e => AppError.DatabaseError(e.getMessage))
             }

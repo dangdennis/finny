@@ -112,8 +112,8 @@ class GoalAccountsDb extends Table {
   TextColumn get id => text()();
   TextColumn get goalId => text()();
   TextColumn get accountId => text()();
-  RealColumn get amount => real()();
-  RealColumn get percentage => real()();
+  TextColumn get amount => text()();
+  TextColumn get percentage => text()();
   TextColumn get createdAt => text()();
   TextColumn get updatedAt => text()();
   TextColumn get deletedAt => text().nullable()();

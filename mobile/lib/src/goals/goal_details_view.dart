@@ -1,7 +1,7 @@
 import 'dart:async';
+import 'package:finny/src/goals/goal_details_assign_accounts.dart';
 import 'package:flutter/material.dart';
 import 'package:finny/src/accounts/accounts_service.dart';
-import 'package:finny/src/goals/goal_details_assigned_accounts.dart';
 import 'package:finny/src/goals/goal_details_edit.dart';
 import 'package:finny/src/goals/goal_model.dart';
 import 'package:finny/src/goals/goals_controller.dart';
@@ -94,6 +94,12 @@ class _GoalDetailViewState extends State<GoalDetailView> {
     targetDateFocusNode.dispose();
   }
 
+  void _unfocusAll() {
+    nameFocusNode.unfocus();
+    targetAmountFocusNode.unfocus();
+    targetDateFocusNode.unfocus();
+  }
+
   void watchGoal() {
     goalSub = widget._goalsController.watchGoal(widget.goalId).listen(
       (goal) {
@@ -104,10 +110,8 @@ class _GoalDetailViewState extends State<GoalDetailView> {
     );
   }
 
-  void _unfocusAll() {
-    nameFocusNode.unfocus();
-    targetAmountFocusNode.unfocus();
-    targetDateFocusNode.unfocus();
+  Future<List<GoalAccount>> getGoalAccounts() async {
+    return await widget._goalsController.getGoalAccounts(widget.goalId);
   }
 
   @override
@@ -149,13 +153,14 @@ class _GoalDetailViewState extends State<GoalDetailView> {
                     ),
                   ),
                 ),
-                GoalDetailsAssignedAccounts(
+                GoalDetailsAssignAccounts(
                   goalId: widget.goalId,
                   getAccounts: widget._goalsController.getAccounts,
                   onAccountAssignOrUpdate:
                       widget._goalsController.assignOrUpdateGoalAccount,
                   onAccountUnassign:
                       widget._goalsController.unassignGoalAccount,
+                  getGoalAccounts: getGoalAccounts,
                 )
               ],
             ),

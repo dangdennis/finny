@@ -35,15 +35,29 @@ object PowerSyncHandler:
                     .data
                     .toRight(AppError.ValidationError("No data found for Goal PUT operation"))
                     .flatMap(_.as[GoalPutData].left.map(err => AppError.ValidationError(err.getMessage)))
-                    .flatMap(goalData => handleGoalPut(event.id, goalData, user))
+                    .flatMap(data => handleGoalPut(event.id, data, user))
             case ("goals", "DELETE") =>
-                handleGoalDelete(event.id)
+                handleGoalDelete(event.id, user)
             case ("goals", "PATCH") =>
                 event
                     .data
                     .toRight(AppError.ValidationError("No data found for Goal PATCH operation"))
                     .flatMap(_.as[GoalPatchData].left.map(err => AppError.ValidationError(err.getMessage)))
-                    .map(goalData => handleGoalPatch(event.id, goalData, user))
+                    .map(data => handleGoalPatch(event.id, data, user))
+            case ("goal_accounts", "PUT") =>
+                event
+                    .data
+                    .toRight(AppError.ValidationError("No data found for GoalAccount PUT operation"))
+                    .flatMap(_.as[GoalAccountPutData].left.map(err => AppError.ValidationError(err.getMessage)))
+                    .map(data => handleGoalAccountPut(event.id, data))
+            case ("goal_accounts", "PATCH") =>
+                event
+                    .data
+                    .toRight(AppError.ValidationError("No data found for GoalAccount PUT operation"))
+                    .flatMap(_.as[GoalAccountPatchData].left.map(err => AppError.ValidationError(err.getMessage)))
+                    .map(data => handleGoalAccountPatch(event.id, data, user))
+            case ("goal_accounts", "DELETE") =>
+                handleGoalAccountDelete(event.id, user)
             case _ =>
                 Logger.root.info(s"Skipping event ${event.op} ${event.`type`} ${event.id}")
                 Right(())
@@ -65,10 +79,6 @@ object PowerSyncHandler:
             )
             .map(_ => ())
 
-    private def handleGoalDelete(recordId: String): Either[AppError, Unit] =
-        Logger.root.info(s"Deleting goal $recordId")
-        GoalRepository.deleteGoal(UUID.fromString(recordId)).right.map(_ => ())
-
     private def handleGoalPatch(recordId: String, data: GoalPatchData, user: Profile): Either[AppError, Unit] =
         Logger.root.info(s"Updating goal $data")
         GoalRepository
@@ -88,6 +98,41 @@ object PowerSyncHandler:
             )
             .map(_ => ())
 
+    private def handleGoalDelete(recordId: String, user: Profile): Either[AppError, Unit] =
+        Logger.root.info(s"Deleting goal $recordId")
+        GoalRepository.deleteGoal(UUID.fromString(recordId), user.id).right.map(_ => ())
+
+    private def handleGoalAccountPut(recordId: String, data: GoalAccountPutData): Either[AppError, Unit] =
+        Logger.root.info(s"Creating goal $data")
+        GoalRepository
+            .createGoalAccount(
+                id = UUID.fromString(recordId),
+                goalId = UUID.fromString(data.goal_id),
+                accountId = UUID.fromString(data.account_id),
+                amount = data.amount,
+                percentage = data.percentage
+            )
+            .map(_ => ())
+
+    private def handleGoalAccountPatch(
+        recordId: String,
+        data: GoalAccountPatchData,
+        user: Profile
+    ): Either[AppError, Unit] =
+        Logger.root.info(s"Creating goal $data")
+        GoalRepository
+            .updateGoalAccount(
+                goalAccountId = UUID.fromString(recordId),
+                amount = data.amount,
+                percentage = data.percentage,
+                userId = user.id
+            )
+            .map(_ => ())
+
+    private def handleGoalAccountDelete(recordId: String, user: Profile): Either[AppError, Unit] =
+        Logger.root.info(s"Deleting goal account $recordId")
+        GoalRepository.deleteGoalAccount(UUID.fromString(recordId), user.id).right.map(_ => ())
+
     case class EventUploadRequest(data: List[EventUpload])
     object EventUploadRequest:
         given Decoder[EventUploadRequest] = deriveDecoder
@@ -103,3 +148,11 @@ object PowerSyncHandler:
     case class GoalPatchData(amount: Option[Double], name: Option[String], target_date: Option[String])
     object GoalPatchData:
         given Decoder[GoalPatchData] = deriveDecoder
+
+    case class GoalAccountPutData(goal_id: String, account_id: String, amount: Double, percentage: Double)
+    object GoalAccountPutData:
+        given Decoder[GoalAccountPutData] = deriveDecoder
+
+    case class GoalAccountPatchData(amount: Option[Double], percentage: Option[Double])
+    object GoalAccountPatchData:
+        given Decoder[GoalAccountPatchData] = deriveDecoder

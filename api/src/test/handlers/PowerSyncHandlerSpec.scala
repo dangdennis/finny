@@ -41,7 +41,7 @@ class PowerSyncHandlerSpec extends AnyFlatSpec, Matchers, EitherValues, BeforeAn
             user
         )
 
-        val _ = GoalRepository.getGoal(UUID.fromString("f0a7a643-5582-4f64-b462-beb63ff12e60")).value.get
+        val _ = GoalRepository.getGoal(UUID.fromString("f0a7a643-5582-4f64-b462-beb63ff12e60"), user.id).value.get
 
         // when
         val _ = PowerSyncHandler.handleEventUpload(
@@ -62,6 +62,6 @@ class PowerSyncHandlerSpec extends AnyFlatSpec, Matchers, EitherValues, BeforeAn
             user
         )
 
-        val goal = GoalRepository.getGoal(UUID.fromString("f0a7a643-5582-4f64-b462-beb63ff12e60")).value
+        val goal = GoalRepository.getGoal(UUID.fromString("f0a7a643-5582-4f64-b462-beb63ff12e60"), user.id).value
         goal should be(None)
     }

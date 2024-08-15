@@ -3,7 +3,10 @@ package api.models
 import java.time.Instant
 import java.util.UUID
 
+/** PlaidItemId is the internal database ID for a Plaid item. It is not the actual Plaid-generated item ID.
+  */
 opaque type PlaidItemId = UUID
+
 object PlaidItemId:
     def apply(uuid: UUID): PlaidItemId = uuid
 

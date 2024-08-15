@@ -82,15 +82,25 @@ class GoalsController {
     }
   }
 
-  Future<List<Account>> getAssignedAccounts(Goal goal) async {
+  Future<List<Account>> getAssignedAccounts(GoalId goalId) async {
     try {
-      final goalAccounts = await _goalsService.getAssignedAccounts(goal);
+      final goalAccounts = await _goalsService.getGoalAccounts(goalId);
       final accounts = await _accountsService.getAccounts(GetAccountsInput(
         accountIds: goalAccounts.map((e) => e.accountId).toList(),
       ));
       return accounts;
     } catch (e, stacktrace) {
       _logger.severe('Failed to get assigned accounts', e, stacktrace);
+      rethrow;
+    }
+  }
+
+  Future<List<GoalAccount>> getGoalAccounts(GoalId goalId) async {
+    try {
+      final goalAccounts = await _goalsService.getGoalAccounts(goalId);
+      return goalAccounts;
+    } catch (e, stacktrace) {
+      _logger.severe('Failed to get goal accounts', e, stacktrace);
       rethrow;
     }
   }

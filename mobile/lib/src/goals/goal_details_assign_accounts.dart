@@ -2,34 +2,35 @@ import 'package:finny/src/accounts/account_model.dart';
 import 'package:finny/src/goals/goal_model.dart';
 import 'package:flutter/material.dart';
 
-class GoalDetailsAssignedAccounts extends StatefulWidget {
-  const GoalDetailsAssignedAccounts({
+class GoalDetailsAssignAccounts extends StatefulWidget {
+  const GoalDetailsAssignAccounts({
     super.key,
     required this.goalId,
     required this.getAccounts,
     required this.onAccountAssignOrUpdate,
     required this.onAccountUnassign,
+    required this.getGoalAccounts,
   });
 
   final String goalId;
-  final Function(
+  final Future<void> Function(
       {required GoalId goalId,
       required AccountId accountId,
       double? progress}) onAccountAssignOrUpdate;
-  final Function({required GoalId goalId, required AccountId accountId})
-      onAccountUnassign;
-  final Function() getAccounts;
+  final Future<void> Function(
+      {required GoalId goalId, required AccountId accountId}) onAccountUnassign;
+  final Future<List<Account>> Function() getAccounts;
+  final Future<List<GoalAccount>> Function() getGoalAccounts;
 
   @override
-  State<GoalDetailsAssignedAccounts> createState() =>
-      _GoalDetailsAssignedAccountsState();
+  State<GoalDetailsAssignAccounts> createState() =>
+      _GoalDetailsAssignAccountsState();
 }
 
-class _GoalDetailsAssignedAccountsState
-    extends State<GoalDetailsAssignedAccounts> {
+class _GoalDetailsAssignAccountsState extends State<GoalDetailsAssignAccounts> {
   List<Account> _cachedAccounts = [];
-  final Map<String, double> _progressValues = {};
-  final Map<String, bool> _enabledStates = {};
+  Map<String, double> _progressValues = {};
+  Map<String, bool> _enabledStates = {};
 
   @override
   void initState() {
@@ -39,12 +40,32 @@ class _GoalDetailsAssignedAccountsState
 
   Future<void> _loadAccounts() async {
     try {
-      final accounts = await widget.getAccounts();
+      final accountsFut = widget.getAccounts();
+      final goalAccountsFut = widget.getGoalAccounts();
+
+      final accounts = await accountsFut;
+      final goalAccounts = await goalAccountsFut;
+
       setState(() {
         _cachedAccounts = accounts
             .where((account) =>
                 account.type == "investment" || account.type == "depository")
             .toList();
+
+        _enabledStates = {
+          for (var account in _cachedAccounts)
+            account.id: goalAccounts
+                .any((goalAccount) => goalAccount.accountId == account.id)
+        };
+
+        _progressValues = {
+          for (var account in _cachedAccounts)
+            account.id: goalAccounts
+                    .where((goalAccount) => goalAccount.accountId == account.id)
+                    .map((goalAccount) => goalAccount.percentage.toDouble())
+                    .firstOrNull ??
+                0
+        };
       });
     } catch (error) {
       final ctx = context;
@@ -75,6 +96,9 @@ class _GoalDetailsAssignedAccountsState
       );
     } else {
       widget.onAccountUnassign(goalId: goalId, accountId: accountId);
+      setState(() {
+        _progressValues[accountId] = 0;
+      });
     }
 
     setState(() {
@@ -124,7 +148,7 @@ class _GoalDetailsAssignedAccountsState
                       final accountId = account.id;
 
                       _progressValues.putIfAbsent(accountId, () => 0);
-                      _enabledStates.putIfAbsent(accountId, () => true);
+                      _enabledStates.putIfAbsent(accountId, () => false);
 
                       return AccountTile(
                         account: account,

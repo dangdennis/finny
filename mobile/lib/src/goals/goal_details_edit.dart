@@ -1,6 +1,8 @@
 import 'dart:math';
+
 import 'package:finny/src/goals/goal_model.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 class GoalDetailsEdit extends StatefulWidget {
@@ -28,6 +30,9 @@ class _GoalDetailsEditState extends State<GoalDetailsEdit> {
   late TextEditingController amountController;
   late DateTime targetDate;
 
+  static const int maxNameLength = 50;
+  static const double maxAmount = 999999999.0;
+
   @override
   void initState() {
     super.initState();
@@ -35,7 +40,8 @@ class _GoalDetailsEditState extends State<GoalDetailsEdit> {
     amountController = TextEditingController(
         text: widget.goal.targetAmount.toStringAsFixed(2));
     targetDate = widget.goal.targetDate;
-    widget.targetAmountFocusNode.addListener(_onAmountFocusChange);
+    widget.nameFocusNode.addListener(_handleNameFocusChange);
+    widget.targetAmountFocusNode.addListener(_handleTargetAmountFocusChange);
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -54,20 +60,40 @@ class _GoalDetailsEditState extends State<GoalDetailsEdit> {
   }
 
   Future<void> _saveGoal() async {
+    double parsedAmount = double.tryParse(amountController.text) ?? 0.0;
+    if (parsedAmount > maxAmount) {
+      parsedAmount = maxAmount;
+    }
+
     final goal = Goal(
       id: widget.goal.id,
       name: nameController.text,
-      targetAmount: double.tryParse(amountController.text) ?? 0.0,
+      targetAmount: parsedAmount,
       targetDate: targetDate,
       progress: widget.goal.progress,
     );
     await widget.onGoalSave(goal);
   }
 
-  void _onAmountFocusChange() {
-    if (!widget.targetAmountFocusNode.hasFocus) {
+  void _handleNameFocusChange() {
+    if (!widget.nameFocusNode.hasFocus && _nameHasChanged()) {
       _saveGoal();
     }
+  }
+
+  void _handleTargetAmountFocusChange() {
+    if (!widget.targetAmountFocusNode.hasFocus && _amountHasChanged()) {
+      _saveGoal();
+    }
+  }
+
+  bool _nameHasChanged() {
+    return nameController.text != widget.goal.name;
+  }
+
+  bool _amountHasChanged() {
+    double parsedAmount = double.tryParse(amountController.text) ?? 0.0;
+    return parsedAmount != widget.goal.targetAmount;
   }
 
   @override
@@ -101,6 +127,9 @@ class _GoalDetailsEditState extends State<GoalDetailsEdit> {
                   TextFormField(
                     controller: nameController,
                     focusNode: widget.nameFocusNode,
+                    inputFormatters: [
+                      LengthLimitingTextInputFormatter(maxNameLength),
+                    ],
                     style: Theme.of(context)
                         .textTheme
                         .bodyLarge
@@ -120,6 +149,11 @@ class _GoalDetailsEditState extends State<GoalDetailsEdit> {
                     controller: amountController,
                     focusNode: widget.targetAmountFocusNode,
                     keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(
+                          RegExp(r'^\d+\.?\d{0,2}')),
+                      AmountLimitingTextInputFormatter(maxAmount: maxAmount),
+                    ],
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         color: Colors.green, fontWeight: FontWeight.bold),
                     decoration: const InputDecoration(
@@ -197,5 +231,28 @@ class _GoalDetailsEditState extends State<GoalDetailsEdit> {
         ),
       ],
     );
+  }
+}
+
+class AmountLimitingTextInputFormatter extends TextInputFormatter {
+  final double maxAmount;
+
+  AmountLimitingTextInputFormatter({required this.maxAmount});
+
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    if (newValue.text.isEmpty) {
+      return newValue;
+    }
+
+    double? parsedValue = double.tryParse(newValue.text);
+    if (parsedValue != null && parsedValue > maxAmount) {
+      // If the new value exceeds maxAmount, keep the old value
+      return oldValue;
+    }
+
+    // Otherwise, allow the new value
+    return newValue;
   }
 }

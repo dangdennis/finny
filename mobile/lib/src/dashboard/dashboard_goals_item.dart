@@ -13,7 +13,7 @@ class DashboardGoalItem extends StatefulWidget {
   });
 
   final Goal goal;
-  final Future<List<Account>> Function(Goal) getAssignedAccounts;
+  final Future<List<Account>> Function(GoalId) getAssignedAccounts;
 
   @override
   State<DashboardGoalItem> createState() => _DashboardGoalItemState();
@@ -38,13 +38,20 @@ class _DashboardGoalItemState extends State<DashboardGoalItem> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  widget.goal.name,
-                  style: Theme.of(context).textTheme.titleMedium,
+                Expanded(
+                  child: Text(
+                    widget.goal.name,
+                    style: Theme.of(context).textTheme.titleMedium,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
                 ),
+                const SizedBox(width: 8),
                 Text(
                   '\$${widget.goal.targetAmount.toStringAsFixed(2)}',
                   style: Theme.of(context).textTheme.labelMedium,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
               ],
             ),
@@ -57,56 +64,20 @@ class _DashboardGoalItemState extends State<DashboardGoalItem> {
                   children: [
                     Text(
                       'Target ${DateFormat.yMMMd().format(widget.goal.targetDate)}',
-                      style: Theme.of(context).textTheme.bodySmall,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
                     Text(
                       'Actual ${DateFormat.yMMMd().format(widget.goal.targetDate)}',
-                      style: Theme.of(context).textTheme.bodySmall,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
                   ],
                 ),
                 GoalProgressIndicator(progress: widget.goal.progress ?? 0),
               ],
-            ),
-            const SizedBox(height: 8),
-            FutureBuilder<List<Account>>(
-              future: widget.getAssignedAccounts(widget.goal),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const CircularProgressIndicator();
-                } else if (snapshot.hasError) {
-                  return Text('Error: ${snapshot.error}');
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Text('Assign Accounts');
-                } else {
-                  return Row(
-                    children: snapshot.data!.asMap().entries.map((entry) {
-                      int index = entry.key;
-                      Account account = entry.value;
-                      return Padding(
-                        padding: EdgeInsets.only(
-                            left: index == 0 ? 0 : -15), // Overlapping effect
-                        child: Stack(
-                          children: [
-                            Positioned.fill(
-                              child: Center(
-                                child: Text(
-                                  account.name[0]
-                                      .toUpperCase(), // Initial letter
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                  );
-                }
-              },
             ),
           ],
         ),

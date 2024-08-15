@@ -156,5 +156,5 @@ object AccountRepository:
         }
     ).toEither.left.map(ex => AppError.DatabaseError(ex.getMessage()))
 
-    def deleteAccountsByItemId(itemId: PlaidItemId)(implicit session: DBSession): Either[Throwable, Int] =
-        Try(sql"""DELETE FROM accounts WHERE item_id = ${itemId}""".update.apply()).toEither
+    def deleteAccountsByItemId(itemId: PlaidItemId, userId: UserId)(using session: DBSession): Either[Throwable, Int] =
+        Try(sql"""DELETE FROM accounts WHERE item_id = ${itemId} and user_id = ${userId}""".update.apply()).toEither

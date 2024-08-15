@@ -8,6 +8,7 @@ import scalikejdbc.*
 import java.time.Instant
 import java.util.UUID
 import scala.util.Try
+import api.models.UserId
 
 object TransactionRepository {
     case class UpsertTransactionInput(
@@ -87,7 +88,7 @@ object TransactionRepository {
                 }
             ).toEither.left.map(e => AppError.DatabaseError(e.getMessage))
 
-    def deleteTransactionsByItemId(itemId: PlaidItemId)(implicit
+    def deleteTransactionsByItemId(itemId: PlaidItemId, userId: UserId)(using
         session: DBSession
     ): Either[AppError.DatabaseError, Boolean] = Try(sql"""
             DELETE FROM transactions
@@ -95,6 +96,7 @@ object TransactionRepository {
                 SELECT accounts.id
                 FROM accounts
                 WHERE accounts.item_id = $itemId
+                AND accounts.user_id = $userId
             );
         """.execute.apply()).toEither.left.map(e => AppError.DatabaseError(e.getMessage))
 

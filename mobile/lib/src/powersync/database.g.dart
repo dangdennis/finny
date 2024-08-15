@@ -2512,15 +2512,15 @@ class $GoalAccountsDbTable extends GoalAccountsDb
       type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _amountMeta = const VerificationMeta('amount');
   @override
-  late final GeneratedColumn<double> amount = GeneratedColumn<double>(
+  late final GeneratedColumn<String> amount = GeneratedColumn<String>(
       'amount', aliasedName, false,
-      type: DriftSqlType.double, requiredDuringInsert: true);
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _percentageMeta =
       const VerificationMeta('percentage');
   @override
-  late final GeneratedColumn<double> percentage = GeneratedColumn<double>(
+  late final GeneratedColumn<String> percentage = GeneratedColumn<String>(
       'percentage', aliasedName, false,
-      type: DriftSqlType.double, requiredDuringInsert: true);
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _createdAtMeta =
       const VerificationMeta('createdAt');
   @override
@@ -2623,9 +2623,9 @@ class $GoalAccountsDbTable extends GoalAccountsDb
       accountId: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}account_id'])!,
       amount: attachedDatabase.typeMapping
-          .read(DriftSqlType.double, data['${effectivePrefix}amount'])!,
+          .read(DriftSqlType.string, data['${effectivePrefix}amount'])!,
       percentage: attachedDatabase.typeMapping
-          .read(DriftSqlType.double, data['${effectivePrefix}percentage'])!,
+          .read(DriftSqlType.string, data['${effectivePrefix}percentage'])!,
       createdAt: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}created_at'])!,
       updatedAt: attachedDatabase.typeMapping
@@ -2646,8 +2646,8 @@ class GoalAccountsDbData extends DataClass
   final String id;
   final String goalId;
   final String accountId;
-  final double amount;
-  final double percentage;
+  final String amount;
+  final String percentage;
   final String createdAt;
   final String updatedAt;
   final String? deletedAt;
@@ -2666,8 +2666,8 @@ class GoalAccountsDbData extends DataClass
     map['id'] = Variable<String>(id);
     map['goal_id'] = Variable<String>(goalId);
     map['account_id'] = Variable<String>(accountId);
-    map['amount'] = Variable<double>(amount);
-    map['percentage'] = Variable<double>(percentage);
+    map['amount'] = Variable<String>(amount);
+    map['percentage'] = Variable<String>(percentage);
     map['created_at'] = Variable<String>(createdAt);
     map['updated_at'] = Variable<String>(updatedAt);
     if (!nullToAbsent || deletedAt != null) {
@@ -2698,8 +2698,8 @@ class GoalAccountsDbData extends DataClass
       id: serializer.fromJson<String>(json['id']),
       goalId: serializer.fromJson<String>(json['goalId']),
       accountId: serializer.fromJson<String>(json['accountId']),
-      amount: serializer.fromJson<double>(json['amount']),
-      percentage: serializer.fromJson<double>(json['percentage']),
+      amount: serializer.fromJson<String>(json['amount']),
+      percentage: serializer.fromJson<String>(json['percentage']),
       createdAt: serializer.fromJson<String>(json['createdAt']),
       updatedAt: serializer.fromJson<String>(json['updatedAt']),
       deletedAt: serializer.fromJson<String?>(json['deletedAt']),
@@ -2712,8 +2712,8 @@ class GoalAccountsDbData extends DataClass
       'id': serializer.toJson<String>(id),
       'goalId': serializer.toJson<String>(goalId),
       'accountId': serializer.toJson<String>(accountId),
-      'amount': serializer.toJson<double>(amount),
-      'percentage': serializer.toJson<double>(percentage),
+      'amount': serializer.toJson<String>(amount),
+      'percentage': serializer.toJson<String>(percentage),
       'createdAt': serializer.toJson<String>(createdAt),
       'updatedAt': serializer.toJson<String>(updatedAt),
       'deletedAt': serializer.toJson<String?>(deletedAt),
@@ -2724,8 +2724,8 @@ class GoalAccountsDbData extends DataClass
           {String? id,
           String? goalId,
           String? accountId,
-          double? amount,
-          double? percentage,
+          String? amount,
+          String? percentage,
           String? createdAt,
           String? updatedAt,
           Value<String?> deletedAt = const Value.absent()}) =>
@@ -2775,8 +2775,8 @@ class GoalAccountsDbCompanion extends UpdateCompanion<GoalAccountsDbData> {
   final Value<String> id;
   final Value<String> goalId;
   final Value<String> accountId;
-  final Value<double> amount;
-  final Value<double> percentage;
+  final Value<String> amount;
+  final Value<String> percentage;
   final Value<String> createdAt;
   final Value<String> updatedAt;
   final Value<String?> deletedAt;
@@ -2796,8 +2796,8 @@ class GoalAccountsDbCompanion extends UpdateCompanion<GoalAccountsDbData> {
     required String id,
     required String goalId,
     required String accountId,
-    required double amount,
-    required double percentage,
+    required String amount,
+    required String percentage,
     required String createdAt,
     required String updatedAt,
     this.deletedAt = const Value.absent(),
@@ -2813,8 +2813,8 @@ class GoalAccountsDbCompanion extends UpdateCompanion<GoalAccountsDbData> {
     Expression<String>? id,
     Expression<String>? goalId,
     Expression<String>? accountId,
-    Expression<double>? amount,
-    Expression<double>? percentage,
+    Expression<String>? amount,
+    Expression<String>? percentage,
     Expression<String>? createdAt,
     Expression<String>? updatedAt,
     Expression<String>? deletedAt,
@@ -2837,8 +2837,8 @@ class GoalAccountsDbCompanion extends UpdateCompanion<GoalAccountsDbData> {
       {Value<String>? id,
       Value<String>? goalId,
       Value<String>? accountId,
-      Value<double>? amount,
-      Value<double>? percentage,
+      Value<String>? amount,
+      Value<String>? percentage,
       Value<String>? createdAt,
       Value<String>? updatedAt,
       Value<String?>? deletedAt,
@@ -2869,10 +2869,10 @@ class GoalAccountsDbCompanion extends UpdateCompanion<GoalAccountsDbData> {
       map['account_id'] = Variable<String>(accountId.value);
     }
     if (amount.present) {
-      map['amount'] = Variable<double>(amount.value);
+      map['amount'] = Variable<String>(amount.value);
     }
     if (percentage.present) {
-      map['percentage'] = Variable<double>(percentage.value);
+      map['percentage'] = Variable<String>(percentage.value);
     }
     if (createdAt.present) {
       map['created_at'] = Variable<String>(createdAt.value);
@@ -4001,8 +4001,8 @@ typedef $$GoalAccountsDbTableInsertCompanionBuilder = GoalAccountsDbCompanion
   required String id,
   required String goalId,
   required String accountId,
-  required double amount,
-  required double percentage,
+  required String amount,
+  required String percentage,
   required String createdAt,
   required String updatedAt,
   Value<String?> deletedAt,
@@ -4013,8 +4013,8 @@ typedef $$GoalAccountsDbTableUpdateCompanionBuilder = GoalAccountsDbCompanion
   Value<String> id,
   Value<String> goalId,
   Value<String> accountId,
-  Value<double> amount,
-  Value<double> percentage,
+  Value<String> amount,
+  Value<String> percentage,
   Value<String> createdAt,
   Value<String> updatedAt,
   Value<String?> deletedAt,
@@ -4045,8 +4045,8 @@ class $$GoalAccountsDbTableTableManager extends RootTableManager<
             Value<String> id = const Value.absent(),
             Value<String> goalId = const Value.absent(),
             Value<String> accountId = const Value.absent(),
-            Value<double> amount = const Value.absent(),
-            Value<double> percentage = const Value.absent(),
+            Value<String> amount = const Value.absent(),
+            Value<String> percentage = const Value.absent(),
             Value<String> createdAt = const Value.absent(),
             Value<String> updatedAt = const Value.absent(),
             Value<String?> deletedAt = const Value.absent(),
@@ -4067,8 +4067,8 @@ class $$GoalAccountsDbTableTableManager extends RootTableManager<
             required String id,
             required String goalId,
             required String accountId,
-            required double amount,
-            required double percentage,
+            required String amount,
+            required String percentage,
             required String createdAt,
             required String updatedAt,
             Value<String?> deletedAt = const Value.absent(),
@@ -4118,12 +4118,12 @@ class $$GoalAccountsDbTableFilterComposer
       builder: (column, joinBuilders) =>
           ColumnFilters(column, joinBuilders: joinBuilders));
 
-  ColumnFilters<double> get amount => $state.composableBuilder(
+  ColumnFilters<String> get amount => $state.composableBuilder(
       column: $state.table.amount,
       builder: (column, joinBuilders) =>
           ColumnFilters(column, joinBuilders: joinBuilders));
 
-  ColumnFilters<double> get percentage => $state.composableBuilder(
+  ColumnFilters<String> get percentage => $state.composableBuilder(
       column: $state.table.percentage,
       builder: (column, joinBuilders) =>
           ColumnFilters(column, joinBuilders: joinBuilders));
@@ -4162,12 +4162,12 @@ class $$GoalAccountsDbTableOrderingComposer
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
 
-  ColumnOrderings<double> get amount => $state.composableBuilder(
+  ColumnOrderings<String> get amount => $state.composableBuilder(
       column: $state.table.amount,
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
 
-  ColumnOrderings<double> get percentage => $state.composableBuilder(
+  ColumnOrderings<String> get percentage => $state.composableBuilder(
       column: $state.table.percentage,
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
