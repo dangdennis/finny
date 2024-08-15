@@ -81,10 +81,11 @@ class GoalsService {
 
   Future<void> assignOrUpdateGoalAccount(AssignAccountToGoalInput input) async {
     // Make sure the account cannot be allocated greater than 100% across all goals
-    final accountAssignedAcrossAllGoals =
-        await getGoalAccountsByAccountId(input.accountId);
+    final allGoalAccountsOfAccount =
+        await getGoalAccountsByAccountIdExceptCurrentGoal(
+            input.accountId, input.goalId);
 
-    double allocatedPercentage = accountAssignedAcrossAllGoals
+    double allocatedPercentage = allGoalAccountsOfAccount
         .map((e) => e.percentage)
         .fold(0, (previousValue, element) => previousValue + element);
 
@@ -150,10 +151,11 @@ class GoalsService {
     return goalAccountsDbData.map(goalAccountDbToDomain).toList();
   }
 
-  Future<List<GoalAccount>> getGoalAccountsByAccountId(
-      AccountId accountId) async {
+  Future<List<GoalAccount>> getGoalAccountsByAccountIdExceptCurrentGoal(
+      AccountId accountId, GoalId goalId) async {
     final goalAccountsDbData = await (appDb.select(appDb.goalAccountsDb)
           ..where((tbl) => tbl.accountId.equals(accountId))
+          ..where((tbl) => tbl.goalId.isNotValue(goalId))
           ..orderBy([
             (g) =>
                 OrderingTerm(expression: g.percentage, mode: OrderingMode.desc)
@@ -175,7 +177,6 @@ class GoalsService {
   }
 
   GoalAccount goalAccountDbToDomain(GoalAccountsDbData dbData) {
-    print('goalAccountDbToDomain $dbData');
     return GoalAccount(
       id: dbData.id,
       goalId: dbData.goalId,

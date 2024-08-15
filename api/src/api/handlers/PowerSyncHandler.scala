@@ -49,7 +49,7 @@ object PowerSyncHandler:
                     .data
                     .toRight(AppError.ValidationError("No data found for GoalAccount PUT operation"))
                     .flatMap(_.as[GoalAccountPutData].left.map(err => AppError.ValidationError(err.getMessage)))
-                    .map(data => handleGoalAccountPut(event.id, data, user))
+                    .map(data => handleGoalAccountPut(event.id, data))
             case ("goal_accounts", "PATCH") =>
                 event
                     .data
@@ -102,20 +102,15 @@ object PowerSyncHandler:
         Logger.root.info(s"Deleting goal $recordId")
         GoalRepository.deleteGoal(UUID.fromString(recordId), user.id).right.map(_ => ())
 
-    private def handleGoalAccountPut(
-        recordId: String,
-        data: GoalAccountPutData,
-        user: Profile
-    ): Either[AppError, Unit] =
+    private def handleGoalAccountPut(recordId: String, data: GoalAccountPutData): Either[AppError, Unit] =
         Logger.root.info(s"Creating goal $data")
         GoalRepository
-            .upsertGoalAccount(
+            .createGoalAccount(
                 id = UUID.fromString(recordId),
                 goalId = UUID.fromString(data.goal_id),
                 accountId = UUID.fromString(data.account_id),
-                amount = Some(data.amount),
-                percentage = Some(data.percentage),
-                userId = user.id
+                amount = data.amount,
+                percentage = data.percentage
             )
             .map(_ => ())
 
@@ -126,10 +121,8 @@ object PowerSyncHandler:
     ): Either[AppError, Unit] =
         Logger.root.info(s"Creating goal $data")
         GoalRepository
-            .upsertGoalAccount(
-                id = UUID.fromString(recordId),
-                goalId = UUID.fromString(data.goal_id),
-                accountId = UUID.fromString(data.account_id),
+            .updateGoalAccount(
+                goalAccountId = UUID.fromString(recordId),
                 amount = data.amount,
                 percentage = data.percentage,
                 userId = user.id
@@ -156,24 +149,10 @@ object PowerSyncHandler:
     object GoalPatchData:
         given Decoder[GoalPatchData] = deriveDecoder
 
-    case class GoalAccountPutData(account_id: String, amount: Double, goal_id: String, percentage: Double)
+    case class GoalAccountPutData(goal_id: String, account_id: String, amount: Double, percentage: Double)
     object GoalAccountPutData:
         given Decoder[GoalAccountPutData] = deriveDecoder
 
-    case class GoalAccountPatchData(
-        account_id: String,
-        amount: Option[Double],
-        goal_id: String,
-        percentage: Option[Double]
-    )
+    case class GoalAccountPatchData(amount: Option[Double], percentage: Option[Double])
     object GoalAccountPatchData:
         given Decoder[GoalAccountPatchData] = deriveDecoder
-
-// {"data":[{"op_id":94,"op":"PUT","type":"goal_accounts",
-//     "id":"7f2b528b-7576-4e59-9b9b-3724dac410d1",
-//     "tx_id":96,
-//     "data":{"account_id":"495f3ee1-6187-4dcb-98a4-f6fa4b01b0b9"
-//     ,"amount":0.0,
-//     "created_at":"2024-08-15T00:16:58.640944"
-//     ,"goal_id":"c7dfe014-3050-4f4e-a61e-67dfc5d52ba6",
-//     "percentage":50.0,"updated_at":"2024-08-15T00:16:58.641331"}}]}

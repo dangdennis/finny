@@ -113,20 +113,59 @@ object GoalRepository:
 
     }.toEither.left.map(e => AppError.DatabaseError(e.getMessage))
 
-    def upsertGoalAccount(
+    def createGoalAccount(
         id: UUID,
         goalId: UUID,
         accountId: UUID,
+        amount: Double,
+        percentage: Double
+    ): Either[AppError.DatabaseError, Int] = Try {
+        DB autoCommit { implicit session =>
+            sql"""
+            INSERT INTO goal_accounts (id, goal_id, account_id, amount, percentage)
+            VALUES ($id, $goalId, $accountId, $amount, $percentage)
+            """.update.apply()
+        }
+    }.toEither.left.map(e => AppError.DatabaseError(e.getMessage))
+
+    def updateGoalAccount(
+        goalAccountId: UUID,
         amount: Option[Double],
         percentage: Option[Double],
         userId: UserId
     ): Either[AppError, Int] =
         for
-            goal <- findGoalByIdAndUser(goalId, userId)
-            result <- executeGoalAccountUpsert(id, goalId, accountId, amount, percentage)
+            goal <- findGoalByGoalAccountAndUser(goalAccountId, userId)
+            result <- executeUpdateGoalAccount(goalAccountId, amount, percentage)
         yield result
 
-    private def findGoalByIdAndUser(goalId: UUID, userId: UserId): Either[AppError, Goal] = getGoal(goalId, userId)
+    private def findGoalByGoalAccountAndUser(goalAccountId: UUID, userId: UserId): Either[AppError, Goal] = Try(
+        DB readOnly { implicit session =>
+            sql"""
+                SELECT g.id, g.name, g.amount, g.target_date, g.user_id, g.progress, g.created_at, g.updated_at, g.deleted_at
+                FROM goals g
+                JOIN goal_accounts ga ON g.id = ga.goal_id
+                WHERE ga.id = ${goalAccountId} AND g.user_id = ${userId}
+            """.map(rs =>
+                    Goal(
+                        id = UUID.fromString(rs.string("id")),
+                        name = rs.string("name"),
+                        amount = rs.double("amount"),
+                        targetDate = rs.timestamp("target_date").toInstant,
+                        userId = UserId(UUID.fromString(rs.string("user_id"))),
+                        progress = rs.double("progress"),
+                        createdAt = rs.timestamp("created_at").toInstant,
+                        updatedAt = rs.timestamp("updated_at").toInstant,
+                        deletedAt = rs.timestampOpt("created_at").map(_.toInstant),
+                        assignedAccounts = List()
+                    )
+                )
+                .single
+                .apply()
+        }
+    ).toEither
+        .left
+        .map(e => AppError.DatabaseError(e.getMessage))
         .flatMap {
             case Some(goal) =>
                 Right(goal)
@@ -134,23 +173,23 @@ object GoalRepository:
                 Left(AppError.NotFoundError("Goal not found"))
         }
 
-    private def executeGoalAccountUpsert(
-        id: UUID,
-        goalId: UUID,
-        accountId: UUID,
+    private def executeUpdateGoalAccount(
+        goalAccountId: UUID,
         amount: Option[Double],
         percentage: Option[Double]
     ): Either[AppError.DatabaseError, Int] = Try {
         DB.autoCommit { implicit session =>
+            val setClause = Seq(amount.map(a => sqls"amount = ${a}"), percentage.map(p => sqls"percentage = ${p}"))
+                .flatten
+                .reduceOption((a, b) => sqls"$a, $b")
+                .getOrElse(sqls"1 = 1")
+
             val query =
                 sql"""
-            INSERT INTO goal_accounts (id, goal_id, account_id, amount, percentage)
-            VALUES (${id}, ${goalId}, ${accountId}, ${amount.orNull}, ${percentage.orNull})
-            ON CONFLICT (goal_id, account_id)
-            DO UPDATE SET
-                amount = COALESCE(${amount.orNull}, goal_accounts.amount),
-                percentage = COALESCE(${percentage.orNull}, goal_accounts.percentage)
-          """
+                UPDATE goal_accounts
+                SET $setClause
+                WHERE id = ${goalAccountId}
+                """
             query.update.apply()
         }
     }.toEither.left.map(e => AppError.DatabaseError(e.getMessage))

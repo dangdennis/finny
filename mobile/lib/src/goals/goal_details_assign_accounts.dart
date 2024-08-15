@@ -96,6 +96,9 @@ class _GoalDetailsAssignAccountsState extends State<GoalDetailsAssignAccounts> {
       );
     } else {
       widget.onAccountUnassign(goalId: goalId, accountId: accountId);
+      setState(() {
+        _progressValues[accountId] = 0;
+      });
     }
 
     setState(() {
