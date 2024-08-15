@@ -8,7 +8,6 @@ import scalikejdbc.*
 import java.time.Instant
 import java.util.UUID
 import scala.util.Try
-import api.common.Logger
 
 object GoalRepository:
     def getGoal(id: UUID): Either[AppError.DatabaseError, Option[Goal]] = Try(
@@ -109,7 +108,6 @@ object GoalRepository:
                     where id = ${id} and user_id = ${userId}
                 """
 
-            Logger.root.info(s"Executing query: ${query.statement}")
             query.update.apply()
         }
 

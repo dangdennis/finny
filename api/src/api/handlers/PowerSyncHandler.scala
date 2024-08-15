@@ -48,12 +48,12 @@ object PowerSyncHandler:
                 Logger.root.info(s"Skipping event ${event.op} ${event.`type`} ${event.id}")
                 Right(())
 
-    private def handleGoalPut(eventId: String, data: GoalPutData, user: Profile): Either[AppError, Unit] =
-        Logger.root.info(s"Inserting goal $data")
+    private def handleGoalPut(recordId: String, data: GoalPutData, user: Profile): Either[AppError, Unit] =
+        Logger.root.info(s"Creating goal $data")
         GoalRepository
             .createGoal(
                 GoalRepository.CreateGoalInput(
-                    id = UUID.fromString(eventId),
+                    id = UUID.fromString(recordId),
                     userId = user.id,
                     name = data.name,
                     amount = data.amount,
@@ -65,15 +65,15 @@ object PowerSyncHandler:
             )
             .map(_ => ())
 
-    private def handleGoalDelete(eventId: String): Either[AppError, Unit] =
-        Logger.root.info(s"Deleting goal $eventId")
-        GoalRepository.deleteGoal(UUID.fromString(eventId)).right.map(_ => ())
+    private def handleGoalDelete(recordId: String): Either[AppError, Unit] =
+        Logger.root.info(s"Deleting goal $recordId")
+        GoalRepository.deleteGoal(UUID.fromString(recordId)).right.map(_ => ())
 
-    private def handleGoalPatch(eventId: String, data: GoalPatchData, user: Profile): Either[AppError, Unit] =
+    private def handleGoalPatch(recordId: String, data: GoalPatchData, user: Profile): Either[AppError, Unit] =
         Logger.root.info(s"Updating goal $data")
         GoalRepository
             .updateGoal(
-                id = UUID.fromString(eventId),
+                id = UUID.fromString(recordId),
                 name = data.name,
                 amount = data.amount,
                 targetDate = data
