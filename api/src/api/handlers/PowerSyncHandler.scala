@@ -73,7 +73,7 @@ object PowerSyncHandler:
         GoalRepository.deleteGoal(UUID.fromString(eventId)).map(_ => ())
 
     private def handleGoalPatch(eventId: String, data: GoalPatchData, user: Profile): Either[AppError, Unit] =
-        Logger.root.info(s"Inserting goal $data")
+        Logger.root.info(s"Updating goal $data")
         GoalRepository
             .updateGoal(
                 id = UUID.fromString(eventId),

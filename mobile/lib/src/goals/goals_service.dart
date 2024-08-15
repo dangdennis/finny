@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:finny/src/accounts/account_model.dart';
 import 'package:finny/src/goals/goal_model.dart';
 import 'package:finny/src/powersync/database.dart';
 import 'package:uuid/uuid.dart';
@@ -78,7 +79,7 @@ class GoalsService {
         .go();
   }
 
-  Future<void> assignAccountToGoal(AssignAccountToGoalInput input) async {
+  Future<void> assignOrUpdateGoalAccount(AssignAccountToGoalInput input) async {
     // Make sure the account cannot be allocated greater than 100% across all goals
     final accountAssignedAcrossAllGoals =
         await (appDb.select(appDb.goalAccountsDb)
@@ -105,7 +106,8 @@ class GoalsService {
       final goalAccount = goalAccountDbToDomain(goalAccountData);
 
       if (input.percentage == 0) {
-        return deleteGoalAccount(goalAccount);
+        return unassignAccount(
+            goalId: goalAccount.goalId, accountId: goalAccount.accountId);
       }
 
       final goalAccountCompanion = GoalAccountsDbCompanion(
@@ -127,9 +129,11 @@ class GoalsService {
     }
   }
 
-  Future<void> deleteGoalAccount(GoalAccount goalAccount) async {
+  Future<void> unassignAccount(
+      {required GoalId goalId, required AccountId accountId}) async {
     await (appDb.delete(appDb.goalAccountsDb)
-          ..where((tbl) => tbl.id.equals(goalAccount.id)))
+          ..where((tbl) => tbl.goalId.equals(goalId))
+          ..where((tbl) => tbl.accountId.equals(accountId)))
         .go();
   }
 

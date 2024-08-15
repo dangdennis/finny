@@ -104,4 +104,34 @@ class GoalsController {
       rethrow;
     }
   }
+
+  Future<void> assignOrUpdateGoalAccount({
+    required GoalId goalId,
+    required AccountId accountId,
+    double? progress,
+  }) async {
+    try {
+      await _goalsService.assignOrUpdateGoalAccount(AssignAccountToGoalInput(
+        goalId: goalId,
+        accountId: accountId,
+        percentage: progress ?? 0,
+      ));
+    } catch (e, stacktrace) {
+      _logger.severe('Failed to assign account', e, stacktrace);
+      rethrow;
+    }
+  }
+
+  Future<void> unassignGoalAccount(
+      {required GoalId goalId, required AccountId accountId}) async {
+    try {
+      await _goalsService.unassignAccount(
+        goalId: goalId,
+        accountId: accountId,
+      );
+    } catch (e, stacktrace) {
+      _logger.severe('Failed to unassign account', e, stacktrace);
+      rethrow;
+    }
+  }
 }

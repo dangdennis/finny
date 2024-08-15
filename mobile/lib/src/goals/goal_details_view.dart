@@ -150,7 +150,13 @@ class _GoalDetailViewState extends State<GoalDetailView> {
                   ),
                 ),
                 GoalDetailsAssignedAccounts(
-                    goalsController: widget._goalsController),
+                  goalId: widget.goalId,
+                  getAccounts: widget._goalsController.getAccounts,
+                  onAccountAssignOrUpdate:
+                      widget._goalsController.assignOrUpdateGoalAccount,
+                  onAccountUnassign:
+                      widget._goalsController.unassignGoalAccount,
+                )
               ],
             ),
           ),

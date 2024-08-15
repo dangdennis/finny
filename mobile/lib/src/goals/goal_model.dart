@@ -1,3 +1,5 @@
+typedef GoalId = String;
+
 class Goal {
   Goal({
     required this.id,
