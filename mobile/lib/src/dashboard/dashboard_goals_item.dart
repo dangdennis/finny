@@ -38,13 +38,20 @@ class _DashboardGoalItemState extends State<DashboardGoalItem> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  widget.goal.name,
-                  style: Theme.of(context).textTheme.titleMedium,
+                Expanded(
+                  child: Text(
+                    widget.goal.name,
+                    style: Theme.of(context).textTheme.titleMedium,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
                 ),
+                const SizedBox(width: 8),
                 Text(
                   '\$${widget.goal.targetAmount.toStringAsFixed(2)}',
                   style: Theme.of(context).textTheme.labelMedium,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
               ],
             ),
@@ -58,10 +65,14 @@ class _DashboardGoalItemState extends State<DashboardGoalItem> {
                     Text(
                       'Target ${DateFormat.yMMMd().format(widget.goal.targetDate)}',
                       style: Theme.of(context).textTheme.bodyMedium,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
                     Text(
                       'Actual ${DateFormat.yMMMd().format(widget.goal.targetDate)}',
                       style: Theme.of(context).textTheme.bodyMedium,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
                   ],
                 ),

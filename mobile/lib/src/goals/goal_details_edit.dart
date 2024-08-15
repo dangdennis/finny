@@ -40,8 +40,8 @@ class _GoalDetailsEditState extends State<GoalDetailsEdit> {
     amountController = TextEditingController(
         text: widget.goal.targetAmount.toStringAsFixed(2));
     targetDate = widget.goal.targetDate;
-    widget.nameFocusNode.addListener(_handleFocusChange);
-    widget.targetAmountFocusNode.addListener(_handleFocusChange);
+    widget.nameFocusNode.addListener(_handleNameFocusChange);
+    widget.targetAmountFocusNode.addListener(_handleTargetAmountFocusChange);
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -75,12 +75,25 @@ class _GoalDetailsEditState extends State<GoalDetailsEdit> {
     await widget.onGoalSave(goal);
   }
 
-  void _handleFocusChange() {
-    if (!widget.targetAmountFocusNode.hasFocus) {
-      _saveGoal();
-    } else if (!widget.nameFocusNode.hasFocus) {
+  void _handleNameFocusChange() {
+    if (!widget.nameFocusNode.hasFocus && _nameHasChanged()) {
       _saveGoal();
     }
+  }
+
+  void _handleTargetAmountFocusChange() {
+    if (!widget.targetAmountFocusNode.hasFocus && _amountHasChanged()) {
+      _saveGoal();
+    }
+  }
+
+  bool _nameHasChanged() {
+    return nameController.text != widget.goal.name;
+  }
+
+  bool _amountHasChanged() {
+    double parsedAmount = double.tryParse(amountController.text) ?? 0.0;
+    return parsedAmount != widget.goal.targetAmount;
   }
 
   @override
