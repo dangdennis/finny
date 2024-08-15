@@ -14,7 +14,6 @@ import java.time.format.DateTimeFormatter
 import java.util.UUID
 
 object PowerSyncHandler:
-
     def handleEventUpload(input: String, user: Profile): Either[AuthenticationError, Unit] =
         Logger.root.info(s"Received powersync event upload $input")
 
@@ -23,8 +22,9 @@ object PowerSyncHandler:
             .map(err => AppError.ValidationError(err.getMessage))
             .flatMap(processEventUploadRequest(_, user))
             .left
-            .map(handleError)
-            .map(_ => ())
+            // Powersync expects us to return a successful response even on actual errors.
+            // We can't return a 500, so we return a 200 with an error message.
+            .map(handleError).map(_ => ())
 
     private def processEventUploadRequest(request: EventUploadRequest, user: Profile): Either[AppError, Unit] = request
         .data
