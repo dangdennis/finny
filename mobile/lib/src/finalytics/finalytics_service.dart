@@ -1,7 +1,7 @@
 import 'package:finny/src/powersync/database.dart';
 
-class Finalytics {
-  Finalytics({required this.appDb});
+class FinalyticsService {
+  FinalyticsService({required this.appDb});
 
   final AppDatabase appDb;
 
@@ -19,58 +19,56 @@ class Finalytics {
     ''').getSingle();
 
     return CurrentRetirementInterestReturn(
-        amount: result.read<double>('average_interest_return'));
+        amount: result.read<double>('current_retirement_interest_return'));
   }
 
-  /// Freedom fund target, aka target retirement fund, is the
-  /// average monthly expense of the last 12 months * 12 months.
-  Future<AverageAnnualExpense> getAverageAnnualExpense() async {
-    final result = await appDb.customSelect('''
-    SELECT
-      ABS(SUM(amount)) / 12 AS average_annual_spending
-    FROM
-      transactions
-      JOIN accounts ON transactions.account_id = accounts.id
-    WHERE
-      amount > 0
-      AND date >= (CURRENT_DATE - INTERVAL '12 months');
-    ''').getSingle();
-
-    return AverageAnnualExpense(
-        amount: result.read<double>('average_annual_spending'));
-  }
-
-  /// Get the average monthly expense from the last 12 months
-  Future<AverageMonthlyExpense> getAverageMonthlyExpense() async {
+  Future<AnnualInflowOutflow> getAnnualInflowOutflow() async {
     final result = await appDb.customSelect('''
       SELECT
-        AVG(average_outflows) AS average_monthly_expense
-      FROM (
+        SUM(CASE WHEN amount < 0 THEN ABS(amount) ELSE 0 END) AS annual_inflows,
+        SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) AS annual_outflows
+      FROM
+        transactions
+        JOIN accounts ON transactions.account_id = accounts.id
+      WHERE
+        date >= date('now', '-12 months');
+    ''').getSingle();
+
+    return AnnualInflowOutflow(
+      inflows: result.read<double>('annual_inflows'),
+      outflows: result.read<double>('annual_outflows'),
+    );
+  }
+
+  /// Get the average monthly inflow and outflow for the last 12 months
+  Future<AverageMonthlyInflowOutflow> getAverageMonthlyInflowOutflow() async {
+    final result = await appDb.customSelect('''
+      WITH monthly_totals AS (
         SELECT
-          date_trunc('month', date) AS month,
-          AVG(
-            CASE WHEN amount > 0 THEN
-              amount
-            ELSE
-              0
-            END) AS average_outflows
+          strftime('%Y-%m', date) AS month,
+          SUM(CASE WHEN amount < 0 THEN ABS(amount) ELSE 0 END) AS monthly_inflows,
+          SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) AS monthly_outflows
         FROM
           transactions
           JOIN accounts ON transactions.account_id = accounts.id
         WHERE
-          date >= (CURRENT_DATE - INTERVAL '12 months')
+          date >= date('now', '-12 months')
         GROUP BY
           month
-        ORDER BY
-          month
-      ) AS monthly_expenses;
-      ''').getSingle();
+      )
+      SELECT
+        AVG(monthly_inflows) AS average_inflows,
+        AVG(monthly_outflows) AS average_outflows
+      FROM
+        monthly_totals;
+    ''').getSingle();
 
-    final amount = result.read<double>('average_monthly_expense');
-    return AverageMonthlyExpense(amount: amount);
+    return AverageMonthlyInflowOutflow(
+        inflows: result.read<double>('average_inflows'),
+        outflows: result.read<double>('average_outflows'));
   }
 
-  Future<List<MonthlyTransactionSummary>> getMonthlyTransactionSummary(
+  Future<List<MonthlyInflowOutflow>> getMonthlyInflowOutflow(
       String userId) async {
     final result = await appDb.customSelect('''
       SELECT
@@ -97,12 +95,40 @@ class Finalytics {
       ''').get();
 
     return result.map((row) {
-      return MonthlyTransactionSummary(
+      return MonthlyInflowOutflow(
         month: row.read<DateTime>('month'),
         averageInflows: row.read<double>('average_inflows'),
         averageOutflows: row.read<double>('average_outflows'),
       );
     }).toList();
+  }
+
+  Future<int> getCurrentRetirementAge() async {
+    final result = await appDb.customSelect('''
+      SELECT
+        date_trunc('year', date) AS year
+      FROM
+        transactions
+      ORDER BY
+        year DESC
+      LIMIT 1;
+    ''').getSingle();
+
+    return result.read<int>('year');
+  }
+
+  Future<int> getTargetRetirementAge() async {
+    final result = await appDb.customSelect('''
+      SELECT
+        date_trunc('year', date) AS year
+      FROM
+        transactions
+      ORDER BY
+        year DESC
+      LIMIT 1;
+    ''').getSingle();
+
+    return result.read<int>('year');
   }
 }
 
@@ -112,24 +138,26 @@ class CurrentRetirementInterestReturn {
   CurrentRetirementInterestReturn({required this.amount});
 }
 
-class AverageAnnualExpense {
-  final double amount;
+class AnnualInflowOutflow {
+  final double inflows;
+  final double outflows;
 
-  AverageAnnualExpense({required this.amount});
+  AnnualInflowOutflow({required this.inflows, required this.outflows});
 }
 
-class AverageMonthlyExpense {
-  final double amount;
+class AverageMonthlyInflowOutflow {
+  final double inflows;
+  final double outflows;
 
-  AverageMonthlyExpense({required this.amount});
+  AverageMonthlyInflowOutflow({required this.inflows, required this.outflows});
 }
 
-class MonthlyTransactionSummary {
+class MonthlyInflowOutflow {
   final DateTime month;
   final double averageInflows;
   final double averageOutflows;
 
-  MonthlyTransactionSummary({
+  MonthlyInflowOutflow({
     required this.month,
     required this.averageInflows,
     required this.averageOutflows,
