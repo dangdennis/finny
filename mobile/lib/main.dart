@@ -1,4 +1,6 @@
 import 'package:finny/src/auth/auth_provider.dart';
+import 'package:finny/src/finalytics/finalytics_controller.dart';
+import 'package:finny/src/finalytics/finalytics_service.dart';
 import 'package:finny/src/goals/goals_controller.dart';
 import 'package:finny/src/goals/goals_service.dart';
 import 'package:flutter/foundation.dart';
@@ -50,6 +52,9 @@ void main() async {
   );
   final connectionsService =
       ConnectionsService(accountsService: accountsService);
+  final finalyticsService = FinalyticsService(
+    appDb: appDb,
+  );
 
   // providers
   final authProvider = AuthProvider(authService: authService);
@@ -68,7 +73,7 @@ void main() async {
     settingsService: settingsService,
     authProvider: authProvider,
   );
-
+  final finalyticsController = FinalyticsController(finalyticsService);
   // Load the user's preferred theme while the splash screen is displayed.
   // This prevents a sudden theme change when the app is first displayed.
   await settingsController.loadSettings();
@@ -87,6 +92,7 @@ void main() async {
                   authProvider: authProvider,
                   accountsController: accountsController,
                   connectionsController: connectionsController,
+                  finalyticsController: finalyticsController,
                   goalsController: goalsController,
                   settingsController: settingsController,
                   transactionsController: transactionsController,
@@ -101,6 +107,7 @@ void main() async {
           authProvider: authProvider,
           accountsController: accountsController,
           connectionsController: connectionsController,
+          finalyticsController: finalyticsController,
           goalsController: goalsController,
           settingsController: settingsController,
           transactionsController: transactionsController,

@@ -5,6 +5,7 @@ import 'package:finny/src/auth/auth_provider.dart';
 import 'package:finny/src/auth/login_view.dart';
 import 'package:finny/src/connections/connections_controller.dart';
 import 'package:finny/src/connections/connections_list_view.dart';
+import 'package:finny/src/finalytics/finalytics_controller.dart';
 import 'package:finny/src/goals/goals_controller.dart';
 import 'package:finny/src/dashboard/dashboard_view.dart';
 import 'package:finny/src/goals/goals_new_form_view.dart';
@@ -27,6 +28,7 @@ class MyApp extends StatelessWidget {
     required this.goalsController,
     required this.settingsController,
     required this.transactionsController,
+    required this.finalyticsController,
   });
 
   final SettingsController settingsController;
@@ -34,6 +36,7 @@ class MyApp extends StatelessWidget {
   final TransactionsController transactionsController;
   final ConnectionsController connectionsController;
   final GoalsController goalsController;
+  final FinalyticsController finalyticsController;
   final AuthProvider authProvider;
 
   @override
@@ -83,6 +86,7 @@ class MyApp extends StatelessWidget {
                 return MainView(
                   accountsController: accountsController,
                   goalsController: goalsController,
+                  finalyticsController: finalyticsController,
                   settingsController: settingsController,
                   transactionsController: transactionsController,
                 );
@@ -112,6 +116,7 @@ class MyApp extends StatelessWidget {
                     );
                   case DashboardView.routeName:
                     return DashboardView(
+                      finalyticsController: finalyticsController,
                       goalsController: goalsController,
                     );
                   case GoalsNewFormView.routeName:
@@ -151,13 +156,14 @@ class MainView extends StatefulWidget {
     required this.goalsController,
     required this.settingsController,
     required this.transactionsController,
+    required this.finalyticsController,
   });
 
   final AccountsController accountsController;
   final GoalsController goalsController;
   final SettingsController settingsController;
   final TransactionsController transactionsController;
-
+  final FinalyticsController finalyticsController;
   @override
   State<MainView> createState() => _MainViewState();
 }
@@ -172,6 +178,7 @@ class _MainViewState extends State<MainView> {
     super.initState();
     _widgetOptions = [
       DashboardView(
+        finalyticsController: widget.finalyticsController,
         goalsController: widget.goalsController,
       ),
       AccountListView(
