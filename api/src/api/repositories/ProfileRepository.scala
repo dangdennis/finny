@@ -4,21 +4,27 @@ import api.common.AppError
 import api.models.Profile
 import api.models.UserId
 import scalikejdbc.*
+import io.circe.syntax.*
 
 import java.util.UUID
 import scala.util.Try
 import java.time.LocalDate
+import io.circe.parser.decode
+import api.models.RiskProfile
+import api.models.FireProfile
 
 object ProfileRepository:
     def getProfiles(): Either[AppError.DatabaseError, List[Profile]] = Try(
         DB.readOnly { implicit session =>
-            sql"select id, age, date_of_birth, retirement_age, deleted_at from profiles"
+            sql"select id, age, date_of_birth, retirement_age, risk_profile, fire_profile, deleted_at from profiles"
                 .map(rs =>
                     Profile(
                         id = UUID.fromString(rs.string("id")),
                         age = rs.intOpt("age"),
                         dateOfBirth = rs.localDateOpt("date_of_birth"),
                         retirementAge = rs.intOpt("retirement_age"),
+                        riskProfile = rs.stringOpt("risk_profile").flatMap(s => decode[RiskProfile](s).toOption),
+                        fireProfile = rs.stringOpt("fire_profile").flatMap(s => decode[FireProfile](s).toOption),
                         deletedAt = rs.timestampOpt("deleted_at").map(_.toInstant)
                     )
                 )
@@ -29,13 +35,15 @@ object ProfileRepository:
 
     def getProfile(userId: UserId): Either[AppError.DatabaseError, Option[Profile]] = Try(
         DB.readOnly { implicit session =>
-            sql"select id, age, date_of_birth, retirement_age, deleted_at from profiles where id = ${userId}"
+            sql"select id, age, date_of_birth, retirement_age, risk_profile, fire_profile, deleted_at from profiles where id = ${userId}"
                 .map(rs =>
                     Profile(
                         id = UUID.fromString(rs.string("id")),
                         age = rs.intOpt("age"),
                         dateOfBirth = rs.localDateOpt("date_of_birth"),
                         retirementAge = rs.intOpt("retirement_age"),
+                        riskProfile = rs.stringOpt("risk_profile").flatMap(s => decode[RiskProfile](s).toOption),
+                        fireProfile = rs.stringOpt("fire_profile").flatMap(s => decode[FireProfile](s).toOption),
                         deletedAt = rs.timestampOpt("deleted_at").map(_.toInstant)
                     )
                 )
@@ -48,16 +56,21 @@ object ProfileRepository:
         userId: UserId,
         age: Option[Int],
         dateOfBirth: Option[LocalDate],
+        riskProfile: Option[RiskProfile],
+        fireProfile: Option[FireProfile],
         retirementAge: Option[Int]
     )
 
     def updateProfile(profileUpdate: ProfileUpdate): Either[AppError.DatabaseError, Int] = Try(
         DB localTx { implicit session =>
-            val setClause = Seq(
-                profileUpdate.age.map(age => sqls"age = $age"),
-                profileUpdate.dateOfBirth.map(dob => sqls"date_of_birth = $dob"),
-                profileUpdate.retirementAge.map(ra => sqls"retirement_age = $ra")
-            ).flatten
+            val setClause =
+                Seq(
+                    profileUpdate.age.map(age => sqls"age = $age"),
+                    profileUpdate.dateOfBirth.map(dob => sqls"date_of_birth = $dob"),
+                    profileUpdate.retirementAge.map(ra => sqls"retirement_age = $ra"),
+                    profileUpdate.riskProfile.map(rp => sqls"risk_profile = ${rp.asJson.noSpaces}"),
+                    profileUpdate.fireProfile.map(fp => sqls"fire_profile = ${fp.asJson.noSpaces}")
+                ).flatten
 
             sql"""
                 update profiles 

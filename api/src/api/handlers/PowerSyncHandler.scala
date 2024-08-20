@@ -13,6 +13,8 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.UUID
 import api.repositories.ProfileRepository
+import api.models.RiskProfile
+import api.models.FireProfile
 
 object PowerSyncHandler:
     def handleEventUpload(input: String, user: Profile): Either[HttpError, Unit] =
@@ -148,7 +150,9 @@ object PowerSyncHandler:
                     userId = user.id,
                     age = data.age,
                     dateOfBirth = data.date_of_birth,
-                    retirementAge = data.retirement_age
+                    retirementAge = data.retirement_age,
+                    riskProfile = data.risk_profile.flatMap(s => decode[RiskProfile](s).toOption),
+                    fireProfile = data.fire_profile.flatMap(s => decode[FireProfile](s).toOption)
                 )
             )
             .map(_ => ())
@@ -177,6 +181,12 @@ object PowerSyncHandler:
     object GoalAccountPatchData:
         given Decoder[GoalAccountPatchData] = deriveDecoder
 
-    case class ProfilePatchData(age: Option[Int], date_of_birth: Option[LocalDate], retirement_age: Option[Int])
+    case class ProfilePatchData(
+        age: Option[Int],
+        date_of_birth: Option[LocalDate],
+        retirement_age: Option[Int],
+        risk_profile: Option[String],
+        fire_profile: Option[String]
+    )
     object ProfilePatchData:
         given Decoder[ProfilePatchData] = deriveDecoder

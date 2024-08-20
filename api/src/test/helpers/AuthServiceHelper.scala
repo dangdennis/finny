@@ -14,6 +14,8 @@ object AuthServiceHelper:
             age = None,
             dateOfBirth = None,
             retirementAge = None,
+            riskProfile = None,
+            fireProfile = None,
             deletedAt = None
         )
 
