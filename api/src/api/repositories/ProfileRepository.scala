@@ -53,12 +53,16 @@ object ProfileRepository:
 
     def updateProfile(profileUpdate: ProfileUpdate): Either[AppError.DatabaseError, Int] = Try(
         DB localTx { implicit session =>
+            val setClause = Seq(
+                profileUpdate.age.map(age => sqls"age = $age"),
+                profileUpdate.dateOfBirth.map(dob => sqls"date_of_birth = $dob"),
+                profileUpdate.retirementAge.map(ra => sqls"retirement_age = $ra")
+            ).flatten
+
             sql"""
                 update profiles 
-                    set age = ${profileUpdate.age}, 
-                    date_of_birth = ${profileUpdate.dateOfBirth}, 
-                    retirement_age = ${profileUpdate.retirementAge} 
-                    where id = ${profileUpdate.userId}
-                """.update.apply()
+                set $setClause
+                where id = ${profileUpdate.userId}
+            """.update.apply()
         }
     ).toEither.left.map(ex => AppError.DatabaseError(ex.getMessage))
