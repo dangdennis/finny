@@ -9,6 +9,8 @@ import 'package:finny/src/finalytics/finalytics_controller.dart';
 import 'package:finny/src/goals/goals_controller.dart';
 import 'package:finny/src/dashboard/dashboard_view.dart';
 import 'package:finny/src/goals/goals_new_form_view.dart';
+import 'package:finny/src/onboarding/onboarding_controller.dart';
+import 'package:finny/src/onboarding/onboarding_view.dart';
 import 'package:finny/src/settings/settings_controller.dart';
 import 'package:finny/src/settings/settings_view.dart';
 import 'package:finny/src/transactions/transaction_details_view.dart';
@@ -20,16 +22,16 @@ import 'package:provider/provider.dart';
 
 /// The Widget that configures your application.
 class MyApp extends StatelessWidget {
-  const MyApp({
-    super.key,
-    required this.authProvider,
-    required this.accountsController,
-    required this.connectionsController,
-    required this.goalsController,
-    required this.settingsController,
-    required this.transactionsController,
-    required this.finalyticsController,
-  });
+  const MyApp(
+      {super.key,
+      required this.authProvider,
+      required this.accountsController,
+      required this.connectionsController,
+      required this.goalsController,
+      required this.settingsController,
+      required this.transactionsController,
+      required this.finalyticsController,
+      required this.onboardingController});
 
   final SettingsController settingsController;
   final AccountsController accountsController;
@@ -37,6 +39,7 @@ class MyApp extends StatelessWidget {
   final ConnectionsController connectionsController;
   final GoalsController goalsController;
   final FinalyticsController finalyticsController;
+  final OnboardingController onboardingController;
   final AuthProvider authProvider;
 
   @override
@@ -83,12 +86,31 @@ class MyApp extends StatelessWidget {
           home: Consumer<AuthProvider>(
             builder: (context, authProvider, child) {
               if (authProvider.isLoggedIn) {
-                return MainView(
-                  accountsController: accountsController,
-                  goalsController: goalsController,
-                  finalyticsController: finalyticsController,
-                  settingsController: settingsController,
-                  transactionsController: transactionsController,
+                return FutureBuilder<bool>(
+                  future: onboardingController.isOnboarded(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      // Show a loading indicator while waiting for isOnboarded result
+                      return const CircularProgressIndicator();
+                    } else if (snapshot.hasData) {
+                      if (snapshot.data!) {
+                        return MainView(
+                          accountsController: accountsController,
+                          goalsController: goalsController,
+                          finalyticsController: finalyticsController,
+                          settingsController: settingsController,
+                          transactionsController: transactionsController,
+                        );
+                      } else {
+                        return OnboardingView(
+                          onboardingController: onboardingController,
+                        );
+                      }
+                    } else {
+                      // Handle error case if needed
+                      return const Text('Error occurred');
+                    }
+                  },
                 );
               } else {
                 return LoginView(authProvider: authProvider);

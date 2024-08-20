@@ -3,6 +3,8 @@ import 'package:finny/src/finalytics/finalytics_controller.dart';
 import 'package:finny/src/finalytics/finalytics_service.dart';
 import 'package:finny/src/goals/goals_controller.dart';
 import 'package:finny/src/goals/goals_service.dart';
+import 'package:finny/src/onboarding/onboarding_controller.dart';
+import 'package:finny/src/profile/profile_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
@@ -42,6 +44,7 @@ void main() async {
   await PowersyncSupabaseConnector.openDatabaseAndInitSupabase();
 
   // services
+  final profileService = ProfileService(appDb: appDb);
   final goalsService = GoalsService(
     appDb: appDb,
   );
@@ -65,6 +68,9 @@ void main() async {
   final goalsController = GoalsController(
     accountsService: accountsService,
     goalsService: goalsService,
+  );
+  final onboardingController = OnboardingController(
+    profileService: profileService,
   );
   final transactionsController = TransactionsController(
     appDb: appDb,
@@ -94,6 +100,7 @@ void main() async {
                   connectionsController: connectionsController,
                   finalyticsController: finalyticsController,
                   goalsController: goalsController,
+                  onboardingController: onboardingController,
                   settingsController: settingsController,
                   transactionsController: transactionsController,
                 ),
@@ -109,6 +116,7 @@ void main() async {
           connectionsController: connectionsController,
           finalyticsController: finalyticsController,
           goalsController: goalsController,
+          onboardingController: onboardingController,
           settingsController: settingsController,
           transactionsController: transactionsController,
         ),

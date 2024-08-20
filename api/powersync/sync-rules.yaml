@@ -6,7 +6,9 @@ bucket_definitions:
         id,
         age,
         date_of_birth,
-        retirement_age
+        retirement_age,
+        risk_profile,
+        fire_profile
         from profiles where id = bucket.user_id
   accounts_by_user:
     parameters: select id as user_id from profiles where profiles.id = token_parameters.user_id

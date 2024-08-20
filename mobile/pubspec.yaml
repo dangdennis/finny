@@ -28,6 +28,7 @@ dependencies:
   provider: ^6.1.2
   powersync: ^1.5.1
   sentry_flutter: ^8.5.0
+  shared_preferences: ^2.3.2
   supabase_flutter: ^2.5.7
   uuid: ^4.4.2
 
