@@ -14,6 +14,6 @@ class ProfileRepositorySpec extends AnyFlatSpec, Matchers, EitherValues, BeforeA
 
     "getProfileByUserId" should "find profile record" in {
         val profile = AuthServiceHelper.createUser()
-        val gotProfile = ProfileRepository.getProfileByUserId(profile.id).value.get
+        val gotProfile = ProfileRepository.getProfile(profile.id).value.get
         gotProfile.id should be(profile.id)
     }

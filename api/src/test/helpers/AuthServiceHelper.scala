@@ -9,7 +9,13 @@ import java.util.UUID
 object AuthServiceHelper:
     def createUser(): Profile =
         val id = UUID.randomUUID()
-        val profile = Profile(id = UUID.randomUUID(), deletedAt = None)
+        val profile = Profile(
+            id = UUID.randomUUID(),
+            age = None,
+            dateOfBirth = None,
+            retirementAge = None,
+            deletedAt = None
+        )
 
         DB autoCommit { implicit session =>
             sql"""INSERT INTO auth.users (id, instance_id) VALUES (${profile.id}, ${UUID.randomUUID()})"""

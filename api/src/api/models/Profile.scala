@@ -2,8 +2,15 @@ package api.models
 
 import java.time.Instant
 import java.util.UUID
+import java.time.LocalDate
 
-case class Profile(id: UserId, deletedAt: Option[Instant])
+case class Profile(
+    id: UserId,
+    age: Option[Int],
+    dateOfBirth: Option[LocalDate],
+    retirementAge: Option[Int],
+    deletedAt: Option[Instant]
+)
 
 case class AuthUser(id: UserId, deletedAt: Option[Instant])
 
