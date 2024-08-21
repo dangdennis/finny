@@ -21,7 +21,7 @@ class DashboardGoalsList extends StatelessWidget {
         return Column(
           children: [
             DashboardGoalItem(
-              getAssignedAccounts: goalsController.getAssignedAccounts,
+              goalsController: goalsController,
               goal: goal,
             ),
             if (index < goals.length - 1) const Divider(),

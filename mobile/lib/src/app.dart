@@ -10,7 +10,6 @@ import 'package:finny/src/goals/goals_controller.dart';
 import 'package:finny/src/dashboard/dashboard_view.dart';
 import 'package:finny/src/goals/goals_new_form_view.dart';
 import 'package:finny/src/onboarding/onboarding_controller.dart';
-import 'package:finny/src/onboarding/onboarding_view.dart';
 import 'package:finny/src/settings/settings_controller.dart';
 import 'package:finny/src/settings/settings_view.dart';
 import 'package:finny/src/transactions/transaction_details_view.dart';
@@ -86,31 +85,13 @@ class MyApp extends StatelessWidget {
           home: Consumer<AuthProvider>(
             builder: (context, authProvider, child) {
               if (authProvider.isLoggedIn) {
-                return FutureBuilder<bool>(
-                  future: onboardingController.isOnboarded(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      // Show a loading indicator while waiting for isOnboarded result
-                      return const CircularProgressIndicator();
-                    } else if (snapshot.hasData) {
-                      if (snapshot.data!) {
-                        return MainView(
-                          accountsController: accountsController,
-                          goalsController: goalsController,
-                          finalyticsController: finalyticsController,
-                          settingsController: settingsController,
-                          transactionsController: transactionsController,
-                        );
-                      } else {
-                        return OnboardingView(
-                          onboardingController: onboardingController,
-                        );
-                      }
-                    } else {
-                      // Handle error case if needed
-                      return const Text('Error occurred');
-                    }
-                  },
+                return MainView(
+                  onboardingController: onboardingController,
+                  accountsController: accountsController,
+                  goalsController: goalsController,
+                  finalyticsController: finalyticsController,
+                  settingsController: settingsController,
+                  transactionsController: transactionsController,
                 );
               } else {
                 return LoginView(authProvider: authProvider);
@@ -138,6 +119,7 @@ class MyApp extends StatelessWidget {
                     );
                   case DashboardView.routeName:
                     return DashboardView(
+                      onboardingController: onboardingController,
                       finalyticsController: finalyticsController,
                       goalsController: goalsController,
                     );
@@ -179,6 +161,7 @@ class MainView extends StatefulWidget {
     required this.settingsController,
     required this.transactionsController,
     required this.finalyticsController,
+    required this.onboardingController,
   });
 
   final AccountsController accountsController;
@@ -186,6 +169,8 @@ class MainView extends StatefulWidget {
   final SettingsController settingsController;
   final TransactionsController transactionsController;
   final FinalyticsController finalyticsController;
+  final OnboardingController onboardingController;
+
   @override
   State<MainView> createState() => _MainViewState();
 }
@@ -200,6 +185,7 @@ class _MainViewState extends State<MainView> {
     super.initState();
     _widgetOptions = [
       DashboardView(
+        onboardingController: widget.onboardingController,
         finalyticsController: widget.finalyticsController,
         goalsController: widget.goalsController,
       ),

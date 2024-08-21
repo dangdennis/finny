@@ -1,22 +1,19 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
 class OnboardingCache {
-  static Future<SharedPreferencesWithCache> getInstance() async {
-    return await SharedPreferencesWithCache.create(
-      cacheOptions: const SharedPreferencesWithCacheOptions(
-        // When an allowlist is included, any keys that aren't included cannot be used.
-        allowList: <String>{'is_onboarded'},
-      ),
-    );
+  static const String _key = 'is_onboarded';
+
+  static Future<SharedPreferences> getInstance() async {
+    return await SharedPreferences.getInstance();
   }
 
   static Future<void> setOnboarded() async {
-    final SharedPreferencesWithCache prefsWithCache = await getInstance();
-    await prefsWithCache.setBool('is_onboarded', true);
+    final SharedPreferences prefs = await getInstance();
+    await prefs.setBool(_key, true);
   }
 
   static Future<bool> isOnboarded() async {
-    final SharedPreferencesWithCache prefsWithCache = await getInstance();
-    return prefsWithCache.getBool('is_onboarded') ?? false;
+    final SharedPreferences prefs = await getInstance();
+    return prefs.getBool(_key) ?? false;
   }
 }

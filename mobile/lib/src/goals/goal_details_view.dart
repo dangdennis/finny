@@ -5,22 +5,17 @@ import 'package:finny/src/accounts/accounts_service.dart';
 import 'package:finny/src/goals/goal_details_edit.dart';
 import 'package:finny/src/goals/goal_model.dart';
 import 'package:finny/src/goals/goals_controller.dart';
-import 'package:finny/src/goals/goals_service.dart';
-import 'package:finny/src/powersync/powersync.dart';
 import 'package:finny/src/widgets/gradient_banner.dart';
 
 class GoalDetailView extends StatefulWidget {
-  GoalDetailView({super.key, required this.goalId});
+  const GoalDetailView(
+      {super.key,
+      required this.goalId,
+      required GoalsController goalsController})
+      : _goalsController = goalsController;
 
   final String goalId;
-  final GoalsController _goalsController = GoalsController(
-    accountsService: AccountsService(
-      appDb: appDb,
-    ),
-    goalsService: GoalsService(
-      appDb: appDb,
-    ),
-  );
+  final GoalsController _goalsController;
 
   Future<void> _handleGoalSave(Goal goal) async {
     await _goalsController.updateGoal(goal);
