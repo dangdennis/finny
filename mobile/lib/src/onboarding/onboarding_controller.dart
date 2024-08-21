@@ -16,9 +16,9 @@ class OnboardingController {
 
   Future<OnboardingState> isOnboarded() async {
     final profile = await profileService.getProfile();
-
     return OnboardingState(
-        accountsAdded: await _isAccountsAdded(),
+        // accountsAdded: await _isAccountsAdded(),
+        accountsAdded: false,
         profileCompleted: _isProfileCompleted(profile));
   }
 

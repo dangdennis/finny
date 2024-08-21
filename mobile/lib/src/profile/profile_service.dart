@@ -16,7 +16,10 @@ class ProfileService {
     final query = appDb.update(appDb.profilesDb);
     await query.write(
       ProfilesDbCompanion(
-        age: profile.age != null ? Value(profile.age) : const Value.absent(),
+        age: profile.dateOfBirth != null
+            ? Value(
+                DateTime.now().difference(profile.dateOfBirth!).inDays ~/ 365)
+            : const Value.absent(),
         dateOfBirth: profile.dateOfBirth != null
             ? Value(profile.dateOfBirth)
             : const Value.absent(),
@@ -51,13 +54,11 @@ class ProfileService {
 
 class ProfileUpdateInput {
   ProfileUpdateInput(
-      {this.age,
-      this.dateOfBirth,
+      {this.dateOfBirth,
       this.retirementAge,
       this.riskProfile,
       this.fireProfile});
 
-  final int? age;
   final DateTime? dateOfBirth;
   final int? retirementAge;
   final RiskProfile? riskProfile;

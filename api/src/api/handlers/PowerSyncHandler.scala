@@ -15,6 +15,8 @@ import java.util.UUID
 import api.repositories.ProfileRepository
 import api.models.RiskProfile
 import api.models.FireProfile
+import java.time.Instant
+import java.time.ZoneOffset
 
 object PowerSyncHandler:
     def handleEventUpload(input: String, user: Profile): Either[HttpError, Unit] =
@@ -149,7 +151,9 @@ object PowerSyncHandler:
                 ProfileRepository.ProfileUpdate(
                     userId = user.id,
                     age = data.age,
-                    dateOfBirth = data.date_of_birth,
+                    dateOfBirth = data
+                        .date_of_birth
+                        .map(epoch => LocalDate.ofInstant(Instant.ofEpochSecond(epoch.toLong), ZoneOffset.UTC)),
                     retirementAge = data.retirement_age,
                     riskProfile = data.risk_profile.flatMap(s => decode[RiskProfile](s).toOption),
                     fireProfile = data.fire_profile.flatMap(s => decode[FireProfile](s).toOption)
@@ -183,7 +187,7 @@ object PowerSyncHandler:
 
     case class ProfilePatchData(
         age: Option[Int],
-        date_of_birth: Option[LocalDate],
+        date_of_birth: Option[String],
         retirement_age: Option[Int],
         risk_profile: Option[String],
         fire_profile: Option[String]

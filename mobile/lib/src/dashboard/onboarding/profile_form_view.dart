@@ -22,150 +22,185 @@ class _ProfileFormViewState extends State<ProfileFormView> {
   DateTime? _dateOfBirth;
   int? _retirementAge;
   RiskProfile? _riskProfile = RiskProfile.moderate;
-  final FireProfile _fireProfile = FireProfile.traditional;
+  FireProfile _fireProfile = FireProfile.traditional;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadExistingProfile();
+  }
+
+  Future<void> _loadExistingProfile() async {
+    try {
+      final profile = await widget.onboardingController.getProfile();
+      setState(() {
+        _dateOfBirth = profile.dateOfBirth;
+        _retirementAge = profile.retirementAge;
+        _riskProfile = profile.riskProfile ?? RiskProfile.moderate;
+        _fireProfile = profile.fireProfile ?? FireProfile.traditional;
+        _isLoading = false;
+      });
+    } catch (e) {
+      // Handle error
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Onboarding'),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Date of Birth
-              TextFormField(
-                decoration: const InputDecoration(
-                  labelText: 'Date of Birth',
-                  suffixIcon: Icon(Icons.calendar_today),
-                ),
-                readOnly: true,
-                onTap: () => _selectDate(context),
-                controller: TextEditingController(
-                  text: _dateOfBirth != null
-                      ? DateFormat('yyyy-MM-dd').format(_dateOfBirth!)
-                      : '',
-                ),
-                validator: (value) {
-                  if (_dateOfBirth == null) {
-                    return 'Please select your date of birth';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
+    return GestureDetector(
+      onTap: () {
+        // Close the keyboard when tapping outside of inputs
+        FocusScope.of(context).unfocus();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Onboarding'),
+        ),
+        body: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : SingleChildScrollView(
+                padding: const EdgeInsets.all(16.0),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Date of Birth
+                      TextFormField(
+                        decoration: const InputDecoration(
+                          labelText: 'Date of Birth',
+                          suffixIcon: Icon(Icons.calendar_today),
+                        ),
+                        readOnly: true,
+                        onTap: () => _selectDate(context),
+                        controller: TextEditingController(
+                          text: _dateOfBirth != null
+                              ? DateFormat('yyyy-MM-dd').format(_dateOfBirth!)
+                              : '',
+                        ),
+                        validator: (value) {
+                          if (_dateOfBirth == null) {
+                            return 'Please select your date of birth';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
 
-              // Retirement Age
-              TextFormField(
-                decoration: const InputDecoration(
-                  labelText: 'Retirement Age',
-                ),
-                keyboardType: TextInputType.number,
-                enabled: _dateOfBirth != null,
-                onChanged: (value) {
-                  setState(() {
-                    _retirementAge = int.tryParse(value);
-                  });
-                },
-                validator: (value) {
-                  if (_dateOfBirth == null) {
-                    return 'Please select your date of birth first';
-                  }
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your retirement age';
-                  }
-                  int? age = int.tryParse(value);
-                  int currentAge = DateTime.now().year - _dateOfBirth!.year;
-                  if (age == null || age <= currentAge || age > 110) {
-                    return 'Please enter a valid age between ${currentAge + 1} and 110';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
+                      // Retirement Age
+                      TextFormField(
+                        decoration: const InputDecoration(
+                          labelText: 'Retirement Age',
+                        ),
+                        keyboardType: TextInputType.number,
+                        enabled: _dateOfBirth != null,
+                        initialValue: _retirementAge?.toString(),
+                        onChanged: (value) {
+                          setState(() {
+                            _retirementAge = int.tryParse(value);
+                          });
+                        },
+                        validator: (value) {
+                          if (_dateOfBirth == null) {
+                            return 'Please select your date of birth first';
+                          }
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your retirement age';
+                          }
+                          int? age = int.tryParse(value);
+                          int currentAge =
+                              DateTime.now().year - _dateOfBirth!.year;
+                          if (age == null || age <= currentAge || age > 110) {
+                            return 'Please enter a valid age between ${currentAge + 1} and 110';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
 
-              // Risk Profile
-              DropdownButtonFormField<RiskProfile>(
-                decoration: const InputDecoration(
-                  labelText: 'Risk Profile',
-                ),
-                value: _riskProfile,
-                items: RiskProfile.values.map((RiskProfile profile) {
-                  return DropdownMenuItem<RiskProfile>(
-                    value: profile,
-                    child: Text(profile.toString().split('.').last),
-                  );
-                }).toList(),
-                onChanged: _retirementAge != null
-                    ? (RiskProfile? newValue) {
-                        setState(() {
-                          _riskProfile = newValue;
-                        });
-                      }
-                    : null,
-                validator: (value) {
-                  if (_retirementAge == null) {
-                    return 'Please enter your retirement age first';
-                  }
-                  if (value == null) {
-                    return 'Please select a risk profile';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-
-              // FIRE Profile
-              DropdownButtonFormField<FireProfile>(
-                decoration: const InputDecoration(
-                  labelText: 'FIRE Profile',
-                ),
-                value: _fireProfile,
-                items: [FireProfile.traditional].map((FireProfile profile) {
-                  return DropdownMenuItem<FireProfile>(
-                    value: profile,
-                    child: Text(profile.toString().split('.').last),
-                  );
-                }).toList(),
-                onChanged: null, // Disabled
-                hint: const Text('More FIRE profiles coming soon!'),
-              ),
-              const SizedBox(height: 32),
-
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: SizedBox(
-                    height: 50,
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          // TODO: Save the profile data
-                          widget.onboardingController.updateProfile(
-                            ProfileUpdateInput(
-                              dateOfBirth: _dateOfBirth,
-                              retirementAge: _retirementAge,
-                              riskProfile: _riskProfile,
-                              fireProfile: _fireProfile,
-                            ),
+                      // Risk Profile
+                      DropdownButtonFormField<RiskProfile>(
+                        decoration: const InputDecoration(
+                          labelText: 'Risk Profile',
+                        ),
+                        value: _riskProfile,
+                        items: RiskProfile.values.map((RiskProfile profile) {
+                          return DropdownMenuItem<RiskProfile>(
+                            value: profile,
+                            child: Text(profile.toString().split('.').last),
                           );
-                          Navigator.of(context)
-                              .pushNamed(DashboardView.routeName);
-                        }
-                      },
-                      child: const Text('Save Profile'),
-                    ),
+                        }).toList(),
+                        onChanged: _retirementAge != null
+                            ? (RiskProfile? newValue) {
+                                setState(() {
+                                  _riskProfile = newValue;
+                                });
+                              }
+                            : null,
+                        validator: (value) {
+                          if (_retirementAge == null) {
+                            return 'Please enter your retirement age first';
+                          }
+                          if (value == null) {
+                            return 'Please select a risk profile';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
+                      // FIRE Profile
+                      DropdownButtonFormField<FireProfile>(
+                        decoration: const InputDecoration(
+                          labelText: 'FIRE Profile',
+                        ),
+                        value: _fireProfile,
+                        items: [FireProfile.traditional]
+                            .map((FireProfile profile) {
+                          return DropdownMenuItem<FireProfile>(
+                            value: profile,
+                            child: Text(profile.toString().split('.').last),
+                          );
+                        }).toList(),
+                        onChanged: null, // Disabled
+                        hint: const Text('More FIRE profiles coming soon!'),
+                      ),
+                      const SizedBox(height: 32),
+
+                      Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: SizedBox(
+                            height: 50,
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                if (_formKey.currentState!.validate()) {
+                                  widget.onboardingController.updateProfile(
+                                    ProfileUpdateInput(
+                                      dateOfBirth: _dateOfBirth,
+                                      retirementAge: _retirementAge,
+                                      riskProfile: _riskProfile,
+                                      fireProfile: _fireProfile,
+                                    ),
+                                  );
+                                  Navigator.of(context)
+                                      .pushNamed(DashboardView.routeName);
+                                }
+                              },
+                              child: const Text('Save Profile'),
+                            ),
+                          ),
+                        ),
+                      )
+                    ],
                   ),
                 ),
-              )
-            ],
-          ),
-        ),
+              ),
       ),
     );
   }

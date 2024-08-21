@@ -38,7 +38,7 @@ class OnboardingCard extends StatelessWidget {
             const OnboardingItem(
               title: 'Connect your bank accounts',
               isCompleted: false,
-              subtitle: 'The more you connect, the more accurate insights.',
+              subtitle: 'Connect more accounts for accuracy.',
             ),
           ],
         ),
