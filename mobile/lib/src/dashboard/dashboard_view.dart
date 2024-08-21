@@ -1,11 +1,12 @@
 import 'package:finny/src/dashboard/goals/add_goal_button.dart';
 import 'package:finny/src/dashboard/dashboard_financial_metrics.dart';
 import 'package:finny/src/dashboard/goals/goal_card.dart';
-import 'package:finny/src/dashboard/onboarding_view.dart';
+import 'package:finny/src/dashboard/onboarding/onboarding_card.dart';
 import 'package:finny/src/goals/goals_controller.dart';
 import 'package:finny/src/finalytics/finalytics_controller.dart';
 import 'package:finny/src/onboarding/onboarding_controller.dart';
 import 'package:finny/src/routes.dart';
+import 'package:finny/src/widgets/disabled_wrapper.dart';
 import 'package:finny/src/widgets/gradient_banner.dart';
 import 'package:flutter/material.dart';
 
@@ -74,28 +75,6 @@ class DashboardView extends StatelessWidget {
             ),
           );
         },
-      ),
-    );
-  }
-}
-
-class DisabledWrapper extends StatelessWidget {
-  final bool isDisabled;
-  final Widget child;
-
-  const DisabledWrapper({
-    super.key,
-    required this.isDisabled,
-    required this.child,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return AbsorbPointer(
-      absorbing: isDisabled,
-      child: Opacity(
-        opacity: isDisabled ? 0.5 : 1.0,
-        child: child,
       ),
     );
   }

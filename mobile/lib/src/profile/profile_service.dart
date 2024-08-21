@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart';
 import 'package:finny/src/powersync/database.dart';
 import 'package:finny/src/profile/profile_model.dart';
 
@@ -6,26 +7,59 @@ class ProfileService {
 
   final AppDatabase appDb;
 
-  /// Get the current retirement interest return for all investment accounts.
-  /// This is the sum of the current balance of all investment accounts multiplied by the 4% interest rate.
   Future<Profile> getProfile() async {
-    final result = await appDb.customSelect('''
-      SELECT
-        age, 
-        date_of_birth,
-        retirement_age,
-        risk_profile,
-        fire_profile
-      FROM
-        profiles
-    ''').getSingle();
-
-    return Profile(
-        id: result.read<String>('id'),
-        age: result.read<int>('age'),
-        dateOfBirth: result.read<DateTime>('date_of_birth'),
-        retirementAge: result.read<int>('retirement_age'),
-        riskProfile: result.read<RiskProfile>('risk_profile'),
-        fireProfile: result.read<FireProfile>('fire_profile'));
+    final query = appDb.select(appDb.profilesDb);
+    return profileDbToDomain(await query.getSingle());
   }
+
+  Future<void> updateProfile(ProfileUpdateInput profile) async {
+    final query = appDb.update(appDb.profilesDb);
+    await query.write(
+      ProfilesDbCompanion(
+        age: profile.age != null ? Value(profile.age) : const Value.absent(),
+        dateOfBirth: profile.dateOfBirth != null
+            ? Value(profile.dateOfBirth)
+            : const Value.absent(),
+        retirementAge: profile.retirementAge != null
+            ? Value(profile.retirementAge)
+            : const Value.absent(),
+        riskProfile: profile.riskProfile != null
+            ? Value(profile.riskProfile?.toString())
+            : const Value.absent(),
+        fireProfile: profile.fireProfile != null
+            ? Value(profile.fireProfile?.toString())
+            : const Value.absent(),
+      ),
+    );
+  }
+
+  Profile profileDbToDomain(ProfilesDbData profile) {
+    return Profile(
+      id: profile.id,
+      age: profile.age,
+      dateOfBirth: profile.dateOfBirth,
+      retirementAge: profile.retirementAge,
+      riskProfile: profile.riskProfile != null
+          ? RiskProfile.fromString(profile.riskProfile!)
+          : null,
+      fireProfile: profile.fireProfile != null
+          ? FireProfile.fromString(profile.fireProfile!)
+          : null,
+    );
+  }
+}
+
+class ProfileUpdateInput {
+  ProfileUpdateInput(
+      {this.age,
+      this.dateOfBirth,
+      this.retirementAge,
+      this.riskProfile,
+      this.fireProfile});
+
+  final int? age;
+  final DateTime? dateOfBirth;
+  final int? retirementAge;
+  final RiskProfile? riskProfile;
+  final FireProfile? fireProfile;
 }

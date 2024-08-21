@@ -22,6 +22,14 @@ class OnboardingController {
         profileCompleted: _isProfileCompleted(profile));
   }
 
+  Future<Profile> getProfile() async {
+    return await profileService.getProfile();
+  }
+
+  Future<void> updateProfile(ProfileUpdateInput profile) async {
+    await profileService.updateProfile(profile);
+  }
+
   bool _isProfileCompleted(Profile profile) {
     return (profile.dateOfBirth == null &&
         profile.retirementAge == null &&

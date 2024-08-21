@@ -2906,6 +2906,353 @@ class GoalAccountsDbCompanion extends UpdateCompanion<GoalAccountsDbData> {
   }
 }
 
+class $ProfilesDbTable extends ProfilesDb
+    with TableInfo<$ProfilesDbTable, ProfilesDbData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ProfilesDbTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _ageMeta = const VerificationMeta('age');
+  @override
+  late final GeneratedColumn<int> age = GeneratedColumn<int>(
+      'age', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _dateOfBirthMeta =
+      const VerificationMeta('dateOfBirth');
+  @override
+  late final GeneratedColumn<DateTime> dateOfBirth = GeneratedColumn<DateTime>(
+      'date_of_birth', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _retirementAgeMeta =
+      const VerificationMeta('retirementAge');
+  @override
+  late final GeneratedColumn<int> retirementAge = GeneratedColumn<int>(
+      'retirement_age', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _riskProfileMeta =
+      const VerificationMeta('riskProfile');
+  @override
+  late final GeneratedColumn<String> riskProfile = GeneratedColumn<String>(
+      'risk_profile', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _fireProfileMeta =
+      const VerificationMeta('fireProfile');
+  @override
+  late final GeneratedColumn<String> fireProfile = GeneratedColumn<String>(
+      'fire_profile', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, age, dateOfBirth, retirementAge, riskProfile, fireProfile];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'profiles';
+  @override
+  VerificationContext validateIntegrity(Insertable<ProfilesDbData> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('age')) {
+      context.handle(
+          _ageMeta, age.isAcceptableOrUnknown(data['age']!, _ageMeta));
+    }
+    if (data.containsKey('date_of_birth')) {
+      context.handle(
+          _dateOfBirthMeta,
+          dateOfBirth.isAcceptableOrUnknown(
+              data['date_of_birth']!, _dateOfBirthMeta));
+    }
+    if (data.containsKey('retirement_age')) {
+      context.handle(
+          _retirementAgeMeta,
+          retirementAge.isAcceptableOrUnknown(
+              data['retirement_age']!, _retirementAgeMeta));
+    }
+    if (data.containsKey('risk_profile')) {
+      context.handle(
+          _riskProfileMeta,
+          riskProfile.isAcceptableOrUnknown(
+              data['risk_profile']!, _riskProfileMeta));
+    }
+    if (data.containsKey('fire_profile')) {
+      context.handle(
+          _fireProfileMeta,
+          fireProfile.isAcceptableOrUnknown(
+              data['fire_profile']!, _fireProfileMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => const {};
+  @override
+  ProfilesDbData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ProfilesDbData(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      age: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}age']),
+      dateOfBirth: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}date_of_birth']),
+      retirementAge: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}retirement_age']),
+      riskProfile: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}risk_profile']),
+      fireProfile: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}fire_profile']),
+    );
+  }
+
+  @override
+  $ProfilesDbTable createAlias(String alias) {
+    return $ProfilesDbTable(attachedDatabase, alias);
+  }
+}
+
+class ProfilesDbData extends DataClass implements Insertable<ProfilesDbData> {
+  final String id;
+  final int? age;
+  final DateTime? dateOfBirth;
+  final int? retirementAge;
+  final String? riskProfile;
+  final String? fireProfile;
+  const ProfilesDbData(
+      {required this.id,
+      this.age,
+      this.dateOfBirth,
+      this.retirementAge,
+      this.riskProfile,
+      this.fireProfile});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    if (!nullToAbsent || age != null) {
+      map['age'] = Variable<int>(age);
+    }
+    if (!nullToAbsent || dateOfBirth != null) {
+      map['date_of_birth'] = Variable<DateTime>(dateOfBirth);
+    }
+    if (!nullToAbsent || retirementAge != null) {
+      map['retirement_age'] = Variable<int>(retirementAge);
+    }
+    if (!nullToAbsent || riskProfile != null) {
+      map['risk_profile'] = Variable<String>(riskProfile);
+    }
+    if (!nullToAbsent || fireProfile != null) {
+      map['fire_profile'] = Variable<String>(fireProfile);
+    }
+    return map;
+  }
+
+  ProfilesDbCompanion toCompanion(bool nullToAbsent) {
+    return ProfilesDbCompanion(
+      id: Value(id),
+      age: age == null && nullToAbsent ? const Value.absent() : Value(age),
+      dateOfBirth: dateOfBirth == null && nullToAbsent
+          ? const Value.absent()
+          : Value(dateOfBirth),
+      retirementAge: retirementAge == null && nullToAbsent
+          ? const Value.absent()
+          : Value(retirementAge),
+      riskProfile: riskProfile == null && nullToAbsent
+          ? const Value.absent()
+          : Value(riskProfile),
+      fireProfile: fireProfile == null && nullToAbsent
+          ? const Value.absent()
+          : Value(fireProfile),
+    );
+  }
+
+  factory ProfilesDbData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ProfilesDbData(
+      id: serializer.fromJson<String>(json['id']),
+      age: serializer.fromJson<int?>(json['age']),
+      dateOfBirth: serializer.fromJson<DateTime?>(json['dateOfBirth']),
+      retirementAge: serializer.fromJson<int?>(json['retirementAge']),
+      riskProfile: serializer.fromJson<String?>(json['riskProfile']),
+      fireProfile: serializer.fromJson<String?>(json['fireProfile']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'age': serializer.toJson<int?>(age),
+      'dateOfBirth': serializer.toJson<DateTime?>(dateOfBirth),
+      'retirementAge': serializer.toJson<int?>(retirementAge),
+      'riskProfile': serializer.toJson<String?>(riskProfile),
+      'fireProfile': serializer.toJson<String?>(fireProfile),
+    };
+  }
+
+  ProfilesDbData copyWith(
+          {String? id,
+          Value<int?> age = const Value.absent(),
+          Value<DateTime?> dateOfBirth = const Value.absent(),
+          Value<int?> retirementAge = const Value.absent(),
+          Value<String?> riskProfile = const Value.absent(),
+          Value<String?> fireProfile = const Value.absent()}) =>
+      ProfilesDbData(
+        id: id ?? this.id,
+        age: age.present ? age.value : this.age,
+        dateOfBirth: dateOfBirth.present ? dateOfBirth.value : this.dateOfBirth,
+        retirementAge:
+            retirementAge.present ? retirementAge.value : this.retirementAge,
+        riskProfile: riskProfile.present ? riskProfile.value : this.riskProfile,
+        fireProfile: fireProfile.present ? fireProfile.value : this.fireProfile,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('ProfilesDbData(')
+          ..write('id: $id, ')
+          ..write('age: $age, ')
+          ..write('dateOfBirth: $dateOfBirth, ')
+          ..write('retirementAge: $retirementAge, ')
+          ..write('riskProfile: $riskProfile, ')
+          ..write('fireProfile: $fireProfile')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      id, age, dateOfBirth, retirementAge, riskProfile, fireProfile);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ProfilesDbData &&
+          other.id == this.id &&
+          other.age == this.age &&
+          other.dateOfBirth == this.dateOfBirth &&
+          other.retirementAge == this.retirementAge &&
+          other.riskProfile == this.riskProfile &&
+          other.fireProfile == this.fireProfile);
+}
+
+class ProfilesDbCompanion extends UpdateCompanion<ProfilesDbData> {
+  final Value<String> id;
+  final Value<int?> age;
+  final Value<DateTime?> dateOfBirth;
+  final Value<int?> retirementAge;
+  final Value<String?> riskProfile;
+  final Value<String?> fireProfile;
+  final Value<int> rowid;
+  const ProfilesDbCompanion({
+    this.id = const Value.absent(),
+    this.age = const Value.absent(),
+    this.dateOfBirth = const Value.absent(),
+    this.retirementAge = const Value.absent(),
+    this.riskProfile = const Value.absent(),
+    this.fireProfile = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ProfilesDbCompanion.insert({
+    required String id,
+    this.age = const Value.absent(),
+    this.dateOfBirth = const Value.absent(),
+    this.retirementAge = const Value.absent(),
+    this.riskProfile = const Value.absent(),
+    this.fireProfile = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id);
+  static Insertable<ProfilesDbData> custom({
+    Expression<String>? id,
+    Expression<int>? age,
+    Expression<DateTime>? dateOfBirth,
+    Expression<int>? retirementAge,
+    Expression<String>? riskProfile,
+    Expression<String>? fireProfile,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (age != null) 'age': age,
+      if (dateOfBirth != null) 'date_of_birth': dateOfBirth,
+      if (retirementAge != null) 'retirement_age': retirementAge,
+      if (riskProfile != null) 'risk_profile': riskProfile,
+      if (fireProfile != null) 'fire_profile': fireProfile,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ProfilesDbCompanion copyWith(
+      {Value<String>? id,
+      Value<int?>? age,
+      Value<DateTime?>? dateOfBirth,
+      Value<int?>? retirementAge,
+      Value<String?>? riskProfile,
+      Value<String?>? fireProfile,
+      Value<int>? rowid}) {
+    return ProfilesDbCompanion(
+      id: id ?? this.id,
+      age: age ?? this.age,
+      dateOfBirth: dateOfBirth ?? this.dateOfBirth,
+      retirementAge: retirementAge ?? this.retirementAge,
+      riskProfile: riskProfile ?? this.riskProfile,
+      fireProfile: fireProfile ?? this.fireProfile,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (age.present) {
+      map['age'] = Variable<int>(age.value);
+    }
+    if (dateOfBirth.present) {
+      map['date_of_birth'] = Variable<DateTime>(dateOfBirth.value);
+    }
+    if (retirementAge.present) {
+      map['retirement_age'] = Variable<int>(retirementAge.value);
+    }
+    if (riskProfile.present) {
+      map['risk_profile'] = Variable<String>(riskProfile.value);
+    }
+    if (fireProfile.present) {
+      map['fire_profile'] = Variable<String>(fireProfile.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ProfilesDbCompanion(')
+          ..write('id: $id, ')
+          ..write('age: $age, ')
+          ..write('dateOfBirth: $dateOfBirth, ')
+          ..write('retirementAge: $retirementAge, ')
+          ..write('riskProfile: $riskProfile, ')
+          ..write('fireProfile: $fireProfile, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   _$AppDatabaseManager get managers => _$AppDatabaseManager(this);
@@ -2915,6 +3262,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $InvestmentHoldingsDbTable(this);
   late final $GoalsDbTable goalsDb = $GoalsDbTable(this);
   late final $GoalAccountsDbTable goalAccountsDb = $GoalAccountsDbTable(this);
+  late final $ProfilesDbTable profilesDb = $ProfilesDbTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2924,7 +3272,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         transactionsDb,
         investmentHoldingsDb,
         goalsDb,
-        goalAccountsDb
+        goalAccountsDb,
+        profilesDb
       ];
 }
 
@@ -4188,6 +4537,163 @@ class $$GoalAccountsDbTableOrderingComposer
           ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
+typedef $$ProfilesDbTableInsertCompanionBuilder = ProfilesDbCompanion Function({
+  required String id,
+  Value<int?> age,
+  Value<DateTime?> dateOfBirth,
+  Value<int?> retirementAge,
+  Value<String?> riskProfile,
+  Value<String?> fireProfile,
+  Value<int> rowid,
+});
+typedef $$ProfilesDbTableUpdateCompanionBuilder = ProfilesDbCompanion Function({
+  Value<String> id,
+  Value<int?> age,
+  Value<DateTime?> dateOfBirth,
+  Value<int?> retirementAge,
+  Value<String?> riskProfile,
+  Value<String?> fireProfile,
+  Value<int> rowid,
+});
+
+class $$ProfilesDbTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $ProfilesDbTable,
+    ProfilesDbData,
+    $$ProfilesDbTableFilterComposer,
+    $$ProfilesDbTableOrderingComposer,
+    $$ProfilesDbTableProcessedTableManager,
+    $$ProfilesDbTableInsertCompanionBuilder,
+    $$ProfilesDbTableUpdateCompanionBuilder> {
+  $$ProfilesDbTableTableManager(_$AppDatabase db, $ProfilesDbTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer:
+              $$ProfilesDbTableFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $$ProfilesDbTableOrderingComposer(ComposerState(db, table)),
+          getChildManagerBuilder: (p) =>
+              $$ProfilesDbTableProcessedTableManager(p),
+          getUpdateCompanionBuilder: ({
+            Value<String> id = const Value.absent(),
+            Value<int?> age = const Value.absent(),
+            Value<DateTime?> dateOfBirth = const Value.absent(),
+            Value<int?> retirementAge = const Value.absent(),
+            Value<String?> riskProfile = const Value.absent(),
+            Value<String?> fireProfile = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              ProfilesDbCompanion(
+            id: id,
+            age: age,
+            dateOfBirth: dateOfBirth,
+            retirementAge: retirementAge,
+            riskProfile: riskProfile,
+            fireProfile: fireProfile,
+            rowid: rowid,
+          ),
+          getInsertCompanionBuilder: ({
+            required String id,
+            Value<int?> age = const Value.absent(),
+            Value<DateTime?> dateOfBirth = const Value.absent(),
+            Value<int?> retirementAge = const Value.absent(),
+            Value<String?> riskProfile = const Value.absent(),
+            Value<String?> fireProfile = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              ProfilesDbCompanion.insert(
+            id: id,
+            age: age,
+            dateOfBirth: dateOfBirth,
+            retirementAge: retirementAge,
+            riskProfile: riskProfile,
+            fireProfile: fireProfile,
+            rowid: rowid,
+          ),
+        ));
+}
+
+class $$ProfilesDbTableProcessedTableManager extends ProcessedTableManager<
+    _$AppDatabase,
+    $ProfilesDbTable,
+    ProfilesDbData,
+    $$ProfilesDbTableFilterComposer,
+    $$ProfilesDbTableOrderingComposer,
+    $$ProfilesDbTableProcessedTableManager,
+    $$ProfilesDbTableInsertCompanionBuilder,
+    $$ProfilesDbTableUpdateCompanionBuilder> {
+  $$ProfilesDbTableProcessedTableManager(super.$state);
+}
+
+class $$ProfilesDbTableFilterComposer
+    extends FilterComposer<_$AppDatabase, $ProfilesDbTable> {
+  $$ProfilesDbTableFilterComposer(super.$state);
+  ColumnFilters<String> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<int> get age => $state.composableBuilder(
+      column: $state.table.age,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<DateTime> get dateOfBirth => $state.composableBuilder(
+      column: $state.table.dateOfBirth,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<int> get retirementAge => $state.composableBuilder(
+      column: $state.table.retirementAge,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get riskProfile => $state.composableBuilder(
+      column: $state.table.riskProfile,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get fireProfile => $state.composableBuilder(
+      column: $state.table.fireProfile,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+}
+
+class $$ProfilesDbTableOrderingComposer
+    extends OrderingComposer<_$AppDatabase, $ProfilesDbTable> {
+  $$ProfilesDbTableOrderingComposer(super.$state);
+  ColumnOrderings<String> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<int> get age => $state.composableBuilder(
+      column: $state.table.age,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<DateTime> get dateOfBirth => $state.composableBuilder(
+      column: $state.table.dateOfBirth,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<int> get retirementAge => $state.composableBuilder(
+      column: $state.table.retirementAge,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get riskProfile => $state.composableBuilder(
+      column: $state.table.riskProfile,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get fireProfile => $state.composableBuilder(
+      column: $state.table.fireProfile,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
 class _$AppDatabaseManager {
   final _$AppDatabase _db;
   _$AppDatabaseManager(this._db);
@@ -4201,4 +4707,6 @@ class _$AppDatabaseManager {
       $$GoalsDbTableTableManager(_db, _db.goalsDb);
   $$GoalAccountsDbTableTableManager get goalAccountsDb =>
       $$GoalAccountsDbTableTableManager(_db, _db.goalAccountsDb);
+  $$ProfilesDbTableTableManager get profilesDb =>
+      $$ProfilesDbTableTableManager(_db, _db.profilesDb);
 }

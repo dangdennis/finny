@@ -1,5 +1,5 @@
 import 'package:finny/src/dashboard/onboarding/onboarding_item.dart';
-import 'package:finny/src/dashboard/onboarding_view.dart';
+import 'package:finny/src/dashboard/onboarding/profile_form_view.dart';
 import 'package:finny/src/onboarding/onboarding_controller.dart';
 import 'package:flutter/material.dart';
 
@@ -27,7 +27,9 @@ class OnboardingCard extends StatelessWidget {
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (context) => const OnboardingView(),
+                    builder: (context) => ProfileFormView(
+                      onboardingController: onboardingController,
+                    ),
                   ),
                 );
               },

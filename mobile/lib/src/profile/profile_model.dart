@@ -1,7 +1,26 @@
 enum RiskProfile {
   conservative,
   moderate,
-  aggressive,
+  aggressive;
+
+  static RiskProfile fromString(String value) {
+    return RiskProfile.values.firstWhere(
+      (e) => e.name == value,
+      orElse: () => throw ArgumentError('Invalid RiskProfile: $value'),
+    );
+  }
+
+  @override
+  toString() {
+    switch (this) {
+      case RiskProfile.conservative:
+        return 'conservative';
+      case RiskProfile.moderate:
+        return 'moderate';
+      case RiskProfile.aggressive:
+        return 'aggressive';
+    }
+  }
 }
 
 enum FireProfile {
@@ -10,7 +29,32 @@ enum FireProfile {
   fat,
   barista,
   slow,
-  coast,
+  coast;
+
+  static FireProfile fromString(String value) {
+    return FireProfile.values.firstWhere(
+      (e) => e.name == value,
+      orElse: () => throw ArgumentError('Invalid FireProfile: $value'),
+    );
+  }
+
+  @override
+  toString() {
+    switch (this) {
+      case FireProfile.lean:
+        return 'lean';
+      case FireProfile.traditional:
+        return 'traditional';
+      case FireProfile.fat:
+        return 'fat';
+      case FireProfile.barista:
+        return 'barista';
+      case FireProfile.slow:
+        return 'slow';
+      case FireProfile.coast:
+        return 'coast';
+    }
+  }
 }
 
 class Profile {
