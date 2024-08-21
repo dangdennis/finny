@@ -1,6 +1,6 @@
-import 'package:finny/src/dashboard/add_goal_button.dart';
+import 'package:finny/src/dashboard/goals/add_goal_button.dart';
 import 'package:finny/src/dashboard/dashboard_financial_metrics.dart';
-import 'package:finny/src/dashboard/goals_card.dart';
+import 'package:finny/src/dashboard/goals/goal_card.dart';
 import 'package:finny/src/dashboard/onboarding_view.dart';
 import 'package:finny/src/goals/goals_controller.dart';
 import 'package:finny/src/finalytics/finalytics_controller.dart';
@@ -35,7 +35,8 @@ class DashboardView extends StatelessWidget {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-          final bool isOnboarded = snapshot.data?.isOnboardingComplete ?? false;
+          final bool isOnboardingComplete =
+              snapshot.data?.isOnboardingComplete ?? false;
           return SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -43,17 +44,17 @@ class DashboardView extends StatelessWidget {
                 GradientBanner(
                   child: Column(
                     children: [
-                      if (!isOnboarded)
+                      if (!isOnboardingComplete)
                         Padding(
                           padding: const EdgeInsets.all(8.0),
-                          child: ChecklistCard(
+                          child: OnboardingCard(
                             onboardingController: onboardingController,
                           ),
                         ),
                       Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: DisabledWrapper(
-                          isDisabled: !isOnboarded,
+                          isDisabled: !isOnboardingComplete,
                           child: FinancialMetricsCard(
                             finalyticsController: finalyticsController,
                           ),
@@ -62,8 +63,8 @@ class DashboardView extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: DisabledWrapper(
-                          isDisabled: !isOnboarded,
-                          child: GoalsCard(goalsController: goalsController),
+                          isDisabled: !isOnboardingComplete,
+                          child: GoalCard(goalsController: goalsController),
                         ),
                       ),
                     ],
@@ -96,81 +97,6 @@ class DisabledWrapper extends StatelessWidget {
         opacity: isDisabled ? 0.5 : 1.0,
         child: child,
       ),
-    );
-  }
-}
-
-class ChecklistCard extends StatelessWidget {
-  final OnboardingController onboardingController;
-
-  const ChecklistCard({super.key, required this.onboardingController});
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Get Started',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            ChecklistItem(
-              title: 'Complete your profile',
-              isCompleted: false,
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const OnboardingView(),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 8),
-            const ChecklistItem(
-              title: 'Connect your bank accounts',
-              isCompleted: false,
-              subtitle: 'The more you connect, the more accurate insights.',
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class ChecklistItem extends StatelessWidget {
-  final String title;
-  final bool isCompleted;
-  final VoidCallback? onTap;
-  final String? subtitle;
-
-  const ChecklistItem({
-    super.key,
-    required this.title,
-    required this.isCompleted,
-    this.onTap,
-    this.subtitle,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: Icon(
-        isCompleted ? Icons.check_circle : Icons.circle_outlined,
-        color: isCompleted ? Colors.green : null,
-      ),
-      title: Text(
-        title,
-        style: TextStyle(
-          decoration: isCompleted ? TextDecoration.lineThrough : null,
-        ),
-      ),
-      subtitle: subtitle != null ? Text(subtitle!) : null,
-      onTap: isCompleted ? null : onTap,
     );
   }
 }

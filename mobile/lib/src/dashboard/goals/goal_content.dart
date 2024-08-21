@@ -1,11 +1,11 @@
-import 'package:finny/src/dashboard/dashboard_goals_list.dart';
+import 'package:finny/src/dashboard/goals/dashboard_goals_list.dart';
 import 'package:finny/src/goals/goal_model.dart';
 import 'package:finny/src/goals/goals_controller.dart';
 import 'package:finny/src/routes.dart';
 import 'package:flutter/material.dart';
 
-class GoalsContent extends StatelessWidget {
-  const GoalsContent({
+class GoalContent extends StatelessWidget {
+  const GoalContent({
     super.key,
     required this.goalsController,
   });

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class GoalsCardTitle extends StatelessWidget {
-  const GoalsCardTitle({super.key});
+class GoalCardTitle extends StatelessWidget {
+  const GoalCardTitle({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -11,8 +11,7 @@ class GoalsCardTitle extends StatelessWidget {
         alignment: Alignment.centerLeft,
         child: Text(
           "Goals",
-          textAlign: TextAlign.left,
-          style: Theme.of(context).textTheme.titleMedium,
+          style: Theme.of(context).textTheme.titleLarge,
         ),
       ),
     );

@@ -1,4 +1,4 @@
-import 'package:finny/src/dashboard/goal_progress_indicator.dart';
+import 'package:finny/src/dashboard/goals/goal_progress_indicator.dart';
 import 'package:finny/src/goals/goal_details_view.dart';
 import 'package:finny/src/goals/goal_model.dart';
 import 'package:finny/src/goals/goals_controller.dart';
