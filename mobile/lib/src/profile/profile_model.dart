@@ -1,6 +1,6 @@
 enum RiskProfile {
   conservative,
-  moderate,
+  balanced,
   aggressive;
 
   static RiskProfile fromString(String value) {
@@ -15,8 +15,8 @@ enum RiskProfile {
     switch (this) {
       case RiskProfile.conservative:
         return 'conservative';
-      case RiskProfile.moderate:
-        return 'moderate';
+      case RiskProfile.balanced:
+        return 'balanced';
       case RiskProfile.aggressive:
         return 'aggressive';
     }

@@ -12,6 +12,7 @@ import java.time.LocalDate
 import io.circe.parser.decode
 import api.models.RiskProfile
 import api.models.FireProfile
+import api.common.Logger
 
 object ProfileRepository:
     def getProfiles(): Either[AppError.DatabaseError, List[Profile]] = Try(
@@ -68,12 +69,12 @@ object ProfileRepository:
                     profileUpdate.age.map(age => sqls"age = $age"),
                     profileUpdate.dateOfBirth.map(dob => sqls"date_of_birth = $dob"),
                     profileUpdate.retirementAge.map(ra => sqls"retirement_age = $ra"),
-                    profileUpdate.riskProfile.map(rp => sqls"risk_profile = ${rp.asJson.noSpaces}"),
-                    profileUpdate.fireProfile.map(fp => sqls"fire_profile = ${fp.asJson.noSpaces}")
+                    profileUpdate.riskProfile.map(rp => sqls"risk_profile = ${rp.toString}"),
+                    profileUpdate.fireProfile.map(fp => sqls"fire_profile = ${fp.toString}")
                 ).flatten
 
             sql"""
-                update profiles 
+                update profiles
                 set $setClause
                 where id = ${profileUpdate.userId}
             """.update.apply()

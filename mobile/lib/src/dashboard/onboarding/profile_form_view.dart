@@ -21,7 +21,7 @@ class _ProfileFormViewState extends State<ProfileFormView> {
   final _formKey = GlobalKey<FormState>();
   DateTime? _dateOfBirth;
   int? _retirementAge;
-  RiskProfile? _riskProfile = RiskProfile.moderate;
+  RiskProfile? _riskProfile = RiskProfile.balanced;
   FireProfile _fireProfile = FireProfile.traditional;
   bool _isLoading = true;
 
@@ -37,7 +37,7 @@ class _ProfileFormViewState extends State<ProfileFormView> {
       setState(() {
         _dateOfBirth = profile.dateOfBirth;
         _retirementAge = profile.retirementAge;
-        _riskProfile = profile.riskProfile ?? RiskProfile.moderate;
+        _riskProfile = profile.riskProfile ?? RiskProfile.balanced;
         _fireProfile = profile.fireProfile ?? FireProfile.traditional;
         _isLoading = false;
       });

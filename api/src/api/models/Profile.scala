@@ -20,6 +20,14 @@ enum RiskProfile:
     case Conservative,
         Balanced,
         Aggressive
+    override def toString: String =
+        this match
+            case Conservative =>
+                "conservative"
+            case Balanced =>
+                "balanced"
+            case Aggressive =>
+                "aggressive"
 
 object RiskProfile:
     given Encoder[RiskProfile] = deriveEncoder
@@ -32,6 +40,20 @@ enum FireProfile:
         Barista,
         Slow,
         Coast
+    override def toString: String =
+        this match
+            case Lean =>
+                "lean"
+            case Traditional =>
+                "traditional"
+            case Fat =>
+                "fat"
+            case Barista =>
+                "barista"
+            case Slow =>
+                "slow"
+            case Coast =>
+                "coast"
 
 object FireProfile:
     given Encoder[FireProfile] = deriveEncoder
