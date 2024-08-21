@@ -9,6 +9,7 @@ import 'package:finny/src/finalytics/finalytics_controller.dart';
 import 'package:finny/src/goals/goals_controller.dart';
 import 'package:finny/src/dashboard/dashboard_view.dart';
 import 'package:finny/src/goals/goals_new_form_view.dart';
+import 'package:finny/src/onboarding/onboarding_controller.dart';
 import 'package:finny/src/settings/settings_controller.dart';
 import 'package:finny/src/settings/settings_view.dart';
 import 'package:finny/src/transactions/transaction_details_view.dart';
@@ -20,16 +21,16 @@ import 'package:provider/provider.dart';
 
 /// The Widget that configures your application.
 class MyApp extends StatelessWidget {
-  const MyApp({
-    super.key,
-    required this.authProvider,
-    required this.accountsController,
-    required this.connectionsController,
-    required this.goalsController,
-    required this.settingsController,
-    required this.transactionsController,
-    required this.finalyticsController,
-  });
+  const MyApp(
+      {super.key,
+      required this.authProvider,
+      required this.accountsController,
+      required this.connectionsController,
+      required this.goalsController,
+      required this.settingsController,
+      required this.transactionsController,
+      required this.finalyticsController,
+      required this.onboardingController});
 
   final SettingsController settingsController;
   final AccountsController accountsController;
@@ -37,6 +38,7 @@ class MyApp extends StatelessWidget {
   final ConnectionsController connectionsController;
   final GoalsController goalsController;
   final FinalyticsController finalyticsController;
+  final OnboardingController onboardingController;
   final AuthProvider authProvider;
 
   @override
@@ -84,6 +86,7 @@ class MyApp extends StatelessWidget {
             builder: (context, authProvider, child) {
               if (authProvider.isLoggedIn) {
                 return MainView(
+                  onboardingController: onboardingController,
                   accountsController: accountsController,
                   goalsController: goalsController,
                   finalyticsController: finalyticsController,
@@ -116,6 +119,7 @@ class MyApp extends StatelessWidget {
                     );
                   case DashboardView.routeName:
                     return DashboardView(
+                      onboardingController: onboardingController,
                       finalyticsController: finalyticsController,
                       goalsController: goalsController,
                     );
@@ -157,6 +161,7 @@ class MainView extends StatefulWidget {
     required this.settingsController,
     required this.transactionsController,
     required this.finalyticsController,
+    required this.onboardingController,
   });
 
   final AccountsController accountsController;
@@ -164,6 +169,8 @@ class MainView extends StatefulWidget {
   final SettingsController settingsController;
   final TransactionsController transactionsController;
   final FinalyticsController finalyticsController;
+  final OnboardingController onboardingController;
+
   @override
   State<MainView> createState() => _MainViewState();
 }
@@ -178,6 +185,7 @@ class _MainViewState extends State<MainView> {
     super.initState();
     _widgetOptions = [
       DashboardView(
+        onboardingController: widget.onboardingController,
         finalyticsController: widget.finalyticsController,
         goalsController: widget.goalsController,
       ),

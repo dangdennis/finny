@@ -39,7 +39,7 @@ class _GradientBannerState extends State<GradientBanner> {
           ),
         ),
         Transform.translate(
-          offset: const Offset(0.0, -100.0),
+          offset: const Offset(0.0, -110.0),
           child: widget.child,
         ),
       ],

@@ -117,7 +117,7 @@ object Routes:
             decodedJwt match
                 case Success(jwt) =>
                     val userId = UUID.fromString(jwt.getSubject())
-                    ProfileRepository.getProfileByUserId(userId) match
+                    ProfileRepository.getProfile(userId) match
                         case Left(AppError.DatabaseError(msg)) =>
                             Logger.root.error(s"Error fetching profile by user id", msg)
                             Left(HttpError(500))

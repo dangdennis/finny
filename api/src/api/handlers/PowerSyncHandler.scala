@@ -12,6 +12,11 @@ import io.circe.parser.*
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.UUID
+import api.repositories.ProfileRepository
+import api.models.RiskProfile
+import api.models.FireProfile
+import java.time.Instant
+import java.time.ZoneOffset
 
 object PowerSyncHandler:
     def handleEventUpload(input: String, user: Profile): Either[HttpError, Unit] =
@@ -58,6 +63,12 @@ object PowerSyncHandler:
                     .map(data => handleGoalAccountPatch(event.id, data, user))
             case ("goal_accounts", "DELETE") =>
                 handleGoalAccountDelete(event.id, user)
+            case ("profiles", "PATCH") =>
+                event
+                    .data
+                    .toRight(AppError.ValidationError("No data found for Profile PATCH operation"))
+                    .flatMap(_.as[ProfilePatchData].left.map(err => AppError.ValidationError(err.getMessage)))
+                    .map(data => handleProfilePatch(event.id, data, user))
             case _ =>
                 Logger.root.info(s"Skipping event ${event.op} ${event.`type`} ${event.id}")
                 Right(())
@@ -100,7 +111,7 @@ object PowerSyncHandler:
 
     private def handleGoalDelete(recordId: String, user: Profile): Either[AppError, Unit] =
         Logger.root.info(s"Deleting goal $recordId")
-        GoalRepository.deleteGoal(UUID.fromString(recordId), user.id).right.map(_ => ())
+        GoalRepository.deleteGoal(UUID.fromString(recordId), user.id).map(_ => ())
 
     private def handleGoalAccountPut(recordId: String, data: GoalAccountPutData): Either[AppError, Unit] =
         Logger.root.info(s"Creating goal $data")
@@ -131,7 +142,23 @@ object PowerSyncHandler:
 
     private def handleGoalAccountDelete(recordId: String, user: Profile): Either[AppError, Unit] =
         Logger.root.info(s"Deleting goal account $recordId")
-        GoalRepository.deleteGoalAccount(UUID.fromString(recordId), user.id).right.map(_ => ())
+        GoalRepository.deleteGoalAccount(UUID.fromString(recordId), user.id).map(_ => ())
+
+    private def handleProfilePatch(recordId: String, data: ProfilePatchData, user: Profile): Either[AppError, Unit] =
+        ProfileRepository
+            .updateProfile(
+                ProfileRepository.ProfileUpdate(
+                    userId = user.id,
+                    age = data.age,
+                    dateOfBirth = data
+                        .date_of_birth
+                        .map(epoch => LocalDate.ofInstant(Instant.ofEpochSecond(epoch.toLong), ZoneOffset.UTC)),
+                    retirementAge = data.retirement_age,
+                    riskProfile = data.risk_profile,
+                    fireProfile = data.fire_profile
+                )
+            )
+            .map(_ => ())
 
     case class EventUploadRequest(data: List[EventUpload])
     object EventUploadRequest:
@@ -156,3 +183,13 @@ object PowerSyncHandler:
     case class GoalAccountPatchData(amount: Option[Double], percentage: Option[Double])
     object GoalAccountPatchData:
         given Decoder[GoalAccountPatchData] = deriveDecoder
+
+    case class ProfilePatchData(
+        age: Option[Int],
+        date_of_birth: Option[String],
+        retirement_age: Option[Int],
+        risk_profile: Option[RiskProfile],
+        fire_profile: Option[FireProfile]
+    )
+    object ProfilePatchData:
+        given Decoder[ProfilePatchData] = deriveDecoder

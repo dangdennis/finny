@@ -14,7 +14,7 @@ import scala.util.Try
 
 object UserDeletionService:
     def deleteUserEverything(userId: UserId): Either[AppError, Boolean] = ProfileRepository
-        .getProfileByUserId(userId)
+        .getProfile(userId)
         .flatMap(userOpt =>
             userOpt match
                 case Some(user) =>

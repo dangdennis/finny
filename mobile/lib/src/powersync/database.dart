@@ -15,6 +15,7 @@ part 'database.g.dart';
     InvestmentHoldingsDb,
     GoalsDb,
     GoalAccountsDb,
+    ProfilesDb,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -117,4 +118,16 @@ class GoalAccountsDb extends Table {
   TextColumn get createdAt => text()();
   TextColumn get updatedAt => text()();
   TextColumn get deletedAt => text().nullable()();
+}
+
+class ProfilesDb extends Table {
+  @override
+  String get tableName => 'profiles';
+
+  TextColumn get id => text()();
+  IntColumn get age => integer().nullable()();
+  TextColumn get dateOfBirth => text().nullable()();
+  IntColumn get retirementAge => integer().nullable()();
+  TextColumn get riskProfile => text().nullable()();
+  TextColumn get fireProfile => text().nullable()();
 }

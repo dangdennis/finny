@@ -1,19 +1,19 @@
-import 'package:finny/src/accounts/account_model.dart';
-import 'package:finny/src/dashboard/goal_progress_indicator.dart';
+import 'package:finny/src/dashboard/goals/goal_progress_indicator.dart';
 import 'package:finny/src/goals/goal_details_view.dart';
 import 'package:finny/src/goals/goal_model.dart';
+import 'package:finny/src/goals/goals_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class DashboardGoalItem extends StatefulWidget {
   const DashboardGoalItem({
     required this.goal,
-    required this.getAssignedAccounts,
+    required this.goalsController,
     super.key,
   });
 
   final Goal goal;
-  final Future<List<Account>> Function(GoalId) getAssignedAccounts;
+  final GoalsController goalsController;
 
   @override
   State<DashboardGoalItem> createState() => _DashboardGoalItemState();
@@ -26,7 +26,10 @@ class _DashboardGoalItemState extends State<DashboardGoalItem> {
       onTap: () {
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (context) => GoalDetailView(goalId: widget.goal.id),
+            builder: (context) => GoalDetailView(
+              goalsController: widget.goalsController,
+              goalId: widget.goal.id,
+            ),
           ),
         );
       },

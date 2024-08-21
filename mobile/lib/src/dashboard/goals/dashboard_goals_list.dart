@@ -1,4 +1,4 @@
-import 'package:finny/src/dashboard/dashboard_goals_item.dart';
+import 'package:finny/src/dashboard/goals/dashboard_goal_item.dart';
 import 'package:finny/src/goals/goal_model.dart';
 import 'package:finny/src/goals/goals_controller.dart';
 import 'package:flutter/material.dart';
@@ -21,7 +21,7 @@ class DashboardGoalsList extends StatelessWidget {
         return Column(
           children: [
             DashboardGoalItem(
-              getAssignedAccounts: goalsController.getAssignedAccounts,
+              goalsController: goalsController,
               goal: goal,
             ),
             if (index < goals.length - 1) const Divider(),
