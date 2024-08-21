@@ -12,7 +12,7 @@ COPY mill ./mill
 COPY src ./src
 
 # Install Mill
-RUN curl -L https://github.com/com-lihaoyi/mill/releases/download/0.11.8/0.11.8 >/usr/local/bin/mill && chmod +x /usr/local/bin/mill
+RUN curl -L https://github.com/com-lihaoyi/mill/releases/download/0.11.12/0.11.12 >/usr/local/bin/mill && chmod +x /usr/local/bin/mill
 
 # Build the dependencies first to cache them
 RUN mill api.compile
