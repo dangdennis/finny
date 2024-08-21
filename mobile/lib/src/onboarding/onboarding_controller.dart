@@ -2,6 +2,7 @@ import 'package:finny/src/accounts/accounts_service.dart';
 import 'package:finny/src/onboarding/onboarding_cache.dart';
 import 'package:finny/src/profile/profile_model.dart';
 import 'package:finny/src/profile/profile_service.dart';
+import 'package:logging/logging.dart';
 
 class OnboardingController {
   OnboardingController(
@@ -9,17 +10,23 @@ class OnboardingController {
 
   final ProfileService profileService;
   final AccountsService accountService;
+  final Logger _logger = Logger('OnboardingController');
 
   Future<void> setOnboarded() async {
     await OnboardingCache.setOnboarded();
   }
 
   Future<OnboardingState> isOnboarded() async {
-    final profile = await profileService.getProfile();
-    return OnboardingState(
-        // accountsAdded: await _isAccountsAdded(),
-        accountsAdded: false,
-        profileCompleted: _isProfileCompleted(profile));
+    try {
+      final profile = await profileService.getProfile();
+      return OnboardingState(
+          // accountsAdded: await _isAccountsAdded(),
+          accountsAdded: false,
+          profileCompleted: _isProfileCompleted(profile));
+    } catch (e) {
+      _logger.warning('Error getting profile: $e');
+      rethrow;
+    }
   }
 
   Future<Profile> getProfile() async {
@@ -31,10 +38,10 @@ class OnboardingController {
   }
 
   bool _isProfileCompleted(Profile profile) {
-    return (profile.dateOfBirth == null &&
-        profile.retirementAge == null &&
-        profile.riskProfile == null &&
-        profile.fireProfile == null);
+    return (profile.dateOfBirth != null &&
+        profile.retirementAge != null &&
+        profile.riskProfile != null &&
+        profile.fireProfile != null);
   }
 
   Future<bool> _isAccountsAdded() async {

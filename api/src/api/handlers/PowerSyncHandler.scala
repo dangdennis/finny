@@ -145,7 +145,6 @@ object PowerSyncHandler:
         GoalRepository.deleteGoalAccount(UUID.fromString(recordId), user.id).map(_ => ())
 
     private def handleProfilePatch(recordId: String, data: ProfilePatchData, user: Profile): Either[AppError, Unit] =
-        Logger.root.info(s"Updating profile $data")
         ProfileRepository
             .updateProfile(
                 ProfileRepository.ProfileUpdate(
@@ -155,8 +154,8 @@ object PowerSyncHandler:
                         .date_of_birth
                         .map(epoch => LocalDate.ofInstant(Instant.ofEpochSecond(epoch.toLong), ZoneOffset.UTC)),
                     retirementAge = data.retirement_age,
-                    riskProfile = data.risk_profile.flatMap(s => decode[RiskProfile](s).toOption),
-                    fireProfile = data.fire_profile.flatMap(s => decode[FireProfile](s).toOption)
+                    riskProfile = data.risk_profile,
+                    fireProfile = data.fire_profile
                 )
             )
             .map(_ => ())
@@ -189,8 +188,8 @@ object PowerSyncHandler:
         age: Option[Int],
         date_of_birth: Option[String],
         retirement_age: Option[Int],
-        risk_profile: Option[String],
-        fire_profile: Option[String]
+        risk_profile: Option[RiskProfile],
+        fire_profile: Option[FireProfile]
     )
     object ProfilePatchData:
         given Decoder[ProfilePatchData] = deriveDecoder

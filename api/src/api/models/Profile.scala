@@ -20,18 +20,31 @@ enum RiskProfile:
     case Conservative,
         Balanced,
         Aggressive
-    override def toString: String =
-        this match
+
+object RiskProfile:
+    given Encoder[RiskProfile] = Encoder.encodeString.contramap[RiskProfile](RiskProfile.toString)
+
+    given Decoder[RiskProfile] = Decoder
+        .decodeString
+        .emap {
+            case "conservative" =>
+                Right(RiskProfile.Conservative)
+            case "balanced" =>
+                Right(RiskProfile.Balanced)
+            case "aggressive" =>
+                Right(RiskProfile.Aggressive)
+            case s =>
+                Left(s"Unknown RiskProfile: $s")
+        }
+
+    def toString(profile: RiskProfile): String =
+        profile match
             case Conservative =>
                 "conservative"
             case Balanced =>
                 "balanced"
             case Aggressive =>
                 "aggressive"
-
-object RiskProfile:
-    given Encoder[RiskProfile] = deriveEncoder
-    given Decoder[RiskProfile] = deriveDecoder
 
 enum FireProfile:
     case Lean,
@@ -40,8 +53,31 @@ enum FireProfile:
         Barista,
         Slow,
         Coast
-    override def toString: String =
-        this match
+
+object FireProfile:
+    given Encoder[FireProfile] = Encoder.encodeString.contramap[FireProfile](FireProfile.toString)
+
+    given Decoder[FireProfile] = Decoder
+        .decodeString
+        .emap {
+            case "lean" =>
+                Right(FireProfile.Lean)
+            case "traditional" =>
+                Right(FireProfile.Traditional)
+            case "fat" =>
+                Right(FireProfile.Fat)
+            case "barista" =>
+                Right(FireProfile.Barista)
+            case "slow" =>
+                Right(FireProfile.Slow)
+            case "coast" =>
+                Right(FireProfile.Coast)
+            case s =>
+                Left(s"Unknown FireProfile: $s")
+        }
+
+    def toString(profile: FireProfile): String =
+        profile match
             case Lean =>
                 "lean"
             case Traditional =>
@@ -54,10 +90,6 @@ enum FireProfile:
                 "slow"
             case Coast =>
                 "coast"
-
-object FireProfile:
-    given Encoder[FireProfile] = deriveEncoder
-    given Decoder[FireProfile] = deriveDecoder
 
 case class AuthUser(id: UserId, deletedAt: Option[Instant])
 

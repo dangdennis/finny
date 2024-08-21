@@ -21,7 +21,8 @@ class ProfileService {
                 DateTime.now().difference(profile.dateOfBirth!).inDays ~/ 365)
             : const Value.absent(),
         dateOfBirth: profile.dateOfBirth != null
-            ? Value(profile.dateOfBirth)
+            ? Value((profile.dateOfBirth!.millisecondsSinceEpoch ~/ 1000)
+                .toString())
             : const Value.absent(),
         retirementAge: profile.retirementAge != null
             ? Value(profile.retirementAge)
@@ -37,10 +38,12 @@ class ProfileService {
   }
 
   Profile profileDbToDomain(ProfilesDbData profile) {
-    return Profile(
+    final p = Profile(
       id: profile.id,
       age: profile.age,
-      dateOfBirth: profile.dateOfBirth,
+      dateOfBirth: profile.dateOfBirth != null
+          ? DateTime.tryParse(profile.dateOfBirth!)
+          : null,
       retirementAge: profile.retirementAge,
       riskProfile: profile.riskProfile != null
           ? RiskProfile.fromString(profile.riskProfile!)
@@ -49,6 +52,7 @@ class ProfileService {
           ? FireProfile.fromString(profile.fireProfile!)
           : null,
     );
+    return p;
   }
 }
 

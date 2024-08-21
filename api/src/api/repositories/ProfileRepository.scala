@@ -4,7 +4,6 @@ import api.common.AppError
 import api.models.Profile
 import api.models.UserId
 import scalikejdbc.*
-import io.circe.syntax.*
 
 import java.util.UUID
 import scala.util.Try
@@ -64,13 +63,14 @@ object ProfileRepository:
 
     def updateProfile(profileUpdate: ProfileUpdate): Either[AppError.DatabaseError, Int] = Try(
         DB localTx { implicit session =>
+            Logger.root.info(s"Updating profile: ${profileUpdate}")
             val setClause =
                 Seq(
                     profileUpdate.age.map(age => sqls"age = $age"),
                     profileUpdate.dateOfBirth.map(dob => sqls"date_of_birth = $dob"),
                     profileUpdate.retirementAge.map(ra => sqls"retirement_age = $ra"),
-                    profileUpdate.riskProfile.map(rp => sqls"risk_profile = ${rp.toString}"),
-                    profileUpdate.fireProfile.map(fp => sqls"fire_profile = ${fp.toString}")
+                    profileUpdate.riskProfile.map(rp => sqls"risk_profile = ${(RiskProfile.toString(rp))}"),
+                    profileUpdate.fireProfile.map(fp => sqls"fire_profile = ${FireProfile.toString(fp)}")
                 ).flatten
 
             sql"""

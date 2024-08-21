@@ -2925,9 +2925,9 @@ class $ProfilesDbTable extends ProfilesDb
   static const VerificationMeta _dateOfBirthMeta =
       const VerificationMeta('dateOfBirth');
   @override
-  late final GeneratedColumn<DateTime> dateOfBirth = GeneratedColumn<DateTime>(
+  late final GeneratedColumn<String> dateOfBirth = GeneratedColumn<String>(
       'date_of_birth', aliasedName, true,
-      type: DriftSqlType.dateTime, requiredDuringInsert: false);
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _retirementAgeMeta =
       const VerificationMeta('retirementAge');
   @override
@@ -3006,7 +3006,7 @@ class $ProfilesDbTable extends ProfilesDb
       age: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}age']),
       dateOfBirth: attachedDatabase.typeMapping
-          .read(DriftSqlType.dateTime, data['${effectivePrefix}date_of_birth']),
+          .read(DriftSqlType.string, data['${effectivePrefix}date_of_birth']),
       retirementAge: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}retirement_age']),
       riskProfile: attachedDatabase.typeMapping
@@ -3025,7 +3025,7 @@ class $ProfilesDbTable extends ProfilesDb
 class ProfilesDbData extends DataClass implements Insertable<ProfilesDbData> {
   final String id;
   final int? age;
-  final DateTime? dateOfBirth;
+  final String? dateOfBirth;
   final int? retirementAge;
   final String? riskProfile;
   final String? fireProfile;
@@ -3044,7 +3044,7 @@ class ProfilesDbData extends DataClass implements Insertable<ProfilesDbData> {
       map['age'] = Variable<int>(age);
     }
     if (!nullToAbsent || dateOfBirth != null) {
-      map['date_of_birth'] = Variable<DateTime>(dateOfBirth);
+      map['date_of_birth'] = Variable<String>(dateOfBirth);
     }
     if (!nullToAbsent || retirementAge != null) {
       map['retirement_age'] = Variable<int>(retirementAge);
@@ -3083,7 +3083,7 @@ class ProfilesDbData extends DataClass implements Insertable<ProfilesDbData> {
     return ProfilesDbData(
       id: serializer.fromJson<String>(json['id']),
       age: serializer.fromJson<int?>(json['age']),
-      dateOfBirth: serializer.fromJson<DateTime?>(json['dateOfBirth']),
+      dateOfBirth: serializer.fromJson<String?>(json['dateOfBirth']),
       retirementAge: serializer.fromJson<int?>(json['retirementAge']),
       riskProfile: serializer.fromJson<String?>(json['riskProfile']),
       fireProfile: serializer.fromJson<String?>(json['fireProfile']),
@@ -3095,7 +3095,7 @@ class ProfilesDbData extends DataClass implements Insertable<ProfilesDbData> {
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
       'age': serializer.toJson<int?>(age),
-      'dateOfBirth': serializer.toJson<DateTime?>(dateOfBirth),
+      'dateOfBirth': serializer.toJson<String?>(dateOfBirth),
       'retirementAge': serializer.toJson<int?>(retirementAge),
       'riskProfile': serializer.toJson<String?>(riskProfile),
       'fireProfile': serializer.toJson<String?>(fireProfile),
@@ -3105,7 +3105,7 @@ class ProfilesDbData extends DataClass implements Insertable<ProfilesDbData> {
   ProfilesDbData copyWith(
           {String? id,
           Value<int?> age = const Value.absent(),
-          Value<DateTime?> dateOfBirth = const Value.absent(),
+          Value<String?> dateOfBirth = const Value.absent(),
           Value<int?> retirementAge = const Value.absent(),
           Value<String?> riskProfile = const Value.absent(),
           Value<String?> fireProfile = const Value.absent()}) =>
@@ -3149,7 +3149,7 @@ class ProfilesDbData extends DataClass implements Insertable<ProfilesDbData> {
 class ProfilesDbCompanion extends UpdateCompanion<ProfilesDbData> {
   final Value<String> id;
   final Value<int?> age;
-  final Value<DateTime?> dateOfBirth;
+  final Value<String?> dateOfBirth;
   final Value<int?> retirementAge;
   final Value<String?> riskProfile;
   final Value<String?> fireProfile;
@@ -3175,7 +3175,7 @@ class ProfilesDbCompanion extends UpdateCompanion<ProfilesDbData> {
   static Insertable<ProfilesDbData> custom({
     Expression<String>? id,
     Expression<int>? age,
-    Expression<DateTime>? dateOfBirth,
+    Expression<String>? dateOfBirth,
     Expression<int>? retirementAge,
     Expression<String>? riskProfile,
     Expression<String>? fireProfile,
@@ -3195,7 +3195,7 @@ class ProfilesDbCompanion extends UpdateCompanion<ProfilesDbData> {
   ProfilesDbCompanion copyWith(
       {Value<String>? id,
       Value<int?>? age,
-      Value<DateTime?>? dateOfBirth,
+      Value<String?>? dateOfBirth,
       Value<int?>? retirementAge,
       Value<String?>? riskProfile,
       Value<String?>? fireProfile,
@@ -3221,7 +3221,7 @@ class ProfilesDbCompanion extends UpdateCompanion<ProfilesDbData> {
       map['age'] = Variable<int>(age.value);
     }
     if (dateOfBirth.present) {
-      map['date_of_birth'] = Variable<DateTime>(dateOfBirth.value);
+      map['date_of_birth'] = Variable<String>(dateOfBirth.value);
     }
     if (retirementAge.present) {
       map['retirement_age'] = Variable<int>(retirementAge.value);
@@ -4540,7 +4540,7 @@ class $$GoalAccountsDbTableOrderingComposer
 typedef $$ProfilesDbTableInsertCompanionBuilder = ProfilesDbCompanion Function({
   required String id,
   Value<int?> age,
-  Value<DateTime?> dateOfBirth,
+  Value<String?> dateOfBirth,
   Value<int?> retirementAge,
   Value<String?> riskProfile,
   Value<String?> fireProfile,
@@ -4549,7 +4549,7 @@ typedef $$ProfilesDbTableInsertCompanionBuilder = ProfilesDbCompanion Function({
 typedef $$ProfilesDbTableUpdateCompanionBuilder = ProfilesDbCompanion Function({
   Value<String> id,
   Value<int?> age,
-  Value<DateTime?> dateOfBirth,
+  Value<String?> dateOfBirth,
   Value<int?> retirementAge,
   Value<String?> riskProfile,
   Value<String?> fireProfile,
@@ -4578,7 +4578,7 @@ class $$ProfilesDbTableTableManager extends RootTableManager<
           getUpdateCompanionBuilder: ({
             Value<String> id = const Value.absent(),
             Value<int?> age = const Value.absent(),
-            Value<DateTime?> dateOfBirth = const Value.absent(),
+            Value<String?> dateOfBirth = const Value.absent(),
             Value<int?> retirementAge = const Value.absent(),
             Value<String?> riskProfile = const Value.absent(),
             Value<String?> fireProfile = const Value.absent(),
@@ -4596,7 +4596,7 @@ class $$ProfilesDbTableTableManager extends RootTableManager<
           getInsertCompanionBuilder: ({
             required String id,
             Value<int?> age = const Value.absent(),
-            Value<DateTime?> dateOfBirth = const Value.absent(),
+            Value<String?> dateOfBirth = const Value.absent(),
             Value<int?> retirementAge = const Value.absent(),
             Value<String?> riskProfile = const Value.absent(),
             Value<String?> fireProfile = const Value.absent(),
@@ -4639,7 +4639,7 @@ class $$ProfilesDbTableFilterComposer
       builder: (column, joinBuilders) =>
           ColumnFilters(column, joinBuilders: joinBuilders));
 
-  ColumnFilters<DateTime> get dateOfBirth => $state.composableBuilder(
+  ColumnFilters<String> get dateOfBirth => $state.composableBuilder(
       column: $state.table.dateOfBirth,
       builder: (column, joinBuilders) =>
           ColumnFilters(column, joinBuilders: joinBuilders));
@@ -4673,7 +4673,7 @@ class $$ProfilesDbTableOrderingComposer
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
 
-  ColumnOrderings<DateTime> get dateOfBirth => $state.composableBuilder(
+  ColumnOrderings<String> get dateOfBirth => $state.composableBuilder(
       column: $state.table.dateOfBirth,
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));

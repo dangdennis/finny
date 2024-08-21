@@ -126,7 +126,7 @@ class ProfilesDb extends Table {
 
   TextColumn get id => text()();
   IntColumn get age => integer().nullable()();
-  DateTimeColumn get dateOfBirth => dateTime().nullable()();
+  TextColumn get dateOfBirth => text().nullable()();
   IntColumn get retirementAge => integer().nullable()();
   TextColumn get riskProfile => text().nullable()();
   TextColumn get fireProfile => text().nullable()();

@@ -1,9 +1,9 @@
-import 'package:finny/src/dashboard/dashboard_view.dart';
 import 'package:finny/src/onboarding/onboarding_controller.dart';
 import 'package:finny/src/profile/profile_service.dart';
 import 'package:flutter/material.dart';
 import 'package:finny/src/profile/profile_model.dart';
 import 'package:intl/intl.dart';
+import 'package:logging/logging.dart';
 
 class ProfileFormView extends StatefulWidget {
   const ProfileFormView({
@@ -42,7 +42,7 @@ class _ProfileFormViewState extends State<ProfileFormView> {
         _isLoading = false;
       });
     } catch (e) {
-      // Handle error
+      Logger.root.warning('Error loading existing profile: $e');
       setState(() {
         _isLoading = false;
       });
@@ -178,18 +178,50 @@ class _ProfileFormViewState extends State<ProfileFormView> {
                             height: 50,
                             width: double.infinity,
                             child: ElevatedButton(
-                              onPressed: () {
+                              onPressed: () async {
                                 if (_formKey.currentState!.validate()) {
-                                  widget.onboardingController.updateProfile(
-                                    ProfileUpdateInput(
-                                      dateOfBirth: _dateOfBirth,
-                                      retirementAge: _retirementAge,
-                                      riskProfile: _riskProfile,
-                                      fireProfile: _fireProfile,
-                                    ),
-                                  );
-                                  Navigator.of(context)
-                                      .pushNamed(DashboardView.routeName);
+                                  setState(() {
+                                    _isLoading = true; // Show loading indicator
+                                  });
+
+                                  try {
+                                    await widget.onboardingController
+                                        .updateProfile(
+                                      ProfileUpdateInput(
+                                        dateOfBirth: _dateOfBirth,
+                                        retirementAge: _retirementAge,
+                                        riskProfile: _riskProfile,
+                                        fireProfile: _fireProfile,
+                                      ),
+                                    );
+
+                                    // todo: learn why if i refetch, the date of birth is wrong
+                                    // Refetch the profile after updating
+                                    // await _loadExistingProfile();
+
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                            content: Text(
+                                                'Profile updated successfully')),
+                                      );
+                                    }
+                                  } catch (e) {
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                            content: Text(
+                                                'Error updating profile: ${e.toString()}')),
+                                      );
+                                    }
+                                  } finally {
+                                    setState(() {
+                                      _isLoading =
+                                          false; // Hide loading indicator
+                                    });
+                                  }
                                 }
                               },
                               child: const Text('Save Profile'),
