@@ -28,6 +28,14 @@ class OnboardingController {
     }
   }
 
+  Future<bool> isOnboardingCardHidden() async {
+    return await OnboardingCache.isOnboardingCardHidden();
+  }
+
+  Future<void> setOnboardingCardHidden(bool hidden) async {
+    await OnboardingCache.setOnboardingCardHidden(hidden);
+  }
+
   Future<Profile> getProfile() async {
     return await profileService.getProfile();
   }
