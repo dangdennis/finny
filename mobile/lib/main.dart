@@ -70,6 +70,7 @@ void main() async {
     goalsService: goalsService,
   );
   final onboardingController = OnboardingController(
+    accountService: accountsService,
     profileService: profileService,
   );
   final transactionsController = TransactionsController(

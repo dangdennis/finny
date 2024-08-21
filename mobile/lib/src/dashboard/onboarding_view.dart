@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 class OnboardingView extends StatefulWidget {
   const OnboardingView({super.key});
 
-  static const routeName = '/onboarding';
-
   @override
   State<OnboardingView> createState() => _OnboardingViewState();
 }

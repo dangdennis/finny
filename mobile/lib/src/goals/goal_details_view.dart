@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:finny/src/goals/goal_details_assign_accounts.dart';
 import 'package:flutter/material.dart';
-import 'package:finny/src/accounts/accounts_service.dart';
 import 'package:finny/src/goals/goal_details_edit.dart';
 import 'package:finny/src/goals/goal_model.dart';
 import 'package:finny/src/goals/goals_controller.dart';
