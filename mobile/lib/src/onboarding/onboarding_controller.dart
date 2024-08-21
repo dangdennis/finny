@@ -20,8 +20,7 @@ class OnboardingController {
     try {
       final profile = await profileService.getProfile();
       return OnboardingState(
-          // accountsAdded: await _isAccountsAdded(),
-          accountsAdded: false,
+          accountsAdded: await _isAccountsAdded(),
           profileCompleted: _isProfileCompleted(profile));
     } catch (e) {
       _logger.warning('Error getting profile: $e');

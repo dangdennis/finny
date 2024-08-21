@@ -6,7 +6,12 @@ import 'package:flutter/material.dart';
 class OnboardingCard extends StatelessWidget {
   final OnboardingController onboardingController;
 
-  const OnboardingCard({super.key, required this.onboardingController});
+  const OnboardingCard(
+      {super.key,
+      required this.onboardingController,
+      required this.onboardingState});
+
+  final OnboardingState? onboardingState;
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +28,7 @@ class OnboardingCard extends StatelessWidget {
             const SizedBox(height: 16),
             OnboardingItem(
               title: 'Complete your profile',
-              isCompleted: false,
+              isCompleted: onboardingState?.profileCompleted ?? false,
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
@@ -35,9 +40,9 @@ class OnboardingCard extends StatelessWidget {
               },
             ),
             const SizedBox(height: 8),
-            const OnboardingItem(
+            OnboardingItem(
               title: 'Connect your bank accounts',
-              isCompleted: false,
+              isCompleted: onboardingState?.accountsAdded ?? false,
               subtitle: 'Connect more accounts for accuracy.',
             ),
           ],
