@@ -18,8 +18,6 @@ import scalikejdbc.DB
 
 import java.util.UUID
 import scala.jdk.CollectionConverters.*
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
 import scala.reflect.ClassTag
 import scala.util.Failure
 import scala.util.Success
@@ -455,13 +453,10 @@ object PlaidService:
         responseTry: Try[Response[T]],
         recordEvent: (Either[PlaidError, T]) => Unit
     ): Either[AppError, T] =
-        responseTry match {
+        responseTry match
             case Success(response) if response.isSuccessful =>
                 val body = response.body()
-                Future {
-                    recordEvent(Right(body))
-
-                }(using ExecutionContext.global)
+                recordEvent(Right(body))
                 Right(body)
             case Success(response) =>
                 val errorBody = response.errorBody().string()
@@ -473,14 +468,10 @@ object PlaidService:
                         case Left(e) =>
                             Left(AppError.ValidationError(e.getMessage))
                     }
-                Future {
-                    appError match {
-                        case Left(AppError.ServiceError(plaidError)) =>
-                            recordEvent(Left(plaidError))
-                    }
-                }(using ExecutionContext.global)
+                appError match
+                    case Left(AppError.ServiceError(plaidError)) =>
+                        recordEvent(Left(plaidError))
                 appError
             case Failure(exception) =>
                 Logger.root.error(s"Unexpected exception on plaid call", exception)
                 Left(AppError.NetworkError(exception.getMessage))
-        }
