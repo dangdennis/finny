@@ -1,17 +1,17 @@
 package api.repositories
 
 import api.common.AppError
+import api.common.Logger
+import api.models.FireProfile
 import api.models.Profile
+import api.models.RiskProfile
 import api.models.UserId
+import io.circe.parser.decode
 import scalikejdbc.*
 
+import java.time.LocalDate
 import java.util.UUID
 import scala.util.Try
-import java.time.LocalDate
-import io.circe.parser.decode
-import api.models.RiskProfile
-import api.models.FireProfile
-import api.common.Logger
 
 object ProfileRepository:
     def getProfiles(): Either[AppError.DatabaseError, List[Profile]] = Try(

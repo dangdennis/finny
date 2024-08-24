@@ -2,21 +2,21 @@ package api.handlers
 
 import api.common.AppError
 import api.common.Logger
+import api.models.FireProfile
 import api.models.HttpError
 import api.models.Profile
+import api.models.RiskProfile
 import api.repositories.GoalRepository
+import api.repositories.ProfileRepository
 import io.circe.Decoder
 import io.circe.generic.semiauto.deriveDecoder
 import io.circe.parser.*
 
+import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.UUID
-import api.repositories.ProfileRepository
-import api.models.RiskProfile
-import api.models.FireProfile
-import java.time.Instant
-import java.time.ZoneOffset
 
 object PowerSyncHandler:
     def handleEventUpload(input: String, user: Profile): Either[HttpError, Unit] =

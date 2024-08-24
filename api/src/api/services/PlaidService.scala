@@ -4,6 +4,7 @@ import api.common.*
 import api.common.Environment.AppEnv
 import api.models.PlaidItem
 import api.models.PlaidItemId
+import api.models.UserId
 import api.repositories.PlaidApiEventRepository
 import api.repositories.PlaidApiEventRepository.PlaidApiEventCreateInput
 import api.repositories.PlaidItemRepository
@@ -12,20 +13,17 @@ import com.plaid.client.model.*
 import com.plaid.client.request.PlaidApi
 import io.circe.Decoder
 import io.circe.HCursor
-import io.circe.generic.auto.*
-import io.circe.parser.decode
 import retrofit2.Response
 import scalikejdbc.DB
 
 import java.util.UUID
-import scala.collection.JavaConverters.*
+import scala.jdk.CollectionConverters.*
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.reflect.ClassTag
 import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
-import api.models.UserId
 
 object PlaidService:
     def makePlaidClient(clientId: String, secret: String, env: AppEnv) =

@@ -1,10 +1,11 @@
 package api.models
 
-import java.time.Instant
-import java.util.UUID
-import java.time.LocalDate
 import io.circe.*
 import io.circe.generic.semiauto.*
+
+import java.time.Instant
+import java.time.LocalDate
+import java.util.UUID
 
 case class Profile(
     id: UserId,

@@ -13,7 +13,6 @@ import api.services.PlaidSyncService
 import java.util.UUID
 import scala.concurrent.ExecutionContext.global
 import scala.concurrent.Future
-import scala.jdk.CollectionConverters.*
 
 object PlaidItemHandler:
     def handlePlaidItemsGet(user: Profile): Either[HttpError, DTOs.PlaidItemsGetResponse] = PlaidItemRepository

@@ -4,11 +4,11 @@ import api.common.AppError
 import api.models.Account
 import api.models.AccountSimple
 import api.models.PlaidItemId
+import api.models.UserId
 import scalikejdbc.*
 
 import java.util.UUID
 import scala.util.Try
-import api.models.UserId
 
 object AccountRepository:
     case class UpsertAccountInput(

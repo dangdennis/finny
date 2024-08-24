@@ -3,12 +3,12 @@ package api.repositories
 import api.common.AppError
 import api.models.PlaidItemId
 import api.models.Transaction
+import api.models.UserId
 import scalikejdbc.*
 
 import java.time.Instant
 import java.util.UUID
 import scala.util.Try
-import api.models.UserId
 
 object TransactionRepository {
     case class UpsertTransactionInput(

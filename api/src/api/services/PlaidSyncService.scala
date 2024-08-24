@@ -9,7 +9,6 @@ import api.repositories.AccountRepository
 import api.repositories.InvestmentRepository
 import api.repositories.PlaidItemRepository
 import api.repositories.TransactionRepository
-import api.services.PlaidService.PlaidError
 import com.plaid.client.model.AccountBase
 import com.plaid.client.model.TransactionsSyncResponse
 import io.github.resilience4j.ratelimiter.*
