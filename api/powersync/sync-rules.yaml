@@ -4,7 +4,6 @@ bucket_definitions:
     data:
       - select
         id,
-        age,
         date_of_birth,
         retirement_age,
         risk_profile,

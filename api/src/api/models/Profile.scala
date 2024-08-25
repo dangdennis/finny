@@ -9,7 +9,6 @@ import java.util.UUID
 
 case class Profile(
     id: UserId,
-    age: Option[Int],
     dateOfBirth: Option[LocalDate],
     retirementAge: Option[Int],
     riskProfile: Option[RiskProfile],

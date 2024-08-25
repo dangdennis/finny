@@ -11,7 +11,6 @@ object AuthServiceHelper:
         val id = UUID.randomUUID()
         val profile = Profile(
             id = UUID.randomUUID(),
-            age = None,
             dateOfBirth = None,
             retirementAge = None,
             riskProfile = None,

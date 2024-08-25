@@ -20,7 +20,6 @@ object ProfileRepository:
                 .map(rs =>
                     Profile(
                         id = UUID.fromString(rs.string("id")),
-                        age = rs.intOpt("age"),
                         dateOfBirth = rs.localDateOpt("date_of_birth"),
                         retirementAge = rs.intOpt("retirement_age"),
                         riskProfile = rs.stringOpt("risk_profile").flatMap(s => decode[RiskProfile](s).toOption),
@@ -39,7 +38,6 @@ object ProfileRepository:
                 .map(rs =>
                     Profile(
                         id = UUID.fromString(rs.string("id")),
-                        age = rs.intOpt("age"),
                         dateOfBirth = rs.localDateOpt("date_of_birth"),
                         retirementAge = rs.intOpt("retirement_age"),
                         riskProfile = rs.stringOpt("risk_profile").flatMap(s => decode[RiskProfile](s).toOption),
