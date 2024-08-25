@@ -7,6 +7,12 @@ class ProfileService {
 
   final AppDatabase appDb;
 
+  Stream<Profile?> watchProfile() {
+    return appDb.select(appDb.profilesDb).watchSingleOrNull().map(
+        (profileOpt) =>
+            profileOpt != null ? profileDbToDomain(profileOpt) : null);
+  }
+
   Future<Profile> getProfile() async {
     final query = appDb.select(appDb.profilesDb);
     return profileDbToDomain(await query.getSingle());

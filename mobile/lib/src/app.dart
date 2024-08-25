@@ -132,7 +132,9 @@ class MyApp extends StatelessWidget {
                       authProvider: authProvider,
                     );
                   case SettingsView.routeName:
-                    return SettingsView(settingsController: settingsController);
+                    return SettingsView(
+                        settingsController: settingsController,
+                        onboardingController: onboardingController);
                   case TransactionDetailsView.routeName:
                     return const TransactionDetailsView();
                   case TransactionListView.routeName:
@@ -197,6 +199,7 @@ class _MainViewState extends State<MainView> {
       ),
       SettingsView(
         settingsController: widget.settingsController,
+        onboardingController: widget.onboardingController,
       ),
     ];
   }

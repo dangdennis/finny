@@ -77,6 +77,7 @@ void main() async {
     appDb: appDb,
   );
   final settingsController = SettingsController(
+    profileService: profileService,
     settingsService: settingsService,
     authProvider: authProvider,
   );
