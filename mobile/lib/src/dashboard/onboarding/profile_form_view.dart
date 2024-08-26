@@ -58,7 +58,7 @@ class _ProfileFormViewState extends State<ProfileFormView> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Onboarding'),
+          title: const Text('Profile'),
         ),
         body: _isLoading
             ? const Center(child: CircularProgressIndicator())
