@@ -21,24 +21,21 @@ case class Goal(
     assignedAccounts: List[GoalAccount]
 )
 
-enum GoalType:
-    case Retirement
+enum GoalType(val value: String):
+    case Retirement extends GoalType("retirement")
+    case Custom extends GoalType("custom")
 
 object GoalType:
-    val RetirementStr = "retirement"
-
-    given Encoder[GoalType] = Encoder.encodeString.contramap[GoalType](GoalType.toString)
+    given Encoder[GoalType] = Encoder.encodeString.contramap[GoalType](_.value)
 
     given Decoder[GoalType] = Decoder
         .decodeString
-        .emap {
-            case RetirementStr =>
-                Right(GoalType.Retirement)
-            case s =>
-                Left(s"Unknown GoalType: $s")
+        .emap { s =>
+            GoalType.values.find(_.value == s) match
+                case Some(goalType) =>
+                    Right(goalType)
+                case None =>
+                    Left(s"Unknown GoalType: $s")
         }
 
-    def toString(profile: GoalType): String =
-        profile match
-            case Retirement =>
-                RetirementStr
+    def fromString(s: String): Option[GoalType] = GoalType.values.find(_.value == s)

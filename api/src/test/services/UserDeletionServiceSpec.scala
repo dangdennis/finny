@@ -18,6 +18,7 @@ import repositories.AuthUserRepository
 import test.helpers.*
 
 import java.util.UUID
+import api.models.GoalType
 
 class UserDeletionServiceSpec extends AnyFlatSpec, Matchers, EitherValues, BeforeAndAfterAll, BeforeAndAfterEach:
     override protected def beforeAll(): Unit = TestHelper.beforeAll()
@@ -86,7 +87,8 @@ class UserDeletionServiceSpec extends AnyFlatSpec, Matchers, EitherValues, Befor
                             userId = userId,
                             name = "Retirement Fund",
                             amount = 0.0,
-                            targetDate = java.time.Instant.now()
+                            targetDate = java.time.Instant.now(),
+                            goalType = GoalType.Retirement
                         )
                     )
                     .value

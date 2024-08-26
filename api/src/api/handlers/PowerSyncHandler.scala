@@ -17,6 +17,7 @@ import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.UUID
+import api.models.GoalType
 
 object PowerSyncHandler:
     def handleEventUpload(input: String, user: Profile): Either[HttpError, Unit] =
@@ -85,7 +86,8 @@ object PowerSyncHandler:
                     targetDate = LocalDate
                         .parse(data.target_date, DateTimeFormatter.ISO_LOCAL_DATE)
                         .atStartOfDay()
-                        .toInstant(java.time.ZoneOffset.UTC)
+                        .toInstant(java.time.ZoneOffset.UTC),
+                    goalType = data.goal_type
                 )
             )
             .map(_ => ())
@@ -105,6 +107,7 @@ object PowerSyncHandler:
                             .atStartOfDay()
                             .toInstant(java.time.ZoneOffset.UTC)
                     ),
+                goalType = data.goal_type,
                 userId = user.id
             )
             .map(_ => ())
@@ -168,11 +171,16 @@ object PowerSyncHandler:
     object EventUpload:
         given Decoder[EventUpload] = deriveDecoder
 
-    case class GoalPutData(amount: Double, name: String, target_date: String)
+    case class GoalPutData(amount: Double, name: String, target_date: String, goal_type: GoalType)
     object GoalPutData:
         given Decoder[GoalPutData] = deriveDecoder
 
-    case class GoalPatchData(amount: Option[Double], name: Option[String], target_date: Option[String])
+    case class GoalPatchData(
+        amount: Option[Double],
+        name: Option[String],
+        target_date: Option[String],
+        goal_type: Option[GoalType]
+    )
     object GoalPatchData:
         given Decoder[GoalPatchData] = deriveDecoder
 

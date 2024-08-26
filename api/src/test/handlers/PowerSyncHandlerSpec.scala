@@ -31,7 +31,8 @@ class PowerSyncHandlerSpec extends AnyFlatSpec, Matchers, EitherValues, BeforeAn
                   "data": {
                     "amount": 0.0,
                     "name": "Retirement Fund",
-                    "target_date": "2059-07-23"
+                    "target_date": "2059-07-23",
+                    "goal_type": "retirement"
                   }
                 }
               ]

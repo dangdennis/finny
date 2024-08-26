@@ -6,7 +6,7 @@ import api.models.FireProfile
 import api.models.Profile
 import api.models.RiskProfile
 import api.models.UserId
-import io.circe.parser.decode
+import io.circe.parser.*
 import scalikejdbc.*
 
 import java.time.LocalDate
@@ -16,7 +16,7 @@ import scala.util.Try
 object ProfileRepository:
     def getProfiles(): Either[AppError.DatabaseError, List[Profile]] = Try(
         DB.readOnly { implicit session =>
-            sql"select id, age, date_of_birth, retirement_age, risk_profile, fire_profile, deleted_at from profiles"
+            sql"select id, date_of_birth, retirement_age, risk_profile, fire_profile, deleted_at from profiles"
                 .map(rs =>
                     Profile(
                         id = UUID.fromString(rs.string("id")),
@@ -34,7 +34,7 @@ object ProfileRepository:
 
     def getProfile(userId: UserId): Either[AppError.DatabaseError, Option[Profile]] = Try(
         DB.readOnly { implicit session =>
-            sql"select id, age, date_of_birth, retirement_age, risk_profile, fire_profile, deleted_at from profiles where id = ${userId}"
+            sql"select id, date_of_birth, retirement_age, risk_profile, fire_profile, deleted_at from profiles where id = ${userId}"
                 .map(rs =>
                     Profile(
                         id = UUID.fromString(rs.string("id")),
@@ -67,8 +67,8 @@ object ProfileRepository:
                     profileUpdate.age.map(age => sqls"age = $age"),
                     profileUpdate.dateOfBirth.map(dob => sqls"date_of_birth = $dob"),
                     profileUpdate.retirementAge.map(ra => sqls"retirement_age = $ra"),
-                    profileUpdate.riskProfile.map(rp => sqls"risk_profile = ${(RiskProfile.toString(rp))}"),
-                    profileUpdate.fireProfile.map(fp => sqls"fire_profile = ${FireProfile.toString(fp)}")
+                    profileUpdate.riskProfile.map(rp => sqls"risk_profile = ${rp.value}"),
+                    profileUpdate.fireProfile.map(fp => sqls"fire_profile = ${fp.value}")
                 ).flatten
 
             sql"""

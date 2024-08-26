@@ -1,10 +1,9 @@
 package api.repositories
 
-import api.common.AppError
+import api.common.{AppError}
 import api.models.Goal
 import api.models.UserId
 import scalikejdbc.*
-import io.circe.parser.decode
 
 import java.time.Instant
 import java.util.UUID
@@ -22,7 +21,7 @@ object GoalRepository:
                         amount = rs.double("amount"),
                         targetDate = rs.timestamp("target_date").toInstant,
                         userId = UserId(UUID.fromString(rs.string("user_id"))),
-                        goalType = decode[GoalType](rs.string("goal_type")).toOption.get,
+                        goalType = GoalType.fromString(rs.string("goal_type")).get,
                         progress = rs.double("progress"),
                         createdAt = rs.timestamp("created_at").toInstant,
                         updatedAt = rs.timestamp("updated_at").toInstant,
@@ -45,7 +44,7 @@ object GoalRepository:
                         amount = rs.double("amount"),
                         targetDate = rs.timestamp("target_date").toInstant,
                         userId = UserId(UUID.fromString(rs.string("user_id"))),
-                        goalType = decode[GoalType](rs.string("goal_type")).toOption.get,
+                        goalType = GoalType.fromString(rs.string("goal_type")).get,
                         progress = rs.double("progress"),
                         createdAt = rs.timestamp("created_at").toInstant,
                         updatedAt = rs.timestamp("updated_at").toInstant,
@@ -58,12 +57,20 @@ object GoalRepository:
         }
     ).toEither.left.map(e => AppError.DatabaseError(e.getMessage))
 
-    case class CreateGoalInput(id: UUID, userId: UserId, name: String, amount: Double, targetDate: Instant)
+    case class CreateGoalInput(
+        id: UUID,
+        userId: UserId,
+        name: String,
+        amount: Double,
+        targetDate: Instant,
+        goalType: GoalType
+    )
 
     def createGoal(input: CreateGoalInput): Either[AppError.DatabaseError, Goal] = Try(
         DB autoCommit { implicit session =>
-            sql"""insert into goals (id, user_id, name, amount, target_date)
-                    values (${input.id}, ${input.userId}, ${input.name}, ${input.amount}, ${input.targetDate})
+            sql"""insert into goals (id, user_id, name, amount, target_date, goal_type)
+                    values (${input
+                    .id}, ${input.userId}, ${input.name}, ${input.amount}, ${input.targetDate}, ${input.goalType.value})
                     returning id, name, amount, target_date, user_id, progress, goal_type, created_at, updated_at, deleted_at
                   """
                 .map(rs =>
@@ -73,7 +80,7 @@ object GoalRepository:
                         amount = rs.double("amount"),
                         targetDate = rs.timestamp("target_date").toInstant,
                         userId = UserId(UUID.fromString(rs.string("user_id"))),
-                        goalType = decode[GoalType](rs.string("goal_type")).toOption.get,
+                        goalType = GoalType.fromString(rs.string("goal_type")).get,
                         progress = rs.double("progress"),
                         createdAt = rs.timestamp("created_at").toInstant,
                         updatedAt = rs.timestamp("updated_at").toInstant,
@@ -97,13 +104,15 @@ object GoalRepository:
         name: Option[String],
         amount: Option[Double],
         targetDate: Option[Instant],
+        goalType: Option[GoalType],
         userId: UUID
     ): Either[AppError.DatabaseError, Int] = Try {
         DB autoCommit { implicit session =>
             val setClause = Seq(
                 name.map(n => sqls"name = ${n}"),
                 amount.map(a => sqls"amount = ${a}"),
-                targetDate.map(td => sqls"target_date = ${td}")
+                targetDate.map(td => sqls"target_date = ${td}"),
+                goalType.map(gt => sqls"goal_type = ${gt.value}")
             ).flatten.reduceOption((a, b) => sqls"$a, $b").getOrElse(sqls"1 = 1")
 
             val query =
@@ -159,7 +168,7 @@ object GoalRepository:
                         targetDate = rs.timestamp("target_date").toInstant,
                         userId = UserId(UUID.fromString(rs.string("user_id"))),
                         progress = rs.double("progress"),
-                        goalType = decode[GoalType](rs.string("goal_type")).toOption.get,
+                        goalType = GoalType.fromString(rs.string("goal_type")).get,
                         createdAt = rs.timestamp("created_at").toInstant,
                         updatedAt = rs.timestamp("updated_at").toInstant,
                         deletedAt = rs.timestampOpt("created_at").map(_.toInstant),
