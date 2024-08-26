@@ -1,5 +1,5 @@
-import 'package:finny/src/dashboard/onboarding/onboarding_item.dart';
-import 'package:finny/src/dashboard/onboarding/profile_form_view.dart';
+import 'package:finny/src/dashboard/onboarding_card/onboarding_item.dart';
+import 'package:finny/src/profile/profile_form_view.dart';
 import 'package:finny/src/onboarding/onboarding_controller.dart';
 import 'package:flutter/material.dart';
 

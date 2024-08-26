@@ -1,7 +1,7 @@
 import 'package:finny/src/dashboard/goals/add_goal_button.dart';
 import 'package:finny/src/dashboard/dashboard_financial_metrics.dart';
 import 'package:finny/src/dashboard/goals/goal_card.dart';
-import 'package:finny/src/dashboard/onboarding/onboarding_card.dart';
+import 'package:finny/src/dashboard/onboarding_card/onboarding_card.dart';
 import 'package:finny/src/goals/goals_controller.dart';
 import 'package:finny/src/finalytics/finalytics_controller.dart';
 import 'package:finny/src/onboarding/onboarding_controller.dart';
