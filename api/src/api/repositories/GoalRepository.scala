@@ -64,7 +64,7 @@ object GoalRepository:
         DB autoCommit { implicit session =>
             sql"""insert into goals (id, user_id, name, amount, target_date)
                     values (${input.id}, ${input.userId}, ${input.name}, ${input.amount}, ${input.targetDate})
-                    returning id, name, amount, target_date, user_id, progress, created_at, updated_at, deleted_at
+                    returning id, name, amount, target_date, user_id, progress, goal_type, created_at, updated_at, deleted_at
                   """
                 .map(rs =>
                     Goal(

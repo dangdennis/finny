@@ -168,12 +168,12 @@ class GoalsService {
   // Helper method to convert GoalsDbData to Goal domain model
   Goal goalDbToDomain(GoalsDbData dbData) {
     return Goal(
-      id: dbData.id,
-      name: dbData.name,
-      targetAmount: dbData.amount,
-      progress: dbData.progress,
-      targetDate: DateTime.parse(dbData.targetDate),
-    );
+        id: dbData.id,
+        name: dbData.name,
+        targetAmount: dbData.amount,
+        progress: dbData.progress,
+        targetDate: DateTime.parse(dbData.targetDate),
+        goalType: GoalType.fromString(dbData.goalType));
   }
 
   GoalAccount goalAccountDbToDomain(GoalAccountsDbData dbData) {

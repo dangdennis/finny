@@ -2072,6 +2072,12 @@ class $GoalsDbTable extends GoalsDb with TableInfo<$GoalsDbTable, GoalsDbData> {
   late final GeneratedColumn<double> progress = GeneratedColumn<double>(
       'progress', aliasedName, true,
       type: DriftSqlType.double, requiredDuringInsert: false);
+  static const VerificationMeta _goalTypeMeta =
+      const VerificationMeta('goalType');
+  @override
+  late final GeneratedColumn<String> goalType = GeneratedColumn<String>(
+      'goal_type', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _createdAtMeta =
       const VerificationMeta('createdAt');
   @override
@@ -2098,6 +2104,7 @@ class $GoalsDbTable extends GoalsDb with TableInfo<$GoalsDbTable, GoalsDbData> {
         targetDate,
         userId,
         progress,
+        goalType,
         createdAt,
         updatedAt,
         deletedAt
@@ -2147,6 +2154,12 @@ class $GoalsDbTable extends GoalsDb with TableInfo<$GoalsDbTable, GoalsDbData> {
       context.handle(_progressMeta,
           progress.isAcceptableOrUnknown(data['progress']!, _progressMeta));
     }
+    if (data.containsKey('goal_type')) {
+      context.handle(_goalTypeMeta,
+          goalType.isAcceptableOrUnknown(data['goal_type']!, _goalTypeMeta));
+    } else if (isInserting) {
+      context.missing(_goalTypeMeta);
+    }
     if (data.containsKey('created_at')) {
       context.handle(_createdAtMeta,
           createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
@@ -2184,6 +2197,8 @@ class $GoalsDbTable extends GoalsDb with TableInfo<$GoalsDbTable, GoalsDbData> {
           .read(DriftSqlType.string, data['${effectivePrefix}user_id'])!,
       progress: attachedDatabase.typeMapping
           .read(DriftSqlType.double, data['${effectivePrefix}progress']),
+      goalType: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}goal_type'])!,
       createdAt: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}created_at'])!,
       updatedAt: attachedDatabase.typeMapping
@@ -2206,6 +2221,7 @@ class GoalsDbData extends DataClass implements Insertable<GoalsDbData> {
   final String targetDate;
   final String userId;
   final double? progress;
+  final String goalType;
   final String createdAt;
   final String updatedAt;
   final String? deletedAt;
@@ -2216,6 +2232,7 @@ class GoalsDbData extends DataClass implements Insertable<GoalsDbData> {
       required this.targetDate,
       required this.userId,
       this.progress,
+      required this.goalType,
       required this.createdAt,
       required this.updatedAt,
       this.deletedAt});
@@ -2230,6 +2247,7 @@ class GoalsDbData extends DataClass implements Insertable<GoalsDbData> {
     if (!nullToAbsent || progress != null) {
       map['progress'] = Variable<double>(progress);
     }
+    map['goal_type'] = Variable<String>(goalType);
     map['created_at'] = Variable<String>(createdAt);
     map['updated_at'] = Variable<String>(updatedAt);
     if (!nullToAbsent || deletedAt != null) {
@@ -2248,6 +2266,7 @@ class GoalsDbData extends DataClass implements Insertable<GoalsDbData> {
       progress: progress == null && nullToAbsent
           ? const Value.absent()
           : Value(progress),
+      goalType: Value(goalType),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
       deletedAt: deletedAt == null && nullToAbsent
@@ -2266,6 +2285,7 @@ class GoalsDbData extends DataClass implements Insertable<GoalsDbData> {
       targetDate: serializer.fromJson<String>(json['targetDate']),
       userId: serializer.fromJson<String>(json['userId']),
       progress: serializer.fromJson<double?>(json['progress']),
+      goalType: serializer.fromJson<String>(json['goalType']),
       createdAt: serializer.fromJson<String>(json['createdAt']),
       updatedAt: serializer.fromJson<String>(json['updatedAt']),
       deletedAt: serializer.fromJson<String?>(json['deletedAt']),
@@ -2281,6 +2301,7 @@ class GoalsDbData extends DataClass implements Insertable<GoalsDbData> {
       'targetDate': serializer.toJson<String>(targetDate),
       'userId': serializer.toJson<String>(userId),
       'progress': serializer.toJson<double?>(progress),
+      'goalType': serializer.toJson<String>(goalType),
       'createdAt': serializer.toJson<String>(createdAt),
       'updatedAt': serializer.toJson<String>(updatedAt),
       'deletedAt': serializer.toJson<String?>(deletedAt),
@@ -2294,6 +2315,7 @@ class GoalsDbData extends DataClass implements Insertable<GoalsDbData> {
           String? targetDate,
           String? userId,
           Value<double?> progress = const Value.absent(),
+          String? goalType,
           String? createdAt,
           String? updatedAt,
           Value<String?> deletedAt = const Value.absent()}) =>
@@ -2304,6 +2326,7 @@ class GoalsDbData extends DataClass implements Insertable<GoalsDbData> {
         targetDate: targetDate ?? this.targetDate,
         userId: userId ?? this.userId,
         progress: progress.present ? progress.value : this.progress,
+        goalType: goalType ?? this.goalType,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
         deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
@@ -2317,6 +2340,7 @@ class GoalsDbData extends DataClass implements Insertable<GoalsDbData> {
           ..write('targetDate: $targetDate, ')
           ..write('userId: $userId, ')
           ..write('progress: $progress, ')
+          ..write('goalType: $goalType, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deletedAt: $deletedAt')
@@ -2326,7 +2350,7 @@ class GoalsDbData extends DataClass implements Insertable<GoalsDbData> {
 
   @override
   int get hashCode => Object.hash(id, name, amount, targetDate, userId,
-      progress, createdAt, updatedAt, deletedAt);
+      progress, goalType, createdAt, updatedAt, deletedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2337,6 +2361,7 @@ class GoalsDbData extends DataClass implements Insertable<GoalsDbData> {
           other.targetDate == this.targetDate &&
           other.userId == this.userId &&
           other.progress == this.progress &&
+          other.goalType == this.goalType &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.deletedAt == this.deletedAt);
@@ -2349,6 +2374,7 @@ class GoalsDbCompanion extends UpdateCompanion<GoalsDbData> {
   final Value<String> targetDate;
   final Value<String> userId;
   final Value<double?> progress;
+  final Value<String> goalType;
   final Value<String> createdAt;
   final Value<String> updatedAt;
   final Value<String?> deletedAt;
@@ -2360,6 +2386,7 @@ class GoalsDbCompanion extends UpdateCompanion<GoalsDbData> {
     this.targetDate = const Value.absent(),
     this.userId = const Value.absent(),
     this.progress = const Value.absent(),
+    this.goalType = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.deletedAt = const Value.absent(),
@@ -2372,6 +2399,7 @@ class GoalsDbCompanion extends UpdateCompanion<GoalsDbData> {
     required String targetDate,
     required String userId,
     this.progress = const Value.absent(),
+    required String goalType,
     required String createdAt,
     required String updatedAt,
     this.deletedAt = const Value.absent(),
@@ -2381,6 +2409,7 @@ class GoalsDbCompanion extends UpdateCompanion<GoalsDbData> {
         amount = Value(amount),
         targetDate = Value(targetDate),
         userId = Value(userId),
+        goalType = Value(goalType),
         createdAt = Value(createdAt),
         updatedAt = Value(updatedAt);
   static Insertable<GoalsDbData> custom({
@@ -2390,6 +2419,7 @@ class GoalsDbCompanion extends UpdateCompanion<GoalsDbData> {
     Expression<String>? targetDate,
     Expression<String>? userId,
     Expression<double>? progress,
+    Expression<String>? goalType,
     Expression<String>? createdAt,
     Expression<String>? updatedAt,
     Expression<String>? deletedAt,
@@ -2402,6 +2432,7 @@ class GoalsDbCompanion extends UpdateCompanion<GoalsDbData> {
       if (targetDate != null) 'target_date': targetDate,
       if (userId != null) 'user_id': userId,
       if (progress != null) 'progress': progress,
+      if (goalType != null) 'goal_type': goalType,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (deletedAt != null) 'deleted_at': deletedAt,
@@ -2416,6 +2447,7 @@ class GoalsDbCompanion extends UpdateCompanion<GoalsDbData> {
       Value<String>? targetDate,
       Value<String>? userId,
       Value<double?>? progress,
+      Value<String>? goalType,
       Value<String>? createdAt,
       Value<String>? updatedAt,
       Value<String?>? deletedAt,
@@ -2427,6 +2459,7 @@ class GoalsDbCompanion extends UpdateCompanion<GoalsDbData> {
       targetDate: targetDate ?? this.targetDate,
       userId: userId ?? this.userId,
       progress: progress ?? this.progress,
+      goalType: goalType ?? this.goalType,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       deletedAt: deletedAt ?? this.deletedAt,
@@ -2455,6 +2488,9 @@ class GoalsDbCompanion extends UpdateCompanion<GoalsDbData> {
     if (progress.present) {
       map['progress'] = Variable<double>(progress.value);
     }
+    if (goalType.present) {
+      map['goal_type'] = Variable<String>(goalType.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<String>(createdAt.value);
     }
@@ -2479,6 +2515,7 @@ class GoalsDbCompanion extends UpdateCompanion<GoalsDbData> {
           ..write('targetDate: $targetDate, ')
           ..write('userId: $userId, ')
           ..write('progress: $progress, ')
+          ..write('goalType: $goalType, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deletedAt: $deletedAt, ')
@@ -4114,6 +4151,7 @@ typedef $$GoalsDbTableInsertCompanionBuilder = GoalsDbCompanion Function({
   required String targetDate,
   required String userId,
   Value<double?> progress,
+  required String goalType,
   required String createdAt,
   required String updatedAt,
   Value<String?> deletedAt,
@@ -4126,6 +4164,7 @@ typedef $$GoalsDbTableUpdateCompanionBuilder = GoalsDbCompanion Function({
   Value<String> targetDate,
   Value<String> userId,
   Value<double?> progress,
+  Value<String> goalType,
   Value<String> createdAt,
   Value<String> updatedAt,
   Value<String?> deletedAt,
@@ -4157,6 +4196,7 @@ class $$GoalsDbTableTableManager extends RootTableManager<
             Value<String> targetDate = const Value.absent(),
             Value<String> userId = const Value.absent(),
             Value<double?> progress = const Value.absent(),
+            Value<String> goalType = const Value.absent(),
             Value<String> createdAt = const Value.absent(),
             Value<String> updatedAt = const Value.absent(),
             Value<String?> deletedAt = const Value.absent(),
@@ -4169,6 +4209,7 @@ class $$GoalsDbTableTableManager extends RootTableManager<
             targetDate: targetDate,
             userId: userId,
             progress: progress,
+            goalType: goalType,
             createdAt: createdAt,
             updatedAt: updatedAt,
             deletedAt: deletedAt,
@@ -4181,6 +4222,7 @@ class $$GoalsDbTableTableManager extends RootTableManager<
             required String targetDate,
             required String userId,
             Value<double?> progress = const Value.absent(),
+            required String goalType,
             required String createdAt,
             required String updatedAt,
             Value<String?> deletedAt = const Value.absent(),
@@ -4193,6 +4235,7 @@ class $$GoalsDbTableTableManager extends RootTableManager<
             targetDate: targetDate,
             userId: userId,
             progress: progress,
+            goalType: goalType,
             createdAt: createdAt,
             updatedAt: updatedAt,
             deletedAt: deletedAt,
@@ -4246,6 +4289,11 @@ class $$GoalsDbTableFilterComposer
       builder: (column, joinBuilders) =>
           ColumnFilters(column, joinBuilders: joinBuilders));
 
+  ColumnFilters<String> get goalType => $state.composableBuilder(
+      column: $state.table.goalType,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
   ColumnFilters<String> get createdAt => $state.composableBuilder(
       column: $state.table.createdAt,
       builder: (column, joinBuilders) =>
@@ -4292,6 +4340,11 @@ class $$GoalsDbTableOrderingComposer
 
   ColumnOrderings<double> get progress => $state.composableBuilder(
       column: $state.table.progress,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get goalType => $state.composableBuilder(
+      column: $state.table.goalType,
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
 

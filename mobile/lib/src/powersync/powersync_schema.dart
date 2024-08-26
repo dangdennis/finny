@@ -58,6 +58,7 @@ const schema = Schema([
     Column.text('target_date'),
     Column.text('user_id'),
     Column.real('progress'),
+    Column.text('goal_type'),
     Column.text('created_at'),
     Column.text('updated_at'),
     Column.text('deleted_at')

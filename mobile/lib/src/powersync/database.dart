@@ -101,6 +101,7 @@ class GoalsDb extends Table {
   TextColumn get targetDate => text()();
   TextColumn get userId => text()();
   RealColumn get progress => real().nullable()();
+  TextColumn get goalType => text()();
   TextColumn get createdAt => text()();
   TextColumn get updatedAt => text()();
   TextColumn get deletedAt => text().nullable()();

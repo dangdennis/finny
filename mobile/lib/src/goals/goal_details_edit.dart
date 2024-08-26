@@ -66,12 +66,13 @@ class _GoalDetailsEditState extends State<GoalDetailsEdit> {
     }
 
     final goal = Goal(
-      id: widget.goal.id,
-      name: nameController.text,
-      targetAmount: parsedAmount,
-      targetDate: targetDate,
-      progress: widget.goal.progress,
-    );
+        id: widget.goal.id,
+        name: nameController.text,
+        targetAmount: parsedAmount,
+        targetDate: targetDate,
+        progress: widget.goal.progress,
+        goalType: widget.goal.goalType);
+
     await widget.onGoalSave(goal);
   }
 
