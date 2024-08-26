@@ -125,7 +125,6 @@ class ProfilesDb extends Table {
   String get tableName => 'profiles';
 
   TextColumn get id => text()();
-  IntColumn get age => integer().nullable()();
   TextColumn get dateOfBirth => text().nullable()();
   IntColumn get retirementAge => integer().nullable()();
   TextColumn get riskProfile => text().nullable()();

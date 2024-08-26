@@ -1,3 +1,32 @@
+class Profile {
+  Profile({
+    required this.id,
+    this.dateOfBirth,
+    this.retirementAge,
+    this.riskProfile,
+    this.fireProfile,
+  });
+
+  final String id;
+  final DateTime? dateOfBirth;
+  final int? retirementAge;
+  final RiskProfile? riskProfile;
+  final FireProfile? fireProfile;
+
+  int? get age {
+    if (dateOfBirth == null) {
+      return null;
+    }
+    final today = DateTime.now();
+    int age = today.year - dateOfBirth!.year;
+    if (today.month < dateOfBirth!.month ||
+        (today.month == dateOfBirth!.month && today.day < dateOfBirth!.day)) {
+      age--;
+    }
+    return age;
+  }
+}
+
 enum RiskProfile {
   conservative,
   balanced,
@@ -55,22 +84,4 @@ enum FireProfile {
         return 'coast';
     }
   }
-}
-
-class Profile {
-  Profile({
-    required this.id,
-    this.age,
-    this.dateOfBirth,
-    this.retirementAge,
-    this.riskProfile,
-    this.fireProfile,
-  });
-
-  final String id;
-  final int? age;
-  final DateTime? dateOfBirth;
-  final int? retirementAge;
-  final RiskProfile? riskProfile;
-  final FireProfile? fireProfile;
 }

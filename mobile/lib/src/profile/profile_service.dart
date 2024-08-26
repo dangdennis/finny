@@ -22,10 +22,6 @@ class ProfileService {
     final query = appDb.update(appDb.profilesDb);
     await query.write(
       ProfilesDbCompanion(
-        age: profile.dateOfBirth != null
-            ? Value(
-                DateTime.now().difference(profile.dateOfBirth!).inDays ~/ 365)
-            : const Value.absent(),
         dateOfBirth: profile.dateOfBirth != null
             ? Value((profile.dateOfBirth!.millisecondsSinceEpoch ~/ 1000)
                 .toString())
@@ -46,7 +42,6 @@ class ProfileService {
   Profile profileDbToDomain(ProfilesDbData profile) {
     final p = Profile(
       id: profile.id,
-      age: profile.age,
       dateOfBirth: profile.dateOfBirth != null
           ? DateTime.tryParse(profile.dateOfBirth!)
           : null,

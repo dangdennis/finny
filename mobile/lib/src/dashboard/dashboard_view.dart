@@ -5,6 +5,7 @@ import 'package:finny/src/dashboard/onboarding_card/onboarding_card.dart';
 import 'package:finny/src/goals/goals_controller.dart';
 import 'package:finny/src/finalytics/finalytics_controller.dart';
 import 'package:finny/src/onboarding/onboarding_controller.dart';
+import 'package:finny/src/profile/profile_form_view.dart';
 import 'package:finny/src/routes.dart';
 import 'package:finny/src/widgets/disabled_wrapper.dart';
 import 'package:finny/src/widgets/gradient_banner.dart';
@@ -53,9 +54,20 @@ class _DashboardViewState extends State<DashboardView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Dashboard'),
-      ),
+      appBar: AppBar(title: const Text('Dashboard'), actions: [
+        IconButton(
+          icon: const Icon(Icons.person),
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => ProfileFormView(
+                  onboardingController: widget.onboardingController,
+                ),
+              ),
+            );
+          },
+        ),
+      ]),
       floatingActionButton: const AddGoalButton(),
       body: FutureBuilder<OnboardingState>(
         future: widget.onboardingController.isOnboarded(),
