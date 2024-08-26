@@ -4,10 +4,12 @@ import api.common.AppError
 import api.models.Goal
 import api.models.UserId
 import scalikejdbc.*
+import io.circe.parser.decode
 
 import java.time.Instant
 import java.util.UUID
 import scala.util.Try
+import api.models.GoalType
 
 object GoalRepository:
     def getGoal(id: UUID, userId: UserId): Either[AppError.DatabaseError, Option[Goal]] = Try(
@@ -20,6 +22,7 @@ object GoalRepository:
                         amount = rs.double("amount"),
                         targetDate = rs.timestamp("target_date").toInstant,
                         userId = UserId(UUID.fromString(rs.string("user_id"))),
+                        goalType = decode[GoalType](rs.string("goal_type")).toOption.get,
                         progress = rs.double("progress"),
                         createdAt = rs.timestamp("created_at").toInstant,
                         updatedAt = rs.timestamp("updated_at").toInstant,
@@ -42,6 +45,7 @@ object GoalRepository:
                         amount = rs.double("amount"),
                         targetDate = rs.timestamp("target_date").toInstant,
                         userId = UserId(UUID.fromString(rs.string("user_id"))),
+                        goalType = decode[GoalType](rs.string("goal_type")).toOption.get,
                         progress = rs.double("progress"),
                         createdAt = rs.timestamp("created_at").toInstant,
                         updatedAt = rs.timestamp("updated_at").toInstant,
@@ -69,6 +73,7 @@ object GoalRepository:
                         amount = rs.double("amount"),
                         targetDate = rs.timestamp("target_date").toInstant,
                         userId = UserId(UUID.fromString(rs.string("user_id"))),
+                        goalType = decode[GoalType](rs.string("goal_type")).toOption.get,
                         progress = rs.double("progress"),
                         createdAt = rs.timestamp("created_at").toInstant,
                         updatedAt = rs.timestamp("updated_at").toInstant,
@@ -142,7 +147,7 @@ object GoalRepository:
     private def findGoalByGoalAccountAndUser(goalAccountId: UUID, userId: UserId): Either[AppError, Goal] = Try(
         DB readOnly { implicit session =>
             sql"""
-                SELECT g.id, g.name, g.amount, g.target_date, g.user_id, g.progress, g.created_at, g.updated_at, g.deleted_at
+                SELECT g.id, g.name, g.amount, g.target_date, g.user_id, g.progress, g.goal_type, g.created_at, g.updated_at, g.deleted_at
                 FROM goals g
                 JOIN goal_accounts ga ON g.id = ga.goal_id
                 WHERE ga.id = ${goalAccountId} AND g.user_id = ${userId}
@@ -154,6 +159,7 @@ object GoalRepository:
                         targetDate = rs.timestamp("target_date").toInstant,
                         userId = UserId(UUID.fromString(rs.string("user_id"))),
                         progress = rs.double("progress"),
+                        goalType = decode[GoalType](rs.string("goal_type")).toOption.get,
                         createdAt = rs.timestamp("created_at").toInstant,
                         updatedAt = rs.timestamp("updated_at").toInstant,
                         deletedAt = rs.timestampOpt("created_at").map(_.toInstant),
