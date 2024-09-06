@@ -3,39 +3,39 @@ package api.models
 import java.time.Instant
 import java.util.UUID
 
-/** PlaidItemId is the internal database ID for a Plaid item. It is not the actual Plaid-generated item ID.
+/** PlaidItemId is the internal database ID for a Plaid item. It is not the
+  * actual Plaid-generated item ID.
   */
 opaque type PlaidItemId = UUID
 
 object PlaidItemId:
-    def apply(uuid: UUID): PlaidItemId = uuid
+  def apply(uuid: UUID): PlaidItemId = uuid
 
-    extension (itemId: PlaidItemId)
-        def toUUID: UUID = itemId
+  extension (itemId: PlaidItemId) def toUUID: UUID = itemId
 
 enum PlaidItemStatus:
-    case Good,
-        Bad,
-        Unknown
+  case Good,
+    Bad,
+    Unknown
 
-    override def toString(): String =
-        this match
-            case Good =>
-                "good"
-            case Bad =>
-                "bad"
-            case Unknown =>
-                "unknown"
+  override def toString(): String =
+    this match
+      case Good =>
+        "good"
+      case Bad =>
+        "bad"
+      case Unknown =>
+        "unknown"
 
 object PlaidItemStatus:
-    def fromString(s: String): PlaidItemStatus =
-        s match
-            case "good" =>
-                PlaidItemStatus.Good
-            case "bad" =>
-                PlaidItemStatus.Bad
-            case "unknown" =>
-                PlaidItemStatus.Unknown
+  def fromString(s: String): PlaidItemStatus =
+    s match
+      case "good" =>
+        PlaidItemStatus.Good
+      case "bad" =>
+        PlaidItemStatus.Bad
+      case "unknown" =>
+        PlaidItemStatus.Unknown
 
 case class PlaidItem(
     id: PlaidItemId,

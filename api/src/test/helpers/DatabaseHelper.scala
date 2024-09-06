@@ -4,8 +4,8 @@ import scalikejdbc.DB
 import scalikejdbc.SQL
 
 object DatabaseHelper:
-    def truncateTables(): Unit =
-        val sql = """
+  def truncateTables(): Unit =
+    val sql = """
       DO $$ DECLARE
           r RECORD;
       BEGIN
@@ -18,6 +18,6 @@ object DatabaseHelper:
       TRUNCATE TABLE auth.users CASCADE;
     """
 
-        DB.autoCommit { implicit session =>
-            SQL(sql = sql).execute.apply()
-        }
+    DB.autoCommit { implicit session =>
+      SQL(sql = sql).execute.apply()
+    }

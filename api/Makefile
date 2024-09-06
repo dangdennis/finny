@@ -23,7 +23,7 @@ fix:
 	make clean && ./mill api.fix && ./mill test.fix && ./mill cli.fix
 
 fmt:
-	./mill api.reformat && ./mill test.reformat && ./mill cli.reformat
+	scala fmt src/
 
 clean:
 	./mill clean

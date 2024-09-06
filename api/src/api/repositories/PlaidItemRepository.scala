@@ -13,9 +13,11 @@ import java.util.UUID
 import scala.util.Try
 
 object PlaidItemRepository:
-    def getItemsByUserId(userId: UserId): Either[AppError.DatabaseError, List[PlaidItem]] = Try(
-        DB.readOnly { implicit session =>
-            sql"""
+  def getItemsByUserId(
+      userId: UserId
+  ): Either[AppError.DatabaseError, List[PlaidItem]] = Try(
+    DB.readOnly { implicit session =>
+      sql"""
                 select
                   id,
                   user_id,
@@ -41,12 +43,12 @@ object PlaidItemRepository:
                   where
                   user_id = $userId
                 """.map(dbToModel).list.apply()
-        }
-    ).toEither.left.map(e => AppError.DatabaseError(e.getMessage))
+    }
+  ).toEither.left.map(e => AppError.DatabaseError(e.getMessage))
 
-    def getById(id: UUID): Either[AppError, PlaidItem] = Try(
-        DB.readOnly { implicit session =>
-            sql"""
+  def getById(id: UUID): Either[AppError, PlaidItem] = Try(
+    DB.readOnly { implicit session =>
+      sql"""
         select
           id,
           user_id,
@@ -71,12 +73,13 @@ object PlaidItemRepository:
           plaid_items
         where
           id = ${id}""".map(dbToModel).single.apply().get
-        }
-    ).toEither.left.map(e => AppError.DatabaseError(e.getMessage))
+    }
+  ).toEither.left.map(e => AppError.DatabaseError(e.getMessage))
 
-    def getByItemId(itemId: String): Either[AppError.DatabaseError, PlaidItem] = Try(
-        DB.readOnly { implicit session =>
-            sql"""
+  def getByItemId(itemId: String): Either[AppError.DatabaseError, PlaidItem] =
+    Try(
+      DB.readOnly { implicit session =>
+        sql"""
           select
             id,
             user_id,
@@ -101,24 +104,26 @@ object PlaidItemRepository:
               plaid_items
           where
               plaid_item_id = ${itemId}""".map(dbToModel).single.apply().get
-        }
+      }
     ).toEither.left.map(e => AppError.DatabaseError(e.getMessage))
 
-    case class CreateItemInput(
-        userId: UUID,
-        plaidAccessToken: String,
-        plaidItemId: String,
-        plaidInstitutionId: String,
-        status: PlaidItemStatus,
-        transactionsCursor: Option[String]
-    )
+  case class CreateItemInput(
+      userId: UUID,
+      plaidAccessToken: String,
+      plaidItemId: String,
+      plaidInstitutionId: String,
+      status: PlaidItemStatus,
+      transactionsCursor: Option[String]
+  )
 
-    def getOrCreateItem(input: CreateItemInput): Either[AppError.DatabaseError, PlaidItem] = Try(
-        DB.autoCommit { implicit session =>
-            val query =
-                sql"""INSERT INTO plaid_items (user_id, plaid_access_token, plaid_item_id, plaid_institution_id, status, transactions_cursor)
-        VALUES (${input.userId}, ${input.plaidAccessToken}, ${input.plaidItemId}, ${input
-                        .plaidInstitutionId}, ${input.status.toString()}, ${input.transactionsCursor})
+  def getOrCreateItem(
+      input: CreateItemInput
+  ): Either[AppError.DatabaseError, PlaidItem] = Try(
+    DB.autoCommit { implicit session =>
+      val query =
+        sql"""INSERT INTO plaid_items (user_id, plaid_access_token, plaid_item_id, plaid_institution_id, status, transactions_cursor)
+        VALUES (${input.userId}, ${input.plaidAccessToken}, ${input.plaidItemId}, ${input.plaidInstitutionId}, ${input.status
+            .toString()}, ${input.transactionsCursor})
         ON CONFLICT (plaid_item_id) DO UPDATE SET
           status = EXCLUDED.status,
           plaid_access_token = EXCLUDED.plaid_access_token
@@ -144,16 +149,21 @@ object PlaidItemRepository:
           suggested_action
         ;
         """
-            query.map(dbToModel).single.apply()
-        }
-    ).map(item => item.get).toEither.left.map(e => AppError.DatabaseError(e.getMessage))
+      query.map(dbToModel).single.apply()
+    }
+  ).map(item => item.get)
+    .toEither
+    .left
+    .map(e => AppError.DatabaseError(e.getMessage))
 
-    /// Returns items with sync times older than 12 hours
-    def getItemsPendingSync(now: Instant): Either[AppError.DatabaseError, List[PlaidItem]] =
-        val threshold = now.minus(Duration.ofHours(12))
-        Try(
-            DB.readOnly { implicit session =>
-                sql"""
+  /// Returns items with sync times older than 12 hours
+  def getItemsPendingSync(
+      now: Instant
+  ): Either[AppError.DatabaseError, List[PlaidItem]] =
+    val threshold = now.minus(Duration.ofHours(12))
+    Try(
+      DB.readOnly { implicit session =>
+        sql"""
             select
               id,
               user_id,
@@ -181,18 +191,25 @@ object PlaidItemRepository:
 		      and status = 'good'
               and retry_count < 5
            """.map(dbToModel).list.apply()
-            }
-        ).toEither.left.map(e => AppError.DatabaseError(e.getMessage))
-
-    def updateTransactionCursor(itemId: UUID, cursor: Option[String]): Either[AppError.DatabaseError, Int] = Try(
-        DB.autoCommit { implicit session =>
-            sql"""UPDATE plaid_items SET transactions_cursor = ${cursor} WHERE id = ${itemId}""".update.apply()
-        }
+      }
     ).toEither.left.map(e => AppError.DatabaseError(e.getMessage))
 
-    def updateSyncSuccess(itemId: UUID, currentTime: Instant): Either[AppError.DatabaseError, Int] = Try(
-        DB.autoCommit { implicit session =>
-            sql"""
+  def updateTransactionCursor(
+      itemId: UUID,
+      cursor: Option[String]
+  ): Either[AppError.DatabaseError, Int] = Try(
+    DB.autoCommit { implicit session =>
+      sql"""UPDATE plaid_items SET transactions_cursor = ${cursor} WHERE id = ${itemId}""".update
+        .apply()
+    }
+  ).toEither.left.map(e => AppError.DatabaseError(e.getMessage))
+
+  def updateSyncSuccess(
+      itemId: UUID,
+      currentTime: Instant
+  ): Either[AppError.DatabaseError, Int] = Try(
+    DB.autoCommit { implicit session =>
+      sql"""
            UPDATE plaid_items
            SET
               last_synced_at = ${currentTime},
@@ -201,12 +218,16 @@ object PlaidItemRepository:
               retry_count = 0
            WHERE
               id = ${itemId}""".update.apply()
-        }
-    ).toEither.left.map(e => AppError.DatabaseError(e.getMessage))
+    }
+  ).toEither.left.map(e => AppError.DatabaseError(e.getMessage))
 
-    def updateSyncError(itemId: UUID, error: String, currentTime: Instant): Either[AppError.DatabaseError, Int] = Try(
-        DB.autoCommit { implicit session =>
-            sql"""
+  def updateSyncError(
+      itemId: UUID,
+      error: String,
+      currentTime: Instant
+  ): Either[AppError.DatabaseError, Int] = Try(
+    DB.autoCommit { implicit session =>
+      sql"""
            UPDATE plaid_items
            SET
               last_sync_error = ${error},
@@ -214,12 +235,12 @@ object PlaidItemRepository:
               retry_count = retry_count + 1
            WHERE
               id = ${itemId}""".update.apply()
-        }
-    ).toEither.left.map(e => AppError.DatabaseError(e.getMessage))
+    }
+  ).toEither.left.map(e => AppError.DatabaseError(e.getMessage))
 
-    def debugGetItems(): Either[AppError.DatabaseError, List[PlaidItem]] = Try(
-        DB.readOnly { implicit session =>
-            sql"""
+  def debugGetItems(): Either[AppError.DatabaseError, List[PlaidItem]] = Try(
+    DB.readOnly { implicit session =>
+      sql"""
           select
             id,
             user_id,
@@ -243,33 +264,34 @@ object PlaidItemRepository:
           from
               plaid_items
           """.map(dbToModel).list.apply()
-        }
-    ).toEither.left.map(e => AppError.DatabaseError(e.getMessage))
+    }
+  ).toEither.left.map(e => AppError.DatabaseError(e.getMessage))
 
-    def deleteItemById(itemId: PlaidItemId, userId: UserId)(using
-        session: DBSession
-    ): Either[AppError.DatabaseError, Int] = Try(
-        sql"""DELETE FROM plaid_items WHERE id = $itemId and user_id = $userId""".update.apply()
-    ).toEither.left.map(e => AppError.DatabaseError(e.getMessage))
+  def deleteItemById(itemId: PlaidItemId, userId: UserId)(using
+      session: DBSession
+  ): Either[AppError.DatabaseError, Int] = Try(
+    sql"""DELETE FROM plaid_items WHERE id = $itemId and user_id = $userId""".update
+      .apply()
+  ).toEither.left.map(e => AppError.DatabaseError(e.getMessage))
 
-    private def dbToModel(rs: WrappedResultSet) = PlaidItem(
-        id = PlaidItemId(UUID.fromString(rs.string("id"))),
-        createdAt = rs.timestamp("created_at").toInstant,
-        plaidAccessToken = rs.string("plaid_access_token"),
-        plaidInstitutionId = rs.string("plaid_institution_id"),
-        plaidItemId = rs.string("plaid_item_id"),
-        status = PlaidItemStatus.fromString(rs.string("status")),
-        transactionsCursor = rs.stringOpt("transactions_cursor"),
-        userId = UUID.fromString(rs.string("user_id")),
-        lastSyncedAt = rs.timestampOpt("last_synced_at").map(_.toInstant),
-        lastSyncError = rs.stringOpt("last_sync_error"),
-        lastSyncErrorAt = rs.timestampOpt("last_sync_error_at").map(_.toInstant),
-        retryCount = rs.int("retry_count"),
-        errorType = rs.stringOpt("error_type"),
-        errorCode = rs.stringOpt("error_code"),
-        errorMessage = rs.stringOpt("error_message"),
-        errorDisplayMessage = rs.stringOpt("error_display_message"),
-        errorRequestId = rs.stringOpt("error_request_id"),
-        documentationUrl = rs.stringOpt("documentation_url"),
-        suggestedAction = rs.stringOpt("suggested_action")
-    )
+  private def dbToModel(rs: WrappedResultSet) = PlaidItem(
+    id = PlaidItemId(UUID.fromString(rs.string("id"))),
+    createdAt = rs.timestamp("created_at").toInstant,
+    plaidAccessToken = rs.string("plaid_access_token"),
+    plaidInstitutionId = rs.string("plaid_institution_id"),
+    plaidItemId = rs.string("plaid_item_id"),
+    status = PlaidItemStatus.fromString(rs.string("status")),
+    transactionsCursor = rs.stringOpt("transactions_cursor"),
+    userId = UUID.fromString(rs.string("user_id")),
+    lastSyncedAt = rs.timestampOpt("last_synced_at").map(_.toInstant),
+    lastSyncError = rs.stringOpt("last_sync_error"),
+    lastSyncErrorAt = rs.timestampOpt("last_sync_error_at").map(_.toInstant),
+    retryCount = rs.int("retry_count"),
+    errorType = rs.stringOpt("error_type"),
+    errorCode = rs.stringOpt("error_code"),
+    errorMessage = rs.stringOpt("error_message"),
+    errorDisplayMessage = rs.stringOpt("error_display_message"),
+    errorRequestId = rs.stringOpt("error_request_id"),
+    documentationUrl = rs.stringOpt("documentation_url"),
+    suggestedAction = rs.stringOpt("suggested_action")
+  )

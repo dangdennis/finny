@@ -11,19 +11,29 @@ import test.helpers.*
 
 import java.util.UUID
 
-class AuthServiceSpec extends AnyFlatSpec, Matchers, EitherValues, BeforeAndAfterAll, BeforeAndAfterEach:
-    override protected def beforeAll(): Unit = TestHelper.beforeAll()
-    override protected def afterEach(): Unit = TestHelper.afterEach()
+class AuthServiceSpec
+    extends AnyFlatSpec,
+      Matchers,
+      EitherValues,
+      BeforeAndAfterAll,
+      BeforeAndAfterEach:
+  override protected def beforeAll(): Unit = TestHelper.beforeAll()
+  override protected def afterEach(): Unit = TestHelper.afterEach()
 
-    "deleteUser" should "soft delete user" in {
-        // given
-        val user = AuthServiceHelper.createUserViaSupabaseAuth(email = "dennis@mail.com", password = "password").value
-        val userId = UUID.fromString(user.id)
+  "deleteUser" should "soft delete user" in {
+    // given
+    val user = AuthServiceHelper
+      .createUserViaSupabaseAuth(
+        email = "dennis@mail.com",
+        password = "password"
+      )
+      .value
+    val userId = UUID.fromString(user.id)
 
-        // when
-        AuthService.deleteUser(userId, shouldSoftDelete = true)
+    // when
+    AuthService.deleteUser(userId, shouldSoftDelete = true)
 
-        // then
-        val deletedUser = AuthUserRepository.getUser(userId).value.get
-        deletedUser.deletedAt should not be empty
-    }
+    // then
+    val deletedUser = AuthUserRepository.getUser(userId).value.get
+    deletedUser.deletedAt should not be empty
+  }

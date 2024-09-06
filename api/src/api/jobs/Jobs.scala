@@ -20,103 +20,120 @@ import java.util.UUID
 import scala.util.Try
 
 object Jobs:
-    val jobConnection: Connection = LavinMqClient.createConnection()
-    val jobChannel: Channel = LavinMqClient.createChannel(jobConnection)
-    val jobQueueName = "jobs"
+  val jobConnection: Connection = LavinMqClient.createConnection()
+  val jobChannel: Channel = LavinMqClient.createChannel(jobConnection)
+  val jobQueueName = "jobs"
 
-    def init(): Either[Throwable, Unit] =
-        Try:
-            declareJobQueue()
-            jobChannel.basicQos(1)
-        .toEither
+  def init(): Either[Throwable, Unit] =
+    Try:
+      declareJobQueue()
+      jobChannel.basicQos(1)
+    .toEither
 
-    private def declareJobQueue() = Try(jobChannel.queueDeclare(jobQueueName, true, false, false, null))
+  private def declareJobQueue() = Try(
+    jobChannel.queueDeclare(jobQueueName, true, false, false, null)
+  )
 
-    def enqueueJob(job: JobRequest): Either[Throwable, Unit] =
-        val payload = job.asJson.noSpaces
-        Try(jobChannel.basicPublish("", jobQueueName, null, payload.getBytes("UTF-8"))).toEither
+  def enqueueJob(job: JobRequest): Either[Throwable, Unit] =
+    val payload = job.asJson.noSpaces
+    Try(
+      jobChannel.basicPublish("", jobQueueName, null, payload.getBytes("UTF-8"))
+    ).toEither
 
-    enum SyncType:
-        case Initial
-        case Historical
-        case Default
+  enum SyncType:
+    case Initial
+    case Historical
+    case Default
 
-    object SyncType:
-        given Encoder[SyncType] = Encoder
-            .encodeString
-            .contramap {
-                case Initial =>
-                    "Initial"
-                case Historical =>
-                    "Historical"
-                case Default =>
-                    "Default"
-            }
+  object SyncType:
+    given Encoder[SyncType] = Encoder.encodeString
+      .contramap {
+        case Initial =>
+          "Initial"
+        case Historical =>
+          "Historical"
+        case Default =>
+          "Default"
+      }
 
-        given Decoder[SyncType] = Decoder
-            .decodeString
-            .emap {
-                case "Initial" =>
-                    Right(Initial)
-                case "Historical" =>
-                    Right(Historical)
-                case "Default" =>
-                    Right(Default)
-                case other =>
-                    Left(s"Unknown SyncType: $other")
-            }
+    given Decoder[SyncType] = Decoder.decodeString
+      .emap {
+        case "Initial" =>
+          Right(Initial)
+        case "Historical" =>
+          Right(Historical)
+        case "Default" =>
+          Right(Default)
+        case other =>
+          Left(s"Unknown SyncType: $other")
+      }
 
-    enum JobRequest:
-        case JobSyncPlaidItem(id: UUID = UUID.randomUUID(), itemId: UUID, syncType: SyncType, environment: String)
-        case JobDeleteUser(id: UUID = UUID.randomUUID(), userId: UUID)
+  enum JobRequest:
+    case JobSyncPlaidItem(
+        id: UUID = UUID.randomUUID(),
+        itemId: UUID,
+        syncType: SyncType,
+        environment: String
+    )
+    case JobDeleteUser(id: UUID = UUID.randomUUID(), userId: UUID)
 
-    object JobRequest:
-        given Codec[JobSyncPlaidItem] = deriveCodec
-        given Codec[JobDeleteUser] = deriveCodec
-        given Encoder[JobRequest] = Encoder.instance {
-            case job: JobSyncPlaidItem =>
-                job.asJson
-            case job: JobDeleteUser =>
-                job.asJson
-        }
-        given Decoder[JobRequest] = Decoder[JobSyncPlaidItem].widen.or(Decoder[JobDeleteUser].widen)
+  object JobRequest:
+    given Codec[JobSyncPlaidItem] = deriveCodec
+    given Codec[JobDeleteUser] = deriveCodec
+    given Encoder[JobRequest] = Encoder.instance {
+      case job: JobSyncPlaidItem =>
+        job.asJson
+      case job: JobDeleteUser =>
+        job.asJson
+    }
+    given Decoder[JobRequest] =
+      Decoder[JobSyncPlaidItem].widen.or(Decoder[JobDeleteUser].widen)
 
-    def startWorker(): Any =
-        val deliverCallback: DeliverCallback =
-            (consumerTag, delivery) =>
-                val body = new String(delivery.getBody, "UTF-8")
-                decode[JobRequest](body) match
-                    case Left(e) =>
-                        Logger.root.error(s"Failed to parse job request: $body", e)
-                    case Right(job) =>
-                        job match
-                            case job: JobRequest.JobDeleteUser =>
-                                handleAnotherJob(job, delivery)
-                            case job: JobRequest.JobSyncPlaidItem =>
-                                handleJobSyncPlaidItem(job, delivery)
+  def startWorker(): Any =
+    val deliverCallback: DeliverCallback =
+      (consumerTag, delivery) =>
+        val body = new String(delivery.getBody, "UTF-8")
+        decode[JobRequest](body) match
+          case Left(e) =>
+            Logger.root.error(s"Failed to parse job request: $body", e)
+          case Right(job) =>
+            job match
+              case job: JobRequest.JobDeleteUser =>
+                handleAnotherJob(job, delivery)
+              case job: JobRequest.JobSyncPlaidItem =>
+                handleJobSyncPlaidItem(job, delivery)
 
-        jobChannel.basicConsume(
-            jobQueueName,
-            false, // Manual acknowledgment mode
-            deliverCallback,
-            consumerTag => ()
+    jobChannel.basicConsume(
+      jobQueueName,
+      false, // Manual acknowledgment mode
+      deliverCallback,
+      consumerTag => ()
+    )
+
+  private def handleJobSyncPlaidItem(
+      job: JobRequest.JobSyncPlaidItem,
+      delivery: Delivery
+  ): Unit =
+    Logger.root.info(s"Handling JobSyncPlaidItem $job")
+    job.syncType match
+      case SyncType.Initial | SyncType.Default =>
+        PlaidSyncService.sync(itemId = PlaidItemId(job.itemId))
+      case SyncType.Historical =>
+        PlaidSyncService.syncHistorical(itemId = PlaidItemId(job.itemId))
+    jobChannel.basicAck(delivery.getEnvelope.getDeliveryTag, false)
+
+  private def handleAnotherJob(
+      job: JobRequest.JobDeleteUser,
+      delivery: Delivery
+  ): Unit =
+    Logger.root.info(s"Handling JobDeleteUser $job")
+    UserDeletionService
+      .deleteUserEverything(UserId(job.userId))
+      .left
+      .foreach { e =>
+        Logger.root.error(
+          s"Failed to delete user ${job.userId} in job ${job.id}",
+          e
         )
-
-    private def handleJobSyncPlaidItem(job: JobRequest.JobSyncPlaidItem, delivery: Delivery): Unit =
-        Logger.root.info(s"Handling JobSyncPlaidItem $job")
-        job.syncType match
-            case SyncType.Initial | SyncType.Default =>
-                PlaidSyncService.sync(itemId = PlaidItemId(job.itemId))
-            case SyncType.Historical =>
-                PlaidSyncService.syncHistorical(itemId = PlaidItemId(job.itemId))
-        jobChannel.basicAck(delivery.getEnvelope.getDeliveryTag, false)
-
-    private def handleAnotherJob(job: JobRequest.JobDeleteUser, delivery: Delivery): Unit =
-        Logger.root.info(s"Handling JobDeleteUser $job")
-        UserDeletionService
-            .deleteUserEverything(UserId(job.userId))
-            .left
-            .foreach { e =>
-                Logger.root.error(s"Failed to delete user ${job.userId} in job ${job.id}", e)
-            }
-        jobChannel.basicAck(delivery.getEnvelope.getDeliveryTag, false)
+      }
+    jobChannel.basicAck(delivery.getEnvelope.getDeliveryTag, false)
