@@ -95,3 +95,13 @@ bucket_definitions:
         updated_at,
         deleted_at
         from goal_accounts where account_id = bucket.account_id
+  account_balances_by_account:
+    parameters: select id as account_id from accounts where accounts.user_id = token_parameters.user_id
+    data:
+      - select
+        id,
+        account_id,
+        balance_date,
+        current_balance,
+        available_balance
+        from account_balances where account_id = bucket.account_id
