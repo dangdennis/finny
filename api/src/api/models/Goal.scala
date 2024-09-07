@@ -22,7 +22,7 @@ case class Goal(
 )
 
 enum GoalType(val value: String):
-  case Automated extends GoalType("automated")
+  case Retirement extends GoalType("retirement")
   case Custom extends GoalType("custom")
 
 object GoalType:
