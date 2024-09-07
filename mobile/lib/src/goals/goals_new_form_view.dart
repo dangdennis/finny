@@ -24,41 +24,52 @@ class _GoalsNewFormViewState extends State<GoalsNewFormView> {
       TextEditingController(text: 'Retirement Fund');
   final TextEditingController _amountController =
       TextEditingController(text: '0');
-  final TextEditingController _currentAgeController = TextEditingController();
-  final TextEditingController _retirementAgeController =
-      TextEditingController();
+  final TextEditingController _targetDateController = TextEditingController();
 
   final FocusNode _nameFocusNode = FocusNode();
   final FocusNode _amountFocusNode = FocusNode();
-  final FocusNode _currentAgeFocusNode = FocusNode();
-  final FocusNode _retirementAgeFocusNode = FocusNode();
+  final FocusNode _targetDateFocusNode = FocusNode();
+
+  GoalType _selectedGoalType = GoalType.custom;
+  bool _retirementGoalExists = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkRetirementGoal();
+  }
+
+  Future<void> _checkRetirementGoal() async {
+    final retirementGoal = await widget.goalsController.getRetirementGoal();
+    setState(() {
+      _retirementGoalExists = retirementGoal != null;
+      _selectedGoalType =
+          _retirementGoalExists ? GoalType.custom : GoalType.retirement;
+    });
+  }
 
   @override
   void dispose() {
     _nameController.dispose();
     _amountController.dispose();
-    _currentAgeController.dispose();
-    _retirementAgeController.dispose();
+    _targetDateController.dispose();
     _nameFocusNode.dispose();
     _amountFocusNode.dispose();
-    _currentAgeFocusNode.dispose();
-    _retirementAgeFocusNode.dispose();
+    _targetDateFocusNode.dispose();
     super.dispose();
   }
 
   void _addGoal() async {
     if (_formKey.currentState!.validate()) {
-      int currentAge = int.parse(_currentAgeController.text);
-      int retirementAge = int.parse(_retirementAgeController.text);
-      DateTime targetDate = DateTime.now()
-          .add(Duration(days: (retirementAge - currentAge) * 365));
-
       double amount = double.tryParse(_amountController.text) ?? 0.0;
+      DateTime targetDate =
+          DateFormat('yyyy-MM-dd').parse(_targetDateController.text);
 
       await widget.goalsController.addGoal(AddGoalInput(
         name: _nameController.text,
         amount: amount,
         targetDate: targetDate,
+        goalType: _selectedGoalType,
       ));
     }
   }
@@ -70,8 +81,7 @@ class _GoalsNewFormViewState extends State<GoalsNewFormView> {
   void _unfocusAll() {
     _nameFocusNode.unfocus();
     _amountFocusNode.unfocus();
-    _currentAgeFocusNode.unfocus();
-    _retirementAgeFocusNode.unfocus();
+    _targetDateFocusNode.unfocus();
   }
 
   void _confirmDeleteGoal(Goal goal) {
@@ -101,6 +111,20 @@ class _GoalsNewFormViewState extends State<GoalsNewFormView> {
     );
   }
 
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2100),
+    );
+    if (picked != null) {
+      setState(() {
+        _targetDateController.text = DateFormat('yyyy-MM-dd').format(picked);
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -125,17 +149,37 @@ class _GoalsNewFormViewState extends State<GoalsNewFormView> {
                         style: Theme.of(context).textTheme.headlineSmall,
                       ),
                       const SizedBox(height: 20.0),
+                      SegmentedButton<GoalType>(
+                        segments: [
+                          ButtonSegment<GoalType>(
+                            value: GoalType.retirement,
+                            label: const Text('Retirement'),
+                            enabled: !_retirementGoalExists,
+                          ),
+                          const ButtonSegment<GoalType>(
+                            value: GoalType.custom,
+                            label: Text('Custom'),
+                          ),
+                        ],
+                        selected: {_selectedGoalType},
+                        onSelectionChanged: (Set<GoalType> newSelection) {
+                          setState(() {
+                            _selectedGoalType = newSelection.first;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 20.0),
                       TextFormField(
                         controller: _nameController,
                         focusNode: _nameFocusNode,
                         decoration: const InputDecoration(
-                          labelText: 'Goal Name',
+                          labelText: 'Description',
                           border: OutlineInputBorder(),
                           contentPadding: EdgeInsets.all(16),
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please enter a goal name';
+                            return 'Please enter a description';
                           }
                           return null;
                         },
@@ -169,40 +213,21 @@ class _GoalsNewFormViewState extends State<GoalsNewFormView> {
                       ),
                       const SizedBox(height: 20.0),
                       TextFormField(
-                        controller: _currentAgeController,
-                        focusNode: _currentAgeFocusNode,
-                        decoration: const InputDecoration(
-                          labelText: 'Current Age',
-                          border: OutlineInputBorder(),
-                          contentPadding: EdgeInsets.all(16),
+                        controller: _targetDateController,
+                        focusNode: _targetDateFocusNode,
+                        decoration: InputDecoration(
+                          labelText: 'Target Date',
+                          border: const OutlineInputBorder(),
+                          contentPadding: const EdgeInsets.all(16),
+                          suffixIcon: IconButton(
+                            icon: const Icon(Icons.calendar_today),
+                            onPressed: () => _selectDate(context),
+                          ),
                         ),
-                        keyboardType: TextInputType.number,
+                        readOnly: true,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please enter your current age';
-                          }
-                          if (int.tryParse(value) == null) {
-                            return 'Please enter a valid number';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 20.0),
-                      TextFormField(
-                        controller: _retirementAgeController,
-                        focusNode: _retirementAgeFocusNode,
-                        decoration: const InputDecoration(
-                          labelText: 'Retirement Age',
-                          border: OutlineInputBorder(),
-                          contentPadding: EdgeInsets.all(16),
-                        ),
-                        keyboardType: TextInputType.number,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter your retirement age';
-                          }
-                          if (int.tryParse(value) == null) {
-                            return 'Please enter a valid number';
+                            return 'Please select a target date';
                           }
                           return null;
                         },
@@ -244,15 +269,34 @@ class _GoalsNewFormViewState extends State<GoalsNewFormView> {
                         itemCount: goals.length,
                         itemBuilder: (context, index) {
                           final goal = goals[index];
-                          return ListTile(
-                            title: Text(goal.name),
-                            subtitle: Text(
-                              'Amount: \$${goal.targetAmount.toStringAsFixed(2)}, Date: ${DateFormat.yMMMd().format(goal.targetDate)}',
-                            ),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.delete_outline),
-                              onPressed: () => _confirmDeleteGoal(goal),
-                            ),
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              ListTile(
+                                title: Text(goal.name),
+                                subtitle: Text(
+                                  'Amount: \$${goal.targetAmount.toStringAsFixed(2)}, Date: ${DateFormat.yMMMd().format(goal.targetDate)}',
+                                ),
+                                trailing: IconButton(
+                                  icon: const Icon(Icons.delete_outline),
+                                  onPressed: () => _confirmDeleteGoal(goal),
+                                ),
+                              ),
+                              if (goal.goalType == GoalType.retirement) ...[
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Column(
+                                    children: [
+                                      SizedBox(width: 8),
+                                      Text('retirement'),
+                                    ],
+                                  ),
+                                ),
+                              ]
+                            ],
                           );
                         },
                       );

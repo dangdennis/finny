@@ -11,19 +11,19 @@ test:
 	@ARGS="$(filter-out $@,$(MAKECMDGOALS))"; \
 	ARG_COUNT=$$(echo $$ARGS | wc -w); \
 	if [ $$ARG_COUNT -eq 0 ]; then \
-		./mill api.test; \
+		./mill test.test; \
 	elif [ $$ARG_COUNT -eq 1 ]; then \
-		./mill api.test.testOnly $$ARGS; \
+		./mill test.testOnly $$ARGS; \
 	else \
 		echo "Usage: make t [arg1]"; \
 		exit 1; \
 	fi
 
 fix:
-	make clean && ./mill api.fix && ./mill api.test.fix && ./mill cli.fix
+	make clean && ./mill api.fix && ./mill test.fix && ./mill cli.fix
 
 fmt:
-	./mill api.reformat && ./mill api.test.reformat && ./mill cli.reformat
+	scala fmt src/
 
 clean:
 	./mill clean
@@ -35,4 +35,4 @@ c:
 	./mill -w all.compile
 
 t:
-	./mill -w api.test
+	./mill -w test

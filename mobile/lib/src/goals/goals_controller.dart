@@ -144,4 +144,19 @@ class GoalsController {
       rethrow;
     }
   }
+
+  Future<Goal?> getRetirementGoal() async {
+    try {
+      final goals = await getGoals();
+      final retirementGoal = goals
+          .where(
+            (goal) => goal.goalType == GoalType.retirement,
+          )
+          .firstOrNull;
+      return retirementGoal;
+    } catch (e, stacktrace) {
+      _logger.severe('Failed to get retirement goal', e, stacktrace);
+      rethrow;
+    }
+  }
 }

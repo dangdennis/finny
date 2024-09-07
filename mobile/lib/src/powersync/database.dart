@@ -101,6 +101,7 @@ class GoalsDb extends Table {
   TextColumn get targetDate => text()();
   TextColumn get userId => text()();
   RealColumn get progress => real().nullable()();
+  TextColumn get goalType => text()();
   TextColumn get createdAt => text()();
   TextColumn get updatedAt => text()();
   TextColumn get deletedAt => text().nullable()();
@@ -125,7 +126,6 @@ class ProfilesDb extends Table {
   String get tableName => 'profiles';
 
   TextColumn get id => text()();
-  IntColumn get age => integer().nullable()();
   TextColumn get dateOfBirth => text().nullable()();
   IntColumn get retirementAge => integer().nullable()();
   TextColumn get riskProfile => text().nullable()();

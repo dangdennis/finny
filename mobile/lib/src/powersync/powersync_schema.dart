@@ -2,7 +2,6 @@ import 'package:powersync/powersync.dart';
 
 const schema = Schema([
   Table('profiles', [
-    Column.integer('age'),
     Column.text('date_of_birth'),
     Column.integer('retirement_age'),
     Column.text('risk_profile'),
@@ -59,6 +58,7 @@ const schema = Schema([
     Column.text('target_date'),
     Column.text('user_id'),
     Column.real('progress'),
+    Column.text('goal_type'),
     Column.text('created_at'),
     Column.text('updated_at'),
     Column.text('deleted_at')

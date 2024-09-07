@@ -132,7 +132,9 @@ class MyApp extends StatelessWidget {
                       authProvider: authProvider,
                     );
                   case SettingsView.routeName:
-                    return SettingsView(settingsController: settingsController);
+                    return SettingsView(
+                      settingsController: settingsController,
+                    );
                   case TransactionDetailsView.routeName:
                     return const TransactionDetailsView();
                   case TransactionListView.routeName:

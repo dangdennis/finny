@@ -7,6 +7,7 @@ class Goal {
     required this.targetAmount,
     required this.targetDate,
     required this.progress,
+    required this.goalType,
   });
 
   final String id;
@@ -14,6 +15,29 @@ class Goal {
   final double targetAmount;
   final DateTime targetDate;
   final double? progress;
+  final GoalType goalType;
+}
+
+enum GoalType {
+  retirement,
+  custom;
+
+  static GoalType fromString(String value) {
+    return GoalType.values.firstWhere(
+      (e) => e.name == value,
+      orElse: () => throw ArgumentError('Invalid GoalType: $value'),
+    );
+  }
+
+  @override
+  toString() {
+    switch (this) {
+      case GoalType.retirement:
+        return 'retirement';
+      case GoalType.custom:
+        return 'custom';
+    }
+  }
 }
 
 class GoalAccount {

@@ -50,9 +50,21 @@ class GoalsService {
       progress: const Value(0),
       userId: Value(const Uuid()
           .v4()), // random id because it will be replaced with the correct one. this makes drift happy.
+      goalType: Value(input.goalType.toString()),
       createdAt: Value(DateTime.now().toIso8601String()),
       updatedAt: Value(DateTime.now().toIso8601String()),
     );
+
+    if (input.goalType == GoalType.retirement) {
+      final existingGoals = await getGoals();
+      final existingRetirementGoal = existingGoals
+          .where((g) => g.goalType == GoalType.retirement)
+          .firstOrNull;
+
+      if (existingRetirementGoal != null) {
+        throw Exception('A retirement goal already exists');
+      }
+    }
 
     await appDb.into(appDb.goalsDb).insert(goalCompanion);
   }
@@ -68,6 +80,7 @@ class GoalsService {
       targetDate: Value(targetDateString),
       progress: Value(goal.progress ?? 0),
       updatedAt: Value(DateTime.now().toIso8601String()),
+      goalType: Value(goal.goalType.toString()),
     );
 
     await (appDb.update(appDb.goalsDb)..where((tbl) => tbl.id.equals(goal.id)))
@@ -168,12 +181,12 @@ class GoalsService {
   // Helper method to convert GoalsDbData to Goal domain model
   Goal goalDbToDomain(GoalsDbData dbData) {
     return Goal(
-      id: dbData.id,
-      name: dbData.name,
-      targetAmount: dbData.amount,
-      progress: dbData.progress,
-      targetDate: DateTime.parse(dbData.targetDate),
-    );
+        id: dbData.id,
+        name: dbData.name,
+        targetAmount: dbData.amount,
+        progress: dbData.progress,
+        targetDate: DateTime.parse(dbData.targetDate),
+        goalType: GoalType.fromString(dbData.goalType));
   }
 
   GoalAccount goalAccountDbToDomain(GoalAccountsDbData dbData) {
@@ -190,11 +203,13 @@ class AddGoalInput {
   final String name;
   final double amount;
   final DateTime targetDate;
+  final GoalType goalType;
 
   AddGoalInput({
     required this.name,
     required this.amount,
     required this.targetDate,
+    required this.goalType,
   });
 }
 

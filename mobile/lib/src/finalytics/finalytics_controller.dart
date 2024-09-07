@@ -5,32 +5,11 @@ class FinalyticsController {
 
   final FinalyticsService _finalytics;
 
-  Future<CurrentRetirementInterestReturn>
-      getCurrentRetirementInterestReturn() async {
-    return _finalytics.getCurrentRetirementInterestReturn();
+  Future<MonthlyInvestmentOutput> getTargetMonthlyInvestment() async {
+    return _finalytics.getTargetMonthlyInvestment();
   }
 
-  Future<double> getTargetCurrentInterestReturn() async {
-    return (await _finalytics.getAnnualInflowOutflow()).outflows * 25.0 * 0.04;
-  }
-
-  Future<AverageMonthlyInflowOutflow> getAverageMonthlyInflowOutflow() async {
-    return _finalytics.getAverageMonthlyInflowOutflow();
-  }
-
-  Future<AnnualInflowOutflow> getAnnualInflowOutflow() async {
-    return _finalytics.getAnnualInflowOutflow();
-  }
-
-  Future<double> getTargetInvestmentBalance() async {
-    return (await _finalytics.getAnnualInflowOutflow()).outflows * 25;
-  }
-
-  Future<int> getCurrentRetirementAge() async {
-    return _finalytics.getCurrentRetirementAge();
-  }
-
-  Future<int> getTargetRetirementAge() async {
-    return _finalytics.getTargetRetirementAge();
+  Future<MonthlyInvestmentOutput> getActualMonthlyInvestment() async {
+    return _finalytics.getActualMonthlyInvestment();
   }
 }

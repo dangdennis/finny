@@ -6,7 +6,10 @@ import 'settings_controller.dart';
 /// When a user changes a setting, the SettingsController is updated and
 /// Widgets that listen to the SettingsController are rebuilt.
 class SettingsView extends StatelessWidget {
-  const SettingsView({super.key, required this.settingsController});
+  const SettingsView({
+    super.key,
+    required this.settingsController,
+  });
 
   static const routeName = '/settings';
 
@@ -20,16 +23,11 @@ class SettingsView extends StatelessWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        // Glue the SettingsController to the theme selection DropdownButton.
-        //
-        // When a user selects a theme from the dropdown list, the
-        // SettingsController is updated, which rebuilds the MaterialApp.
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             DropdownButton<ThemeMode>(
-              // Read the selected themeMode from the controller
               value: settingsController.themeMode,
-              // Call the updateThemeMode method any time the user selects a theme.
               onChanged: settingsController.updateThemeMode,
               items: const [
                 DropdownMenuItem(
@@ -46,13 +44,20 @@ class SettingsView extends StatelessWidget {
                 )
               ],
             ),
+            const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () => _showDeleteConfirmationDialog(context),
               child: const Text('Delete Account'),
             ),
-            ElevatedButton(
+            const Spacer(), // This will push the logout button to the bottom
+            SizedBox(
+              width: double.infinity,
+              height: 50, // Make the button taller
+              child: ElevatedButton(
                 onPressed: settingsController.signOut,
-                child: const Text('Logout'))
+                child: const Text('Logout', style: TextStyle(fontSize: 18)),
+              ),
+            ),
           ],
         ),
       ),

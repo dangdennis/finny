@@ -13,25 +13,25 @@ import java.util.UUID
 import scala.util.Try
 
 object InvestmentRepository:
-    case class InvestmentHoldingInput(
-        accountId: UUID,
-        investmentSecurityId: UUID,
-        institutionPrice: Double,
-        institutionPriceAsOf: Option[LocalDate],
-        institutionPriceDateTime: Option[Instant],
-        institutionValue: Double,
-        costBasis: Option[Double],
-        quantity: Double,
-        isoCurrencyCode: Option[String],
-        unofficialCurrencyCode: Option[String],
-        vestedValue: Option[Double]
-    )
+  case class InvestmentHoldingInput(
+      accountId: UUID,
+      investmentSecurityId: UUID,
+      institutionPrice: Double,
+      institutionPriceAsOf: Option[LocalDate],
+      institutionPriceDateTime: Option[Instant],
+      institutionValue: Double,
+      costBasis: Option[Double],
+      quantity: Double,
+      isoCurrencyCode: Option[String],
+      unofficialCurrencyCode: Option[String],
+      vestedValue: Option[Double]
+  )
 
-    def getInvestmentSecurityByPlaidSecurityId(
-        plaidSecurityId: String
-    ): Either[AppError.DatabaseError, Option[InvestmentSecurity]] = Try(
-        DB readOnly { implicit session =>
-            sql"""
+  def getInvestmentSecurityByPlaidSecurityId(
+      plaidSecurityId: String
+  ): Either[AppError.DatabaseError, Option[InvestmentSecurity]] = Try(
+    DB readOnly { implicit session =>
+      sql"""
                 SELECT
                     id,
                     plaid_security_id,
@@ -47,39 +47,42 @@ object InvestmentRepository:
                 FROM investment_securities
                 WHERE plaid_security_id = $plaidSecurityId
                 """
-                .map(rs =>
-                    InvestmentSecurity(
-                        id = UUID.fromString(rs.string("id")),
-                        plaidSecurityId = rs.string("plaid_security_id"),
-                        plaidInstitutionSecurityId = rs.stringOpt("plaid_institution_security_id"),
-                        plaidInstitutionId = rs.stringOpt("plaid_institution_id"),
-                        plaidProxySecurityId = rs.stringOpt("plaid_proxy_security_id"),
-                        name = rs.stringOpt("name"),
-                        tickerSymbol = rs.stringOpt("ticker_symbol"),
-                        securityType = rs
-                            .stringOpt("security_type")
-                            .flatMap(securityType =>
-                                SecurityType.fromString(securityType) match
-                                    case Right(securityType) =>
-                                        Some(securityType)
-                                    case Left(_) =>
-                                        Logger.root.error(s"Invalid security type: $securityType")
-                                        None
-                            ),
-                        createdAt = rs.timestamp("created_at").toInstant,
-                        updatedAt = rs.timestamp("updated_at").toInstant,
-                        deletedAt = rs.timestampOpt("deleted_at").map(_.toInstant)
-                    )
-                )
-                .single
-                .apply()
-        }
-    ).toEither.left.map(ex => AppError.DatabaseError(ex.getMessage))
+        .map(rs =>
+          InvestmentSecurity(
+            id = UUID.fromString(rs.string("id")),
+            plaidSecurityId = rs.string("plaid_security_id"),
+            plaidInstitutionSecurityId =
+              rs.stringOpt("plaid_institution_security_id"),
+            plaidInstitutionId = rs.stringOpt("plaid_institution_id"),
+            plaidProxySecurityId = rs.stringOpt("plaid_proxy_security_id"),
+            name = rs.stringOpt("name"),
+            tickerSymbol = rs.stringOpt("ticker_symbol"),
+            securityType = rs
+              .stringOpt("security_type")
+              .flatMap(securityType =>
+                SecurityType.fromString(securityType) match
+                  case Right(securityType) =>
+                    Some(securityType)
+                  case Left(_) =>
+                    Logger.root.error(s"Invalid security type: $securityType")
+                    None
+              ),
+            createdAt = rs.timestamp("created_at").toInstant,
+            updatedAt = rs.timestamp("updated_at").toInstant,
+            deletedAt = rs.timestampOpt("deleted_at").map(_.toInstant)
+          )
+        )
+        .single
+        .apply()
+    }
+  ).toEither.left.map(ex => AppError.DatabaseError(ex.getMessage))
 
-    def getInvestmentHoldings(accountId: UUID): Either[Throwable, List[InvestmentHolding]] =
-        Try(
-            DB readOnly { implicit session =>
-                sql"""
+  def getInvestmentHoldings(
+      accountId: UUID
+  ): Either[Throwable, List[InvestmentHolding]] =
+    Try(
+      DB readOnly { implicit session =>
+        sql"""
                 SELECT
                     id,
                     account_id,
@@ -98,33 +101,38 @@ object InvestmentRepository:
                     deleted_at
                 FROM investment_holdings
                 WHERE account_id = $accountId
-            """.map(rs =>
-                        InvestmentHolding(
-                            id = UUID.fromString(rs.string("id")),
-                            accountId = UUID.fromString(rs.string("account_id")),
-                            investmentSecurityId = rs.string("investment_security_id"),
-                            institutionPrice = rs.double("institution_price"),
-                            institutionPriceAsOf = rs.timestampOpt("institution_price_as_of").map(_.toInstant),
-                            institutionPriceDateTime = rs.timestampOpt("institution_price_date_time").map(_.toInstant),
-                            institutionValue = rs.double("institution_value"),
-                            costBasis = rs.doubleOpt("cost_basis"),
-                            quantity = rs.double("quantity"),
-                            isoCurrencyCode = rs.stringOpt("iso_currency_code"),
-                            unofficialCurrencyCode = rs.stringOpt("unofficial_currency_code"),
-                            vestedValue = rs.doubleOpt("vested_value"),
-                            createdAt = rs.timestamp("created_at").toInstant,
-                            updatedAt = rs.timestamp("updated_at").toInstant,
-                            deletedAt = rs.timestampOpt("deleted_at").map(_.toInstant)
-                        )
-                    )
-                    .list
-                    .apply()
-            }
-        ).toEither
+            """
+          .map(rs =>
+            InvestmentHolding(
+              id = UUID.fromString(rs.string("id")),
+              accountId = UUID.fromString(rs.string("account_id")),
+              investmentSecurityId = rs.string("investment_security_id"),
+              institutionPrice = rs.double("institution_price"),
+              institutionPriceAsOf =
+                rs.timestampOpt("institution_price_as_of").map(_.toInstant),
+              institutionPriceDateTime =
+                rs.timestampOpt("institution_price_date_time").map(_.toInstant),
+              institutionValue = rs.double("institution_value"),
+              costBasis = rs.doubleOpt("cost_basis"),
+              quantity = rs.double("quantity"),
+              isoCurrencyCode = rs.stringOpt("iso_currency_code"),
+              unofficialCurrencyCode = rs.stringOpt("unofficial_currency_code"),
+              vestedValue = rs.doubleOpt("vested_value"),
+              createdAt = rs.timestamp("created_at").toInstant,
+              updatedAt = rs.timestamp("updated_at").toInstant,
+              deletedAt = rs.timestampOpt("deleted_at").map(_.toInstant)
+            )
+          )
+          .list
+          .apply()
+      }
+    ).toEither
 
-    def upsertInvestmentHoldings(input: InvestmentHoldingInput): Either[AppError.DatabaseError, UUID] = Try(
-        DB autoCommit { implicit session =>
-            sql"""
+  def upsertInvestmentHoldings(
+      input: InvestmentHoldingInput
+  ): Either[AppError.DatabaseError, UUID] = Try(
+    DB autoCommit { implicit session =>
+      sql"""
                 INSERT INTO investment_holdings (
                     account_id,
                     investment_security_id,
@@ -162,22 +170,24 @@ object InvestmentRepository:
                     vested_value = EXCLUDED.vested_value
                 RETURNING id
             """.map(rs => UUID.fromString(rs.string("id"))).single.apply().get
-        }
-    ).toEither.left.map(ex => AppError.DatabaseError(ex.getMessage))
+    }
+  ).toEither.left.map(ex => AppError.DatabaseError(ex.getMessage))
 
-    case class InvestmentSecurityInput(
-        plaidSecurityId: String,
-        plaidInstitutionSecurityId: Option[String],
-        plaidInstitutionId: Option[String],
-        plaidProxySecurityId: Option[String],
-        name: Option[String],
-        tickerSymbol: Option[String],
-        securityType: Option[SecurityType]
-    )
+  case class InvestmentSecurityInput(
+      plaidSecurityId: String,
+      plaidInstitutionSecurityId: Option[String],
+      plaidInstitutionId: Option[String],
+      plaidProxySecurityId: Option[String],
+      name: Option[String],
+      tickerSymbol: Option[String],
+      securityType: Option[SecurityType]
+  )
 
-    def upsertInvestmentSecurity(input: InvestmentSecurityInput): Either[AppError.DatabaseError, UUID] = Try(
-        DB autoCommit { implicit session =>
-            sql"""
+  def upsertInvestmentSecurity(
+      input: InvestmentSecurityInput
+  ): Either[AppError.DatabaseError, UUID] = Try(
+    DB autoCommit { implicit session =>
+      sql"""
                 INSERT INTO investment_securities (
                     plaid_security_id,
                     plaid_institution_security_id,
@@ -204,5 +214,5 @@ object InvestmentRepository:
                     security_type = EXCLUDED.security_type
                 RETURNING id
             """.map(rs => UUID.fromString(rs.string("id"))).single.apply().get
-        }
-    ).toEither.left.map(ex => AppError.DatabaseError(ex.getMessage))
+    }
+  ).toEither.left.map(ex => AppError.DatabaseError(ex.getMessage))

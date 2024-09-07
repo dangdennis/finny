@@ -7,25 +7,24 @@ import scalikejdbc.*
 import java.util.UUID
 
 object AuthServiceHelper:
-    def createUser(): Profile =
-        val id = UUID.randomUUID()
-        val profile = Profile(
-            id = UUID.randomUUID(),
-            age = None,
-            dateOfBirth = None,
-            retirementAge = None,
-            riskProfile = None,
-            fireProfile = None,
-            deletedAt = None
-        )
+  def createUser(): Profile =
+    val id = UUID.randomUUID()
+    val profile = Profile(
+      id = UUID.randomUUID(),
+      dateOfBirth = None,
+      retirementAge = None,
+      riskProfile = None,
+      fireProfile = None,
+      deletedAt = None
+    )
 
-        DB autoCommit { implicit session =>
-            sql"""INSERT INTO auth.users (id, instance_id) VALUES (${profile.id}, ${UUID.randomUUID()})"""
-                .update
-                .apply()
-        }
+    DB autoCommit { implicit session =>
+      sql"""INSERT INTO auth.users (id, instance_id) VALUES (${profile.id}, ${UUID
+          .randomUUID()})""".update
+        .apply()
+    }
 
-        profile
+    profile
 
-    def createUserViaSupabaseAuth(email: String, password: String) = AuthService
-        .createUserViaSupabaseAuth(email, password, emailConfirm = true)
+  def createUserViaSupabaseAuth(email: String, password: String) = AuthService
+    .createUserViaSupabaseAuth(email, password, emailConfirm = true)

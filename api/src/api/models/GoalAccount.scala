@@ -14,5 +14,5 @@ case class GoalAccount(
 )
 
 enum AssignedAmount:
-    case Fixed(amount: Double)
-    case Percentage(percentage: Double)
+  case Fixed(amount: Double)
+  case Percentage(percentage: Double)
