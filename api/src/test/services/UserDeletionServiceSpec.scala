@@ -98,7 +98,7 @@ class UserDeletionServiceSpec
               name = "Retirement Fund",
               amount = 0.0,
               targetDate = java.time.Instant.now(),
-              goalType = GoalType.Retirement
+              goalType = GoalType.Automated
             )
           )
           .value
