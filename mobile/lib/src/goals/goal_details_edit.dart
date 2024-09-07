@@ -33,7 +33,7 @@ class _GoalDetailsEditState extends State<GoalDetailsEdit> {
   late TextEditingController amountController;
   late DateTime targetDate;
   bool isCustomAmount = false;
-  late Set<TargetAmountType> _selectedTargetAmountType;
+  late Set<GoalType> _selectedTargetAmountType;
 
   static const int maxNameLength = 50;
   static const double maxAmount = 999999999.0;
@@ -49,8 +49,8 @@ class _GoalDetailsEditState extends State<GoalDetailsEdit> {
     widget.targetAmountFocusNode.addListener(_handleTargetAmountFocusChange);
     _selectedTargetAmountType = {
       widget.goal.targetAmount != 0
-          ? TargetAmountType.custom
-          : TargetAmountType.default_
+          ? GoalType.custom
+          : GoalType.retirement
     };
   }
 
@@ -165,7 +165,7 @@ class _GoalDetailsEditState extends State<GoalDetailsEdit> {
                               return AlertDialog(
                                 title: const Text('Target Amount Options'),
                                 content: const Text(
-                                    'Default: We\'ll set a recommended target based on your finances.\n\n'
+                                    'Retirement: Target amount will be based on your estimated expenses and retirement age.\n\n'
                                     'Custom: You can set your own target amount.'),
                                 actions: <Widget>[
                                   TextButton(
@@ -183,23 +183,23 @@ class _GoalDetailsEditState extends State<GoalDetailsEdit> {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  SegmentedButton<TargetAmountType>(
-                    segments: const <ButtonSegment<TargetAmountType>>[
-                      ButtonSegment<TargetAmountType>(
-                        value: TargetAmountType.default_,
-                        label: Text('Default'),
+                  SegmentedButton<GoalType>(
+                    segments: const <ButtonSegment<GoalType>>[
+                      ButtonSegment<GoalType>(
+                        value: GoalType.retirement,
+                        label: Text('Retirement'),
                       ),
-                      ButtonSegment<TargetAmountType>(
-                        value: TargetAmountType.custom,
+                      ButtonSegment<GoalType>(
+                        value: GoalType.custom,
                         label: Text('Custom'),
                       ),
                     ],
                     selected: _selectedTargetAmountType,
-                    onSelectionChanged: (Set<TargetAmountType> newSelection) {
+                    onSelectionChanged: (Set<GoalType> newSelection) {
                       setState(() {
                         _selectedTargetAmountType = newSelection;
                         isCustomAmount =
-                            newSelection.first == TargetAmountType.custom;
+                            newSelection.first == GoalType.custom;
                         if (!isCustomAmount) {
                           amountController.text = '0.00';
                           _saveGoal();
@@ -291,8 +291,6 @@ class _GoalDetailsEditState extends State<GoalDetailsEdit> {
     );
   }
 }
-
-enum TargetAmountType { default_, custom }
 
 class AmountLimitingTextInputFormatter extends TextInputFormatter {
   final double maxAmount;
