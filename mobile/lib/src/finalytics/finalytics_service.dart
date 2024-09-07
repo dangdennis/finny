@@ -2,13 +2,16 @@ import 'dart:math';
 
 import 'package:finny/src/goals/goals_service.dart';
 import 'package:finny/src/powersync/database.dart';
+import 'package:finny/src/profile/profile_service.dart';
 
 class FinalyticsService {
   final AppDatabase appDb;
   late final GoalsService goalsService;
+  late final ProfileService profileService;
 
   FinalyticsService({required this.appDb}) {
     goalsService = GoalsService(appDb: appDb);
+    profileService = ProfileService(appDb: appDb);
   }
 
   Future<double> getCurrentTotalInvestmentBalance() async {
@@ -36,7 +39,7 @@ class FinalyticsService {
         monthlyInterestRate /
         (pow(1 + monthlyInterestRate, months) - 1);
 
-    return MonthlyInvestmentOutput(amount: (monthlyInvestment * 100) / 100);
+    return MonthlyInvestmentOutput(amount: monthlyInvestment);
   }
 
   Future<MonthlyInvestmentOutput> getActualMonthlyInvestment() async {
@@ -53,14 +56,18 @@ class FinalyticsService {
   }
 
   Future<MonthlyInvestmentOutput> getTargetMonthlyInvestment() async {
-    final retirementGoal = await goalsService.getRetirementGoal();
-    final retirementYear = retirementGoal.targetDate.year;
-    final currentYear = DateTime.now().year;
-    final yearsPeriod = retirementYear - currentYear;
+    final profile = await profileService.getProfile();
+    final goals = await goalsService.getGoals();
+    final totalTargetAmount =
+        goals.fold(0.0, (sum, goal) => sum + goal.targetAmount);
+    final currentAge = profile.age!;
+    final retirementAge = profile.retirementAge ?? 67;
+    final yearsPeriod = retirementAge - currentAge;
+    final presentValue = await getCurrentTotalInvestmentBalance();
 
     final input = MonthyInvestmentInput(
-      presentValue: await getCurrentTotalInvestmentBalance(),
-      futureValue: retirementGoal.targetAmount,
+      presentValue: presentValue,
+      futureValue: totalTargetAmount,
       annualInterestRate: 0.08,
       yearsPeriod: yearsPeriod,
     );

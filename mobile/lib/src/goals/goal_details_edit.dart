@@ -33,7 +33,7 @@ class _GoalDetailsEditState extends State<GoalDetailsEdit> {
   late TextEditingController amountController;
   late DateTime targetDate;
   bool isCustomAmount = false;
-  late Set<GoalType> _selectedTargetAmountType;
+  late Set<GoalType> _selectedGoalType;
 
   static const int maxNameLength = 50;
   static const double maxAmount = 999999999.0;
@@ -47,7 +47,7 @@ class _GoalDetailsEditState extends State<GoalDetailsEdit> {
     targetDate = widget.goal.targetDate;
     widget.nameFocusNode.addListener(_handleNameFocusChange);
     widget.targetAmountFocusNode.addListener(_handleTargetAmountFocusChange);
-    _selectedTargetAmountType = {
+    _selectedGoalType = {
       widget.goal.targetAmount != 0
           ? GoalType.custom
           : GoalType.retirement
@@ -81,7 +81,7 @@ class _GoalDetailsEditState extends State<GoalDetailsEdit> {
         targetAmount: parsedAmount,
         targetDate: targetDate,
         progress: widget.goal.progress,
-        goalType: widget.goal.goalType);
+        goalType: _selectedGoalType.first);
 
     await widget.onGoalSave(goal);
   }
@@ -194,10 +194,10 @@ class _GoalDetailsEditState extends State<GoalDetailsEdit> {
                         label: Text('Custom'),
                       ),
                     ],
-                    selected: _selectedTargetAmountType,
+                    selected: _selectedGoalType,
                     onSelectionChanged: (Set<GoalType> newSelection) {
                       setState(() {
-                        _selectedTargetAmountType = newSelection;
+                        _selectedGoalType = newSelection;
                         isCustomAmount =
                             newSelection.first == GoalType.custom;
                         if (!isCustomAmount) {

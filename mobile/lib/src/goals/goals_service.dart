@@ -38,14 +38,6 @@ class GoalsService {
     return goalDbToDomain(goalDbData);
   }
 
-  Future<Goal> getRetirementGoal() async {
-    final retirementGoal = await (appDb.select(appDb.goalsDb)
-          ..where((g) => g.goalType.equals(GoalType.retirement.toString())))
-        .getSingle();
-
-    return goalDbToDomain(retirementGoal);
-  }
-
   Future<void> addGoal(AddGoalInput input) async {
     final String targetDateString =
         input.targetDate.toIso8601String().substring(0, 10);
@@ -88,6 +80,7 @@ class GoalsService {
       targetDate: Value(targetDateString),
       progress: Value(goal.progress ?? 0),
       updatedAt: Value(DateTime.now().toIso8601String()),
+      goalType: Value(goal.goalType.toString()),
     );
 
     await (appDb.update(appDb.goalsDb)..where((tbl) => tbl.id.equals(goal.id)))
