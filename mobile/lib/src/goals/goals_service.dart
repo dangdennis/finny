@@ -38,6 +38,14 @@ class GoalsService {
     return goalDbToDomain(goalDbData);
   }
 
+  Future<Goal> getRetirementGoal() async {
+    final retirementGoal = await (appDb.select(appDb.goalsDb)
+          ..where((g) => g.goalType.equals(GoalType.retirement.toString())))
+        .getSingle();
+
+    return goalDbToDomain(retirementGoal);
+  }
+
   Future<void> addGoal(AddGoalInput input) async {
     final String targetDateString =
         input.targetDate.toIso8601String().substring(0, 10);
@@ -50,9 +58,21 @@ class GoalsService {
       progress: const Value(0),
       userId: Value(const Uuid()
           .v4()), // random id because it will be replaced with the correct one. this makes drift happy.
+      goalType: Value(input.goalType.toString()),
       createdAt: Value(DateTime.now().toIso8601String()),
       updatedAt: Value(DateTime.now().toIso8601String()),
     );
+
+    if (input.goalType == GoalType.retirement) {
+      final existingGoals = await getGoals();
+      final existingRetirementGoal = existingGoals
+          .where((g) => g.goalType == GoalType.retirement)
+          .firstOrNull;
+
+      if (existingRetirementGoal != null) {
+        throw Exception('A retirement goal already exists');
+      }
+    }
 
     await appDb.into(appDb.goalsDb).insert(goalCompanion);
   }
@@ -190,11 +210,13 @@ class AddGoalInput {
   final String name;
   final double amount;
   final DateTime targetDate;
+  final GoalType goalType;
 
   AddGoalInput({
     required this.name,
     required this.amount,
     required this.targetDate,
+    required this.goalType,
   });
 }
 

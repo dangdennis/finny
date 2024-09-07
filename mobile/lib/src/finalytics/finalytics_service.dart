@@ -1,24 +1,101 @@
+import 'dart:math';
+
+import 'package:finny/src/goals/goals_service.dart';
 import 'package:finny/src/powersync/database.dart';
 
 class FinalyticsService {
-  FinalyticsService({required this.appDb});
-
   final AppDatabase appDb;
+  late final GoalsService goalsService;
 
-  /// Get the current retirement interest return for all investment accounts.
-  /// This is the sum of the current balance of all investment accounts multiplied by the 4% interest rate.
-  Future<CurrentRetirementInterestReturn>
-      getCurrentRetirementInterestReturn() async {
+  FinalyticsService({required this.appDb}) {
+    goalsService = GoalsService(appDb: appDb);
+  }
+
+  Future<double> getCurrentTotalInvestmentBalance() async {
     final result = await appDb.customSelect('''
       SELECT
-        sum(current_balance) * 0.04 AS current_retirement_interest_return
+        sum(current_balance) as current_investment_balance
       FROM
         accounts
       WHERE
         type = 'investment';
     ''').getSingle();
 
-    return CurrentRetirementInterestReturn(
+    return result.read<double>('current_investment_balance');
+  }
+
+  // Calculate the monthly investment goal based on the present value, future value, annual interest rate, and years
+  MonthlyInvestmentOutput calculateMonthlyInvestment(
+      MonthyInvestmentInput params) {
+    double monthlyInterestRate = params.annualInterestRate / 12;
+    int months = params.yearsPeriod * 12;
+
+    // Formula to calculate the monthly investment including present value
+    double monthlyInvestment = (params.futureValue -
+            (params.presentValue * pow(1 + monthlyInterestRate, months))) *
+        monthlyInterestRate /
+        (pow(1 + monthlyInterestRate, months) - 1);
+
+    return MonthlyInvestmentOutput(amount: (monthlyInvestment * 100) / 100);
+  }
+
+  Future<MonthlyInvestmentOutput> getActualMonthlyInvestment() async {
+    // final input = MonthyInvestmentInput(
+    //   presentValue: await getCurrentTotalInvestmentBalance(),
+    //   futureValue: 0,
+    //   annualInterestRate: 0,
+    //   yearsPeriod: 0,
+    // );
+    // TODO: Get actual monthly investment from the database
+    // return calculateMonthlyInvestment(monthlyinvestmentInput);
+    // gets the sum of all transactions that are not transfers from investment accounts past month
+    return MonthlyInvestmentOutput(amount: 0);
+  }
+
+  Future<MonthlyInvestmentOutput> getTargetMonthlyInvestment() async {
+    final retirementGoal = await goalsService.getRetirementGoal();
+    final retirementYear = retirementGoal.targetDate.year;
+    final currentYear = DateTime.now().year;
+    final yearsPeriod = retirementYear - currentYear;
+
+    final input = MonthyInvestmentInput(
+      presentValue: await getCurrentTotalInvestmentBalance(),
+      futureValue: retirementGoal.targetAmount,
+      annualInterestRate: 0.08,
+      yearsPeriod: yearsPeriod,
+    );
+
+    return MonthlyInvestmentOutput(
+        amount: max(calculateMonthlyInvestment(input).amount, 0));
+  }
+
+  /// Calculate future value with both present value and monthly contributions
+  FutureValueOutput calculateFutureValue(FutureValueInput params) {
+    double monthlyInterestRate = params.annualInterestRate / 12;
+
+    double futureValue =
+        params.presentValue * pow(1 + monthlyInterestRate, params.months) +
+            params.monthlyInvestment *
+                (pow(1 + monthlyInterestRate, params.months) - 1) /
+                monthlyInterestRate;
+
+    return FutureValueOutput(futureValue: futureValue);
+  }
+
+  /// Get the current retirement interest return for all investment accounts.
+  /// This is the sum of the current balance of all investment accounts multiplied by the 4% interest rate.
+  Future<CurrentInvestmentInterestReturn>
+      getCurrentInvestmentInterestReturn() async {
+    final result = await appDb.customSelect('''
+      SELECT
+        sum(current_balance) * 0.08 AS current_retirement_interest_return
+      FROM
+        accounts
+      WHERE
+        type = 'investment';
+    ''').getSingle();
+
+    return CurrentInvestmentInterestReturn(
         amount: result.read<double>('current_retirement_interest_return'));
   }
 
@@ -102,40 +179,32 @@ class FinalyticsService {
       );
     }).toList();
   }
-
-  Future<int> getCurrentRetirementAge() async {
-    final result = await appDb.customSelect('''
-      SELECT
-        date_trunc('year', date) AS year
-      FROM
-        transactions
-      ORDER BY
-        year DESC
-      LIMIT 1;
-    ''').getSingle();
-
-    return result.read<int>('year');
-  }
-
-  Future<int> getTargetRetirementAge() async {
-    final result = await appDb.customSelect('''
-      SELECT
-        date_trunc('year', date) AS year
-      FROM
-        transactions
-      ORDER BY
-        year DESC
-      LIMIT 1;
-    ''').getSingle();
-
-    return result.read<int>('year');
-  }
 }
 
-class CurrentRetirementInterestReturn {
+class MonthyInvestmentInput {
+  final double presentValue;
+  final double futureValue;
+  final double annualInterestRate;
+  final int yearsPeriod;
+
+  MonthyInvestmentInput({
+    required this.presentValue,
+    required this.futureValue,
+    required this.annualInterestRate,
+    required this.yearsPeriod,
+  });
+}
+
+class MonthlyInvestmentOutput {
   final double amount;
 
-  CurrentRetirementInterestReturn({required this.amount});
+  MonthlyInvestmentOutput({required this.amount});
+}
+
+class CurrentInvestmentInterestReturn {
+  final double amount;
+
+  CurrentInvestmentInterestReturn({required this.amount});
 }
 
 class AnnualInflowOutflow {
@@ -162,4 +231,24 @@ class MonthlyInflowOutflow {
     required this.averageInflows,
     required this.averageOutflows,
   });
+}
+
+class FutureValueInput {
+  final double presentValue;
+  final double monthlyInvestment;
+  final double annualInterestRate;
+  final int months;
+
+  FutureValueInput({
+    required this.presentValue,
+    required this.monthlyInvestment,
+    required this.annualInterestRate,
+    required this.months,
+  });
+}
+
+class FutureValueOutput {
+  final double futureValue;
+
+  FutureValueOutput({required this.futureValue});
 }

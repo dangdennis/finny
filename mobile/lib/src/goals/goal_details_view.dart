@@ -142,6 +142,7 @@ class _GoalDetailViewState extends State<GoalDetailView> {
                               nameFocusNode: nameFocusNode,
                               targetAmountFocusNode: targetAmountFocusNode,
                               targetDateFocusNode: targetDateFocusNode,
+                              profile: null,
                             )
                           : Container(),
                     ),

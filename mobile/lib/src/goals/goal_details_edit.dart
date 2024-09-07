@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:finny/src/goals/goal_model.dart';
+import 'package:finny/src/profile/profile_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -13,6 +14,7 @@ class GoalDetailsEdit extends StatefulWidget {
     required this.nameFocusNode,
     required this.targetAmountFocusNode,
     required this.targetDateFocusNode,
+    required this.profile,
   });
 
   final FocusNode nameFocusNode;
@@ -20,6 +22,7 @@ class GoalDetailsEdit extends StatefulWidget {
   final FocusNode targetDateFocusNode;
   final Future<void> Function(Goal) onGoalSave;
   final Goal goal;
+  final Profile? profile;
 
   @override
   State<GoalDetailsEdit> createState() => _GoalDetailsEditState();
@@ -29,6 +32,8 @@ class _GoalDetailsEditState extends State<GoalDetailsEdit> {
   late TextEditingController nameController;
   late TextEditingController amountController;
   late DateTime targetDate;
+  bool isCustomAmount = false;
+  late Set<TargetAmountType> _selectedTargetAmountType;
 
   static const int maxNameLength = 50;
   static const double maxAmount = 999999999.0;
@@ -42,6 +47,11 @@ class _GoalDetailsEditState extends State<GoalDetailsEdit> {
     targetDate = widget.goal.targetDate;
     widget.nameFocusNode.addListener(_handleNameFocusChange);
     widget.targetAmountFocusNode.addListener(_handleTargetAmountFocusChange);
+    _selectedTargetAmountType = {
+      widget.goal.targetAmount != 0
+          ? TargetAmountType.custom
+          : TargetAmountType.default_
+    };
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -106,8 +116,6 @@ class _GoalDetailsEditState extends State<GoalDetailsEdit> {
 
   @override
   Widget build(BuildContext context) {
-    final double amountLeft = double.tryParse(amountController.text) ??
-        0.0 - (widget.goal.targetAmount * (widget.goal.progress ?? 0));
     final double progressPercentage = (widget.goal.progress ?? 0) * 100;
 
     return Column(
@@ -141,25 +149,83 @@ class _GoalDetailsEditState extends State<GoalDetailsEdit> {
                     onFieldSubmitted: (value) => _saveGoal(),
                   ),
                   const SizedBox(height: 16),
-                  Text(
-                    'Target Amount',
-                    style: Theme.of(context).textTheme.bodySmall,
+                  Row(
+                    children: [
+                      Text(
+                        'Target Amount',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        icon: const Icon(Icons.info_outline, size: 18),
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: const Text('Target Amount Options'),
+                                content: const Text(
+                                    'Default: We\'ll set a recommended target based on your finances.\n\n'
+                                    'Custom: You can set your own target amount.'),
+                                actions: <Widget>[
+                                  TextButton(
+                                    child: const Text('OK'),
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  SegmentedButton<TargetAmountType>(
+                    segments: const <ButtonSegment<TargetAmountType>>[
+                      ButtonSegment<TargetAmountType>(
+                        value: TargetAmountType.default_,
+                        label: Text('Default'),
+                      ),
+                      ButtonSegment<TargetAmountType>(
+                        value: TargetAmountType.custom,
+                        label: Text('Custom'),
+                      ),
+                    ],
+                    selected: _selectedTargetAmountType,
+                    onSelectionChanged: (Set<TargetAmountType> newSelection) {
+                      setState(() {
+                        _selectedTargetAmountType = newSelection;
+                        isCustomAmount =
+                            newSelection.first == TargetAmountType.custom;
+                        if (!isCustomAmount) {
+                          amountController.text = '0.00';
+                          _saveGoal();
+                        }
+                      });
+                    },
                   ),
                   const SizedBox(height: 8),
                   TextFormField(
                     controller: amountController,
                     focusNode: widget.targetAmountFocusNode,
                     keyboardType: TextInputType.number,
+                    enabled: isCustomAmount,
                     inputFormatters: [
                       FilteringTextInputFormatter.allow(
                           RegExp(r'^\d+\.?\d{0,2}')),
                       AmountLimitingTextInputFormatter(maxAmount: maxAmount),
                     ],
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Colors.green, fontWeight: FontWeight.bold),
-                    decoration: const InputDecoration(
-                      border: UnderlineInputBorder(),
+                        color: isCustomAmount ? Colors.green : Colors.grey,
+                        fontWeight: FontWeight.bold),
+                    decoration: InputDecoration(
+                      border: const UnderlineInputBorder(),
                       prefixText: '\$',
+                      hintText:
+                          isCustomAmount ? null : 'Based on your finances',
                     ),
                     onFieldSubmitted: (value) => _saveGoal(),
                   ),
@@ -191,49 +257,42 @@ class _GoalDetailsEditState extends State<GoalDetailsEdit> {
                 ],
               ),
             ),
-            const SizedBox(width: 16), // Add some space between columns
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  'Amount Left to Save',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '\$${amountLeft.toStringAsFixed(2)}',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: Colors.red, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Progress',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '${progressPercentage.toStringAsFixed(2)}%',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyLarge
-                      ?.copyWith(fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
           ],
         ),
         const SizedBox(height: 24),
-        LinearProgressIndicator(
-          borderRadius: BorderRadius.circular(10),
-          value: max(0.03, widget.goal.progress ?? 0),
-          minHeight: 10,
-          backgroundColor: Colors.grey[400],
-          valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
-        ),
+        Stack(
+          alignment: Alignment.center,
+          children: [
+            LinearProgressIndicator(
+              borderRadius: BorderRadius.circular(10),
+              value: max(0.03, widget.goal.progress ?? 0),
+              minHeight: 20, // Increased to accommodate text
+              backgroundColor: Colors.grey[400],
+              valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
+            ),
+            Positioned.fill(
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: Text(
+                    '${progressPercentage.toStringAsFixed(0)}%',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        )
       ],
     );
   }
 }
+
+enum TargetAmountType { default_, custom }
 
 class AmountLimitingTextInputFormatter extends TextInputFormatter {
   final double maxAmount;

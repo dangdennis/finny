@@ -19,7 +19,8 @@ class Goal {
 }
 
 enum GoalType {
-  retirement;
+  retirement,
+  custom;
 
   static GoalType fromString(String value) {
     return GoalType.values.firstWhere(
@@ -32,7 +33,9 @@ enum GoalType {
   toString() {
     switch (this) {
       case GoalType.retirement:
-        return 'reitrement';
+        return 'retirement';
+      case GoalType.custom:
+        return 'custom';
     }
   }
 }
