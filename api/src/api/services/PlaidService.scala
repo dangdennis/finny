@@ -365,7 +365,7 @@ object PlaidService:
               PlaidApiEventRepository.create(
                 PlaidApiEventCreateInput(
                   userId = Some(plaidItem.userId),
-                  itemId = None,
+                  itemId = Some(itemId.toUUID),
                   plaidMethod = "investmentsTransactionsGet",
                   arguments = Map(),
                   requestId = Some(error.requestId),
@@ -378,9 +378,13 @@ object PlaidService:
               PlaidApiEventRepository.create(
                 PlaidApiEventCreateInput(
                   userId = Some(plaidItem.userId),
-                  itemId = None,
+                  itemId = Some(itemId.toUUID),
                   plaidMethod = "investmentsTransactionsGet",
-                  arguments = Map(),
+                  arguments = Map(
+                    "startDate" -> req.getStartDate().toString,
+                    "endDate" -> req.getEndDate().toString,
+                    "itemId" -> plaidItem.id.toString
+                  ),
                   requestId = Some(body.getRequestId()),
                   errorType = None,
                   errorCode = None
