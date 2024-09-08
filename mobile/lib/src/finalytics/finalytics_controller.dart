@@ -1,4 +1,5 @@
 import 'package:finny/src/finalytics/finalytics_service.dart';
+import 'package:logging/logging.dart';
 
 class FinalyticsController {
   FinalyticsController(this._finalytics);
@@ -6,10 +7,20 @@ class FinalyticsController {
   final FinalyticsService _finalytics;
 
   Future<MonthlyInvestmentOutput> getTargetMonthlyInvestment() async {
-    return _finalytics.getTargetMonthlyInvestment();
+    try {
+      return await _finalytics.getTargetMonthlyInvestment();
+    } catch (e) {
+      Logger.root.severe('Error getting target monthly investment: $e');
+      return MonthlyInvestmentOutput(amount: 0);
+    }
   }
 
   Future<MonthlyInvestmentOutput> getActualMonthlyInvestment() async {
-    return _finalytics.getActualMonthlyInvestment();
+    try {
+      return await _finalytics.getActualMonthlyInvestment();
+    } catch (e) {
+      Logger.root.severe('Error getting actual monthly investment: $e');
+      return MonthlyInvestmentOutput(amount: 0);
+    }
   }
 }

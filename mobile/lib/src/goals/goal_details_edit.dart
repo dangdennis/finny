@@ -48,9 +48,7 @@ class _GoalDetailsEditState extends State<GoalDetailsEdit> {
     widget.nameFocusNode.addListener(_handleNameFocusChange);
     widget.targetAmountFocusNode.addListener(_handleTargetAmountFocusChange);
     _selectedGoalType = {
-      widget.goal.targetAmount != 0
-          ? GoalType.custom
-          : GoalType.retirement
+      widget.goal.targetAmount != 0 ? GoalType.custom : GoalType.retirement
     };
   }
 
@@ -198,8 +196,7 @@ class _GoalDetailsEditState extends State<GoalDetailsEdit> {
                     onSelectionChanged: (Set<GoalType> newSelection) {
                       setState(() {
                         _selectedGoalType = newSelection;
-                        isCustomAmount =
-                            newSelection.first == GoalType.custom;
+                        isCustomAmount = newSelection.first == GoalType.custom;
                         if (!isCustomAmount) {
                           amountController.text = '0.00';
                           _saveGoal();
