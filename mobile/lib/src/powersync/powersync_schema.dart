@@ -71,5 +71,21 @@ const schema = Schema([
     Column.text('created_at'),
     Column.text('updated_at'),
     Column.text('deleted_at')
+  ]),
+  Table('account_balances', [
+    Column.text('account_id'),
+    Column.text('balance_date'),
+    Column.real('current_balance'),
+    Column.real('available_balance')
+  ]),
+  Table('investment_holdings_daily', [
+    Column.text('account_id'),
+    Column.text('investment_security_id'),
+    Column.text('holding_date'),
+    Column.real('quantity'),
+    Column.real('institution_price'),
+    Column.real('institution_value'),
+    Column.real('cost_basis'),
+    Column.text('created_at')
   ])
 ]);
