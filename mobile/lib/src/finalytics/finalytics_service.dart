@@ -43,19 +43,66 @@ class FinalyticsService {
   }
 
   Future<MonthlyInvestmentOutput> getActualMonthlyInvestment() async {
-    // final input = MonthyInvestmentInput(
-    //   presentValue: await getCurrentTotalInvestmentBalance(),
-    //   futureValue: 0,
-    //   annualInterestRate: 0,
-    //   yearsPeriod: 0,
-    // );
-    // TODO: Get actual monthly investment from the database
-    // return calculateMonthlyInvestment(monthlyinvestmentInput);
-    // gets the sum of all transactions that are not transfers from investment accounts past month
-    return MonthlyInvestmentOutput(amount: 0);
+    final result = await appDb.customSelect('''
+        WITH start_of_month AS (
+            -- Get the earliest holding in the current month for each account and security
+            SELECT 
+                ihd.account_id,
+                ihd.investment_security_id,
+                ihd.holding_date AS earliest_holding_date,
+                ihd.quantity AS start_quantity,
+                ihd.institution_price AS start_price
+            FROM investment_holdings_daily ihd
+            WHERE ihd.holding_date = (
+                SELECT MIN(holding_date)
+                FROM investment_holdings_daily
+                WHERE account_id = ihd.account_id
+                  AND investment_security_id = ihd.investment_security_id
+                  AND holding_date >= DATE('now', 'start of month')  -- Start of the current month
+            )
+        ),
+        most_recent_holdings AS (
+            -- Get the most recent holdings for each account and security
+            SELECT 
+                ihd.account_id,
+                ihd.investment_security_id,
+                ihd.holding_date AS most_recent_holding_date,
+                ihd.quantity AS current_quantity,
+                ihd.institution_price AS current_price
+            FROM investment_holdings_daily ihd
+            WHERE ihd.holding_date = (
+                SELECT MAX(holding_date)
+                FROM investment_holdings_daily
+                WHERE account_id = ihd.account_id
+                  AND investment_security_id = ihd.investment_security_id
+            )
+        )
+        SELECT 
+            mrh.account_id,
+            mrh.investment_security_id,
+            (mrh.current_quantity - som.start_quantity) * mrh.current_price AS personal_investment
+        FROM 
+            most_recent_holdings mrh
+        JOIN 
+            start_of_month som 
+            ON mrh.account_id = som.account_id 
+            AND mrh.investment_security_id = som.investment_security_id
+        WHERE 
+            mrh.current_quantity > som.start_quantity  -- Only consider increases in quantity (personal investment)
+            AND mrh.most_recent_holding_date >= som.earliest_holding_date;  -- Compare from the earliest date in the current month
+    ''').get();
+
+    final totalPersonalInvestment = result.fold<double>(
+      0.0,
+      (sum, row) => sum + row.read<double>('personal_investment'),
+    );
+
+    return MonthlyInvestmentOutput(amount: totalPersonalInvestment);
   }
 
   Future<MonthlyInvestmentOutput> getTargetMonthlyInvestment() async {
+    print('getting target monthly investment');
+
     final profile = await profileService.getProfile();
     final goals = await goalsService.getGoals();
     final totalTargetAmount =
