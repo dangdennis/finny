@@ -2,9 +2,14 @@
 // dart run build_runner build
 // dart run build_runner watch
 
+import 'dart:io';
+
+import 'package:drift/native.dart';
 import 'package:drift_sqlite_async/drift_sqlite_async.dart';
 import 'package:drift/drift.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:powersync/powersync.dart' show PowerSyncDatabase;
+import 'package:path/path.dart' as path;
 
 part 'database.g.dart';
 
@@ -23,12 +28,23 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   int get schemaVersion => 1;
+}
 
-  Stream<List<AccountsDbData>> watchAccounts() {
-    return (select(accountsDb)
-          ..orderBy([(a) => OrderingTerm(expression: a.createdAt)]))
-        .watch();
-  }
+@DriftDatabase(
+  tables: [
+    AccountsDb,
+    TransactionsDb,
+    InvestmentHoldingsDb,
+    GoalsDb,
+    GoalAccountsDb,
+    ProfilesDb,
+  ],
+)
+class DemoAppDatabase extends _$DemoAppDatabase {
+  DemoAppDatabase() : super(_openDemoDatabase());
+
+  @override
+  int get schemaVersion => 1;
 }
 
 class AccountsDb extends Table {
@@ -130,4 +146,12 @@ class ProfilesDb extends Table {
   IntColumn get retirementAge => integer().nullable()();
   TextColumn get riskProfile => text().nullable()();
   TextColumn get fireProfile => text().nullable()();
+}
+
+LazyDatabase _openDemoDatabase() {
+  return LazyDatabase(() async {
+    final dbFolder = await getApplicationDocumentsDirectory();
+    final file = File(path.join(dbFolder.path, 'demo_db.sqlite'));
+    return NativeDatabase(file);
+  });
 }
