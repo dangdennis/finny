@@ -101,8 +101,6 @@ class FinalyticsService {
   }
 
   Future<MonthlyInvestmentOutput> getTargetMonthlyInvestment() async {
-    print('getting target monthly investment');
-
     final profile = await profileService.getProfile();
     final goals = await goalsService.getGoals();
     final totalTargetAmount =
