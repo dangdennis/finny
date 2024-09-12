@@ -29,7 +29,12 @@ class OnboardingController {
   }
 
   Future<bool> isOnboardingCardHidden() async {
-    return await OnboardingCache.isOnboardingCardHidden();
+    try {
+      return await OnboardingCache.isOnboardingCardHidden();
+    } catch (e) {
+      _logger.warning('Error getting onboarding card hidden: $e');
+      return true;
+    }
   }
 
   Future<void> setOnboardingCardHidden(bool hidden) async {
