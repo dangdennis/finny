@@ -127,12 +127,12 @@ class _GoalDetailViewState extends State<GoalDetailView> {
     return Scaffold(
       appBar: AppBar(
         title: Text(goal?.name ?? ""),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.delete),
-            onPressed: () => widget._handleGoalDelete(context),
-          ),
-        ],
+        // actions: [
+        //   IconButton(
+        //     icon: const Icon(Icons.delete),
+        //     onPressed: () => widget._handleGoalDelete(context),
+        //   ),
+        // ],
       ),
       body: GestureDetector(
         onTap: _unfocusAll,
