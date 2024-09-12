@@ -15,14 +15,7 @@ class FinalyticsService {
   }
 
   Future<double> getActualRetirementAge() async {
-    // calculate FV based on 4% of current expenses (outflows) * years to retirement
-    final freedomFutureValue = await getFreedomFutureValueOfCurrentExpenses();
-
-    final averageMonthlyInflowOutflow = await getAverageMonthlyInflowOutflow();
-    final currentExpenses = averageMonthlyInflowOutflow.outflows;
-    final yearsToRetirement = await calculateYearsToRetirement();
-    final futureValue = currentExpenses * pow(1.04, yearsToRetirement);
-    return futureValue;
+    return 0;
   }
 
   // Calculate the total amount of money (future value) I need today to sustain my expenses in perpetuity at 4% interest
