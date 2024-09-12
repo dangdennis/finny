@@ -6,21 +6,21 @@ class FinalyticsController {
 
   final FinalyticsService _finalytics;
 
-  Future<MonthlyInvestmentOutput> getTargetMonthlyInvestment() async {
+  Stream<MonthlyInvestmentOutput> watchTargetMonthlyInvestment() async* {
     try {
-      return await _finalytics.getTargetMonthlyInvestment();
+      yield* _finalytics.watchTargetMonthlyInvestment();
     } catch (e) {
       Logger.root.severe('Error getting target monthly investment: $e');
-      return MonthlyInvestmentOutput(amount: 0);
+      yield MonthlyInvestmentOutput(amount: 0);
     }
   }
 
-  Future<MonthlyInvestmentOutput> getActualMonthlyInvestment() async {
+  Stream<MonthlyInvestmentOutput> watchActualMonthlyInvestment() async* {
     try {
-      return await _finalytics.getActualMonthlyInvestment();
+      yield* _finalytics.watchActualMonthlyInvestment();
     } catch (e) {
       Logger.root.severe('Error getting actual monthly investment: $e');
-      return MonthlyInvestmentOutput(amount: 0);
+      yield MonthlyInvestmentOutput(amount: 0);
     }
   }
 }

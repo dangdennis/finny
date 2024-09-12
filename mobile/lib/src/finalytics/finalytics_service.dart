@@ -14,36 +14,9 @@ class FinalyticsService {
     profileService = ProfileService(appDb: appDb);
   }
 
-  Future<double> getCurrentTotalInvestmentBalance() async {
-    final result = await appDb.customSelect('''
-      SELECT
-        sum(current_balance) as current_investment_balance
-      FROM
-        accounts
-      WHERE
-        type = 'investment';
-    ''').getSingle();
-
-    return result.read<double>('current_investment_balance');
-  }
-
-  // Calculate the monthly investment goal based on the present value, future value, annual interest rate, and years
-  MonthlyInvestmentOutput calculateMonthlyInvestment(
-      MonthyInvestmentInput params) {
-    double monthlyInterestRate = params.annualInterestRate / 12;
-    int months = params.yearsPeriod * 12;
-
-    // Formula to calculate the monthly investment including present value
-    double monthlyInvestment = (params.futureValue -
-            (params.presentValue * pow(1 + monthlyInterestRate, months))) *
-        monthlyInterestRate /
-        (pow(1 + monthlyInterestRate, months) - 1);
-
-    return MonthlyInvestmentOutput(amount: monthlyInvestment);
-  }
-
-  Future<MonthlyInvestmentOutput> getActualMonthlyInvestment() async {
-    final result = await appDb.customSelect('''
+  Stream<MonthlyInvestmentOutput> watchActualMonthlyInvestment() async* {
+    yield* (appDb.select(appDb.investmentHoldingsDb).watch().map((_) async {
+      final result = await appDb.customSelect('''
         WITH start_of_month AS (
             -- Get the earliest holding in the current month for each account and security
             SELECT 
@@ -92,33 +65,64 @@ class FinalyticsService {
             AND mrh.most_recent_holding_date >= som.earliest_holding_date;  -- Compare from the earliest date in the current month
     ''').get();
 
-    final totalPersonalInvestment = result.fold<double>(
-      0.0,
-      (sum, row) => sum + row.read<double>('personal_investment'),
-    );
+      final totalPersonalInvestment = result.fold<double>(
+        0.0,
+        (sum, row) => sum + row.read<double>('personal_investment'),
+      );
 
-    return MonthlyInvestmentOutput(amount: totalPersonalInvestment);
+      return MonthlyInvestmentOutput(amount: totalPersonalInvestment);
+    }).asyncMap((output) async => await output)); // Use asyncMap to handle Future
   }
 
-  Future<MonthlyInvestmentOutput> getTargetMonthlyInvestment() async {
+  Stream<MonthlyInvestmentOutput> watchTargetMonthlyInvestment() async* {
     final profile = await profileService.getProfile();
-    final goals = await goalsService.getGoals();
-    final totalTargetAmount =
-        goals.fold(0.0, (sum, goal) => sum + goal.targetAmount);
     final currentAge = profile.age!;
     final retirementAge = profile.retirementAge ?? 67;
     final yearsPeriod = retirementAge - currentAge;
     final presentValue = await getCurrentTotalInvestmentBalance();
 
-    final input = MonthyInvestmentInput(
-      presentValue: presentValue,
-      futureValue: totalTargetAmount,
-      annualInterestRate: 0.08,
-      yearsPeriod: yearsPeriod,
-    );
+    final goalsStream = goalsService.watchGoals();
+    yield* goalsStream.map((goals) {
+      final totalTargetAmount =
+          goals.fold(0.0, (sum, goal) => sum + goal.targetAmount);
+      final input = MonthyInvestmentInput(
+        presentValue: presentValue,
+        futureValue: totalTargetAmount,
+        annualInterestRate: 0.08,
+        yearsPeriod: yearsPeriod,
+      );
 
-    return MonthlyInvestmentOutput(
-        amount: max(calculateMonthlyInvestment(input).amount, 0));
+      return MonthlyInvestmentOutput(
+          amount: max(calculateMonthlyInvestment(input).amount, 0));
+    });
+  }
+
+  // Calculate the monthly investment goal based on the present value, future value, annual interest rate, and years
+  MonthlyInvestmentOutput calculateMonthlyInvestment(
+      MonthyInvestmentInput params) {
+    double monthlyInterestRate = params.annualInterestRate / 12;
+    int months = params.yearsPeriod * 12;
+
+    // Formula to calculate the monthly investment including present value
+    double monthlyInvestment = (params.futureValue -
+            (params.presentValue * pow(1 + monthlyInterestRate, months))) *
+        monthlyInterestRate /
+        (pow(1 + monthlyInterestRate, months) - 1);
+
+    return MonthlyInvestmentOutput(amount: monthlyInvestment);
+  }
+
+  Future<double> getCurrentTotalInvestmentBalance() async {
+    final result = await appDb.customSelect('''
+      SELECT
+        sum(current_balance) as current_investment_balance
+      FROM
+        accounts
+      WHERE
+        type = 'investment';
+    ''').getSingle();
+
+    return result.read<double>('current_investment_balance');
   }
 
   /// Calculate future value with both present value and monthly contributions
@@ -136,101 +140,101 @@ class FinalyticsService {
 
   /// Get the current retirement interest return for all investment accounts.
   /// This is the sum of the current balance of all investment accounts multiplied by the 4% interest rate.
-  Future<CurrentInvestmentInterestReturn>
-      getCurrentInvestmentInterestReturn() async {
-    final result = await appDb.customSelect('''
-      SELECT
-        sum(current_balance) * 0.08 AS current_retirement_interest_return
-      FROM
-        accounts
-      WHERE
-        type = 'investment';
-    ''').getSingle();
+  // Future<CurrentInvestmentInterestReturn>
+  //     getCurrentInvestmentInterestReturn() async {
+  //   final result = await appDb.customSelect('''
+  //     SELECT
+  //       sum(current_balance) * 0.08 AS current_retirement_interest_return
+  //     FROM
+  //       accounts
+  //     WHERE
+  //       type = 'investment';
+  //   ''').getSingle();
 
-    return CurrentInvestmentInterestReturn(
-        amount: result.read<double>('current_retirement_interest_return'));
-  }
+  //   return CurrentInvestmentInterestReturn(
+  //       amount: result.read<double>('current_retirement_interest_return'));
+  // }
 
-  Future<AnnualInflowOutflow> getAnnualInflowOutflow() async {
-    final result = await appDb.customSelect('''
-      SELECT
-        SUM(CASE WHEN amount < 0 THEN ABS(amount) ELSE 0 END) AS annual_inflows,
-        SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) AS annual_outflows
-      FROM
-        transactions
-        JOIN accounts ON transactions.account_id = accounts.id
-      WHERE
-        date >= date('now', '-12 months');
-    ''').getSingle();
+  // Future<AnnualInflowOutflow> getAnnualInflowOutflow() async {
+  //   final result = await appDb.customSelect('''
+  //     SELECT
+  //       SUM(CASE WHEN amount < 0 THEN ABS(amount) ELSE 0 END) AS annual_inflows,
+  //       SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) AS annual_outflows
+  //     FROM
+  //       transactions
+  //       JOIN accounts ON transactions.account_id = accounts.id
+  //     WHERE
+  //       date >= date('now', '-12 months');
+  //   ''').getSingle();
 
-    return AnnualInflowOutflow(
-      inflows: result.read<double>('annual_inflows'),
-      outflows: result.read<double>('annual_outflows'),
-    );
-  }
+  //   return AnnualInflowOutflow(
+  //     inflows: result.read<double>('annual_inflows'),
+  //     outflows: result.read<double>('annual_outflows'),
+  //   );
+  // }
 
-  /// Get the average monthly inflow and outflow for the last 12 months
-  Future<AverageMonthlyInflowOutflow> getAverageMonthlyInflowOutflow() async {
-    final result = await appDb.customSelect('''
-      WITH monthly_totals AS (
-        SELECT
-          strftime('%Y-%m', date) AS month,
-          SUM(CASE WHEN amount < 0 THEN ABS(amount) ELSE 0 END) AS monthly_inflows,
-          SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) AS monthly_outflows
-        FROM
-          transactions
-          JOIN accounts ON transactions.account_id = accounts.id
-        WHERE
-          date >= date('now', '-12 months')
-        GROUP BY
-          month
-      )
-      SELECT
-        AVG(monthly_inflows) AS average_inflows,
-        AVG(monthly_outflows) AS average_outflows
-      FROM
-        monthly_totals;
-    ''').getSingle();
+  // /// Get the average monthly inflow and outflow for the last 12 months
+  // Future<AverageMonthlyInflowOutflow> getAverageMonthlyInflowOutflow() async {
+  //   final result = await appDb.customSelect('''
+  //     WITH monthly_totals AS (
+  //       SELECT
+  //         strftime('%Y-%m', date) AS month,
+  //         SUM(CASE WHEN amount < 0 THEN ABS(amount) ELSE 0 END) AS monthly_inflows,
+  //         SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) AS monthly_outflows
+  //       FROM
+  //         transactions
+  //         JOIN accounts ON transactions.account_id = accounts.id
+  //       WHERE
+  //         date >= date('now', '-12 months')
+  //       GROUP BY
+  //         month
+  //     )
+  //     SELECT
+  //       AVG(monthly_inflows) AS average_inflows,
+  //       AVG(monthly_outflows) AS average_outflows
+  //     FROM
+  //       monthly_totals;
+  //   ''').getSingle();
 
-    return AverageMonthlyInflowOutflow(
-        inflows: result.read<double>('average_inflows'),
-        outflows: result.read<double>('average_outflows'));
-  }
+  //   return AverageMonthlyInflowOutflow(
+  //       inflows: result.read<double>('average_inflows'),
+  //       outflows: result.read<double>('average_outflows'));
+  // }
 
-  Future<List<MonthlyInflowOutflow>> getMonthlyInflowOutflow(
-      String userId) async {
-    final result = await appDb.customSelect('''
-      SELECT
-        date_trunc('month', date) AS month,
-        avg(
-          CASE WHEN amount < 0 THEN
-            amount
-          ELSE
-            0
-          END) AS average_inflows,
-        avg(
-          CASE WHEN amount > 0 THEN
-            amount
-          ELSE
-            0
-          END) AS average_outflows
-      FROM
-        transactions
-        JOIN accounts ON transactions.account_id = accounts.id
-      GROUP BY
-        month
-      ORDER BY
-        month;
-      ''').get();
+  // Future<List<MonthlyInflowOutflow>> getMonthlyInflowOutflow(
+  //     String userId) async {
+  //   final result = await appDb.customSelect('''
+  //     SELECT
+  //       date_trunc('month', date) AS month,
+  //       avg(
+  //         CASE WHEN amount < 0 THEN
+  //           amount
+  //         ELSE
+  //           0
+  //         END) AS average_inflows,
+  //       avg(
+  //         CASE WHEN amount > 0 THEN
+  //           amount
+  //         ELSE
+  //           0
+  //         END) AS average_outflows
+  //     FROM
+  //       transactions
+  //       JOIN accounts ON transactions.account_id = accounts.id
+  //     GROUP BY
+  //       month
+  //     ORDER BY
+  //       month;
+  //     ''').get();
 
-    return result.map((row) {
-      return MonthlyInflowOutflow(
-        month: row.read<DateTime>('month'),
-        averageInflows: row.read<double>('average_inflows'),
-        averageOutflows: row.read<double>('average_outflows'),
-      );
-    }).toList();
-  }
+  //   return result.map((row) {
+  //     return MonthlyInflowOutflow(
+  //       month: row.read<DateTime>('month'),
+  //       averageInflows: row.read<double>('average_inflows'),
+  //       averageOutflows: row.read<double>('average_outflows'),
+  //     );
+  //   }).toList();
+  // }
 }
 
 class MonthyInvestmentInput {
