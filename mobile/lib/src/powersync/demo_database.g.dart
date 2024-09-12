@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'database.dart';
+part of 'demo_database.dart';
 
 // ignore_for_file: type=lint
 class $AccountsDbTable extends AccountsDb
@@ -3256,9 +3256,9 @@ class ProfilesDbCompanion extends UpdateCompanion<ProfilesDbData> {
   }
 }
 
-abstract class _$AppDatabase extends GeneratedDatabase {
-  _$AppDatabase(QueryExecutor e) : super(e);
-  _$AppDatabaseManager get managers => _$AppDatabaseManager(this);
+abstract class _$DemoAppDatabase extends GeneratedDatabase {
+  _$DemoAppDatabase(QueryExecutor e) : super(e);
+  _$DemoAppDatabaseManager get managers => _$DemoAppDatabaseManager(this);
   late final $AccountsDbTable accountsDb = $AccountsDbTable(this);
   late final $TransactionsDbTable transactionsDb = $TransactionsDbTable(this);
   late final $InvestmentHoldingsDbTable investmentHoldingsDb =
@@ -3318,7 +3318,7 @@ typedef $$AccountsDbTableUpdateCompanionBuilder = AccountsDbCompanion Function({
 });
 
 class $$AccountsDbTableTableManager extends RootTableManager<
-    _$AppDatabase,
+    _$DemoAppDatabase,
     $AccountsDbTable,
     AccountsDbData,
     $$AccountsDbTableFilterComposer,
@@ -3326,7 +3326,7 @@ class $$AccountsDbTableTableManager extends RootTableManager<
     $$AccountsDbTableProcessedTableManager,
     $$AccountsDbTableInsertCompanionBuilder,
     $$AccountsDbTableUpdateCompanionBuilder> {
-  $$AccountsDbTableTableManager(_$AppDatabase db, $AccountsDbTable table)
+  $$AccountsDbTableTableManager(_$DemoAppDatabase db, $AccountsDbTable table)
       : super(TableManagerState(
           db: db,
           table: table,
@@ -3412,7 +3412,7 @@ class $$AccountsDbTableTableManager extends RootTableManager<
 }
 
 class $$AccountsDbTableProcessedTableManager extends ProcessedTableManager<
-    _$AppDatabase,
+    _$DemoAppDatabase,
     $AccountsDbTable,
     AccountsDbData,
     $$AccountsDbTableFilterComposer,
@@ -3424,7 +3424,7 @@ class $$AccountsDbTableProcessedTableManager extends ProcessedTableManager<
 }
 
 class $$AccountsDbTableFilterComposer
-    extends FilterComposer<_$AppDatabase, $AccountsDbTable> {
+    extends FilterComposer<_$DemoAppDatabase, $AccountsDbTable> {
   $$AccountsDbTableFilterComposer(super.$state);
   ColumnFilters<String> get id => $state.composableBuilder(
       column: $state.table.id,
@@ -3503,7 +3503,7 @@ class $$AccountsDbTableFilterComposer
 }
 
 class $$AccountsDbTableOrderingComposer
-    extends OrderingComposer<_$AppDatabase, $AccountsDbTable> {
+    extends OrderingComposer<_$DemoAppDatabase, $AccountsDbTable> {
   $$AccountsDbTableOrderingComposer(super.$state);
   ColumnOrderings<String> get id => $state.composableBuilder(
       column: $state.table.id,
@@ -3622,7 +3622,7 @@ typedef $$TransactionsDbTableUpdateCompanionBuilder = TransactionsDbCompanion
 });
 
 class $$TransactionsDbTableTableManager extends RootTableManager<
-    _$AppDatabase,
+    _$DemoAppDatabase,
     $TransactionsDbTable,
     TransactionsDbData,
     $$TransactionsDbTableFilterComposer,
@@ -3631,7 +3631,7 @@ class $$TransactionsDbTableTableManager extends RootTableManager<
     $$TransactionsDbTableInsertCompanionBuilder,
     $$TransactionsDbTableUpdateCompanionBuilder> {
   $$TransactionsDbTableTableManager(
-      _$AppDatabase db, $TransactionsDbTable table)
+      _$DemoAppDatabase db, $TransactionsDbTable table)
       : super(TableManagerState(
           db: db,
           table: table,
@@ -3717,7 +3717,7 @@ class $$TransactionsDbTableTableManager extends RootTableManager<
 }
 
 class $$TransactionsDbTableProcessedTableManager extends ProcessedTableManager<
-    _$AppDatabase,
+    _$DemoAppDatabase,
     $TransactionsDbTable,
     TransactionsDbData,
     $$TransactionsDbTableFilterComposer,
@@ -3729,7 +3729,7 @@ class $$TransactionsDbTableProcessedTableManager extends ProcessedTableManager<
 }
 
 class $$TransactionsDbTableFilterComposer
-    extends FilterComposer<_$AppDatabase, $TransactionsDbTable> {
+    extends FilterComposer<_$DemoAppDatabase, $TransactionsDbTable> {
   $$TransactionsDbTableFilterComposer(super.$state);
   ColumnFilters<String> get id => $state.composableBuilder(
       column: $state.table.id,
@@ -3808,7 +3808,7 @@ class $$TransactionsDbTableFilterComposer
 }
 
 class $$TransactionsDbTableOrderingComposer
-    extends OrderingComposer<_$AppDatabase, $TransactionsDbTable> {
+    extends OrderingComposer<_$DemoAppDatabase, $TransactionsDbTable> {
   $$TransactionsDbTableOrderingComposer(super.$state);
   ColumnOrderings<String> get id => $state.composableBuilder(
       column: $state.table.id,
@@ -3921,7 +3921,7 @@ typedef $$InvestmentHoldingsDbTableUpdateCompanionBuilder
 });
 
 class $$InvestmentHoldingsDbTableTableManager extends RootTableManager<
-    _$AppDatabase,
+    _$DemoAppDatabase,
     $InvestmentHoldingsDbTable,
     InvestmentHoldingsDbData,
     $$InvestmentHoldingsDbTableFilterComposer,
@@ -3930,7 +3930,7 @@ class $$InvestmentHoldingsDbTableTableManager extends RootTableManager<
     $$InvestmentHoldingsDbTableInsertCompanionBuilder,
     $$InvestmentHoldingsDbTableUpdateCompanionBuilder> {
   $$InvestmentHoldingsDbTableTableManager(
-      _$AppDatabase db, $InvestmentHoldingsDbTable table)
+      _$DemoAppDatabase db, $InvestmentHoldingsDbTable table)
       : super(TableManagerState(
           db: db,
           table: table,
@@ -4005,7 +4005,7 @@ class $$InvestmentHoldingsDbTableTableManager extends RootTableManager<
 
 class $$InvestmentHoldingsDbTableProcessedTableManager
     extends ProcessedTableManager<
-        _$AppDatabase,
+        _$DemoAppDatabase,
         $InvestmentHoldingsDbTable,
         InvestmentHoldingsDbData,
         $$InvestmentHoldingsDbTableFilterComposer,
@@ -4017,7 +4017,7 @@ class $$InvestmentHoldingsDbTableProcessedTableManager
 }
 
 class $$InvestmentHoldingsDbTableFilterComposer
-    extends FilterComposer<_$AppDatabase, $InvestmentHoldingsDbTable> {
+    extends FilterComposer<_$DemoAppDatabase, $InvestmentHoldingsDbTable> {
   $$InvestmentHoldingsDbTableFilterComposer(super.$state);
   ColumnFilters<String> get id => $state.composableBuilder(
       column: $state.table.id,
@@ -4081,7 +4081,7 @@ class $$InvestmentHoldingsDbTableFilterComposer
 }
 
 class $$InvestmentHoldingsDbTableOrderingComposer
-    extends OrderingComposer<_$AppDatabase, $InvestmentHoldingsDbTable> {
+    extends OrderingComposer<_$DemoAppDatabase, $InvestmentHoldingsDbTable> {
   $$InvestmentHoldingsDbTableOrderingComposer(super.$state);
   ColumnOrderings<String> get id => $state.composableBuilder(
       column: $state.table.id,
@@ -4172,7 +4172,7 @@ typedef $$GoalsDbTableUpdateCompanionBuilder = GoalsDbCompanion Function({
 });
 
 class $$GoalsDbTableTableManager extends RootTableManager<
-    _$AppDatabase,
+    _$DemoAppDatabase,
     $GoalsDbTable,
     GoalsDbData,
     $$GoalsDbTableFilterComposer,
@@ -4180,7 +4180,7 @@ class $$GoalsDbTableTableManager extends RootTableManager<
     $$GoalsDbTableProcessedTableManager,
     $$GoalsDbTableInsertCompanionBuilder,
     $$GoalsDbTableUpdateCompanionBuilder> {
-  $$GoalsDbTableTableManager(_$AppDatabase db, $GoalsDbTable table)
+  $$GoalsDbTableTableManager(_$DemoAppDatabase db, $GoalsDbTable table)
       : super(TableManagerState(
           db: db,
           table: table,
@@ -4245,7 +4245,7 @@ class $$GoalsDbTableTableManager extends RootTableManager<
 }
 
 class $$GoalsDbTableProcessedTableManager extends ProcessedTableManager<
-    _$AppDatabase,
+    _$DemoAppDatabase,
     $GoalsDbTable,
     GoalsDbData,
     $$GoalsDbTableFilterComposer,
@@ -4257,7 +4257,7 @@ class $$GoalsDbTableProcessedTableManager extends ProcessedTableManager<
 }
 
 class $$GoalsDbTableFilterComposer
-    extends FilterComposer<_$AppDatabase, $GoalsDbTable> {
+    extends FilterComposer<_$DemoAppDatabase, $GoalsDbTable> {
   $$GoalsDbTableFilterComposer(super.$state);
   ColumnFilters<String> get id => $state.composableBuilder(
       column: $state.table.id,
@@ -4311,7 +4311,7 @@ class $$GoalsDbTableFilterComposer
 }
 
 class $$GoalsDbTableOrderingComposer
-    extends OrderingComposer<_$AppDatabase, $GoalsDbTable> {
+    extends OrderingComposer<_$DemoAppDatabase, $GoalsDbTable> {
   $$GoalsDbTableOrderingComposer(super.$state);
   ColumnOrderings<String> get id => $state.composableBuilder(
       column: $state.table.id,
@@ -4390,7 +4390,7 @@ typedef $$GoalAccountsDbTableUpdateCompanionBuilder = GoalAccountsDbCompanion
 });
 
 class $$GoalAccountsDbTableTableManager extends RootTableManager<
-    _$AppDatabase,
+    _$DemoAppDatabase,
     $GoalAccountsDbTable,
     GoalAccountsDbData,
     $$GoalAccountsDbTableFilterComposer,
@@ -4399,7 +4399,7 @@ class $$GoalAccountsDbTableTableManager extends RootTableManager<
     $$GoalAccountsDbTableInsertCompanionBuilder,
     $$GoalAccountsDbTableUpdateCompanionBuilder> {
   $$GoalAccountsDbTableTableManager(
-      _$AppDatabase db, $GoalAccountsDbTable table)
+      _$DemoAppDatabase db, $GoalAccountsDbTable table)
       : super(TableManagerState(
           db: db,
           table: table,
@@ -4457,7 +4457,7 @@ class $$GoalAccountsDbTableTableManager extends RootTableManager<
 }
 
 class $$GoalAccountsDbTableProcessedTableManager extends ProcessedTableManager<
-    _$AppDatabase,
+    _$DemoAppDatabase,
     $GoalAccountsDbTable,
     GoalAccountsDbData,
     $$GoalAccountsDbTableFilterComposer,
@@ -4469,7 +4469,7 @@ class $$GoalAccountsDbTableProcessedTableManager extends ProcessedTableManager<
 }
 
 class $$GoalAccountsDbTableFilterComposer
-    extends FilterComposer<_$AppDatabase, $GoalAccountsDbTable> {
+    extends FilterComposer<_$DemoAppDatabase, $GoalAccountsDbTable> {
   $$GoalAccountsDbTableFilterComposer(super.$state);
   ColumnFilters<String> get id => $state.composableBuilder(
       column: $state.table.id,
@@ -4513,7 +4513,7 @@ class $$GoalAccountsDbTableFilterComposer
 }
 
 class $$GoalAccountsDbTableOrderingComposer
-    extends OrderingComposer<_$AppDatabase, $GoalAccountsDbTable> {
+    extends OrderingComposer<_$DemoAppDatabase, $GoalAccountsDbTable> {
   $$GoalAccountsDbTableOrderingComposer(super.$state);
   ColumnOrderings<String> get id => $state.composableBuilder(
       column: $state.table.id,
@@ -4574,7 +4574,7 @@ typedef $$ProfilesDbTableUpdateCompanionBuilder = ProfilesDbCompanion Function({
 });
 
 class $$ProfilesDbTableTableManager extends RootTableManager<
-    _$AppDatabase,
+    _$DemoAppDatabase,
     $ProfilesDbTable,
     ProfilesDbData,
     $$ProfilesDbTableFilterComposer,
@@ -4582,7 +4582,7 @@ class $$ProfilesDbTableTableManager extends RootTableManager<
     $$ProfilesDbTableProcessedTableManager,
     $$ProfilesDbTableInsertCompanionBuilder,
     $$ProfilesDbTableUpdateCompanionBuilder> {
-  $$ProfilesDbTableTableManager(_$AppDatabase db, $ProfilesDbTable table)
+  $$ProfilesDbTableTableManager(_$DemoAppDatabase db, $ProfilesDbTable table)
       : super(TableManagerState(
           db: db,
           table: table,
@@ -4628,7 +4628,7 @@ class $$ProfilesDbTableTableManager extends RootTableManager<
 }
 
 class $$ProfilesDbTableProcessedTableManager extends ProcessedTableManager<
-    _$AppDatabase,
+    _$DemoAppDatabase,
     $ProfilesDbTable,
     ProfilesDbData,
     $$ProfilesDbTableFilterComposer,
@@ -4640,7 +4640,7 @@ class $$ProfilesDbTableProcessedTableManager extends ProcessedTableManager<
 }
 
 class $$ProfilesDbTableFilterComposer
-    extends FilterComposer<_$AppDatabase, $ProfilesDbTable> {
+    extends FilterComposer<_$DemoAppDatabase, $ProfilesDbTable> {
   $$ProfilesDbTableFilterComposer(super.$state);
   ColumnFilters<String> get id => $state.composableBuilder(
       column: $state.table.id,
@@ -4669,7 +4669,7 @@ class $$ProfilesDbTableFilterComposer
 }
 
 class $$ProfilesDbTableOrderingComposer
-    extends OrderingComposer<_$AppDatabase, $ProfilesDbTable> {
+    extends OrderingComposer<_$DemoAppDatabase, $ProfilesDbTable> {
   $$ProfilesDbTableOrderingComposer(super.$state);
   ColumnOrderings<String> get id => $state.composableBuilder(
       column: $state.table.id,
@@ -4697,9 +4697,9 @@ class $$ProfilesDbTableOrderingComposer
           ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
-class _$AppDatabaseManager {
-  final _$AppDatabase _db;
-  _$AppDatabaseManager(this._db);
+class _$DemoAppDatabaseManager {
+  final _$DemoAppDatabase _db;
+  _$DemoAppDatabaseManager(this._db);
   $$AccountsDbTableTableManager get accountsDb =>
       $$AccountsDbTableTableManager(_db, _db.accountsDb);
   $$TransactionsDbTableTableManager get transactionsDb =>
