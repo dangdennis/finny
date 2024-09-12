@@ -32,7 +32,7 @@ class _GoalDetailsEditState extends State<GoalDetailsEdit> {
   late TextEditingController nameController;
   late TextEditingController amountController;
   late DateTime targetDate;
-  bool isCustomAmount = false;
+  bool isCustomGoalTypeSelected = false;
   late Set<GoalType> _selectedGoalType;
 
   static const int maxNameLength = 50;
@@ -50,6 +50,7 @@ class _GoalDetailsEditState extends State<GoalDetailsEdit> {
     _selectedGoalType = {
       widget.goal.targetAmount != 0 ? GoalType.custom : GoalType.retirement
     };
+    isCustomGoalTypeSelected = _selectedGoalType.first == GoalType.custom;
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -196,10 +197,9 @@ class _GoalDetailsEditState extends State<GoalDetailsEdit> {
                     onSelectionChanged: (Set<GoalType> newSelection) {
                       setState(() {
                         _selectedGoalType = newSelection;
-                        isCustomAmount = newSelection.first == GoalType.custom;
-                        if (!isCustomAmount) {
-                          amountController.text = '0.00';
-                          _saveGoal();
+                        isCustomGoalTypeSelected = newSelection.first == GoalType.custom;
+                        if (!(newSelection.first == GoalType.custom)) {
+                          amountController.text = '0';
                         }
                       });
                     },
@@ -209,20 +209,20 @@ class _GoalDetailsEditState extends State<GoalDetailsEdit> {
                     controller: amountController,
                     focusNode: widget.targetAmountFocusNode,
                     keyboardType: TextInputType.number,
-                    enabled: isCustomAmount,
+                    enabled: isCustomGoalTypeSelected,
                     inputFormatters: [
                       FilteringTextInputFormatter.allow(
                           RegExp(r'^\d+\.?\d{0,2}')),
                       AmountLimitingTextInputFormatter(maxAmount: maxAmount),
                     ],
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: isCustomAmount ? Colors.green : Colors.grey,
+                        color: isCustomGoalTypeSelected ? Colors.green : Colors.grey,
                         fontWeight: FontWeight.bold),
                     decoration: InputDecoration(
                       border: const UnderlineInputBorder(),
                       prefixText: '\$',
                       hintText:
-                          isCustomAmount ? null : 'Based on your finances',
+                          isCustomGoalTypeSelected ? null : 'Based on your finances',
                     ),
                     onFieldSubmitted: (value) => _saveGoal(),
                   ),

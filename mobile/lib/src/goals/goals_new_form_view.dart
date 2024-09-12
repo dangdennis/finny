@@ -21,7 +21,7 @@ class GoalsNewFormView extends StatefulWidget {
 class _GoalsNewFormViewState extends State<GoalsNewFormView> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController =
-      TextEditingController(text: 'Retirement Fund');
+      TextEditingController(text: '');
   final TextEditingController _amountController =
       TextEditingController(text: '0');
   final TextEditingController _targetDateController = TextEditingController();
@@ -189,7 +189,7 @@ class _GoalsNewFormViewState extends State<GoalsNewFormView> {
                         controller: _amountController,
                         focusNode: _amountFocusNode,
                         decoration: const InputDecoration(
-                          labelText: 'Amount (default is 0)',
+                          labelText: 'Amount',
                           border: OutlineInputBorder(),
                           contentPadding: EdgeInsets.all(16),
                           prefixText: '\$',
