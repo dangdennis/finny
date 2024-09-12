@@ -23,4 +23,8 @@ class FinalyticsController {
       yield MonthlyInvestmentOutput(amount: 0);
     }
   }
+
+  Future<double> getTargetMonthlySavings() async {
+    return _finalytics.getTargetMonthlySavings();
+  }
 }

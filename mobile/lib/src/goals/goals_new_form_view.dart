@@ -21,7 +21,7 @@ class GoalsNewFormView extends StatefulWidget {
 class _GoalsNewFormViewState extends State<GoalsNewFormView> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController =
-      TextEditingController(text: '');
+      TextEditingController(text: 'Retirement 🎉🥳');
   final TextEditingController _amountController =
       TextEditingController(text: '0');
   final TextEditingController _targetDateController = TextEditingController();

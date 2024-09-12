@@ -68,6 +68,7 @@ void main() async {
   final goalsController = GoalsController(
     accountsService: accountsService,
     goalsService: goalsService,
+    profileService: profileService,
   );
   final onboardingController = OnboardingController(
     accountService: accountsService,

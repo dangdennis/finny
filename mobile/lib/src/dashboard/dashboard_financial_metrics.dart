@@ -28,14 +28,13 @@ class _FinancialMetricsCardState extends State<FinancialMetricsCard> {
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 16),
-            StreamBuilder(
-              stream:
-                  widget.finalyticsController.watchTargetMonthlyInvestment(),
+            FutureBuilder(
+              future: widget.finalyticsController.getTargetMonthlySavings(),
               builder: (context, snapshot) {
                 return _buildMetricTile(
                   context,
-                  'Monthly Investment Goal',
-                  snapshot.data?.amount ?? 0,
+                  'Monthly Savings & Investments Goal',
+                  snapshot.data ?? 0,
                   Icons.trending_up,
                 );
               },
@@ -47,7 +46,7 @@ class _FinancialMetricsCardState extends State<FinancialMetricsCard> {
               builder: (context, snapshot) {
                 return _buildMetricTile(
                   context,
-                  'Invested This Month',
+                  'Invested and Saved This Month',
                   snapshot.data?.amount ?? 0,
                   Icons.trending_up,
                 );
