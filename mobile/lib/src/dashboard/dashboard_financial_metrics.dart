@@ -29,23 +29,24 @@ class _FinancialMetricsCardState extends State<FinancialMetricsCard> {
             ),
             const SizedBox(height: 16),
             FutureBuilder(
-              future: widget.finalyticsController.getTargetMonthlyInvestment(),
+              future: widget.finalyticsController.getTargetMonthlySavings(),
               builder: (context, snapshot) {
                 return _buildMetricTile(
                   context,
-                  'Monthly Investment Goal',
-                  snapshot.data?.amount ?? 0,
+                  'Monthly Savings & Investments Goal',
+                  snapshot.data ?? 0,
                   Icons.trending_up,
                 );
               },
             ),
             const SizedBox(height: 8),
-            FutureBuilder(
-              future: widget.finalyticsController.getActualMonthlyInvestment(),
+            StreamBuilder(
+              stream:
+                  widget.finalyticsController.watchActualMonthlyInvestment(),
               builder: (context, snapshot) {
                 return _buildMetricTile(
                   context,
-                  'Invested This Month',
+                  'Invested and Saved This Month',
                   snapshot.data?.amount ?? 0,
                   Icons.trending_up,
                 );

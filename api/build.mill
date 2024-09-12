@@ -68,23 +68,18 @@ object cli extends CommonModule {
 
 }
 
-object all extends CommonModule {
-    def compile = T.command {
-        api.compile()
-        test.compile()
-        cli.compile()
-    }
+object all extends Module {
+  def moduleDeps = Seq(api, test, cli)
 
-    def fix() = T.command {
-        api.fix()
-        test.fix()
-        cli.fix()
-    }
+  def compile = T {
+    T.traverse(moduleDeps)(_.compile)
+  }
 
-    // todo: get this working one day
-    def reformat() = T.command {
-        api.reformat()
-        test.reformat()
-        cli.reformat()
-    }
+  def fix = T {
+    T.traverse(moduleDeps)(_.fix())
+  }
+
+  def reformat = T {
+    T.traverse(moduleDeps)(_.reformat())
+  }
 }

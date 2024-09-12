@@ -2,18 +2,27 @@ import 'package:finny/src/accounts/account_model.dart';
 import 'package:finny/src/accounts/accounts_service.dart';
 import 'package:finny/src/goals/goal_model.dart';
 import 'package:finny/src/goals/goals_service.dart';
+import 'package:finny/src/profile/profile_model.dart';
+import 'package:finny/src/profile/profile_service.dart';
 import 'package:logging/logging.dart';
 
 class GoalsController {
   GoalsController({
     required GoalsService goalsService,
     required AccountsService accountsService,
+    required ProfileService profileService,
   })  : _accountsService = accountsService,
-        _goalsService = goalsService;
+        _goalsService = goalsService,
+        _profileService = profileService;
 
   final Logger _logger = Logger('GoalsController');
   final GoalsService _goalsService;
   final AccountsService _accountsService;
+  final ProfileService _profileService;
+
+  Stream<Profile?> watchProfile() {
+    return _profileService.watchProfile();
+  }
 
   Stream<List<Goal>> watchGoals() {
     try {

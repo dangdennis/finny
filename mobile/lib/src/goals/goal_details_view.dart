@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:finny/src/goals/goal_details_assign_accounts.dart';
+import 'package:finny/src/profile/profile_model.dart';
 import 'package:flutter/material.dart';
 import 'package:finny/src/goals/goal_details_edit.dart';
 import 'package:finny/src/goals/goal_model.dart';
@@ -69,6 +70,8 @@ class GoalDetailView extends StatefulWidget {
 class _GoalDetailViewState extends State<GoalDetailView> {
   Goal? goal;
   StreamSubscription<Goal>? goalSub;
+  Profile? profile;
+  StreamSubscription<Profile?>? profileSub;
   final FocusNode nameFocusNode = FocusNode();
   final FocusNode targetAmountFocusNode = FocusNode();
   final FocusNode targetDateFocusNode = FocusNode();
@@ -77,6 +80,7 @@ class _GoalDetailViewState extends State<GoalDetailView> {
   void initState() {
     super.initState();
     watchGoal();
+    watchProfile();
   }
 
   @override
@@ -99,6 +103,16 @@ class _GoalDetailViewState extends State<GoalDetailView> {
       (goal) {
         setState(() {
           this.goal = goal;
+        });
+      },
+    );
+  }
+
+  void watchProfile() {
+    profileSub = widget._goalsController.watchProfile().listen(
+      (profile) {
+        setState(() {
+          this.profile = profile;
         });
       },
     );
@@ -135,14 +149,14 @@ class _GoalDetailViewState extends State<GoalDetailView> {
                     ),
                     child: Padding(
                       padding: const EdgeInsets.all(16),
-                      child: goal != null
+                      child: goal != null && profile != null
                           ? GoalDetailsEdit(
                               goal: goal!,
                               onGoalSave: widget._handleGoalSave,
                               nameFocusNode: nameFocusNode,
                               targetAmountFocusNode: targetAmountFocusNode,
                               targetDateFocusNode: targetDateFocusNode,
-                              profile: null,
+                              profile: profile!,
                             )
                           : Container(),
                     ),

@@ -23,12 +23,6 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   int get schemaVersion => 1;
-
-  Stream<List<AccountsDbData>> watchAccounts() {
-    return (select(accountsDb)
-          ..orderBy([(a) => OrderingTerm(expression: a.createdAt)]))
-        .watch();
-  }
 }
 
 class AccountsDb extends Table {

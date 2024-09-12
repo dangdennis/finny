@@ -1,4 +1,3 @@
-import 'package:finny/src/dashboard/goals/add_goal_button.dart';
 import 'package:finny/src/dashboard/dashboard_financial_metrics.dart';
 import 'package:finny/src/dashboard/goals/goal_card.dart';
 import 'package:finny/src/dashboard/onboarding_card/onboarding_card.dart';
@@ -68,7 +67,9 @@ class _DashboardViewState extends State<DashboardView> {
           },
         ),
       ]),
-      floatingActionButton: const AddGoalButton(),
+      // todo: disable addition of new goals.
+      // we automatically create a singular retirement goal after onboarding is complete.
+      // floatingActionButton: const AddGoalButton(),
       body: FutureBuilder<OnboardingState>(
         future: widget.onboardingController.isOnboarded(),
         builder: (context, snapshot) {
