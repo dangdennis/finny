@@ -44,12 +44,14 @@ void main() async {
   await PowersyncSupabaseConnector.openDatabaseAndInitSupabase();
 
   // services
+  final accountsService = AccountsService(appDb: appDb);
   final profileService = ProfileService(appDb: appDb);
   final goalsService = GoalsService(
+    accountsService: accountsService,
     appDb: appDb,
   );
   final settingsService = SettingsService();
-  final accountsService = AccountsService(appDb: appDb);
+
   final authService = AuthService(
     powersyncDb: powersyncDb,
   );

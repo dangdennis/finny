@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:finny/src/goals/goal_model.dart';
 import 'package:finny/src/profile/profile_model.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 class GoalDetailsEdit extends StatefulWidget {
   const GoalDetailsEdit({
@@ -135,28 +134,5 @@ class _GoalDetailsEditState extends State<GoalDetailsEdit> {
         )
       ],
     );
-  }
-}
-
-class AmountLimitingTextInputFormatter extends TextInputFormatter {
-  final double maxAmount;
-
-  AmountLimitingTextInputFormatter({required this.maxAmount});
-
-  @override
-  TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue, TextEditingValue newValue) {
-    if (newValue.text.isEmpty) {
-      return newValue;
-    }
-
-    double? parsedValue = double.tryParse(newValue.text);
-    if (parsedValue != null && parsedValue > maxAmount) {
-      // If the new value exceeds maxAmount, keep the old value
-      return oldValue;
-    }
-
-    // Otherwise, allow the new value
-    return newValue;
   }
 }

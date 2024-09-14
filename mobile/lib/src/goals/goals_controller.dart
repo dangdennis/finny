@@ -124,6 +124,13 @@ class GoalsController {
     }
   }
 
+  List<Account> getAssignableAccounts(List<Account> accounts) {
+    return accounts.where((account) {
+      return account.type == 'investment' ||
+          (account.type == 'depository' && account.subtype == 'savings');
+    }).toList();
+  }
+
   Future<void> assignOrUpdateGoalAccount({
     required GoalId goalId,
     required AccountId accountId,

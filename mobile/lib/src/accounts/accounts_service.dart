@@ -9,6 +9,13 @@ class AccountsService {
   final Logger _logger = Logger('AccountsService');
   final AppDatabase appDb;
 
+  Future<Account> getAccount(String accountId) async {
+    final account = await (appDb.select(appDb.accountsDb)
+          ..where((tbl) => tbl.id.equals(accountId)))
+        .getSingle();
+    return dbToDomain(account);
+  }
+
   Stream<List<Account>> watchAccounts() {
     return (appDb.select(appDb.accountsDb)
           ..orderBy([(a) => OrderingTerm(expression: a.createdAt)]))
