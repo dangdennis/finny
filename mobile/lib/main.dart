@@ -84,7 +84,8 @@ void main() async {
     settingsService: settingsService,
     authProvider: authProvider,
   );
-  final finalyticsController = FinalyticsController(finalyticsService);
+  final finalyticsController =
+      FinalyticsController(finalyticsService, profileService);
   // Load the user's preferred theme while the splash screen is displayed.
   // This prevents a sudden theme change when the app is first displayed.
   await settingsController.loadSettings();

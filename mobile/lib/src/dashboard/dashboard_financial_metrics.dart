@@ -29,14 +29,22 @@ class _FinancialMetricsCardState extends State<FinancialMetricsCard> {
             ),
             const SizedBox(height: 16),
             FutureBuilder(
-              future: widget.finalyticsController
-                  .getTargetMonthlyRetirementSavings(),
+              future: widget.finalyticsController.getActualRetirementAge(),
               builder: (context, snapshot) {
-                return _buildMetricTile(
+                return _buildAgeTile(
                   context,
-                  'Monthly Retirement Savings Goal',
-                  snapshot.data ?? 0,
-                  Icons.trending_up,
+                  "Actual Retirement Age",
+                  snapshot.data?.toInt() ?? 67,
+                );
+              },
+            ),
+            FutureBuilder(
+              future: widget.finalyticsController.getTargetRetirementAge(),
+              builder: (context, snapshot) {
+                return _buildAgeTile(
+                  context,
+                  "Target Retirement Age",
+                  snapshot.data ?? 67,
                 );
               },
             ),
@@ -47,7 +55,7 @@ class _FinancialMetricsCardState extends State<FinancialMetricsCard> {
               builder: (context, snapshot) {
                 return _buildMetricTile(
                   context,
-                  'Saved This Month',
+                  'Monthly Savings Goal',
                   snapshot.data ?? 0,
                   Icons.trending_up,
                 );
@@ -55,8 +63,7 @@ class _FinancialMetricsCardState extends State<FinancialMetricsCard> {
             ),
             const SizedBox(height: 8),
             FutureBuilder(
-              future: widget.finalyticsController
-                  .getTargetMonthlyRetirementSavings(),
+              future: widget.finalyticsController.getSavedLast30Days(),
               builder: (context, snapshot) {
                 return _buildMetricTile(
                   context,
@@ -83,6 +90,15 @@ class _FinancialMetricsCardState extends State<FinancialMetricsCard> {
           ? Text(
               'In: ${formatter.format(value)} | Out: ${formatter.format(secondaryValue)}')
           : Text(formatter.format(value)),
+      dense: true,
+    );
+  }
+
+  Widget _buildAgeTile(BuildContext context, String title, int age) {
+    return ListTile(
+      leading: Icon(Icons.cake, color: Theme.of(context).primaryColor),
+      title: Text(title, style: Theme.of(context).textTheme.titleMedium),
+      subtitle: Text('$age years'),
       dense: true,
     );
   }

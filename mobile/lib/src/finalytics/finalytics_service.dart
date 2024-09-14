@@ -32,11 +32,11 @@ class FinalyticsService {
     final yearsToRetirement = await calculateYearsToRetirement();
 
     final freedomFVRetirementAge = calculateFutureValue(FutureValueInput(
-      presentValue: -freedomFVCurrentAge.abs(),
+      presentValue: -(freedomFVCurrentAge.abs()),
       monthlyInvestment: 0,
       // Could potentially allow users to set a different rate
       annualInterestRate: 0.02, // 2% inflation rate
-      years: yearsToRetirement * 12,
+      years: yearsToRetirement,
     ));
 
     return freedomFVRetirementAge.amount;
@@ -54,14 +54,14 @@ class FinalyticsService {
     final period = await calculateYearsToRetirement();
     const interest = 8.0;
     final fv = await getFreedomFutureValueOfCurrentExpensesAtRetirement();
+    final yearlySavingsTarget = await calculatePaymentFromFutureValue(
+      fv: fv,
+      pv: pv,
+      interest: interest,
+      years: period,
+    );
 
-    return (await calculatePaymentFromFutureValue(
-          fv: fv,
-          pv: pv,
-          interest: interest,
-          years: period,
-        ) /
-        12);
+    return yearlySavingsTarget / 12;
   }
 
   Stream<MonthlyInvestmentOutput> watchActualMonthlyInvestment() async* {
@@ -183,6 +183,11 @@ class FinalyticsService {
     } else {
       payment = (fv - pv * pow(1 + rate, years)) /
           ((pow(1 + rate, years) - 1) / rate);
+    }
+
+    // Adjust the sign if both FV and PV are negative
+    if (fv < 0 && pv < 0) {
+      payment = -payment;
     }
 
     // Round to 2 decimal places
