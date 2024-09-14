@@ -3,22 +3,15 @@ import 'dart:math';
 import 'package:finny/src/goals/goal_model.dart';
 import 'package:finny/src/profile/profile_model.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 class GoalDetailsEdit extends StatefulWidget {
   const GoalDetailsEdit({
     super.key,
     required this.goal,
     required this.onGoalSave,
-    required this.nameFocusNode,
-    required this.targetAmountFocusNode,
-    required this.targetDateFocusNode,
     required this.profile,
   });
 
-  final FocusNode nameFocusNode;
-  final FocusNode targetAmountFocusNode;
-  final FocusNode targetDateFocusNode;
   final Future<void> Function(Goal) onGoalSave;
   final Goal goal;
   final Profile profile;
@@ -29,25 +22,7 @@ class GoalDetailsEdit extends StatefulWidget {
 
 class _GoalDetailsEditState extends State<GoalDetailsEdit> {
   late DateTime targetDate;
-  bool isCustomGoalTypeSelected = false;
   late Profile profile;
-
-  Future<void> _saveGoal() async {
-    // calculate target amount based on retirement age
-    const targetAmount = 0.0;
-    // calculate target date based on retirement age
-    final targetDate = DateTime.now();
-
-    final goal = Goal(
-        id: widget.goal.id,
-        name: "Retirement 🎉🥳",
-        targetAmount: targetAmount,
-        targetDate: targetDate,
-        progress: widget.goal.progress,
-        goalType: GoalType.retirement);
-
-    await widget.onGoalSave(goal);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -159,28 +134,5 @@ class _GoalDetailsEditState extends State<GoalDetailsEdit> {
         )
       ],
     );
-  }
-}
-
-class AmountLimitingTextInputFormatter extends TextInputFormatter {
-  final double maxAmount;
-
-  AmountLimitingTextInputFormatter({required this.maxAmount});
-
-  @override
-  TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue, TextEditingValue newValue) {
-    if (newValue.text.isEmpty) {
-      return newValue;
-    }
-
-    double? parsedValue = double.tryParse(newValue.text);
-    if (parsedValue != null && parsedValue > maxAmount) {
-      // If the new value exceeds maxAmount, keep the old value
-      return oldValue;
-    }
-
-    // Otherwise, allow the new value
-    return newValue;
   }
 }

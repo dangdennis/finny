@@ -1,5 +1,7 @@
 import 'dart:math';
 
+import 'package:finny/src/accounts/accounts_service.dart';
+import 'package:finny/src/goals/goal_model.dart';
 import 'package:finny/src/goals/goals_service.dart';
 import 'package:finny/src/powersync/database.dart';
 import 'package:finny/src/profile/profile_service.dart';
@@ -10,19 +12,13 @@ class FinalyticsService {
   late final ProfileService profileService;
 
   FinalyticsService({required this.appDb}) {
-    goalsService = GoalsService(appDb: appDb);
+    goalsService = GoalsService(
+        appDb: appDb, accountsService: AccountsService(appDb: appDb));
     profileService = ProfileService(appDb: appDb);
   }
 
   Future<double> getActualRetirementAge() async {
-    // calculate FV based on 4% of current expenses (outflows) * years to retirement
-    final freedomFutureValue = await getFreedomFutureValueOfCurrentExpenses();
-
-    final averageMonthlyInflowOutflow = await getAverageMonthlyInflowOutflow();
-    final currentExpenses = averageMonthlyInflowOutflow.outflows;
-    final yearsToRetirement = await calculateYearsToRetirement();
-    final futureValue = currentExpenses * pow(1.04, yearsToRetirement);
-    return futureValue;
+    return 0;
   }
 
   // Calculate the total amount of money (future value) I need today to sustain my expenses in perpetuity at 4% interest
@@ -36,21 +32,36 @@ class FinalyticsService {
     final yearsToRetirement = await calculateYearsToRetirement();
 
     final freedomFVRetirementAge = calculateFutureValue(FutureValueInput(
-      presentValue: -freedomFVCurrentAge.abs(),
+      presentValue: -(freedomFVCurrentAge.abs()),
       monthlyInvestment: 0,
       // Could potentially allow users to set a different rate
       annualInterestRate: 0.02, // 2% inflation rate
-      years: yearsToRetirement * 12,
+      years: yearsToRetirement,
     ));
 
     return freedomFVRetirementAge.amount;
   }
 
-  Future<double> getTargetMonthlySavings() async {
-    // get the single retirement goal
-    // when the goal changes, recalculate the monthly investment
+  Future<double> getTargetMonthlyRetirementSavings() async {
+    final retirementGoal = (await goalsService.getGoals()).firstWhere(
+      (goal) => goal.goalType == GoalType.retirement,
+      orElse: () => throw Exception('No retirement goal found'),
+    );
 
-    return 0;
+    final pv =
+        -((await goalsService.getTotalBalanceAssignedGoals(retirementGoal.id))
+            .abs());
+    final period = await calculateYearsToRetirement();
+    const interest = 8.0;
+    final fv = await getFreedomFutureValueOfCurrentExpensesAtRetirement();
+    final yearlySavingsTarget = await calculatePaymentFromFutureValue(
+      fv: fv,
+      pv: pv,
+      interest: interest,
+      years: period,
+    );
+
+    return yearlySavingsTarget / 12;
   }
 
   Stream<MonthlyInvestmentOutput> watchActualMonthlyInvestment() async* {
@@ -58,7 +69,7 @@ class FinalyticsService {
       final result = await appDb.customSelect('''
         WITH start_of_month AS (
             -- Get the earliest holding in the current month for each account and security
-            SELECT 
+            SELECT
                 ihd.account_id,
                 ihd.investment_security_id,
                 ihd.holding_date AS earliest_holding_date,
@@ -75,7 +86,7 @@ class FinalyticsService {
         ),
         most_recent_holdings AS (
             -- Get the most recent holdings for each account and security
-            SELECT 
+            SELECT
                 ihd.account_id,
                 ihd.investment_security_id,
                 ihd.holding_date AS most_recent_holding_date,
@@ -89,17 +100,17 @@ class FinalyticsService {
                   AND investment_security_id = ihd.investment_security_id
             )
         )
-        SELECT 
+        SELECT
             mrh.account_id,
             mrh.investment_security_id,
             (mrh.current_quantity - som.start_quantity) * mrh.current_price AS personal_investment
-        FROM 
+        FROM
             most_recent_holdings mrh
-        JOIN 
-            start_of_month som 
-            ON mrh.account_id = som.account_id 
+        JOIN
+            start_of_month som
+            ON mrh.account_id = som.account_id
             AND mrh.investment_security_id = som.investment_security_id
-        WHERE 
+        WHERE
             mrh.current_quantity > som.start_quantity  -- Only consider increases in quantity (personal investment)
             AND mrh.most_recent_holding_date >= som.earliest_holding_date;  -- Compare from the earliest date in the current month
     ''').get();
@@ -112,27 +123,6 @@ class FinalyticsService {
       return MonthlyInvestmentOutput(amount: totalPersonalInvestment);
     }).asyncMap(
         (output) async => await output)); // Use asyncMap to handle Future
-  }
-
-  Stream<MonthlyInvestmentOutput> watchTargetMonthlyInvestment() async* {
-    final yearsPeriod = await calculateYearsToRetirement();
-    final presentValue = await getCurrentTotalInvestmentBalance();
-
-    final goalsStream = goalsService.watchGoals();
-    yield* goalsStream.map((goals) {
-      //
-      final totalTargetAmount =
-          goals.fold(0.0, (sum, goal) => sum + goal.targetAmount);
-      final input = MonthyInvestmentInput(
-        presentValue: presentValue,
-        futureValue: totalTargetAmount,
-        annualInterestRate: 0.08,
-        yearsPeriod: yearsPeriod,
-      );
-
-      return MonthlyInvestmentOutput(
-          amount: max(calculateMonthlyInvestment(input).amount, 0));
-    });
   }
 
   // Calculate the monthly investment goal based on the present value, future value, annual interest rate, and years
@@ -174,6 +164,34 @@ class FinalyticsService {
                 ((pow(1 + annualInterestRate, years) - 1) / annualInterestRate);
 
     return FutureValueOutput(amount: futureValue);
+  }
+
+  Future<double> calculatePaymentFromFutureValue({
+    required double fv,
+    required double pv,
+    required double interest,
+    required int years,
+  }) async {
+    // Convert interest rate to decimal
+    double rate = interest / 100;
+
+    // Calculate the payment using the future value formula for annual payments
+    double payment;
+    if (rate == 0) {
+      // If interest rate is 0, use simple division
+      payment = (fv - pv) / years;
+    } else {
+      payment = (fv - pv * pow(1 + rate, years)) /
+          ((pow(1 + rate, years) - 1) / rate);
+    }
+
+    // Adjust the sign if both FV and PV are negative
+    if (fv < 0 && pv < 0) {
+      payment = -payment;
+    }
+
+    // Round to 2 decimal places
+    return double.parse(payment.toStringAsFixed(2));
   }
 
   /// Get the current retirement interest return for all investment accounts.

@@ -1,30 +1,25 @@
 import 'package:finny/src/finalytics/finalytics_service.dart';
-import 'package:logging/logging.dart';
+import 'package:finny/src/profile/profile_service.dart';
 
 class FinalyticsController {
-  FinalyticsController(this._finalytics);
+  FinalyticsController(this._finalytics, this._profileService);
 
   final FinalyticsService _finalytics;
+  final ProfileService _profileService;
 
-  Stream<MonthlyInvestmentOutput> watchTargetMonthlyInvestment() async* {
-    try {
-      yield* _finalytics.watchTargetMonthlyInvestment();
-    } catch (e) {
-      Logger.root.severe('Error getting target monthly investment: $e');
-      yield MonthlyInvestmentOutput(amount: 0);
-    }
+  Future<int> getActualRetirementAge() async {
+    return 67;
   }
 
-  Stream<MonthlyInvestmentOutput> watchActualMonthlyInvestment() async* {
-    try {
-      yield* _finalytics.watchActualMonthlyInvestment();
-    } catch (e) {
-      Logger.root.severe('Error getting actual monthly investment: $e');
-      yield MonthlyInvestmentOutput(amount: 0);
-    }
+  Future<int> getTargetRetirementAge() async {
+    return (await _profileService.getProfile()).retirementAge ?? 67;
   }
 
-  Future<double> getTargetMonthlySavings() async {
-    return _finalytics.getTargetMonthlySavings();
+  Future<double> getTargetMonthlyRetirementSavings() async {
+    return _finalytics.getTargetMonthlyRetirementSavings();
+  }
+
+  Future<double> getSavedLast30Days() async {
+    return 0.0;
   }
 }

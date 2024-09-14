@@ -1,13 +1,15 @@
 import 'package:drift/drift.dart';
 import 'package:finny/src/accounts/account_model.dart';
+import 'package:finny/src/accounts/accounts_service.dart';
 import 'package:finny/src/goals/goal_model.dart';
 import 'package:finny/src/powersync/database.dart';
 import 'package:uuid/uuid.dart';
 
 class GoalsService {
-  GoalsService({required this.appDb});
+  GoalsService({required this.appDb, required this.accountsService});
 
   final AppDatabase appDb;
+  final AccountsService accountsService;
 
   Stream<Goal> watchGoal(String goalId) {
     return (appDb.select(appDb.goalsDb)..where((g) => g.id.equals(goalId)))
@@ -176,6 +178,20 @@ class GoalsService {
         .get();
 
     return goalAccountsDbData.map(goalAccountDbToDomain).toList();
+  }
+
+  Future<double> getTotalBalanceAssignedGoals(String goalId) async {
+    final goalAccounts = await getGoalAccounts(goalId);
+
+    double totalBalance = 0.0;
+    for (var goalAccount in goalAccounts) {
+      final account = await accountsService.getAccount(goalAccount.accountId);
+      final assignedBalance =
+          account.currentBalance * (goalAccount.percentage / 100);
+      totalBalance += assignedBalance;
+    }
+
+    return double.parse(totalBalance.toStringAsFixed(2));
   }
 
   // Helper method to convert GoalsDbData to Goal domain model

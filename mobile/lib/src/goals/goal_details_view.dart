@@ -21,48 +21,6 @@ class GoalDetailView extends StatefulWidget {
     await _goalsController.updateGoal(goal);
   }
 
-  Future<void> _handleGoalDelete(BuildContext context) async {
-    final goal = await _goalsController.getGoal(goalId);
-    if (context.mounted) {
-      final confirmed = await _showDeleteConfirmationDialog(context, goal);
-      if (confirmed) {
-        final goal = await _goalsController.getGoal(goalId);
-        await _goalsController.deleteGoal(goal);
-        if (context.mounted) {
-          Navigator.of(context).pop();
-        }
-      }
-    }
-  }
-
-  Future<bool> _showDeleteConfirmationDialog(
-      BuildContext context, Goal goal) async {
-    return await showDialog<bool>(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text('Delete ${goal.name}'),
-              content: const Text('Are you sure you want to delete this goal?'),
-              actions: [
-                TextButton(
-                  child: const Text('Cancel'),
-                  onPressed: () {
-                    Navigator.of(context).pop(false); // Return false
-                  },
-                ),
-                TextButton(
-                  child: const Text('Delete'),
-                  onPressed: () {
-                    Navigator.of(context).pop(true); // Return true
-                  },
-                ),
-              ],
-            );
-          },
-        ) ??
-        false;
-  }
-
   @override
   State<GoalDetailView> createState() => _GoalDetailViewState();
 }
@@ -72,9 +30,6 @@ class _GoalDetailViewState extends State<GoalDetailView> {
   StreamSubscription<Goal>? goalSub;
   Profile? profile;
   StreamSubscription<Profile?>? profileSub;
-  final FocusNode nameFocusNode = FocusNode();
-  final FocusNode targetAmountFocusNode = FocusNode();
-  final FocusNode targetDateFocusNode = FocusNode();
 
   @override
   void initState() {
@@ -87,15 +42,6 @@ class _GoalDetailViewState extends State<GoalDetailView> {
   void dispose() {
     goalSub?.cancel();
     super.dispose();
-    nameFocusNode.dispose();
-    targetAmountFocusNode.dispose();
-    targetDateFocusNode.dispose();
-  }
-
-  void _unfocusAll() {
-    nameFocusNode.unfocus();
-    targetAmountFocusNode.unfocus();
-    targetDateFocusNode.unfocus();
   }
 
   void watchGoal() {
@@ -127,52 +73,41 @@ class _GoalDetailViewState extends State<GoalDetailView> {
     return Scaffold(
       appBar: AppBar(
         title: Text(goal?.name ?? ""),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.delete),
-            onPressed: () => widget._handleGoalDelete(context),
-          ),
-        ],
       ),
-      body: GestureDetector(
-        onTap: _unfocusAll,
-        child: SingleChildScrollView(
-          child: GradientBanner(
-            child: Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  child: Card(
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: goal != null && profile != null
-                          ? GoalDetailsEdit(
-                              goal: goal!,
-                              onGoalSave: widget._handleGoalSave,
-                              nameFocusNode: nameFocusNode,
-                              targetAmountFocusNode: targetAmountFocusNode,
-                              targetDateFocusNode: targetDateFocusNode,
-                              profile: profile!,
-                            )
-                          : Container(),
-                    ),
+      body: SingleChildScrollView(
+        child: GradientBanner(
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                child: Card(
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: goal != null && profile != null
+                        ? GoalDetailsEdit(
+                            goal: goal!,
+                            onGoalSave: widget._handleGoalSave,
+                            profile: profile!,
+                          )
+                        : Container(),
                   ),
                 ),
-                GoalDetailsAssignAccounts(
-                  goalId: widget.goalId,
-                  getAccounts: widget._goalsController.getAccounts,
-                  onAccountAssignOrUpdate:
-                      widget._goalsController.assignOrUpdateGoalAccount,
-                  onAccountUnassign:
-                      widget._goalsController.unassignGoalAccount,
-                  getGoalAccounts: getGoalAccounts,
-                )
-              ],
-            ),
+              ),
+              GoalDetailsAssignAccounts(
+                goalId: widget.goalId,
+                getAccounts: () async => widget._goalsController
+                    .getAssignableAccounts(
+                        await widget._goalsController.getAccounts()),
+                onAccountAssignOrUpdate:
+                    widget._goalsController.assignOrUpdateGoalAccount,
+                onAccountUnassign: widget._goalsController.unassignGoalAccount,
+                getGoalAccounts: getGoalAccounts,
+              )
+            ],
           ),
         ),
       ),
