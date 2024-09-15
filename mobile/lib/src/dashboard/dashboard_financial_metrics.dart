@@ -34,16 +34,6 @@ class _FinancialMetricsCardState extends State<FinancialMetricsCard> {
                 return _buildAgeTile(
                   context,
                   "Actual Retirement Age",
-                  snapshot.data?.toInt() ?? 67,
-                );
-              },
-            ),
-            FutureBuilder(
-              future: widget.finalyticsController.getTargetRetirementAge(),
-              builder: (context, snapshot) {
-                return _buildAgeTile(
-                  context,
-                  "Target Retirement Age",
                   snapshot.data ?? 67,
                 );
               },
@@ -51,7 +41,7 @@ class _FinancialMetricsCardState extends State<FinancialMetricsCard> {
             const SizedBox(height: 8),
             FutureBuilder(
               future: widget.finalyticsController
-                  .getTargetMonthlyRetirementSavings(),
+                  .getTargetSavingsAndInvestmentsThisMonth(),
               builder: (context, snapshot) {
                 return _buildMetricTile(
                   context,
@@ -63,13 +53,50 @@ class _FinancialMetricsCardState extends State<FinancialMetricsCard> {
             ),
             const SizedBox(height: 8),
             FutureBuilder(
-              future: widget.finalyticsController.getSavedLast30Days(),
+              future: widget.finalyticsController
+                  .getActualSavingsAndInvestmentsThisMonth(),
               builder: (context, snapshot) {
                 return _buildMetricTile(
                   context,
-                  'Saved Last 30 Days',
+                  'Saved And Invested This Month',
                   snapshot.data ?? 0,
                   Icons.trending_up,
+                );
+              },
+            ),
+            const SizedBox(height: 8),
+            FutureBuilder(
+              future:
+                  widget.finalyticsController.getActualSavingsAtRetirement(),
+              builder: (context, snapshot) {
+                return _buildMetricTile(
+                  context,
+                  'Actual Savings At Retirement',
+                  snapshot.data ?? 0,
+                  Icons.trending_up,
+                );
+              },
+            ),
+            const SizedBox(height: 8),
+            FutureBuilder(
+              future:
+                  widget.finalyticsController.getTargetSavingsAtRetirement(),
+              builder: (context, snapshot) {
+                return _buildMetricTile(
+                  context,
+                  'Target Savings At Retirement',
+                  snapshot.data ?? 0,
+                  Icons.trending_up,
+                );
+              },
+            ),
+            FutureBuilder(
+              future: widget.finalyticsController.getTargetRetirementAge(),
+              builder: (context, snapshot) {
+                return _buildAgeTile(
+                  context,
+                  "Target Retirement Age",
+                  snapshot.data ?? 67,
                 );
               },
             ),
