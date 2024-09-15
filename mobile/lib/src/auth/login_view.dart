@@ -2,6 +2,7 @@ import 'package:finny/src/auth/auth_provider.dart';
 import 'package:finny/src/context_extension.dart';
 import 'package:finny/src/routes.dart';
 import 'package:flutter/material.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key, required this.authProvider});
@@ -40,29 +41,79 @@ class _LoginViewState extends State<LoginView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Sign In')),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
-        children: [
-          const Text('Sign in via the magic link with your email below'),
-          const SizedBox(height: 18),
-          TextFormField(
-            keyboardType: TextInputType.emailAddress,
-            autofillHints: const [AutofillHints.email],
-            controller: _emailController,
-            decoration: const InputDecoration(labelText: 'Email'),
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text(
+                  'Welcome to Finny',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Realize your financial freedom',
+                  style: TextStyle(fontSize: 16),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 48),
+                TextField(
+                  controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  autofillHints: const [AutofillHints.email],
+                  decoration: InputDecoration(
+                    labelText: 'Email',
+                    prefixIcon: const Icon(Icons.email_outlined),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: widget.authProvider.isLoading
+                      ? null
+                      : () => widget.authProvider.signIn(
+                          _emailController.text, context, context.showSnackBar),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    widget.authProvider.isLoading ? 'Sending...' : 'Sign In with Email',
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                const Text(
+                  'OR',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                SignInWithAppleButton(
+                  onPressed: () {
+                    // TODO: Implement Sign in with Apple
+                  },
+                  style: SignInWithAppleButtonStyle.black,
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 18),
-          ElevatedButton(
-            onPressed: widget.authProvider.isLoading
-                ? null
-                : () => widget.authProvider.signIn(
-                    _emailController.text, context, context.showSnackBar),
-            child: Text(widget.authProvider.isLoading
-                ? 'Sending...'
-                : 'Send Magic Link'),
-          ),
-        ],
+        ),
       ),
     );
   }
