@@ -86,6 +86,7 @@ class MyApp extends StatelessWidget {
             builder: (context, authProvider, child) {
               if (authProvider.isLoggedIn) {
                 return MainView(
+                  authProvider: authProvider,
                   onboardingController: onboardingController,
                   accountsController: accountsController,
                   goalsController: goalsController,
@@ -133,6 +134,7 @@ class MyApp extends StatelessWidget {
                     );
                   case SettingsView.routeName:
                     return SettingsView(
+                      authProvider: authProvider,
                       settingsController: settingsController,
                     );
                   case TransactionDetailsView.routeName:
@@ -164,6 +166,7 @@ class MainView extends StatefulWidget {
     required this.transactionsController,
     required this.finalyticsController,
     required this.onboardingController,
+    required this.authProvider,
   });
 
   final AccountsController accountsController;
@@ -172,6 +175,7 @@ class MainView extends StatefulWidget {
   final TransactionsController transactionsController;
   final FinalyticsController finalyticsController;
   final OnboardingController onboardingController;
+  final AuthProvider authProvider;
 
   @override
   State<MainView> createState() => _MainViewState();
@@ -199,6 +203,7 @@ class _MainViewState extends State<MainView> {
       ),
       SettingsView(
         settingsController: widget.settingsController,
+        authProvider: widget.authProvider,
       ),
     ];
   }

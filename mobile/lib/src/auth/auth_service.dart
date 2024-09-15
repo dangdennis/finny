@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:finny/src/powersync/powersync.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +9,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:finny/src/context_extension.dart';
 import 'package:finny/src/app_config.dart';
 import 'package:http/http.dart' as http;
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:crypto/crypto.dart';
 
 class AuthService {
   AuthService({required this.powersyncDb});
@@ -14,19 +18,78 @@ class AuthService {
   bool _authListenerInitialized = false;
   final Logger _logger = Logger('AuthService');
   final PowerSyncDatabase powersyncDb;
+  static const appRedirectUrl = 'com.belmont.finny://login-callback/';
 
   Future<void> signInWithEmail(
       String email, Function(String, {bool isError}) showSnackBar) async {
     try {
       await Supabase.instance.client.auth.signInWithOtp(
         email: email.trim(),
-        emailRedirectTo: kIsWeb ? null : 'com.belmont.finny://login-callback/',
+        emailRedirectTo: kIsWeb ? null : appRedirectUrl,
       );
       showSnackBar('Check your email for a login link!');
     } on AuthException catch (error) {
       showSnackBar(error.message, isError: true);
     } catch (error) {
       showSnackBar('Unexpected error occurred', isError: true);
+    }
+  }
+
+  /// Performs Apple sign in on iOS or macOS
+  Future<AuthResponse> signInWithApple() async {
+    final rawNonce = Supabase.instance.client.auth.generateRawNonce();
+    final hashedNonce = sha256.convert(utf8.encode(rawNonce)).toString();
+
+    print('Nonce: $rawNonce');
+    print('Hashed Nonce: $hashedNonce');
+
+    final credential = await SignInWithApple.getAppleIDCredential(
+      scopes: [
+        AppleIDAuthorizationScopes.email,
+      ],
+      nonce: hashedNonce,
+    );
+
+    print('Credential: $credential');
+
+    final idToken = credential.identityToken;
+    if (idToken == null) {
+      throw const AuthException(
+          'Could not find ID Token from generated credential.');
+    }
+
+    print('ID Token: $idToken');
+
+    final res = await Supabase.instance.client.auth.signInWithIdToken(
+      provider: OAuthProvider.apple,
+      idToken: idToken,
+      nonce: rawNonce,
+    );
+
+    print('Signed in with Apple: $res');
+
+    return res;
+  }
+
+  Future<bool> linkAppleIdentity() async {
+    try {
+      final result = await Supabase.instance.client.auth.linkIdentity(
+        OAuthProvider.apple,
+        // redirectTo: appRedirectUrl,
+        // scopes: 'email name',
+        // authScreenLaunchMode: LaunchMode.platformDefault,
+      );
+
+      if (result) {
+        print('Apple identity linking process initiated successfully');
+      } else {
+        print('Failed to initiate Apple identity linking process');
+      }
+
+      return result;
+    } catch (error) {
+      print('Error initiating Apple identity linking: $error');
+      return false;
     }
   }
 

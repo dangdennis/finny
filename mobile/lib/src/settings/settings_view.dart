@@ -1,3 +1,4 @@
+import 'package:finny/src/auth/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'settings_controller.dart';
 
@@ -9,11 +10,13 @@ class SettingsView extends StatelessWidget {
   const SettingsView({
     super.key,
     required this.settingsController,
+    required this.authProvider,
   });
 
   static const routeName = '/settings';
 
   final SettingsController settingsController;
+  final AuthProvider authProvider;
 
   @override
   Widget build(BuildContext context) {
@@ -44,6 +47,9 @@ class SettingsView extends StatelessWidget {
                 )
               ],
             ),
+            const SizedBox(height: 16),
+            const Text('Linked Accounts:',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () => _showDeleteConfirmationDialog(context),

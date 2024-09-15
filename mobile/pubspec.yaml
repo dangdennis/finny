@@ -32,6 +32,7 @@ dependencies:
   supabase_flutter: ^2.5.7
   uuid: ^4.4.2
   sign_in_with_apple: ^6.1.2
+  crypto: ^3.0.5
 
 dev_dependencies:
   flutter_test:
