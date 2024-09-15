@@ -207,7 +207,7 @@ class AccountTile extends StatelessWidget {
       children: [
         ListTile(
           title: Text(account.name),
-          subtitle: Text(account.type ?? ''),
+          subtitle: Text(account.subtype ?? ''),
           trailing: Switch(
             value: isEnabled,
             onChanged: onToggle,

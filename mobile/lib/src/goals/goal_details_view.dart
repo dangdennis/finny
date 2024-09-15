@@ -99,9 +99,8 @@ class _GoalDetailViewState extends State<GoalDetailView> {
               ),
               GoalDetailsAssignAccounts(
                 goalId: widget.goalId,
-                getAccounts: () async => widget._goalsController
-                    .getAssignableAccounts(
-                        await widget._goalsController.getAccounts()),
+                getAccounts: () async =>
+                    await widget._goalsController.getAccounts(),
                 onAccountAssignOrUpdate:
                     widget._goalsController.assignOrUpdateGoalAccount,
                 onAccountUnassign: widget._goalsController.unassignGoalAccount,

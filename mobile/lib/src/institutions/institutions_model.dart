@@ -46,6 +46,41 @@ const institutionsJson = """
             "country_codes": [
                 "US"
             ],
+            "dtc_numbers": [
+                "0235"
+            ],
+            "institution_id": "ins_115617",
+            "name": "Wealthfront",
+            "oauth": false,
+            "products": [
+                "assets",
+                "auth",
+                "balance",
+                "transactions",
+                "identity_match",
+                "identity",
+                "investments",
+                "pay_by_bank",
+                "processor_payments",
+                "recurring_transactions",
+                "transfer"
+            ],
+            "routing_numbers": [
+                "044111191",
+                "061120000",
+                "096017418",
+                "124085024",
+                "124302529",
+                "124303120",
+                "124303214",
+                "124303230",
+                "124303269"
+            ]
+        },
+        {
+            "country_codes": [
+                "US"
+            ],
             "institution_id": "ins_130958",
             "name": "Bridge",
             "oauth": false,
