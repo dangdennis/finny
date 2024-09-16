@@ -28,3 +28,13 @@ the `lib/src/localization` directory.
 To support additional languages, please visit the tutorial on
 [Internationalizing Flutter
 apps](https://flutter.dev/docs/development/accessibility-and-localization/internationalization)
+
+## Building for iOS
+
+To build this Flutter project for iOS:
+
+1. Ensure you have Xcode, Flutter SDK, and CocoaPods installed.
+2. Run `flutter pub get` to update dependencies.
+3. Execute `flutter build ios` to compile the project for iOS.
+4. Use `flutter run` to launch the app on an iOS simulator or connected device.
+
