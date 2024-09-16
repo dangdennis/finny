@@ -12,7 +12,7 @@ class FinalyticsController {
   }
 
   Future<int> getTargetRetirementAge() async {
-    return (await _profileService.getProfile()).retirementAge ?? 67;
+    return (await _profileService.getProfile())?.retirementAge ?? 67;
   }
 
   Future<double> getTargetSavingsAndInvestmentsThisMonth() async {

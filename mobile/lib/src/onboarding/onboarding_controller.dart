@@ -12,26 +12,62 @@ class OnboardingController {
   final AccountsService accountService;
   final Logger _logger = Logger('OnboardingController');
 
-  Future<void> setOnboarded() async {
-    await OnboardingCache.setOnboarded();
-  }
+  Stream<OnboardingState> watchOnboardingState() {
+    return profileService.watchProfile().asyncMap((profile) async {
+      if (profile == null) {
+        return OnboardingState(
+          accountsAdded: false,
+          profileCompleted: false,
+        );
+      }
 
-  Future<OnboardingState> isOnboarded() async {
-    try {
-      final profile = await profileService.getProfile();
       final accountsAdded = await _isAccountsAdded();
       final profileCompleted = _isProfileCompleted(profile);
       return OnboardingState(
         accountsAdded: accountsAdded,
         profileCompleted: profileCompleted,
       );
+    });
+  }
+
+  Future<OnboardingState> isOnboarded() async {
+    try {
+      final isOnboarded = await OnboardingCache.isOnboarded();
+      if (isOnboarded) {
+        return OnboardingState(
+          accountsAdded: true,
+          profileCompleted: true,
+        );
+      }
+
+      final profile = await profileService.getProfile();
+      if (profile == null) {
+        return OnboardingState(
+          accountsAdded: false,
+          profileCompleted: false,
+        );
+      }
+
+      final accountsAdded = await _isAccountsAdded();
+      final profileCompleted = _isProfileCompleted(profile);
+
+      final state = OnboardingState(
+        accountsAdded: accountsAdded,
+        profileCompleted: profileCompleted,
+      );
+
+      if (state.isOnboardingComplete) {
+        await OnboardingCache.setOnboarded();
+      }
+
+      return state;
     } catch (e) {
       _logger.warning('Error getting profile: $e');
       rethrow;
     }
   }
 
-  Future<Profile> getProfile() async {
+  Future<Profile?> getProfile() async {
     return await profileService.getProfile();
   }
 

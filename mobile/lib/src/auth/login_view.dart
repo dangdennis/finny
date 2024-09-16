@@ -76,7 +76,7 @@ class _LoginViewState extends State<LoginView> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 12),
                 ElevatedButton(
                   onPressed: widget.authProvider.isLoading
                       ? null

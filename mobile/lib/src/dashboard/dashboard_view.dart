@@ -51,8 +51,8 @@ class _DashboardViewState extends State<DashboardView> {
       // todo: disable addition of new goals.
       // we automatically create a singular retirement goal after onboarding is complete.
       // floatingActionButton: const AddGoalButton(),
-      body: FutureBuilder<OnboardingState>(
-        future: widget.onboardingController.isOnboarded(),
+      body: StreamBuilder<OnboardingState>(
+        stream: widget.onboardingController.watchOnboardingState(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());

@@ -13,9 +13,13 @@ class ProfileService {
             profileOpt != null ? profileDbToDomain(profileOpt) : null);
   }
 
-  Future<Profile> getProfile() async {
+  Future<Profile?> getProfile() async {
     final query = appDb.select(appDb.profilesDb);
-    return profileDbToDomain(await query.getSingle());
+    final profile = await query.getSingleOrNull();
+    if (profile == null) {
+      return null;
+    }
+    return profileDbToDomain(profile);
   }
 
   Future<void> updateProfile(ProfileUpdateInput profile) async {

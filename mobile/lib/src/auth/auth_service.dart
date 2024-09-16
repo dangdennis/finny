@@ -29,9 +29,10 @@ class AuthService {
       );
       showSnackBar('Check your email for a login link!');
     } on AuthException catch (error) {
-      showSnackBar(error.message, isError: true);
+      _logger.severe('AuthException: $error');
+      showSnackBar("That didn't work. Try again.", isError: true);
     } catch (error) {
-      showSnackBar('Unexpected error occurred', isError: true);
+      showSnackBar('Something unexpected happened. We\'re on it.', isError: true);
     }
   }
 
@@ -47,8 +48,6 @@ class AuthService {
       nonce: hashedNonce,
     );
 
-    print('Credential: $credential');
-
     final idToken = credential.identityToken;
     if (idToken == null) {
       throw const AuthException(
@@ -62,8 +61,6 @@ class AuthService {
       idToken: idToken,
       nonce: rawNonce,
     );
-
-    print('Signed in with Apple: $res');
 
     return res;
   }

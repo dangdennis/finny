@@ -187,8 +187,6 @@ class _ProfileFormState extends State<ProfileForm> {
     if (picked != null && picked != _dateOfBirth) {
       setState(() {
         _dateOfBirth = picked;
-        _retirementAge = null;
-        _riskProfile = null;
       });
     }
   }
