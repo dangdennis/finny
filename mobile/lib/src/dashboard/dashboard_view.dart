@@ -1,3 +1,4 @@
+import 'package:finny/src/connections/connections_controller.dart';
 import 'package:finny/src/dashboard/dashboard_financial_metrics.dart';
 import 'package:finny/src/dashboard/goals/goal_card.dart';
 import 'package:finny/src/dashboard/onboarding_card/onboarding_card.dart';
@@ -16,40 +17,20 @@ class DashboardView extends StatefulWidget {
     required this.goalsController,
     required this.finalyticsController,
     required this.onboardingController,
+    required this.connectionsController,
   });
 
   static const routeName = Routes.dashboard;
   final GoalsController goalsController;
   final FinalyticsController finalyticsController;
   final OnboardingController onboardingController;
+  final ConnectionsController connectionsController;
 
   @override
   State<DashboardView> createState() => _DashboardViewState();
 }
 
 class _DashboardViewState extends State<DashboardView> {
-  bool _isOnboardingCardHidden = true; // Default to hidden
-
-  @override
-  void initState() {
-    super.initState();
-    _loadOnboardingCardVisibility();
-  }
-
-  Future<void> _loadOnboardingCardVisibility() async {
-    final isHidden = await widget.onboardingController.isOnboardingCardHidden();
-    setState(() {
-      _isOnboardingCardHidden = isHidden;
-    });
-  }
-
-  Future<void> _hideOnboardingCard() async {
-    await widget.onboardingController.setOnboardingCardHidden(true);
-    setState(() {
-      _isOnboardingCardHidden = true;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -70,15 +51,15 @@ class _DashboardViewState extends State<DashboardView> {
       // todo: disable addition of new goals.
       // we automatically create a singular retirement goal after onboarding is complete.
       // floatingActionButton: const AddGoalButton(),
-      body: FutureBuilder<OnboardingState>(
-        future: widget.onboardingController.isOnboarded(),
+      body: StreamBuilder<OnboardingState>(
+        stream: widget.onboardingController.watchOnboardingState(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
 
           final onboardingState = snapshot.data;
-          final bool isOnboardingComplete =
+          final isOnboardingComplete =
               onboardingState?.isOnboardingComplete ?? false;
 
           return SingleChildScrollView(
@@ -88,13 +69,13 @@ class _DashboardViewState extends State<DashboardView> {
                 GradientBanner(
                   child: Column(
                     children: [
-                      if (!_isOnboardingCardHidden)
+                      if (!isOnboardingComplete)
                         Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: OnboardingCard(
                             onboardingState: onboardingState,
                             onboardingController: widget.onboardingController,
-                            onHide: _hideOnboardingCard,
+                            connectionsController: widget.connectionsController,
                           ),
                         ),
                       Padding(

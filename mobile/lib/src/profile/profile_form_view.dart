@@ -19,7 +19,7 @@ class ProfileFormView extends StatefulWidget {
 
 class _ProfileFormViewState extends State<ProfileFormView> {
   bool _isLoading = true;
-  late Profile _profile;
+  Profile? _profile;
 
   @override
   void initState() {
@@ -55,12 +55,12 @@ class _ProfileFormViewState extends State<ProfileFormView> {
             : SingleChildScrollView(
                 padding: const EdgeInsets.all(16.0),
                 child: ProfileForm(
-                  initialDateOfBirth: _profile.dateOfBirth,
-                  initialRetirementAge: _profile.retirementAge,
+                  initialDateOfBirth: _profile?.dateOfBirth,
+                  initialRetirementAge: _profile?.retirementAge,
                   initialRiskProfile:
-                      _profile.riskProfile ?? RiskProfile.balanced,
+                      _profile?.riskProfile ?? RiskProfile.balanced,
                   initialFireProfile:
-                      _profile.fireProfile ?? FireProfile.traditional,
+                      _profile?.fireProfile ?? FireProfile.traditional,
                   onSubmit: _updateProfile,
                 ),
               ),

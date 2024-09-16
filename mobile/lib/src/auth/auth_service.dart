@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:finny/src/powersync/powersync.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -7,27 +9,60 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:finny/src/context_extension.dart';
 import 'package:finny/src/app_config.dart';
 import 'package:http/http.dart' as http;
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:crypto/crypto.dart';
 
 class AuthService {
   AuthService({required this.powersyncDb});
 
-  bool _authListenerInitialized = false;
   final Logger _logger = Logger('AuthService');
   final PowerSyncDatabase powersyncDb;
+  static const appRedirectUrl = 'com.belmont.finny://login-callback/';
+  bool _authListenerInitialized = false;
 
   Future<void> signInWithEmail(
       String email, Function(String, {bool isError}) showSnackBar) async {
     try {
       await Supabase.instance.client.auth.signInWithOtp(
         email: email.trim(),
-        emailRedirectTo: kIsWeb ? null : 'com.belmont.finny://login-callback/',
+        emailRedirectTo: kIsWeb ? null : appRedirectUrl,
       );
       showSnackBar('Check your email for a login link!');
     } on AuthException catch (error) {
-      showSnackBar(error.message, isError: true);
+      _logger.severe('AuthException: $error');
+      showSnackBar("That didn't work. Try again.", isError: true);
     } catch (error) {
-      showSnackBar('Unexpected error occurred', isError: true);
+      showSnackBar('Something unexpected happened. We\'re on it.', isError: true);
     }
+  }
+
+  Future<AuthResponse> signInWithApple() async {
+    final rawNonce = Supabase.instance.client.auth.generateRawNonce();
+    final hashedNonce = sha256.convert(utf8.encode(rawNonce)).toString();
+
+    final credential = await SignInWithApple.getAppleIDCredential(
+      scopes: [
+        AppleIDAuthorizationScopes.email,
+        AppleIDAuthorizationScopes.fullName,
+      ],
+      nonce: hashedNonce,
+    );
+
+    final idToken = credential.identityToken;
+    if (idToken == null) {
+      throw const AuthException(
+          'Could not find ID Token from generated credential.');
+    }
+
+    print('ID Token: $idToken');
+
+    final res = await Supabase.instance.client.auth.signInWithIdToken(
+      provider: OAuthProvider.apple,
+      idToken: idToken,
+      nonce: rawNonce,
+    );
+
+    return res;
   }
 
   Future<void> signOut() async {
@@ -58,12 +93,10 @@ class AuthService {
       } else {
         _logger.warning('Error: ${response.statusCode} ${response.body}');
         throw Exception('Failed to delete user');
-        // Handle error
       }
     } catch (e) {
       _logger.warning('Exception: $e');
       rethrow;
-      // Handle exception
     }
   }
 

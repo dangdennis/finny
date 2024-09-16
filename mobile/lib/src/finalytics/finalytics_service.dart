@@ -18,11 +18,16 @@ class FinalyticsService {
   }
 
   Future<int> getActualRetirementAge() async {
+    final profile = await profileService.getProfile();
+    if (profile == null) {
+      throw Exception('Profile is not set');
+    }
+
     final fv = await getFreedomFutureValueOfCurrentExpenses();
     final pv = await getAssignedBalanceOnRetirementGoal();
     final pmt = await getActualSavingsThisMonthForRetirementGoal() * 12;
     const interest = 0.08;
-    final currentAge = (await profileService.getProfile()).age!;
+    final currentAge = profile.age!;
 
     final n = calculatePeriodFromFutureValue(
       fv: fv,
@@ -263,6 +268,10 @@ class FinalyticsService {
 
   Future<int> calculateYearsToRetirement() async {
     final profile = await profileService.getProfile();
+
+    if (profile == null) {
+      throw Exception('Profile is not set');
+    }
 
     if (profile.age == null) {
       throw Exception('Age is not set');

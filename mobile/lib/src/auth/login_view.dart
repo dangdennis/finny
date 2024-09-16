@@ -59,7 +59,7 @@ class _LoginViewState extends State<LoginView> {
                 ),
                 const SizedBox(height: 12),
                 const Text(
-                  'Realize your financial freedom',
+                  'Unlock your financial freedom',
                   style: TextStyle(fontSize: 16),
                   textAlign: TextAlign.center,
                 ),
@@ -76,11 +76,11 @@ class _LoginViewState extends State<LoginView> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 12),
                 ElevatedButton(
                   onPressed: widget.authProvider.isLoading
                       ? null
-                      : () => widget.authProvider.signIn(
+                      : () => widget.authProvider.signInWithEmail(
                           _emailController.text, context, context.showSnackBar),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
@@ -89,7 +89,9 @@ class _LoginViewState extends State<LoginView> {
                     ),
                   ),
                   child: Text(
-                    widget.authProvider.isLoading ? 'Sending...' : 'Sign In with Email',
+                    widget.authProvider.isLoading
+                        ? 'Logging...'
+                        : 'Sign In with Email',
                     style: const TextStyle(fontSize: 16),
                   ),
                 ),
@@ -105,8 +107,9 @@ class _LoginViewState extends State<LoginView> {
                 ),
                 const SizedBox(height: 24),
                 SignInWithAppleButton(
+                  height: 52,
                   onPressed: () {
-                    // TODO: Implement Sign in with Apple
+                    widget.authProvider.signInWithApple(context);
                   },
                   style: SignInWithAppleButtonStyle.black,
                 ),
