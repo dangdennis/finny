@@ -54,25 +54,10 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> linkAppleIdentity(BuildContext context) async {
-    final result = await authService.linkAppleIdentity();
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        result
-            ? const SnackBar(
-                content: Text('Apple account linked successfully'),
-              )
-            : const SnackBar(
-                content: Text('Failed to link Apple account'),
-              ),
-      );
-    }
-  }
-
   Future<void> signOut() async {
-    await authService.signOut();
     _isLoggedIn = false;
     notifyListeners();
+    await authService.signOut();
   }
 
   void checkAuthStatus() {

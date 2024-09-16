@@ -59,7 +59,7 @@ class _LoginViewState extends State<LoginView> {
                 ),
                 const SizedBox(height: 12),
                 const Text(
-                  'Realize your financial freedom',
+                  'Unlock your financial freedom',
                   style: TextStyle(fontSize: 16),
                   textAlign: TextAlign.center,
                 ),

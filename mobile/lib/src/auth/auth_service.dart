@@ -15,10 +15,10 @@ import 'package:crypto/crypto.dart';
 class AuthService {
   AuthService({required this.powersyncDb});
 
-  bool _authListenerInitialized = false;
   final Logger _logger = Logger('AuthService');
   final PowerSyncDatabase powersyncDb;
   static const appRedirectUrl = 'com.belmont.finny://login-callback/';
+  bool _authListenerInitialized = false;
 
   Future<void> signInWithEmail(
       String email, Function(String, {bool isError}) showSnackBar) async {
@@ -35,17 +35,14 @@ class AuthService {
     }
   }
 
-  /// Performs Apple sign in on iOS or macOS
   Future<AuthResponse> signInWithApple() async {
     final rawNonce = Supabase.instance.client.auth.generateRawNonce();
     final hashedNonce = sha256.convert(utf8.encode(rawNonce)).toString();
 
-    print('Nonce: $rawNonce');
-    print('Hashed Nonce: $hashedNonce');
-
     final credential = await SignInWithApple.getAppleIDCredential(
       scopes: [
         AppleIDAuthorizationScopes.email,
+        AppleIDAuthorizationScopes.fullName,
       ],
       nonce: hashedNonce,
     );
@@ -69,28 +66,6 @@ class AuthService {
     print('Signed in with Apple: $res');
 
     return res;
-  }
-
-  Future<bool> linkAppleIdentity() async {
-    try {
-      final result = await Supabase.instance.client.auth.linkIdentity(
-        OAuthProvider.apple,
-        // redirectTo: appRedirectUrl,
-        // scopes: 'email name',
-        // authScreenLaunchMode: LaunchMode.platformDefault,
-      );
-
-      if (result) {
-        print('Apple identity linking process initiated successfully');
-      } else {
-        print('Failed to initiate Apple identity linking process');
-      }
-
-      return result;
-    } catch (error) {
-      print('Error initiating Apple identity linking: $error');
-      return false;
-    }
   }
 
   Future<void> signOut() async {
@@ -121,12 +96,10 @@ class AuthService {
       } else {
         _logger.warning('Error: ${response.statusCode} ${response.body}');
         throw Exception('Failed to delete user');
-        // Handle error
       }
     } catch (e) {
       _logger.warning('Exception: $e');
       rethrow;
-      // Handle exception
     }
   }
 
