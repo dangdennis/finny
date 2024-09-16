@@ -27,46 +27,81 @@ class SettingsView extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _buildThemeSelector(),
+            const SizedBox(height: 24),
+            _buildDangerZone(context),
+            const Spacer(),
+            _buildLogoutButton(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildThemeSelector() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const Text('App Theme',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
             DropdownButton<ThemeMode>(
               value: settingsController.themeMode,
               onChanged: settingsController.updateThemeMode,
+              isExpanded: true,
               items: const [
                 DropdownMenuItem(
-                  value: ThemeMode.system,
-                  child: Text('System Theme'),
-                ),
+                    value: ThemeMode.system, child: Text('System Theme')),
                 DropdownMenuItem(
-                  value: ThemeMode.light,
-                  child: Text('Light Theme'),
-                ),
+                    value: ThemeMode.light, child: Text('Light Theme')),
                 DropdownMenuItem(
-                  value: ThemeMode.dark,
-                  child: Text('Dark Theme'),
-                )
+                    value: ThemeMode.dark, child: Text('Dark Theme')),
               ],
-            ),
-            const SizedBox(height: 16),
-            const Text('Linked Accounts:',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () => _showDeleteConfirmationDialog(context),
-              child: const Text('Delete Account'),
-            ),
-            const Spacer(), // This will push the logout button to the bottom
-            SizedBox(
-              width: double.infinity,
-              height: 50, // Make the button taller
-              child: ElevatedButton(
-                onPressed: settingsController.signOut,
-                child: const Text('Logout', style: TextStyle(fontSize: 18)),
-              ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildDangerZone(BuildContext context) {
+    return Card(
+      color: Colors.red.shade50,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Danger Zone',
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.red)),
+            const SizedBox(height: 8),
+            ElevatedButton(
+              onPressed: () => _showDeleteConfirmationDialog(context),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: const Text('Delete Account',
+                  style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLogoutButton() {
+    return ElevatedButton(
+      onPressed: settingsController.signOut,
+      style: ElevatedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+      ),
+      child: const Text('Logout', style: TextStyle(fontSize: 18)),
     );
   }
 
