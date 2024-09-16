@@ -18,6 +18,7 @@ import io.circe.syntax.*
 
 import java.util.UUID
 import scala.util.Try
+import scala.concurrent.ExecutionContext
 
 object Jobs:
   val jobConnection: Connection = LavinMqClient.createConnection()
@@ -117,10 +118,39 @@ object Jobs:
     Logger.root.info(s"Handling JobSyncPlaidItem $job")
     job.syncType match
       case SyncType.Initial | SyncType.Default =>
-        PlaidSyncService.sync(itemId = PlaidItemId(job.itemId))
+        PlaidSyncService
+          .sync(itemId = PlaidItemId(job.itemId))
+          .andThen {
+            case scala.util.Failure(exception) =>
+              Logger.root.error(
+                s"Failed to sync Plaid item ${job.itemId}",
+                exception
+              )
+            case _ =>
+              jobChannel.basicAck(delivery.getEnvelope.getDeliveryTag, false)
+          }(using ExecutionContext.global)
       case SyncType.Historical =>
-        PlaidSyncService.syncHistorical(itemId = PlaidItemId(job.itemId))
-    jobChannel.basicAck(delivery.getEnvelope.getDeliveryTag, false)
+        PlaidSyncService
+          .syncHistorical(itemId = PlaidItemId(job.itemId))
+          .left
+          .map { e =>
+            Logger.root.error(
+              s"Failed to start historical sync for Plaid item ${job.itemId}",
+              e
+            )
+            jobChannel.basicAck(delivery.getEnvelope.getDeliveryTag, false)
+          }
+          .map { f =>
+            f.andThen {
+              case scala.util.Failure(exception) =>
+                Logger.root.error(
+                  s"Failed to sync Plaid item ${job.itemId}",
+                  exception
+                )
+              case _ =>
+                jobChannel.basicAck(delivery.getEnvelope.getDeliveryTag, false)
+            }(using ExecutionContext.global)
+          }
 
   private def handleAnotherJob(
       job: JobRequest.JobDeleteUser,
@@ -130,10 +160,12 @@ object Jobs:
     UserDeletionService
       .deleteUserEverything(UserId(job.userId))
       .left
-      .foreach { e =>
+      .map { e =>
         Logger.root.error(
           s"Failed to delete user ${job.userId} in job ${job.id}",
           e
         )
       }
-    jobChannel.basicAck(delivery.getEnvelope.getDeliveryTag, false)
+      .map { _ =>
+        jobChannel.basicAck(delivery.getEnvelope.getDeliveryTag, false)
+      }

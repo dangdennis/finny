@@ -63,9 +63,10 @@ object AccountRepository:
     }
   ).toEither.left.map(e => AppError.DatabaseError(e.getMessage()))
 
-  def getAccounts(userId: UUID): Either[AppError, List[Account]] = Try(
-    DB.readOnly { implicit session =>
-      sql"""
+  def getAccounts(userId: UUID): Either[AppError.DatabaseError, List[Account]] =
+    Try(
+      DB.readOnly { implicit session =>
+        sql"""
           SELECT
             id,
             item_id,
@@ -89,28 +90,28 @@ object AccountRepository:
             user_id = ${userId}
             and deleted_at is null;
           """
-        .map(rs =>
-          Account(
-            id = UUID.fromString(rs.string("id")),
-            itemId = UUID.fromString(rs.string("item_id")),
-            userId = UUID.fromString(rs.string("user_id")),
-            plaidAccountId = rs.string("plaid_account_id"),
-            name = rs.string("name"),
-            mask = rs.stringOpt("mask"),
-            officialName = rs.stringOpt("official_name"),
-            currentBalance = rs.double("current_balance"),
-            availableBalance = rs.double("available_balance"),
-            isoCurrencyCode = rs.stringOpt("iso_currency_code"),
-            unofficialCurrencyCode = rs.stringOpt("unofficial_currency_code"),
-            accountType = rs.stringOpt("type"),
-            accountSubtype = rs.stringOpt("subtype"),
-            createdAt = rs.timestamp("created_at").toInstant
+          .map(rs =>
+            Account(
+              id = UUID.fromString(rs.string("id")),
+              itemId = UUID.fromString(rs.string("item_id")),
+              userId = UUID.fromString(rs.string("user_id")),
+              plaidAccountId = rs.string("plaid_account_id"),
+              name = rs.string("name"),
+              mask = rs.stringOpt("mask"),
+              officialName = rs.stringOpt("official_name"),
+              currentBalance = rs.double("current_balance"),
+              availableBalance = rs.double("available_balance"),
+              isoCurrencyCode = rs.stringOpt("iso_currency_code"),
+              unofficialCurrencyCode = rs.stringOpt("unofficial_currency_code"),
+              accountType = rs.stringOpt("type"),
+              accountSubtype = rs.stringOpt("subtype"),
+              createdAt = rs.timestamp("created_at").toInstant
+            )
           )
-        )
-        .list
-        .apply()
-    }
-  ).toEither.left.map(ex => AppError.DatabaseError(ex.getMessage()))
+          .list
+          .apply()
+      }
+    ).toEither.left.map(ex => AppError.DatabaseError(ex.getMessage()))
 
   def getAccountsByItemId(
       itemId: PlaidItemId,

@@ -5,6 +5,7 @@ import api.common.Logger
 import api.models.Profile
 import api.models.UserId
 import api.repositories.AccountRepository
+import api.repositories.GoalRepository
 import api.repositories.PlaidItemRepository
 import api.repositories.ProfileRepository
 import api.repositories.TransactionRepository
@@ -29,13 +30,33 @@ object UserDeletionService:
     for
       items <- PlaidItemRepository.getItemsByUserId(user.id)
       _ = items.foreach { item =>
-        Try(
-          DB.localTx { implicit session =>
-            TransactionRepository.deleteTransactionsByItemId(item.id, user.id)
-            AccountRepository.deleteAccountsByItemId(item.id, user.id)
-            PlaidItemRepository.deleteItemById(item.id, user.id)
+        PlaidService
+          .deleteItem(PlaidService.makePlaidClientFromEnv(), item.id, user.id)
+          .map { _ =>
+            Try:
+              DB.localTx { implicit session =>
+                val accounts =
+                  AccountRepository.getAccounts(user.id).getOrElse(List())
+                sql"delete from investment_holdings where account_id IN (${accounts
+                    .map(_.id)})".update.apply()
+                sql"delete from investment_holdings_daily where account_id IN (${accounts
+                    .map(_.id)})".update.apply()
+                val goals =
+                  GoalRepository.getGoalsByUserId(user.id).getOrElse(List())
+                sql"delete from goal_accounts where goal_id IN (${goals.map(_.id)})".update
+                  .apply()
+                sql"DELETE FROM account_balances WHERE account_id IN (${accounts
+                    .map(_.id)})".update.apply()
+                TransactionRepository.deleteTransactionsByItemId(
+                  item.id,
+                  user.id
+                )
+                AccountRepository.deleteAccountsByItemId(item.id, user.id)
+                PlaidItemRepository.deleteItemById(item.id, user.id)
+              }
+            .toEither.left
+              .map(e => AppError.DatabaseError(e.getMessage))
           }
-        ).toEither.left.map(e => AppError.DatabaseError(e.getMessage))
       }
       _ <- Try(
         DB.autoCommit { implicit session =>

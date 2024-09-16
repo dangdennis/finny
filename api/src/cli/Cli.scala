@@ -49,9 +49,9 @@ object Cli {
               case itemId :: _ =>
                 val results =
                   for res <- PlaidService.getInvestmentTransactions(
-                  client = plaidClient,
-                  itemId = PlaidItemId(UUID.fromString(itemId))
-                )
+                      client = plaidClient,
+                      itemId = PlaidItemId(UUID.fromString(itemId))
+                    )
                   yield res
                 println(results)
               case _ =>
