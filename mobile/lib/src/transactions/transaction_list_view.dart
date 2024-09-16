@@ -59,64 +59,72 @@ class TransactionListView extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 8, horizontal: 12),
                             decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.secondaryContainer,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .secondaryContainer,
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
                               _formatDate(date),
-                              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                color: Theme.of(context).colorScheme.onSecondaryContainer,
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleSmall
+                                  ?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSecondaryContainer,
+                                  ),
                             ),
                           ),
                           const SizedBox(height: 8),
                           ...transactionsForDate.map((transaction) => Padding(
-                                padding: const EdgeInsets.only(bottom: 8),
-                                child: Card(
-                                  elevation: 2,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(12),
-                                    child: Row(
-                                      children: [
-                                        Icon(
-                                          _getTransactionIcon(transaction),
-                                          color: _getTransactionColor(transaction, context),
-                                          size: 24,
-                                        ),
-                                        const SizedBox(width: 16),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                StringUtils.truncateWithEllipsis(
-                                                    transaction.name, 32),
-                                                style:
-                                                    Theme.of(context).textTheme.bodyMedium,
-                                              ),
-                                              Text(
-                                                transaction.date,
-                                                style:
-                                                    Theme.of(context).textTheme.bodySmall,
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        Text(
-                                          '\$${transaction.amount.abs().toStringAsFixed(2)}',
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodyMedium
-                                              ?.copyWith(
-                                                fontWeight: FontWeight.bold,
-                                                color: _getTransactionColor(transaction, context),
-                                              ),
-                                        ),
-                                      ],
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 8),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      _getTransactionIcon(transaction),
+                                      color: _getTransactionColor(
+                                          transaction, context),
+                                      size: 24,
                                     ),
-                                  ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            StringUtils.truncateWithEllipsis(
+                                                transaction.name, 32),
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodyMedium,
+                                          ),
+                                          Text(
+                                            transaction.date,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodySmall,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Text(
+                                      '\$${transaction.amount.abs().toStringAsFixed(2)}',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                            color: _getTransactionColor(
+                                                transaction, context),
+                                          ),
+                                    ),
+                                  ],
                                 ),
                               )),
                         ],
@@ -163,7 +171,9 @@ class TransactionListView extends StatelessWidget {
   }
 
   IconData _getTransactionIcon(Transaction transaction) {
-    return transaction.amount < 0 ? Icons.arrow_circle_left : Icons.arrow_circle_right;
+    return transaction.amount < 0
+        ? Icons.arrow_circle_left
+        : Icons.arrow_circle_right;
   }
 
   Color _getTransactionColor(Transaction transaction, BuildContext context) {
