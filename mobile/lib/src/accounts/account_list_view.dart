@@ -41,7 +41,35 @@ class AccountListView extends StatelessWidget {
           }
 
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No accounts available.'));
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'No accounts available.',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton.icon(
+                    icon: const Icon(Icons.link, size: 28),
+                    label: Text(
+                      'Link Accounts',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 16,
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.restorablePushNamed(
+                          context, ConnectionsListView.routeName);
+                    },
+                  ),
+                ],
+              ),
+            );
           }
 
           final accounts = snapshot.data!;

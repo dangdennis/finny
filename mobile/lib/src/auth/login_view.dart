@@ -107,6 +107,7 @@ class _LoginViewState extends State<LoginView> {
                 ),
                 const SizedBox(height: 24),
                 SignInWithAppleButton(
+                  height: 52,
                   onPressed: () {
                     widget.authProvider.signInWithApple(context);
                   },

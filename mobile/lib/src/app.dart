@@ -89,6 +89,7 @@ class MyApp extends StatelessWidget {
                   authProvider: authProvider,
                   onboardingController: onboardingController,
                   accountsController: accountsController,
+                  connectionsController: connectionsController,
                   goalsController: goalsController,
                   finalyticsController: finalyticsController,
                   settingsController: settingsController,
@@ -120,6 +121,7 @@ class MyApp extends StatelessWidget {
                     );
                   case DashboardView.routeName:
                     return DashboardView(
+                      connectionsController: connectionsController,
                       onboardingController: onboardingController,
                       finalyticsController: finalyticsController,
                       goalsController: goalsController,
@@ -161,6 +163,7 @@ class MainView extends StatefulWidget {
   const MainView({
     super.key,
     required this.accountsController,
+    required this.connectionsController,
     required this.goalsController,
     required this.settingsController,
     required this.transactionsController,
@@ -169,12 +172,13 @@ class MainView extends StatefulWidget {
     required this.authProvider,
   });
 
-  final AccountsController accountsController;
+  final ConnectionsController connectionsController;
   final GoalsController goalsController;
   final SettingsController settingsController;
   final TransactionsController transactionsController;
   final FinalyticsController finalyticsController;
   final OnboardingController onboardingController;
+  final AccountsController accountsController;
   final AuthProvider authProvider;
 
   @override
@@ -191,6 +195,7 @@ class _MainViewState extends State<MainView> {
     super.initState();
     _widgetOptions = [
       DashboardView(
+        connectionsController: widget.connectionsController,
         onboardingController: widget.onboardingController,
         finalyticsController: widget.finalyticsController,
         goalsController: widget.goalsController,

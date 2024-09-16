@@ -1,24 +1,24 @@
+import 'package:finny/src/connections/connections_controller.dart';
+import 'package:finny/src/connections/connections_list_view.dart';
 import 'package:finny/src/dashboard/onboarding_card/onboarding_item.dart';
 import 'package:finny/src/profile/profile_form_view.dart';
 import 'package:finny/src/onboarding/onboarding_controller.dart';
 import 'package:flutter/material.dart';
 
 class OnboardingCard extends StatelessWidget {
-  final OnboardingController onboardingController;
-  final OnboardingState? onboardingState;
-  final VoidCallback onHide;
-
   const OnboardingCard({
     super.key,
     required this.onboardingController,
     required this.onboardingState,
-    required this.onHide,
+    required this.connectionsController,
   });
+
+  final OnboardingController onboardingController;
+  final ConnectionsController connectionsController;
+  final OnboardingState? onboardingState;
 
   @override
   Widget build(BuildContext context) {
-    final bool isCompleted = onboardingState?.isOnboardingComplete ?? false;
-
     return Card(
       child: Stack(
         children: [
@@ -49,18 +49,17 @@ class OnboardingCard extends StatelessWidget {
                 OnboardingItem(
                   title: 'Connect your bank accounts',
                   isCompleted: onboardingState?.accountsAdded ?? false,
-                  subtitle: 'Connect more accounts for accuracy.',
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => ConnectionsListView(
+                          connectionsController: connectionsController,
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ],
-            ),
-          ),
-          Positioned(
-            top: 8,
-            right: 8,
-            child: IconButton(
-              icon: const Icon(Icons.close),
-              onPressed: isCompleted ? onHide : null,
-              color: isCompleted ? null : Colors.grey,
             ),
           ),
         ],

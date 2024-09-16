@@ -19,26 +19,16 @@ class OnboardingController {
   Future<OnboardingState> isOnboarded() async {
     try {
       final profile = await profileService.getProfile();
+      final accountsAdded = await _isAccountsAdded();
+      final profileCompleted = _isProfileCompleted(profile);
       return OnboardingState(
-          accountsAdded: await _isAccountsAdded(),
-          profileCompleted: _isProfileCompleted(profile));
+        accountsAdded: accountsAdded,
+        profileCompleted: profileCompleted,
+      );
     } catch (e) {
       _logger.warning('Error getting profile: $e');
       rethrow;
     }
-  }
-
-  Future<bool> isOnboardingCardHidden() async {
-    try {
-      return await OnboardingCache.isOnboardingCardHidden();
-    } catch (e) {
-      _logger.warning('Error getting onboarding card hidden: $e');
-      return true;
-    }
-  }
-
-  Future<void> setOnboardingCardHidden(bool hidden) async {
-    await OnboardingCache.setOnboardingCardHidden(hidden);
   }
 
   Future<Profile> getProfile() async {

@@ -109,7 +109,7 @@ class _ConnectionsListViewState extends State<ConnectionsListView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Connections')),
+      appBar: AppBar(title: const Text('Institutions')),
       body: FutureBuilder<List<PlaidItem>>(
         future: _futurePlaidItems,
         builder: (context, snapshot) {
@@ -145,16 +145,15 @@ class _ConnectionsListViewState extends State<ConnectionsListView> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text(
-                    'No connections yet',
-                    style: TextStyle(fontSize: 16),
-                  ),
                   const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () {
-                      widget.connectionsController.openPlaidLink();
-                    },
-                    child: const Text('Connect an institution'),
+                  Center(
+                    child: SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.7,
+                      child: Text(
+                        'Start linking your institutions to begin your journey to financial freedom.',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -212,7 +211,7 @@ class _ConnectionsListViewState extends State<ConnectionsListView> {
             widget.connectionsController.openPlaidLink();
           },
           icon: const Icon(Icons.add),
-          label: const Text("Connect Institution")),
+          label: const Text("Link Institution")),
     );
   }
 }
