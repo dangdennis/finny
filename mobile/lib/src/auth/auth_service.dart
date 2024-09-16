@@ -32,7 +32,8 @@ class AuthService {
       _logger.severe('AuthException: $error');
       showSnackBar("That didn't work. Try again.", isError: true);
     } catch (error) {
-      showSnackBar('Something unexpected happened. We\'re on it.', isError: true);
+      showSnackBar('Something unexpected happened. We\'re on it.',
+          isError: true);
     }
   }
 

@@ -2,11 +2,7 @@ import 'package:finny/src/auth/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'settings_controller.dart';
 
-/// Displays the various settings that can be customized by the user.
-///
-/// When a user changes a setting, the SettingsController is updated and
-/// Widgets that listen to the SettingsController are rebuilt.
-class SettingsView extends StatelessWidget {
+class SettingsView extends StatefulWidget {
   const SettingsView({
     super.key,
     required this.settingsController,
@@ -17,6 +13,25 @@ class SettingsView extends StatelessWidget {
 
   final SettingsController settingsController;
   final AuthProvider authProvider;
+
+  @override
+  State<SettingsView> createState() => _SettingsViewState();
+}
+
+class _SettingsViewState extends State<SettingsView> {
+  ThemeMode _themeMode = ThemeMode.system;
+
+  @override
+  void initState() {
+    super.initState();
+    _themeMode = widget.settingsController.themeMode;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _themeMode = widget.settingsController.themeMode;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,8 +66,13 @@ class SettingsView extends StatelessWidget {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             DropdownButton<ThemeMode>(
-              value: settingsController.themeMode,
-              onChanged: settingsController.updateThemeMode,
+              value: _themeMode,
+              onChanged: (newThemeMode) {
+                setState(() {
+                  _themeMode = newThemeMode!;
+                });
+                widget.settingsController.updateThemeMode(newThemeMode);
+              },
               isExpanded: true,
               items: const [
                 DropdownMenuItem(
@@ -97,7 +117,7 @@ class SettingsView extends StatelessWidget {
 
   Widget _buildLogoutButton() {
     return ElevatedButton(
-      onPressed: settingsController.signOut,
+      onPressed: widget.settingsController.signOut,
       style: ElevatedButton.styleFrom(
         padding: const EdgeInsets.symmetric(vertical: 16),
       ),
@@ -122,7 +142,7 @@ class SettingsView extends StatelessWidget {
             ElevatedButton(
               onPressed: () async {
                 Navigator.of(context).pop();
-                await settingsController.deleteSelf();
+                await widget.settingsController.deleteSelf();
               },
               child: const Text('Delete'),
             ),
