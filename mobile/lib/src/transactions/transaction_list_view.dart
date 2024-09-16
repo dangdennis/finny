@@ -178,7 +178,7 @@ class TransactionListView extends StatelessWidget {
 
   Color _getTransactionColor(Transaction transaction, BuildContext context) {
     return transaction.amount < 0
-        ? Theme.of(context).colorScheme.error
+        ? Colors.green.shade600
         : Theme.of(context).colorScheme.primary;
   }
 }
