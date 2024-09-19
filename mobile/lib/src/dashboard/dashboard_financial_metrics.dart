@@ -15,8 +15,6 @@ class FinancialMetricsCard extends StatefulWidget {
   State<FinancialMetricsCard> createState() => _FinancialMetricsCardState();
 }
 
-enum ExpenseView { last12Months, average }
-
 class _FinancialMetricsCardState extends State<FinancialMetricsCard> {
   ExpenseCalculation _selectedExpenseCalc = ExpenseCalculation.last12Months;
 
