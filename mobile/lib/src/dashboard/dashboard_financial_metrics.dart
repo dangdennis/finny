@@ -14,7 +14,11 @@ class FinancialMetricsCard extends StatefulWidget {
   State<FinancialMetricsCard> createState() => _FinancialMetricsCardState();
 }
 
+enum ExpenseView { last12Months, average }
+
 class _FinancialMetricsCardState extends State<FinancialMetricsCard> {
+  ExpenseView _selectedExpenseView = ExpenseView.last12Months;
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -26,6 +30,25 @@ class _FinancialMetricsCardState extends State<FinancialMetricsCard> {
             Text(
               'Finance at a Glance',
               style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 16),
+            SegmentedButton<ExpenseView>(
+              segments: const [
+                ButtonSegment<ExpenseView>(
+                  value: ExpenseView.last12Months,
+                  label: Text('Last 12 Months'),
+                ),
+                ButtonSegment<ExpenseView>(
+                  value: ExpenseView.average,
+                  label: Text('Average'),
+                ),
+              ],
+              selected: <ExpenseView>{_selectedExpenseView},
+              onSelectionChanged: (Set<ExpenseView> newSelection) {
+                setState(() {
+                  _selectedExpenseView = newSelection.first;
+                });
+              },
             ),
             const SizedBox(height: 16),
             FutureBuilder(
