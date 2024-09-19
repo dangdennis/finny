@@ -32,23 +32,33 @@ class _FinancialMetricsCardState extends State<FinancialMetricsCard> {
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 16),
-            SegmentedButton<ExpenseView>(
-              segments: const [
-                ButtonSegment<ExpenseView>(
-                  value: ExpenseView.last12Months,
-                  label: Text('Last 12 Months'),
+            Row(
+              children: [
+                Expanded(
+                  child: SegmentedButton<ExpenseView>(
+                    segments: const [
+                      ButtonSegment<ExpenseView>(
+                        value: ExpenseView.last12Months,
+                        label: Text('Last 12 Months'),
+                      ),
+                      ButtonSegment<ExpenseView>(
+                        value: ExpenseView.average,
+                        label: Text('Average'),
+                      ),
+                    ],
+                    selected: <ExpenseView>{_selectedExpenseView},
+                    onSelectionChanged: (Set<ExpenseView> newSelection) {
+                      setState(() {
+                        _selectedExpenseView = newSelection.first;
+                      });
+                    },
+                  ),
                 ),
-                ButtonSegment<ExpenseView>(
-                  value: ExpenseView.average,
-                  label: Text('Average'),
+                IconButton(
+                  icon: const Icon(Icons.info_outline),
+                  onPressed: () => _showInfoDialog(context),
                 ),
               ],
-              selected: <ExpenseView>{_selectedExpenseView},
-              onSelectionChanged: (Set<ExpenseView> newSelection) {
-                setState(() {
-                  _selectedExpenseView = newSelection.first;
-                });
-              },
             ),
             const SizedBox(height: 16),
             FutureBuilder(
@@ -150,6 +160,29 @@ class _FinancialMetricsCardState extends State<FinancialMetricsCard> {
       title: Text(title, style: Theme.of(context).textTheme.titleMedium),
       subtitle: Text('$age years'),
       dense: true,
+    );
+  }
+
+  // Add this method to show the info dialog
+  void _showInfoDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('How we calculate your numbers'),
+          content: const Text(
+            'Your numbers are based on your real-time expenses, whether a sum of the last 12 months or an average.',
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }
