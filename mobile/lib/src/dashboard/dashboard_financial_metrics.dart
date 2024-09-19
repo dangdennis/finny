@@ -1,3 +1,4 @@
+import 'package:finny/src/finalytics/finalytics_service.dart';
 import 'package:flutter/material.dart';
 import 'package:finny/src/finalytics/finalytics_controller.dart';
 import 'package:intl/intl.dart';
@@ -14,10 +15,8 @@ class FinancialMetricsCard extends StatefulWidget {
   State<FinancialMetricsCard> createState() => _FinancialMetricsCardState();
 }
 
-enum ExpenseView { last12Months, average }
-
 class _FinancialMetricsCardState extends State<FinancialMetricsCard> {
-  ExpenseView _selectedExpenseView = ExpenseView.last12Months;
+  ExpenseCalculation _selectedExpenseCalc = ExpenseCalculation.last12Months;
 
   @override
   Widget build(BuildContext context) {
@@ -35,21 +34,21 @@ class _FinancialMetricsCardState extends State<FinancialMetricsCard> {
             Row(
               children: [
                 Expanded(
-                  child: SegmentedButton<ExpenseView>(
+                  child: SegmentedButton<ExpenseCalculation>(
                     segments: const [
-                      ButtonSegment<ExpenseView>(
-                        value: ExpenseView.last12Months,
+                      ButtonSegment<ExpenseCalculation>(
+                        value: ExpenseCalculation.last12Months,
                         label: Text('Last 12 Months'),
                       ),
-                      ButtonSegment<ExpenseView>(
-                        value: ExpenseView.average,
+                      ButtonSegment<ExpenseCalculation>(
+                        value: ExpenseCalculation.average,
                         label: Text('Average'),
                       ),
                     ],
-                    selected: <ExpenseView>{_selectedExpenseView},
-                    onSelectionChanged: (Set<ExpenseView> newSelection) {
+                    selected: <ExpenseCalculation>{_selectedExpenseCalc},
+                    onSelectionChanged: (Set<ExpenseCalculation> newSelection) {
                       setState(() {
-                        _selectedExpenseView = newSelection.first;
+                        _selectedExpenseCalc = newSelection.first;
                       });
                     },
                   ),
@@ -62,7 +61,8 @@ class _FinancialMetricsCardState extends State<FinancialMetricsCard> {
             ),
             const SizedBox(height: 16),
             FutureBuilder(
-              future: widget.finalyticsController.getActualRetirementAge(),
+              future: widget.finalyticsController
+                  .getActualRetirementAge(_selectedExpenseCalc),
               builder: (context, snapshot) {
                 return _buildAgeTile(
                   context,
@@ -74,7 +74,8 @@ class _FinancialMetricsCardState extends State<FinancialMetricsCard> {
             const SizedBox(height: 8),
             FutureBuilder(
               future: widget.finalyticsController
-                  .getTargetSavingsAndInvestmentsThisMonth(),
+                  .getTargetSavingsAndInvestmentsThisMonth(
+                      _selectedExpenseCalc),
               builder: (context, snapshot) {
                 return _buildMetricTile(
                   context,
@@ -87,7 +88,8 @@ class _FinancialMetricsCardState extends State<FinancialMetricsCard> {
             const SizedBox(height: 8),
             FutureBuilder(
               future: widget.finalyticsController
-                  .getActualSavingsAndInvestmentsThisMonth(),
+                  .getActualSavingsAndInvestmentsThisMonth(
+                      _selectedExpenseCalc),
               builder: (context, snapshot) {
                 return _buildMetricTile(
                   context,
@@ -99,8 +101,8 @@ class _FinancialMetricsCardState extends State<FinancialMetricsCard> {
             ),
             const SizedBox(height: 8),
             FutureBuilder(
-              future:
-                  widget.finalyticsController.getActualSavingsAtRetirement(),
+              future: widget.finalyticsController
+                  .getActualSavingsAtRetirement(_selectedExpenseCalc),
               builder: (context, snapshot) {
                 return _buildMetricTile(
                   context,
@@ -112,8 +114,8 @@ class _FinancialMetricsCardState extends State<FinancialMetricsCard> {
             ),
             const SizedBox(height: 8),
             FutureBuilder(
-              future:
-                  widget.finalyticsController.getTargetSavingsAtRetirement(),
+              future: widget.finalyticsController
+                  .getTargetSavingsAtRetirement(_selectedExpenseCalc),
               builder: (context, snapshot) {
                 return _buildMetricTile(
                   context,

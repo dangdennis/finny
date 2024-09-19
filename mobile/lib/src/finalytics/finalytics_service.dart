@@ -6,6 +6,8 @@ import 'package:finny/src/goals/goals_service.dart';
 import 'package:finny/src/powersync/database.dart';
 import 'package:finny/src/profile/profile_service.dart';
 
+enum ExpenseCalculation { last12Months, average }
+
 class FinalyticsService {
   final AppDatabase appDb;
   late final GoalsService goalsService;
@@ -17,7 +19,7 @@ class FinalyticsService {
     profileService = ProfileService(appDb: appDb);
   }
 
-  Future<int> getActualRetirementAge() async {
+  Future<int> getActualRetirementAge(ExpenseCalculation exp) async {
     final profile = await profileService.getProfile();
     if (profile == null) {
       throw Exception('Profile is not set');
@@ -45,7 +47,8 @@ class FinalyticsService {
     return averageMonthlyInflowOutflow.outflows * 12 / 0.04;
   }
 
-  Future<double> getFreedomFutureValueOfCurrentExpensesAtRetirement() async {
+  Future<double> getFreedomFutureValueOfCurrentExpensesAtRetirement(
+      ExpenseCalculation exp) async {
     final freedomFVCurrentAge = await getFreedomFutureValueOfCurrentExpenses();
     final yearsToRetirement = await calculateYearsToRetirement();
 
@@ -56,11 +59,12 @@ class FinalyticsService {
         years: yearsToRetirement);
   }
 
-  Future<double> getTargetSavingsAndInvestmentsThisMonth() async {
+  Future<double> getTargetSavingsAndInvestmentsThisMonth(
+      ExpenseCalculation exp) async {
     final pv = -((await getAssignedBalanceOnRetirementGoal()).abs());
     final period = await calculateYearsToRetirement();
     const interest = 8.0;
-    final fv = await getFreedomFutureValueOfCurrentExpensesAtRetirement();
+    final fv = await getFreedomFutureValueOfCurrentExpensesAtRetirement(exp);
     final yearlySavingsTarget = calculatePaymentFromFutureValue(
       fv: fv,
       pv: pv,
@@ -71,13 +75,14 @@ class FinalyticsService {
     return yearlySavingsTarget / 12;
   }
 
-  Future<double> getActualSavingsAndInvestmentsThisMonth() async {
+  Future<double> getActualSavingsAndInvestmentsThisMonth(
+      ExpenseCalculation exp) async {
     final savings = await getActualSavingsThisMonthForRetirementGoal();
     final investment = await getActualInvestmentThisMonthForRetirementGoal();
     return savings + investment;
   }
 
-  Future<double> getActualSavingsAtRetirement() async {
+  Future<double> getActualSavingsAtRetirement(ExpenseCalculation exp) async {
     const interestRate = 0.08;
     final period = await calculateYearsToRetirement();
     final pv = -((await getAssignedBalanceOnRetirementGoal()).abs());
