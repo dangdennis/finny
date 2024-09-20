@@ -1,3 +1,4 @@
+import 'package:finny/src/finalytics/finalytics_service.dart';
 import 'package:flutter/material.dart';
 import 'package:finny/src/finalytics/finalytics_controller.dart';
 import 'package:intl/intl.dart';
@@ -15,6 +16,8 @@ class FinancialMetricsCard extends StatefulWidget {
 }
 
 class _FinancialMetricsCardState extends State<FinancialMetricsCard> {
+  ExpenseCalculation _selectedExpenseCalc = ExpenseCalculation.last12Months;
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -28,8 +31,38 @@ class _FinancialMetricsCardState extends State<FinancialMetricsCard> {
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: SegmentedButton<ExpenseCalculation>(
+                    segments: const [
+                      ButtonSegment<ExpenseCalculation>(
+                        value: ExpenseCalculation.last12Months,
+                        label: Text('Last 12 Months'),
+                      ),
+                      ButtonSegment<ExpenseCalculation>(
+                        value: ExpenseCalculation.average,
+                        label: Text('Average'),
+                      ),
+                    ],
+                    selected: <ExpenseCalculation>{_selectedExpenseCalc},
+                    onSelectionChanged: (Set<ExpenseCalculation> newSelection) {
+                      setState(() {
+                        _selectedExpenseCalc = newSelection.first;
+                      });
+                    },
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.info_outline),
+                  onPressed: () => _showInfoDialog(context),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
             FutureBuilder(
-              future: widget.finalyticsController.getActualRetirementAge(),
+              future: widget.finalyticsController
+                  .getActualRetirementAge(_selectedExpenseCalc),
               builder: (context, snapshot) {
                 return _buildAgeTile(
                   context,
@@ -41,7 +74,8 @@ class _FinancialMetricsCardState extends State<FinancialMetricsCard> {
             const SizedBox(height: 8),
             FutureBuilder(
               future: widget.finalyticsController
-                  .getTargetSavingsAndInvestmentsThisMonth(),
+                  .getTargetSavingsAndInvestmentsThisMonth(
+                      _selectedExpenseCalc),
               builder: (context, snapshot) {
                 return _buildMetricTile(
                   context,
@@ -54,7 +88,8 @@ class _FinancialMetricsCardState extends State<FinancialMetricsCard> {
             const SizedBox(height: 8),
             FutureBuilder(
               future: widget.finalyticsController
-                  .getActualSavingsAndInvestmentsThisMonth(),
+                  .getActualSavingsAndInvestmentsThisMonth(
+                      _selectedExpenseCalc),
               builder: (context, snapshot) {
                 return _buildMetricTile(
                   context,
@@ -66,8 +101,8 @@ class _FinancialMetricsCardState extends State<FinancialMetricsCard> {
             ),
             const SizedBox(height: 8),
             FutureBuilder(
-              future:
-                  widget.finalyticsController.getActualSavingsAtRetirement(),
+              future: widget.finalyticsController
+                  .getActualSavingsAtRetirement(_selectedExpenseCalc),
               builder: (context, snapshot) {
                 return _buildMetricTile(
                   context,
@@ -79,8 +114,8 @@ class _FinancialMetricsCardState extends State<FinancialMetricsCard> {
             ),
             const SizedBox(height: 8),
             FutureBuilder(
-              future:
-                  widget.finalyticsController.getTargetSavingsAtRetirement(),
+              future: widget.finalyticsController
+                  .getTargetSavingsAtRetirement(_selectedExpenseCalc),
               builder: (context, snapshot) {
                 return _buildMetricTile(
                   context,
@@ -127,6 +162,29 @@ class _FinancialMetricsCardState extends State<FinancialMetricsCard> {
       title: Text(title, style: Theme.of(context).textTheme.titleMedium),
       subtitle: Text('$age years'),
       dense: true,
+    );
+  }
+
+  // Add this method to show the info dialog
+  void _showInfoDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('How we calculate your numbers'),
+          content: const Text(
+            'Your numbers are based on your real-time expenses, whether a sum of the last 12 months or an average.',
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }

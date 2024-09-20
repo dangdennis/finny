@@ -7,27 +7,29 @@ class FinalyticsController {
   final FinalyticsService _finalytics;
   final ProfileService _profileService;
 
-  Future<int> getActualRetirementAge() async {
-    return _finalytics.getActualRetirementAge();
+  Future<int> getActualRetirementAge(ExpenseCalculation exp) async {
+    return _finalytics.getActualRetirementAge(exp);
   }
 
   Future<int> getTargetRetirementAge() async {
     return (await _profileService.getProfile())?.retirementAge ?? 67;
   }
 
-  Future<double> getTargetSavingsAndInvestmentsThisMonth() async {
-    return _finalytics.getTargetSavingsAndInvestmentsThisMonth();
+  Future<double> getTargetSavingsAndInvestmentsThisMonth(
+      ExpenseCalculation exp) async {
+    return _finalytics.getTargetSavingsAndInvestmentsThisMonth(exp);
   }
 
-  Future<double> getActualSavingsAndInvestmentsThisMonth() async {
-    return _finalytics.getActualSavingsAndInvestmentsThisMonth();
+  Future<double> getActualSavingsAndInvestmentsThisMonth(
+      ExpenseCalculation exp) async {
+    return _finalytics.getActualSavingsAndInvestmentsThisMonth(exp);
   }
 
-  Future<double> getActualSavingsAtRetirement() async {
-    return _finalytics.getActualSavingsAtRetirement();
+  Future<double> getActualSavingsAtRetirement(ExpenseCalculation exp) async {
+    return _finalytics.getActualSavingsAtRetirement(exp);
   }
 
-  Future<double> getTargetSavingsAtRetirement() async {
-    return _finalytics.getFreedomFutureValueOfCurrentExpensesAtRetirement();
+  Future<double> getTargetSavingsAtRetirement(ExpenseCalculation exp) async {
+    return _finalytics.getFreedomFutureValueOfCurrentExpensesAtRetirement(exp);
   }
 }

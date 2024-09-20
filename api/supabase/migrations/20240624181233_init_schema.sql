@@ -212,6 +212,7 @@ CREATE OR REPLACE FUNCTION public.handle_new_user()
  RETURNS trigger
  LANGUAGE plpgsql
  SECURITY DEFINER
+ SET search_path = ''
 AS $function$
 begin
   insert into public."profiles" (id)
@@ -605,5 +606,3 @@ grant trigger on table "public"."transactions" to "service_role";
 grant truncate on table "public"."transactions" to "service_role";
 
 grant update on table "public"."transactions" to "service_role";
-
-

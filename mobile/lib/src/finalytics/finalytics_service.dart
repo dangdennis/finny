@@ -4,7 +4,10 @@ import 'package:finny/src/accounts/accounts_service.dart';
 import 'package:finny/src/goals/goal_model.dart';
 import 'package:finny/src/goals/goals_service.dart';
 import 'package:finny/src/powersync/database.dart';
+import 'package:finny/src/profile/profile_model.dart';
 import 'package:finny/src/profile/profile_service.dart';
+
+enum ExpenseCalculation { last12Months, average }
 
 class FinalyticsService {
   final AppDatabase appDb;
@@ -17,13 +20,13 @@ class FinalyticsService {
     profileService = ProfileService(appDb: appDb);
   }
 
-  Future<int> getActualRetirementAge() async {
+  Future<int> getActualRetirementAge(ExpenseCalculation exp) async {
     final profile = await profileService.getProfile();
     if (profile == null) {
       throw Exception('Profile is not set');
     }
 
-    final fv = await getFreedomFutureValueOfCurrentExpenses();
+    final fv = await getFreedomFutureValueOfCurrentExpenses(exp);
     final pv = await getAssignedBalanceOnRetirementGoal();
     final pmt = await getActualSavingsThisMonthForRetirementGoal() * 12;
     const interest = 0.08;
@@ -40,14 +43,25 @@ class FinalyticsService {
   }
 
   // Calculate the total amount of money (future value) I need today to sustain my expenses in perpetuity at 4% interest
-  Future<double> getFreedomFutureValueOfCurrentExpenses() async {
-    final averageMonthlyInflowOutflow = await getAverageMonthlyInflowOutflow();
-    return averageMonthlyInflowOutflow.outflows * 12 / 0.04;
+  Future<double> getFreedomFutureValueOfCurrentExpenses(
+      ExpenseCalculation exp) async {
+    if (exp == ExpenseCalculation.last12Months) {
+      return (await getLast12MonthsInflowOutflow()).outflows;
+    } else {
+      return (await getAverageMonthlyInflowOutflow()).outflows * 12 / 0.04;
+    }
   }
 
-  Future<double> getFreedomFutureValueOfCurrentExpensesAtRetirement() async {
-    final freedomFVCurrentAge = await getFreedomFutureValueOfCurrentExpenses();
-    final yearsToRetirement = await calculateYearsToRetirement();
+  Future<double> getFreedomFutureValueOfCurrentExpensesAtRetirement(
+      ExpenseCalculation exp) async {
+    final profile = await profileService.getProfile();
+    if (profile == null) {
+      throw Exception('Profile not found');
+    }
+
+    final freedomFVCurrentAge =
+        await getFreedomFutureValueOfCurrentExpenses(exp);
+    final yearsToRetirement = await calculateYearsToRetirement(profile);
 
     return calculateFutureValue(
         presentValue: freedomFVCurrentAge.abs(),
@@ -56,11 +70,17 @@ class FinalyticsService {
         years: yearsToRetirement);
   }
 
-  Future<double> getTargetSavingsAndInvestmentsThisMonth() async {
+  Future<double> getTargetSavingsAndInvestmentsThisMonth(
+      ExpenseCalculation exp) async {
+    final profile = await profileService.getProfile();
+    if (profile == null) {
+      throw Exception('Profile not found');
+    }
+
     final pv = -((await getAssignedBalanceOnRetirementGoal()).abs());
-    final period = await calculateYearsToRetirement();
+    final period = await calculateYearsToRetirement(profile);
     const interest = 8.0;
-    final fv = await getFreedomFutureValueOfCurrentExpensesAtRetirement();
+    final fv = await getFreedomFutureValueOfCurrentExpensesAtRetirement(exp);
     final yearlySavingsTarget = calculatePaymentFromFutureValue(
       fv: fv,
       pv: pv,
@@ -71,15 +91,21 @@ class FinalyticsService {
     return yearlySavingsTarget / 12;
   }
 
-  Future<double> getActualSavingsAndInvestmentsThisMonth() async {
+  Future<double> getActualSavingsAndInvestmentsThisMonth(
+      ExpenseCalculation exp) async {
     final savings = await getActualSavingsThisMonthForRetirementGoal();
     final investment = await getActualInvestmentThisMonthForRetirementGoal();
     return savings + investment;
   }
 
-  Future<double> getActualSavingsAtRetirement() async {
+  Future<double> getActualSavingsAtRetirement(ExpenseCalculation exp) async {
+    final profile = await profileService.getProfile();
+    if (profile == null) {
+      throw Exception('Profile not found');
+    }
+
     const interestRate = 0.08;
-    final period = await calculateYearsToRetirement();
+    final period = await calculateYearsToRetirement(profile);
     final pv = -((await getAssignedBalanceOnRetirementGoal()).abs());
     final pmt =
         -((await getActualSavingsThisMonthForRetirementGoal()).abs() * 12);
@@ -266,19 +292,30 @@ class FinalyticsService {
         outflows: result.read<double>('average_outflows'));
   }
 
-  Future<int> calculateYearsToRetirement() async {
-    final profile = await profileService.getProfile();
+  Future<Last12MonthsInflowOutflow> getLast12MonthsInflowOutflow() async {
+    final result = await appDb.customSelect('''
+      SELECT
+        SUM(CASE WHEN amount < 0 THEN ABS(amount) ELSE 0 END) AS total_inflows,
+        SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) AS total_outflows
+      FROM
+        transactions
+        JOIN accounts ON transactions.account_id = accounts.id
+      WHERE
+        date >= date('now', '-12 months');
+    ''').getSingle();
 
-    if (profile == null) {
-      throw Exception('Profile is not set');
+    return Last12MonthsInflowOutflow(
+        inflows: result.read<double>('total_inflows'),
+        outflows: result.read<double>('total_outflows'));
+  }
+
+  Future<int> calculateYearsToRetirement(Profile profile) async {
+    if (profile.retirementAge == null) {
+      throw Exception('Retirement age is missing');
     }
 
     if (profile.age == null) {
-      throw Exception('Age is not set');
-    }
-
-    if (profile.retirementAge == null) {
-      throw Exception('Retirement age is not set');
+      throw Exception('Age is missing');
     }
 
     return profile.retirementAge! - profile.age!;
@@ -368,4 +405,11 @@ class AverageMonthlyInflowOutflow {
   final double outflows;
 
   AverageMonthlyInflowOutflow({required this.inflows, required this.outflows});
+}
+
+class Last12MonthsInflowOutflow {
+  final double inflows;
+  final double outflows;
+
+  Last12MonthsInflowOutflow({required this.inflows, required this.outflows});
 }

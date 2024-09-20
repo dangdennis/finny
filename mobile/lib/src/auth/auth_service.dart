@@ -55,8 +55,6 @@ class AuthService {
           'Could not find ID Token from generated credential.');
     }
 
-    print('ID Token: $idToken');
-
     final res = await Supabase.instance.client.auth.signInWithIdToken(
       provider: OAuthProvider.apple,
       idToken: idToken,
