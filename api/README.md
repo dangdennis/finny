@@ -2,11 +2,16 @@
 
 ## Installation
 1. Install [scala](https://www.scala-lang.org/download/)
+2. Install mill `brew install mill` or you can just use `./mill`
 
 ## Development
 1. Run `docker compose up` to start the queue.
 2. Run `supabase start`.
 3. Run `make r` to start the server in watch mode.
+
+## Production
+1. Run `make deploy` to deploy to Fly.
+2. A GH action is setup to deploy main to production on merge.
 
 ## Links:
 
