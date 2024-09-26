@@ -267,7 +267,7 @@ class FinalyticsService {
   /// Get the average monthly inflow and outflow for the last 12 months
   Future<AverageMonthlyInflowOutflow> getAverageMonthlyInflowOutflow() async {
     final result = await appDb.customSelect('''
-      WITH monthly_totals AS (
+      WITH monthly_regular_transactions AS (
         SELECT
           strftime('%Y-%m', date) AS month,
           SUM(CASE WHEN amount < 0 THEN ABS(amount) ELSE 0 END) AS monthly_inflows,
@@ -277,14 +277,42 @@ class FinalyticsService {
           JOIN accounts ON transactions.account_id = accounts.id
         WHERE
           date >= date('now', '-12 months')
+          AND category NOT IN ('TRANSFER_IN', 'TRANSFER_OUT')
         GROUP BY
           month
+      ),
+      monthly_transfer_transactions AS (
+        SELECT
+          strftime('%Y-%m', date) AS month,
+          SUM(CASE WHEN category = 'TRANSFER_IN' THEN amount ELSE -amount END) AS net_transfer
+        FROM
+          transactions
+        WHERE
+          date >= date('now', '-12 months')
+          AND category IN ('TRANSFER_IN', 'TRANSFER_OUT')
+        GROUP BY
+          month
+      ),
+      adjusted_monthly_totals AS (
+        SELECT
+          mrt.month,
+          CASE
+            WHEN mtt.net_transfer > 0 THEN mrt.monthly_inflows + mtt.net_transfer
+            ELSE mrt.monthly_inflows
+          END AS adjusted_inflows,
+          CASE
+            WHEN mtt.net_transfer < 0 THEN mrt.monthly_outflows - mtt.net_transfer
+            ELSE mrt.monthly_outflows
+          END AS adjusted_outflows
+        FROM
+          monthly_regular_transactions mrt
+          LEFT JOIN monthly_transfer_transactions mtt ON mrt.month = mtt.month
       )
       SELECT
-        AVG(monthly_inflows) AS average_inflows,
-        AVG(monthly_outflows) AS average_outflows
+        AVG(adjusted_inflows) AS average_inflows,
+        AVG(adjusted_outflows) AS average_outflows
       FROM
-        monthly_totals;
+        adjusted_monthly_totals;
     ''').getSingle();
 
     return AverageMonthlyInflowOutflow(
@@ -294,19 +322,42 @@ class FinalyticsService {
 
   Future<Last12MonthsInflowOutflow> getLast12MonthsInflowOutflow() async {
     final result = await appDb.customSelect('''
+      WITH regular_transactions AS (
+        SELECT
+          SUM(CASE WHEN amount < 0 THEN ABS(amount) ELSE 0 END) AS total_inflows,
+          SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) AS total_outflows
+        FROM
+          transactions
+          JOIN accounts ON transactions.account_id = accounts.id
+        WHERE
+          date >= date('now', '-12 months')
+          AND category NOT IN ('TRANSFER_IN', 'TRANSFER_OUT')
+      ),
+      transfer_transactions AS (
+        SELECT
+          SUM(CASE WHEN category = 'TRANSFER_IN' THEN amount ELSE -amount END) AS net_transfer
+        FROM
+          transactions
+        WHERE
+          date >= date('now', '-12 months')
+          AND category IN ('TRANSFER_IN', 'TRANSFER_OUT')
+      )
       SELECT
-        SUM(CASE WHEN amount < 0 THEN ABS(amount) ELSE 0 END) AS total_inflows,
-        SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) AS total_outflows
+        CASE
+          WHEN tt.net_transfer > 0 THEN rt.total_inflows + tt.net_transfer
+          ELSE rt.total_inflows
+        END AS adjusted_inflows,
+        CASE
+          WHEN tt.net_transfer < 0 THEN rt.total_outflows - tt.net_transfer
+          ELSE rt.total_outflows
+        END AS adjusted_outflows
       FROM
-        transactions
-        JOIN accounts ON transactions.account_id = accounts.id
-      WHERE
-        date >= date('now', '-12 months');
+        regular_transactions rt, transfer_transactions tt
     ''').getSingle();
 
     return Last12MonthsInflowOutflow(
-        inflows: result.read<double>('total_inflows'),
-        outflows: result.read<double>('total_outflows'));
+        inflows: result.read<double>('adjusted_inflows'),
+        outflows: result.read<double>('adjusted_outflows'));
   }
 
   Future<int> calculateYearsToRetirement(Profile profile) async {
