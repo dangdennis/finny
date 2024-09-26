@@ -7,7 +7,7 @@ app = 'finny-backend'
 primary_region = 'ewr'
 
 [build]
-dockerfile = './Dockerfile'
+dockerfile = './docker/Dockerfile.api'
 
 [http_service]
 internal_port = 8080
