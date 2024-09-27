@@ -6,84 +6,67 @@ import java.util.UUID
 import scala.util.Try
 
 object FinalyticService:
-  def getActualSavingsThisMonthForRetirementGoal(
+  def calculateRetirementSavingsForCurrentMonth(
       userId: UUID
   ): Either[AppError, Double] =
-    Try(DB.readOnly { implicit session =>
-      sql"""
-          WITH retirement_goal AS (
-            SELECT
-              id
-            FROM
-              goals
-            WHERE
-              goals.goal_type = 'retirement'
-              AND goals.user_id = $userId
-            LIMIT 1
-          ),
-          assigned_accounts AS (
-            SELECT
-              account_id
-            FROM
-              goal_accounts
-              JOIN retirement_goal ON retirement_goal.id = goal_accounts.goal_id
-            WHERE
-              goal_accounts.goal_id = retirement_goal.id
-          ),
-          start_of_month_balances AS (
-            -- Get the earliest balance in the current month for each account
-            SELECT DISTINCT ON (ab.account_id)
-              ab.account_id,
-              ab.balance_date AS start_balance_date,
-              ab.current_balance AS start_balance
-            FROM
-              account_balances ab
-            WHERE
-              ab.balance_date >= date_trunc('month', CURRENT_DATE) -- Start of the current month in PostgreSQL
-              AND ab.account_id IN (
-                SELECT
-                  account_id
-                FROM
-                  assigned_accounts)
-              ORDER BY
-                ab.account_id,
-                ab.balance_date
-          ),
-          most_recent_balances AS (
-            -- Get the most recent balance for each account
-            SELECT DISTINCT ON (ab.account_id)
-              ab.account_id,
-              ab.balance_date AS most_recent_balance_date,
-              ab.current_balance AS most_recent_balance
-            FROM
-              account_balances ab
-            WHERE
-              ab.account_id IN (
-                SELECT
-                  account_id
-                FROM
-                  assigned_accounts)
-              ORDER BY
-                ab.account_id,
-                ab.balance_date DESC
+    val result = for
+      queryResult <- Try:
+        DB.readOnly { implicit session =>
+          sql"${retirementSavingsQuery(userId)}"
+            .map(rs => rs.doubleOpt("net_balance_change"))
+            .single
+            .apply()
+        }
+      .toEither.left.map(e => AppError.DatabaseError(e.getMessage))
+
+      value <- queryResult match
+        case Some(v) => Right(v)
+        case None =>
+          Left(
+            AppError.NotFoundError("No retirement goal or balance data found")
           )
-          SELECT
-            mr.account_id,
-            (mr.most_recent_balance - som.start_balance) AS net_balance_change
-          FROM
-            most_recent_balances mr
-            JOIN start_of_month_balances som ON mr.account_id = som.account_id
-            JOIN accounts ON mr.account_id = accounts.id
-          WHERE
-            mr.most_recent_balance_date >= som.start_balance_date;
-          """
-        .map(rs => rs.doubleOpt("net_balance_change"))
-        .single
-        .apply()
-        .get
-    }).toEither
-      .left.map(e => AppError.DatabaseError(e.getMessage))
-      .flatMap {
-        case Some(value) => Right(value)
-        case None => Left(AppError.NotFoundError("No retirement goal or balance data found"))
-      }
+    yield value.getOrElse(0.0)
+
+    result
+
+  private def retirementSavingsQuery(userId: UUID): SQL[Nothing, NoExtractor] =
+    sql"""
+      WITH retirement_goal AS (
+        SELECT id
+        FROM goals
+        WHERE goals.goal_type = 'retirement' AND goals.user_id = $userId
+        LIMIT 1
+      ),
+      assigned_accounts AS (
+        SELECT account_id
+        FROM goal_accounts
+        JOIN retirement_goal ON retirement_goal.id = goal_accounts.goal_id
+      ),
+      start_of_month_balances AS (
+        -- Get the earliest balance in the current month for each account
+        SELECT DISTINCT ON (ab.account_id)
+          ab.account_id,
+          ab.balance_date AS start_balance_date,
+          ab.current_balance AS start_balance
+        FROM account_balances ab
+        WHERE ab.balance_date >= date_trunc('month', CURRENT_DATE)
+          AND ab.account_id IN (SELECT account_id FROM assigned_accounts)
+        ORDER BY ab.account_id, ab.balance_date
+      ),
+      most_recent_balances AS (
+        -- Get the most recent balance for each account
+        SELECT DISTINCT ON (ab.account_id)
+          ab.account_id,
+          ab.balance_date AS most_recent_balance_date,
+          ab.current_balance AS most_recent_balance
+        FROM account_balances ab
+        WHERE ab.account_id IN (SELECT account_id FROM assigned_accounts)
+        ORDER BY ab.account_id, ab.balance_date DESC
+      )
+      SELECT
+        SUM(mr.most_recent_balance - som.start_balance) AS net_balance_change
+      FROM most_recent_balances mr
+      JOIN start_of_month_balances som ON mr.account_id = som.account_id
+      JOIN accounts ON mr.account_id = accounts.id
+      WHERE mr.most_recent_balance_date >= som.start_balance_date
+    """
