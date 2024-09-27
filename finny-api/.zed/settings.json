@@ -22,9 +22,6 @@
   "ui_font_size": 16,
   "buffer_font_size": 14,
   "tab_size": 2,
-  "format_on_save": {
-    "enabled": true
-  },
   "features": {
     "inline_completion_provider": "supermaven"
   }
