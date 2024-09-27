@@ -12,9 +12,9 @@ enum FinalyticKeys:
     override def toString: String =
         this match
             case ActualRetirementAge =>
-                "ActualRetirementAge"
+                "actual_retirement_age"
             case ActualSavingsAndInvestmentsThisMonth =>
-                "ActualSavingsAndInvestmentsThisMonth"
+                "actual_savings_and_investments_this_month"
             case TargetSavingsAndInvestmentsThisMonth =>
                 "TargetSavingsAndInvestmentsThisMonth"
             case ActualSavingsAtRetirement =>
