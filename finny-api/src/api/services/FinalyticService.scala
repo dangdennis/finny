@@ -9,25 +9,16 @@ object FinalyticService:
   def calculateRetirementSavingsForCurrentMonth(
       userId: UUID
   ): Either[AppError, Double] =
-    val result = for
-      queryResult <- Try:
-        DB.readOnly { implicit session =>
+    val result = Try:
+      DB.readOnly:
+        implicit session =>
           sql"${retirementSavingsQuery(userId)}"
-            .map(rs => rs.doubleOpt("net_balance_change"))
+            .map(rs => rs.double("net_balance_change"))
             .single
             .apply()
-        }
-      .toEither.left.map(e => AppError.DatabaseError(e.getMessage))
+            .get
 
-      value <- queryResult match
-        case Some(v) => Right(v)
-        case None =>
-          Left(
-            AppError.NotFoundError("No retirement goal or balance data found")
-          )
-    yield value.getOrElse(0.0)
-
-    result
+    result.toEither.left.map(e => AppError.DatabaseError(e.getMessage))
 
   private def retirementSavingsQuery(userId: UUID): SQL[Nothing, NoExtractor] =
     sql"""
