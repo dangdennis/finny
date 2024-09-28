@@ -5,10 +5,10 @@ import api.common.*
 import java.util.UUID
 import scala.util.Try
 
-object FinalyticService:
+object FinalyticsService:
   def calculateRetirementSavingsForCurrentMonth(
       userId: UUID
-  ): Either[AppError, Double] =
+  ): Either[AppError.DatabaseError, Double] =
     val result = Try:
       DB.readOnly:
         implicit session =>
@@ -16,7 +16,7 @@ object FinalyticService:
             .map(rs => rs.double("net_balance_change"))
             .single
             .apply()
-            .get
+            .getOrElse(0.0)
 
     result.toEither.left.map(e => AppError.DatabaseError(e.getMessage))
 
