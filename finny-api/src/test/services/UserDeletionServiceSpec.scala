@@ -25,9 +25,10 @@ class UserDeletionServiceSpec
       Matchers,
       EitherValues,
       BeforeAndAfterAll,
-      BeforeAndAfterEach:
-  override protected def beforeAll(): Unit = TestHelper.beforeAll()
-  override protected def afterEach(): Unit = TestHelper.afterEach()
+      BeforeAndAfterEach,
+      TestInfra:
+  override protected def beforeAll(): Unit = super.beforeAll()
+  override protected def afterEach(): Unit = super.afterEach()
 
   "deleteUserEverything" should
     "delete all user data, including transaction, accounts, plaid items, goals, assets, profile, auth.user" in:

@@ -18,9 +18,10 @@ class JobsSpec
       Matchers,
       EitherValues,
       BeforeAndAfterAll,
-      BeforeAndAfterEach:
-  override protected def beforeAll(): Unit = TestHelper.beforeAll()
-  override protected def beforeEach(): Unit = TestHelper.beforeEach()
+      BeforeAndAfterEach,
+      TestInfra:
+  override protected def beforeAll(): Unit = super.beforeAll()
+  override protected def beforeEach(): Unit = super.beforeEach()
 
   "enqueueJobs" should "send clean serialized messages and consumers should be able to deserialize cleanly" in:
     // given

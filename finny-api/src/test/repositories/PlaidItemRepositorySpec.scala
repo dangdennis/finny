@@ -16,10 +16,11 @@ class PlaidItemRepositorySpec
       Matchers,
       EitherValues,
       BeforeAndAfterAll,
-      BeforeAndAfterEach:
-  override protected def beforeAll(): Unit = TestHelper.beforeAll()
+      BeforeAndAfterEach,
+      TestInfra:
+  override protected def beforeAll(): Unit = super.beforeAll()
 
-  override protected def afterEach(): Unit = TestHelper.afterEach()
+  override protected def afterEach(): Unit = super.afterEach()
 
   "updateSyncSuccess" should "update item sync success time" in {
     // given

@@ -17,9 +17,10 @@ class AccountRepositorySpec
       Matchers,
       EitherValues,
       BeforeAndAfterAll,
-      BeforeAndAfterEach:
-  override protected def beforeAll(): Unit = TestHelper.beforeAll()
-  override protected def afterEach(): Unit = TestHelper.afterEach()
+      BeforeAndAfterEach,
+      TestInfra:
+  override def beforeAll(): Unit = super.beforeAll()
+  override def afterEach(): Unit = super.afterEach()
 
   "upsertAccount" should "upsert accounts" in {
     // given

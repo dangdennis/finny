@@ -23,9 +23,10 @@ class InvestmentRepositorySpec
       Matchers,
       EitherValues,
       BeforeAndAfterAll,
-      BeforeAndAfterEach:
-  override protected def beforeAll(): Unit = TestHelper.beforeAll()
-  override protected def afterEach(): Unit = TestHelper.afterEach()
+      BeforeAndAfterEach,
+      TestInfra:
+  override protected def beforeAll(): Unit = super.beforeAll()
+  override protected def afterEach(): Unit = super.afterEach()
 
   "upsertInvestmentHoldings" should "upsert investment holdings" in {
     // given

@@ -16,9 +16,10 @@ class PowerSyncHandlerSpec
       Matchers,
       EitherValues,
       BeforeAndAfterAll,
-      BeforeAndAfterEach:
-  override protected def beforeAll(): Unit = TestHelper.beforeAll()
-  override protected def afterEach(): Unit = TestHelper.afterEach()
+      BeforeAndAfterEach,
+      TestInfra:
+  override protected def beforeAll(): Unit = super.beforeAll()
+  override protected def afterEach(): Unit = super.afterEach()
 
   "handleEventUpload" should "handle PUT and DELETE goals ops" in {
     // given
