@@ -2,7 +2,7 @@ package cli
 
 import api.common.Environment
 import api.common.Environment.AppEnv
-import api.database.Database
+import api.database.DatabaseJdbc
 import api.models.PlaidItemId
 import api.services.PlaidService
 
@@ -17,7 +17,7 @@ object Cli {
       user = "postgres.tqonkxhrucymdyndpjzf",
       password = "I07R6V4POCTi5wd4"
     )
-    Database.init(config)
+    DatabaseJdbc.init(config)
     println("Database initialized")
     val plaidClient = PlaidService
       .makePlaidClient(

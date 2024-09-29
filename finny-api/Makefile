@@ -39,3 +39,6 @@ c:
 
 t:
 	mill -w test
+
+restore-prod-db:
+	sh ./src/test/services/restore_prod_db.sh

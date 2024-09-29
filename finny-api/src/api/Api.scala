@@ -1,7 +1,7 @@
 package api
 
 import api.common.*
-import api.database.Database
+import api.database.DatabaseJdbc
 import api.jobs.Jobs
 import api.routes.Routes
 import io.helidon.webserver.WebServer
@@ -26,7 +26,7 @@ def main: Unit =
       Logger.root.info(s"Running in production mode.")
 
   Logger.configureLogging()
-  Database.init(databaseConfig)
+  DatabaseJdbc.init(databaseConfig)
   Jobs.init()
 
   val handler = NimaServerInterpreter().toHandler(

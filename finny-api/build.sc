@@ -39,7 +39,9 @@ trait CommonModule
     ivy"io.circe:circe-core_3:0.14.9",
     ivy"io.circe:circe-generic_3:0.14.9",
     ivy"io.circe:circe-parser_3:0.14.9",
-    ivy"io.helidon.webserver:helidon-webserver-access-log:4.0.11"
+    ivy"io.helidon.webserver:helidon-webserver-access-log:4.0.11",
+    ivy"com.lihaoyi::scalasql:0.1.9",
+    ivy"com.zaxxer:HikariCP:6.0.0"
   )
 }
 

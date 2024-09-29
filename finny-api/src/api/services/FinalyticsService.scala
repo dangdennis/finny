@@ -9,24 +9,25 @@ import scala.util.Try
 object FinalyticsService:
   def calculateRetirementSavingsForCurrentMonth(
       userId: UUID
-  ): Either[AppError.DatabaseError, Double] =
+  ): Either[AppError, Double] =
     val result = Try:
       DB.readOnly:
         implicit session =>
           sql"${retirementSavingsQuery(userId)}"
-            .map(rs => rs.double("net_balance_change"))
+            .map(rs => rs.doubleOpt("net_balance_change"))
             .single
             .apply()
-            .getOrElse(0.0)
+            .map(_.getOrElse(0.0))
+            
 
-    result.toEither.left.map(e => AppError.DatabaseError(e.getMessage))
+    result.toEither.left.map(e => AppError.DatabaseError(e.getMessage)).map(_.getOrElse(0.0))
 
   private def retirementSavingsQuery(userId: UUID): SQL[Nothing, NoExtractor] =
     sql"""
       WITH retirement_goal AS (
         SELECT id
         FROM goals
-        WHERE goals.goal_type = 'retirement' AND goals.user_id = $userId
+        WHERE goals.goal_type = 'retirement' AND goals.user_id = ${userId.toString()}
         LIMIT 1
       ),
       assigned_accounts AS (

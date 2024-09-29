@@ -1,38 +1,48 @@
 package test.services
 
-// import api.services.FinalyticsService
+import api.common.Environment.DatabaseConfig
+import api.repositories.TransactionRepository
 import org.scalatest.flatspec.AnyFlatSpec
 import test.helpers.*
 
-import java.io.File
-import scala.sys.process.*
+import java.util.UUID
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.EitherValues
+import org.scalatest.BeforeAndAfterAll
+import org.scalatest.BeforeAndAfterEach
+import api.services.FinalyticsService
 
-// export PGPASSWORD=postgres && pg_restore -h localhost -d postgres -U postgres -p 5432 -v src/test/services/supabase_prod_db.dump
+// To run this test, run `docker compose up` and then `make restore-prod-db`.
+// This ensures we have a database with prod data.
 
-class FinalyticsServiceSpec extends TestInfra:
-  override protected def beforeEach(): Unit =
-    super.beforeEach()
-    restoreDatabase()
+class FinalyticsServiceSpec
+    extends AnyFlatSpec,
+      Matchers,
+      EitherValues,
+      BeforeAndAfterAll,
+      BeforeAndAfterEach:
 
-  private def restoreDatabase(): Unit =
-    val dumpFile = File("src/test/services/supabase_prod_db.dump")
-    val dbName = "postgres"
-    val command = s"pg_restore -d $dbName ${dumpFile.getAbsolutePath}"
-
-    val exitCode = command.run().exitValue()
-    if exitCode != 0 then
-      throw RuntimeException(
-        s"Failed to restore database. Exit code: $exitCode"
+  override protected def beforeAll(): Unit =
+    FinalyticsDatabase.init(
+      DatabaseConfig(
+        host = "jdbc:postgresql://localhost:5432/postgres",
+        user = "postgres",
+        password = "postgres"
       )
+    )
 
-  // "calculateRetirementSavingsForCurrentMonth" should "return the correct retirement savings for the current month" in:
-  //   // given
-  //   // hardcoded to dennis user id because we use a dump of the prod database
-  //   val userId = "5eaa8ae7-dbcb-445e-8058-dbd51a912c8d"
-  //   val transactions = TransactionRepository
-  //     .getTransactionsByAccountId(
-  //       UUID.fromString("495f3ee1-6187-4dcb-98a4-f6fa4b01b0b9")
-  //     )
-  //     .value
-  //   assert(transactions.length == 337)
-  //   // ... rest of your test code ...
+  "We" should "be able to query transactions from the prod dump db" in:
+    val transactions = TransactionRepository
+      .getTransactionsByAccountId(
+        UUID.fromString("495f3ee1-6187-4dcb-98a4-f6fa4b01b0b9")
+      )
+      .value
+    assert(transactions.length == 337)
+
+  "calculateRetirementSavingsForCurrentMonth" should "return the correct retirement savings for the current month" in:
+    // given
+    // hardcoded to dennis user id because we use a dump of the prod database
+    val userId = UUID.fromString("5eaa8ae7-dbcb-445e-8058-dbd51a912c8d")
+    val result = FinalyticsService.calculateRetirementSavingsForCurrentMonth(userId)
+    assert(result.isRight)
+    assert(result.value == 1000.0)

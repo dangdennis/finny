@@ -2,7 +2,7 @@ package test.helpers
 
 import api.common.*
 import api.common.Environment
-import api.database.Database
+import api.database.DatabaseJdbc
 import api.jobs.*
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.BeforeAndAfterEach
@@ -18,7 +18,7 @@ trait TestInfra
       BeforeAndAfterEach:
   override protected def beforeAll(): Unit =
     super.beforeAll()
-    Database.init(configs = Environment.getDatabaseConfig)
+    DatabaseJdbc.init(configs = Environment.getDatabaseConfig)
     Jobs.init()
     Logger.configureLogging()
 
