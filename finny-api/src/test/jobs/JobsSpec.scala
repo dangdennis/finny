@@ -4,22 +4,12 @@ import api.common.LavinMqClient
 import api.jobs.*
 import api.jobs.Jobs.*
 import io.circe.parser.decode
-import org.scalatest.BeforeAndAfterAll
-import org.scalatest.BeforeAndAfterEach
-import org.scalatest.EitherValues
 import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
 import test.helpers.*
 
 import java.util.UUID
 
-class JobsSpec
-    extends AnyFlatSpec,
-      Matchers,
-      EitherValues,
-      BeforeAndAfterAll,
-      BeforeAndAfterEach,
-      TestInfra:
+class JobsSpec extends TestInfra:
   override protected def beforeAll(): Unit = super.beforeAll()
   override protected def beforeEach(): Unit = super.beforeEach()
 

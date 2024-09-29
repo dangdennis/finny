@@ -4,17 +4,30 @@ import api.common.*
 import api.common.Environment
 import api.database.Database
 import api.jobs.*
+import org.scalatest.BeforeAndAfterAll
+import org.scalatest.BeforeAndAfterEach
+import org.scalatest.EitherValues
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-trait TestInfra:
-  private def beforeAll(): Unit =
+trait TestInfra
+    extends AnyFlatSpec,
+      Matchers,
+      EitherValues,
+      BeforeAndAfterAll,
+      BeforeAndAfterEach:
+  override protected def beforeAll(): Unit =
+    super.beforeAll()
     Database.init(configs = Environment.getDatabaseConfig)
     Jobs.init()
     Logger.configureLogging()
 
-  private def beforeEach(): Unit =
+  override protected def beforeEach(): Unit =
+    super.beforeEach()
     DatabaseHelper.truncateTables()
     Jobs.jobChannel.queuePurge(Jobs.jobQueueName)
 
-  private def afterEach(): Unit =
+  override protected def afterEach(): Unit =
+    super.afterEach()
     DatabaseHelper.truncateTables()
     Jobs.jobChannel.queuePurge(Jobs.jobQueueName)

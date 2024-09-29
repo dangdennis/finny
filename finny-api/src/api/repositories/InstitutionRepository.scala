@@ -1,10 +1,11 @@
 package api.repositories
 
-import com.plaid.client.model.{Institution as PlaidInstitution}
-import api.models.Institution
-import scalikejdbc.*
-import scala.util.Try
 import api.common.AppError
+import api.models.Institution
+import com.plaid.client.model.Institution as PlaidInstitution
+import scalikejdbc.*
+
+import scala.util.Try
 
 object InstitutionRepository:
   def createInstitution(institution: PlaidInstitution)(using

@@ -2,22 +2,12 @@ package test.handlers
 
 import api.handlers.PowerSyncHandler
 import api.repositories.GoalRepository
-import org.scalatest.BeforeAndAfterAll
-import org.scalatest.BeforeAndAfterEach
-import org.scalatest.EitherValues
 import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
 import test.helpers.*
 
 import java.util.UUID
 
-class PowerSyncHandlerSpec
-    extends AnyFlatSpec,
-      Matchers,
-      EitherValues,
-      BeforeAndAfterAll,
-      BeforeAndAfterEach,
-      TestInfra:
+class PowerSyncHandlerSpec extends TestInfra:
   override protected def beforeAll(): Unit = super.beforeAll()
   override protected def afterEach(): Unit = super.afterEach()
 

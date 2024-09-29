@@ -4,20 +4,10 @@ import api.common.Time
 import api.models.PlaidItemStatus
 import api.repositories.PlaidItemRepository
 import api.repositories.PlaidItemRepository.CreateItemInput
-import org.scalatest.BeforeAndAfterAll
-import org.scalatest.BeforeAndAfterEach
-import org.scalatest.EitherValues
 import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
 import test.helpers.*
 
-class PlaidItemRepositorySpec
-    extends AnyFlatSpec,
-      Matchers,
-      EitherValues,
-      BeforeAndAfterAll,
-      BeforeAndAfterEach,
-      TestInfra:
+class PlaidItemRepositorySpec extends TestInfra:
   override protected def beforeAll(): Unit = super.beforeAll()
 
   override protected def afterEach(): Unit = super.afterEach()

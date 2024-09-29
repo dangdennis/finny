@@ -1,7 +1,8 @@
 package api.services
 
-import scalikejdbc.*
 import api.common.*
+import scalikejdbc.*
+
 import java.util.UUID
 import scala.util.Try
 

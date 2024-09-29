@@ -5,20 +5,10 @@ import api.repositories.AccountRepository
 import api.repositories.AccountRepository.UpsertAccountInput
 import api.repositories.PlaidItemRepository
 import api.repositories.PlaidItemRepository.CreateItemInput
-import org.scalatest.BeforeAndAfterAll
-import org.scalatest.BeforeAndAfterEach
-import org.scalatest.EitherValues
 import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
 import test.helpers.*
 
-class AccountRepositorySpec
-    extends AnyFlatSpec,
-      Matchers,
-      EitherValues,
-      BeforeAndAfterAll,
-      BeforeAndAfterEach,
-      TestInfra:
+class AccountRepositorySpec extends TestInfra:
   override def beforeAll(): Unit = super.beforeAll()
   override def afterEach(): Unit = super.afterEach()
 

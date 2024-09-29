@@ -8,21 +8,11 @@ import api.repositories.PlaidItemRepository
 import api.repositories.PlaidItemRepository.CreateItemInput
 import api.repositories.TransactionRepository
 import api.repositories.TransactionRepository.UpsertTransactionInput
-import org.scalatest.BeforeAndAfterAll
-import org.scalatest.BeforeAndAfterEach
-import org.scalatest.EitherValues
 import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
 import scalikejdbc.*
 import test.helpers.*
 
-class TransactionRepositorySpec
-    extends AnyFlatSpec,
-      Matchers,
-      EitherValues,
-      BeforeAndAfterAll,
-      BeforeAndAfterEach,
-      TestInfra:
+class TransactionRepositorySpec extends TestInfra:
   override protected def beforeAll(): Unit = super.beforeAll()
   override protected def afterEach(): Unit = super.afterEach()
 

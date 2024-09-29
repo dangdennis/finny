@@ -17,8 +17,8 @@ import io.circe.parser.*
 import io.circe.syntax.*
 
 import java.util.UUID
-import scala.util.Try
 import scala.concurrent.ExecutionContext
+import scala.util.Try
 
 object Jobs:
   val jobConnection: Connection = LavinMqClient.createConnection()

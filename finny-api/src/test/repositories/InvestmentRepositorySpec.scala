@@ -9,22 +9,12 @@ import api.repositories.AccountRepository.UpsertAccountInput
 import api.repositories.InvestmentRepository
 import api.repositories.PlaidItemRepository
 import api.repositories.PlaidItemRepository.CreateItemInput
-import org.scalatest.BeforeAndAfterAll
-import org.scalatest.BeforeAndAfterEach
-import org.scalatest.EitherValues
 import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
 import test.helpers.*
 
 import java.util.UUID
 
-class InvestmentRepositorySpec
-    extends AnyFlatSpec,
-      Matchers,
-      EitherValues,
-      BeforeAndAfterAll,
-      BeforeAndAfterEach,
-      TestInfra:
+class InvestmentRepositorySpec extends TestInfra:
   override protected def beforeAll(): Unit = super.beforeAll()
   override protected def afterEach(): Unit = super.afterEach()
 

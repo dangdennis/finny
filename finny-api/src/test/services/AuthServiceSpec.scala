@@ -1,23 +1,13 @@
 package test.services
 
 import api.services.AuthService
-import org.scalatest.BeforeAndAfterAll
-import org.scalatest.BeforeAndAfterEach
-import org.scalatest.EitherValues
 import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
 import repositories.AuthUserRepository
 import test.helpers.*
 
 import java.util.UUID
 
-class AuthServiceSpec
-    extends AnyFlatSpec,
-      Matchers,
-      EitherValues,
-      BeforeAndAfterAll,
-      BeforeAndAfterEach,
-      TestInfra:
+class AuthServiceSpec extends TestInfra:
   override protected def beforeAll(): Unit = super.beforeAll()
   override protected def afterEach(): Unit = super.afterEach()
 
