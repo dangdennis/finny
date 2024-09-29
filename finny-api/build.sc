@@ -63,8 +63,9 @@ object test extends TestModule.ScalaTest with CommonModule {
       Agg(
         ivy"com.softwaremill.sttp.tapir::tapir-sttp-stub-server:1.10.8",
         ivy"org.scalatest::scalatest:3.2.18",
-        ivy"org.testcontainers:testcontainers:1.19.8",
-        ivy"com.dimafeng::testcontainers-scala-postgresql:0.41.4"
+        // ivy"com.dimafeng::testcontainers-scala-scalatest:0.41.4",
+        // ivy"org.testcontainers:testcontainers:1.19.8",
+        // ivy"com.dimafeng::testcontainers-scala-postgresql:0.41.4"
         // ivy"org.testcontainers:testcontainers:1.20.1",
         // ivy"org.testcontainers:postgresql:1.20.1",
         // ivy"org.postgresql:postgresql:42.6.0"
