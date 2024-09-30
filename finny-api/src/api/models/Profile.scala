@@ -5,6 +5,7 @@ import io.circe.generic.semiauto.*
 
 import java.time.Instant
 import java.time.LocalDate
+import java.time.Period
 import java.util.UUID
 
 case class Profile(
@@ -14,7 +15,10 @@ case class Profile(
     riskProfile: Option[RiskProfile],
     fireProfile: Option[FireProfile],
     deletedAt: Option[Instant]
-)
+):
+  def age: Option[Int] = dateOfBirth.map { dob =>
+    Period.between(dob, LocalDate.now()).getYears
+  }
 
 enum RiskProfile(val value: String):
   case Conservative extends RiskProfile("conservative")

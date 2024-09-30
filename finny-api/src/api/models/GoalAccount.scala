@@ -1,6 +1,5 @@
 package api.models
 
-import java.time.Instant
 import java.util.UUID
 
 case class GoalAccount(
@@ -8,9 +7,6 @@ case class GoalAccount(
     goalId: UUID,
     accountId: UUID,
     assignedAmount: AssignedAmount,
-    createdAt: Instant,
-    updatedAt: Instant,
-    deletedAt: Option[Instant]
 )
 
 enum AssignedAmount:

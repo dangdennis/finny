@@ -19,7 +19,7 @@ import io.circe.syntax.*
 import java.util.UUID
 import scala.concurrent.ExecutionContext
 import scala.util.Try
-import scalasql.core.DbClient
+import scalasql.*
 
 object Jobs:
   val jobConnection: Connection = LavinMqClient.createConnection()

@@ -14,8 +14,7 @@ import java.util.UUID
 import scala.util.Try
 
 import scalasql.*
-import scalasql.core.*
-import scalasql.dialects.PostgresDialect.*
+import scalasql.PostgresDialect.*
 import java.time.Instant
 import scala.util.Success
 import scala.util.Failure

@@ -15,9 +15,6 @@ case class Goal(
     userId: UserId,
     progress: Double,
     goalType: GoalType,
-    createdAt: Instant,
-    updatedAt: Instant,
-    deletedAt: Option[Instant],
     assignedAccounts: List[GoalAccount]
 )
 

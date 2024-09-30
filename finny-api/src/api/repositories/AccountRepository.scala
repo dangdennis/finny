@@ -173,3 +173,30 @@ object AccountRepository:
       sql"""DELETE FROM accounts WHERE item_id = ${itemId} and user_id = ${userId}""".update
         .apply()
     ).toEither
+
+  def getAccountsByIds(
+      ids: List[UUID]
+  )(using session: DBSession): Either[AppError.DatabaseError, List[Account]] =
+    Try(
+      sql"""SELECT * FROM accounts WHERE id IN (${ids.mkString(",")})"""
+        .map(rs =>
+          Account(
+            id = UUID.fromString(rs.string("id")),
+            itemId = UUID.fromString(rs.string("item_id")),
+            userId = UUID.fromString(rs.string("user_id")),
+            plaidAccountId = rs.string("plaid_account_id"),
+            name = rs.string("name"),
+            mask = rs.stringOpt("mask"),
+            officialName = rs.stringOpt("official_name"),
+            currentBalance = rs.double("current_balance"),
+            availableBalance = rs.double("available_balance"),
+            isoCurrencyCode = rs.stringOpt("iso_currency_code"),
+            unofficialCurrencyCode = rs.stringOpt("unofficial_currency_code"),
+            accountType = rs.stringOpt("type"),
+            accountSubtype = rs.stringOpt("subtype"),
+            createdAt = rs.timestamp("created_at").toInstant
+          )
+        )
+        .list
+        .apply()
+    ).toEither.left.map(ex => AppError.DatabaseError(ex.getMessage()))

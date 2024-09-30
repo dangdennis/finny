@@ -8,10 +8,14 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatest.EitherValues
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import scalasql.core.DbClient.DataSource
+import scalasql.*
 
 import java.util.UUID
 import api.models.FinalyticKeys
+import api.services.ExpenseCalculation
+import scalikejdbc.DBSession
+import api.database.DatabaseJdbc
+import api.common.Environment
 
 // To run this test, run `docker compose up` and then `make restore-prod-db`.
 // This ensures we have a database with prod data.
@@ -23,9 +27,14 @@ class FinalyticsServiceSpec
       BeforeAndAfterAll,
       BeforeAndAfterEach:
 
-  var dbClient: Option[DataSource] = None
-  given DataSource = dbClient.getOrElse(
+  var dbClient: Option[DbClient.DataSource] = None
+  given DbClient.DataSource = dbClient.getOrElse(
     throw new IllegalStateException("DB Client not initialized")
+  )
+
+  var scalikejdbc: Option[DBSession] = None
+  given DBSession = scalikejdbc.getOrElse(
+    throw new IllegalStateException("Scalikejdbc not initialized")
   )
 
   override protected def beforeAll(): Unit = {
@@ -40,6 +49,15 @@ class FinalyticsServiceSpec
         )
         .value
     )
+
+    DatabaseJdbc
+      .init(
+        Environment.DatabaseConfig(
+          host = "jdbc:postgresql://localhost:5432/postgres",
+          user = "postgres",
+          password = "postgres"
+        )
+      )
   }
 
   "recalculateActualSavingsAndInvestmentsThisMonth" should "persist the retirement savings for the current month" in:
@@ -54,6 +72,15 @@ class FinalyticsServiceSpec
       FinalyticKeys.ActualSavingsAndInvestmentsThisMonth
     )
     assert(result2.value == "-7238.82")
+
+  "getActualRetirementAge" should "return the actual retirement age" in:
+    val userId = UUID.fromString("5eaa8ae7-dbcb-445e-8058-dbd51a912c8d")
+    val result = FinalyticsService.getActualRetirementAge(
+      userId,
+      ExpenseCalculation.Last12Months
+    )
+    assert(result.isRight)
+    assert(result.value == 65)
 
   "updateFinalytics" should "update the finalytics table" in:
     val userId = UUID.fromString("5eaa8ae7-dbcb-445e-8058-dbd51a912c8d")

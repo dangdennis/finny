@@ -16,7 +16,7 @@ import test.helpers.*
 
 import java.util.UUID
 import api.database.DatabaseScalaSql
-import scalasql.core.DbClient
+import scalasql.*
 import api.common.Environment
 
 class UserDeletionServiceSpec extends TestInfra:

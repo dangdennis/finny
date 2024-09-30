@@ -19,7 +19,7 @@ import java.util.UUID
 import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
-import scalasql.core.DbClient
+import scalasql.*
 
 object Routes:
   def createRoutes(

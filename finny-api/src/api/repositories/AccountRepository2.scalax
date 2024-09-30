@@ -1,0 +1,84 @@
+package api.repositories
+
+import api.common.AppError
+import api.models.Account
+import api.models.AccountSimple
+import api.models.PlaidItemId
+import api.models.UserId
+
+import java.util.UUID
+import scala.util.Try
+import scalasql.*
+import scalasql.PostgresDialect.*
+import java.time.Instant
+
+case class AccountTable[T[_]](
+    id: T[UUID],
+    item_id: T[UUID],
+    user_id: T[UUID],
+    plaid_account_id: T[String],
+    name: T[String],
+    mask: T[Option[String]],
+    official_name: T[Option[String]],
+    current_balance: T[Double],
+    available_balance: T[Double],
+    iso_currency_code: T[Option[String]],
+    unofficial_currency_code: T[Option[String]],
+    `type`: T[Option[String]],
+    subtype: T[Option[String]],
+    created_at: T[Instant],
+    updated_at: T[Instant],
+    deleted_at: T[Option[Instant]]
+)
+
+object AccountTable extends Table[AccountTable]() {
+  override def tableName = "accounts"
+}
+
+object AccountRepository2:
+  def getAccountsByIds(ids: List[UUID])(using
+      dbClient: DbClient.DataSource
+  ): List[Account] =
+    val query = sql"""
+      SELECT * FROM accounts WHERE id IN (${ids.mkString(",")})
+    """
+
+    val result = dbClient.transaction: db =>
+      db.runSql[
+        UUID,
+            item_id,
+            user_id,
+            plaid_account_id,
+            name,
+            mask,
+            official_name,
+            current_balance,
+            available_balance,
+            iso_currency_code,
+            unofficial_currency_code,
+            type,
+            subtype,
+            created_at,
+            updated_at,
+            deleted_at
+        
+      ](query).toList
+
+    result.map(r =>
+      Account(
+        id = r.id,
+        itemId = r.item_id,
+        userId = r.user_id,
+        plaidAccountId = r.plaid_account_id,
+        name = r.name,
+        mask = r.mask,
+        officialName = r.official_name,
+        currentBalance = r.current_balance,
+        availableBalance = r.available_balance,
+        accountSubtype = r.subtype,
+        accountType = r.`type`,
+        isoCurrencyCode = r.iso_currency_code,
+        unofficialCurrencyCode = r.unofficial_currency_code,
+        createdAt = r.created_at
+      )
+    )

@@ -9,7 +9,38 @@ import scalikejdbc.*
 import java.time.Instant
 import java.util.UUID
 import scala.util.Try
+import scalasql.core.*
+import scalasql.*
+import scalasql.PostgresDialect.*
+import scala.util.{Failure, Success}
+import api.models.GoalAccount
+import api.models.AssignedAmount
 
+case class GoalTable[T[_]](
+    id: T[UUID],
+    name: T[String],
+    amount: T[Double],
+    target_date: T[Instant],
+    user_id: T[UUID],
+    progress: T[Double],
+    goal_type: T[String]
+)
+
+object GoalTable extends Table[GoalTable]() {
+  override def tableName: String = "goals"
+}
+
+case class GoalAccountTable[T[_]](
+    id: T[UUID],
+    goal_id: T[UUID],
+    account_id: T[UUID],
+    amount: T[Double],
+    percentage: T[Double]
+)
+
+object GoalAccountTable extends Table[GoalAccountTable]() {
+  override def tableName: String = "goal_accounts"
+}
 object GoalRepository:
   def getGoal(
       id: UUID,
@@ -26,9 +57,6 @@ object GoalRepository:
             userId = UserId(UUID.fromString(rs.string("user_id"))),
             goalType = GoalType.fromString(rs.string("goal_type")).get,
             progress = rs.double("progress"),
-            createdAt = rs.timestamp("created_at").toInstant,
-            updatedAt = rs.timestamp("updated_at").toInstant,
-            deletedAt = rs.timestampOpt("created_at").map(_.toInstant),
             assignedAccounts = List()
           )
         )
@@ -51,9 +79,6 @@ object GoalRepository:
             userId = UserId(UUID.fromString(rs.string("user_id"))),
             goalType = GoalType.fromString(rs.string("goal_type")).get,
             progress = rs.double("progress"),
-            createdAt = rs.timestamp("created_at").toInstant,
-            updatedAt = rs.timestamp("updated_at").toInstant,
-            deletedAt = rs.timestampOpt("created_at").map(_.toInstant),
             assignedAccounts = List()
           )
         )
@@ -87,9 +112,6 @@ object GoalRepository:
               userId = UserId(UUID.fromString(rs.string("user_id"))),
               goalType = GoalType.fromString(rs.string("goal_type")).get,
               progress = rs.double("progress"),
-              createdAt = rs.timestamp("created_at").toInstant,
-              updatedAt = rs.timestamp("updated_at").toInstant,
-              deletedAt = rs.timestampOpt("created_at").map(_.toInstant),
               assignedAccounts = List()
             )
           )
@@ -185,9 +207,6 @@ object GoalRepository:
             userId = UserId(UUID.fromString(rs.string("user_id"))),
             progress = rs.double("progress"),
             goalType = GoalType.fromString(rs.string("goal_type")).get,
-            createdAt = rs.timestamp("created_at").toInstant,
-            updatedAt = rs.timestamp("updated_at").toInstant,
-            deletedAt = rs.timestampOpt("created_at").map(_.toInstant),
             assignedAccounts = List()
           )
         )
@@ -240,3 +259,71 @@ object GoalRepository:
                 """.update.apply()
     }
   ).toEither.left.map(e => AppError.DatabaseError(e.getMessage))
+
+  def getAssignedAccountsOnGoal(goalId: UUID)(using
+      dbClient: DbClient.DataSource
+  ): Either[AppError, List[GoalAccount]] =
+    val query = GoalAccountTable.select
+      .filter(f => f.goal_id === goalId)
+
+    val result = Try(dbClient.transaction: db =>
+      db.run(query))
+
+    result match
+      case Failure(exception) =>
+        Left(AppError.DatabaseError(exception.getMessage()))
+      case Success(goalAccounts) =>
+        Right(
+          goalAccounts
+            .map(ga =>
+              GoalAccount(
+                id = ga.id,
+                goalId = ga.goal_id,
+                accountId = ga.account_id,
+                assignedAmount = AssignedAmount.Percentage(ga.percentage)
+              )
+            )
+            .toList
+        )
+
+  def getAssignedBalanceOnRetirementGoal(userId: UserId)(using
+      dbClient: DbClient.DataSource,
+      scalikejdbc: DBSession
+  ): Either[AppError, Double] =
+    val retirementGoalType = GoalType.Retirement.value
+
+    val query = GoalTable.select
+      .filter(f =>
+        f.goal_type === retirementGoalType && f.user_id === UserId.toUUID(
+          userId
+        )
+      )
+      .single
+
+    val result = Try(dbClient.transaction: db =>
+      db.run(query))
+
+    result match
+      case Failure(exception) =>
+        Left(AppError.DatabaseError(exception.getMessage()))
+      case Success(goal) =>
+        val goalAccounts = getAssignedAccountsOnGoal(goal.id).getOrElse(List())
+        val accounts =
+          AccountRepository
+            .getAccountsByIds(goalAccounts.map(_.accountId))
+            .getOrElse(List())
+        var balance = 0.0
+
+        val accountBalanceMap =
+          accounts.map(a => (a.id, a.currentBalance)).toMap
+
+        println(accountBalanceMap)
+
+        for ga <- goalAccounts do
+          ga.assignedAmount match
+            case AssignedAmount.Fixed(amount) =>
+              balance += amount
+            case AssignedAmount.Percentage(percentage) =>
+              balance += accountBalanceMap(ga.accountId) * percentage
+
+        Right(balance)

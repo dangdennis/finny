@@ -3,9 +3,8 @@ package test.repositories
 import api.repositories.ProfileRepository
 import org.scalatest.flatspec.AnyFlatSpec
 import test.helpers.*
-import scalasql.core.DbClient
+import scalasql.*
 import api.database.DatabaseScalaSql
-import api.common.Environment.DatabaseConfig
 import api.common.Environment
 
 class ProfileRepositorySpec extends TestInfra:

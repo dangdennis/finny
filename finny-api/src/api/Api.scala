@@ -11,6 +11,7 @@ import sttp.tapir.server.nima.NimaServerInterpreter
 
 import Environment.*
 import api.database.DatabaseScalaSql
+import scalasql.DbClient
 
 @main
 def main: Unit =
@@ -36,7 +37,7 @@ def main: Unit =
 
   Jobs.init().getOrElse(throw new IllegalStateException("Jobs not initialized"))
 
-  given dbClient: scalasql.core.DbClient.DataSource = DatabaseScalaSql
+  given dbClient: DbClient.DataSource = DatabaseScalaSql
     .init(databaseConfig)
     .getOrElse(throw new IllegalStateException("DB Client not initialized"))
 

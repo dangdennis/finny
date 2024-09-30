@@ -12,7 +12,7 @@ import api.repositories.TransactionRepository
 import scalikejdbc.*
 
 import scala.util.Try
-import scalasql.core.DbClient
+import scalasql.*
 
 object UserDeletionService:
   def deleteUserEverything(userId: UserId)(using
