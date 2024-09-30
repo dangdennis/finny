@@ -2,9 +2,9 @@ package api.database
 
 import api.common.Environment
 import api.common.Environment.DatabaseConfig
-import scalikejdbc.*
 import scalasql.*
 import scalasql.PostgresDialect.*
+import scalikejdbc.*
 
 import scala.util.Try
 

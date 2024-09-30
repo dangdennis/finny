@@ -1,7 +1,5 @@
 package api.models
 
-import java.util.UUID
-
 enum FinalyticKeys:
   case ActualRetirementAge
   case ActualSavingsAndInvestmentsThisMonth
@@ -16,10 +14,8 @@ enum FinalyticKeys:
       case ActualSavingsAndInvestmentsThisMonth =>
         "actual_savings_and_investments_this_month"
       case TargetSavingsAndInvestmentsThisMonth =>
-        "TargetSavingsAndInvestmentsThisMonth"
+        "target_savings_and_investments_this_month"
       case ActualSavingsAtRetirement =>
-        "ActualSavingsAtRetirement"
+        "actual_savings_at_retirement"
       case TargetSavingsAtRetirement =>
-        "TargetSavingsAtRetirement"
-
-case class Finalytic(userId: UUID, key: FinalyticKeys, value: String)
+        "target_savings_at_retirement"

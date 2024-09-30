@@ -19,10 +19,13 @@ import java.util.UUID
 import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
+import scalasql.core.DbClient
 
 object Routes:
   def createRoutes(
       authConfig: AuthConfig
+  )(using
+      dbClient: scalasql.core.DbClient.DataSource
   ): List[ServerEndpoint[Any, Identity]] =
     val indexEndpoint = endpoint
       .in("")
@@ -127,6 +130,8 @@ object Routes:
 
   private def makeAuthenticator(
       authConfig: AuthConfig
+  )(using
+      dbClient: DbClient.DataSource
   ): AuthenticationToken => Either[HttpError, Profile] =
     val algorithm = Algorithm.HMAC256(authConfig.jwtSecret)
     (token: AuthenticationToken) =>
@@ -140,13 +145,19 @@ object Routes:
             case Left(AppError.DatabaseError(msg)) =>
               Logger.root.error(s"Error fetching profile by user id", msg)
               Left(HttpError(500))
-            case Right(profileOpt) =>
-              profileOpt match
-                case Some(profile) =>
-                  Right(profile)
-                case None =>
-                  Logger.root.error(s"Profile not found for user id: $userId")
-                  Left(HttpError(404))
+            case Left(AppError.NotFoundError(msg)) =>
+              Logger.root.error(s"Profile not found for user id: $userId", msg)
+              Left(HttpError(404))
+            case Left(AppError.NetworkError(msg)) =>
+              Logger.root.error(s"Network error", msg)
+              Left(HttpError(500))
+            case Left(AppError.ServiceError(msg)) =>
+              Logger.root.error(s"Service error", msg)
+              Left(HttpError(500))
+            case Left(AppError.ValidationError(msg)) =>
+              Logger.root.error(s"Validation error", msg)
+              Left(HttpError(400))
+            case Right(profile) => Right(profile)
         case Failure(error) =>
           Logger.root.error(s"Error decoding JWT", error)
           Left(HttpError(400))

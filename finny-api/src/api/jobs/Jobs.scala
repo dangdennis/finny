@@ -19,6 +19,7 @@ import io.circe.syntax.*
 import java.util.UUID
 import scala.concurrent.ExecutionContext
 import scala.util.Try
+import scalasql.core.DbClient
 
 object Jobs:
   val jobConnection: Connection = LavinMqClient.createConnection()
@@ -96,7 +97,7 @@ object Jobs:
     given Decoder[JobRequest] =
       Decoder[JobSyncPlaidItem].widen.or(Decoder[JobDeleteUser].widen)
 
-  def startWorker(): Any =
+  def startWorker()(using dbClient: DbClient.DataSource): Any =
     val deliverCallback: DeliverCallback =
       (consumerTag, delivery) =>
         val body = new String(delivery.getBody, "UTF-8")
@@ -161,7 +162,7 @@ object Jobs:
   private def handleAnotherJob(
       job: JobRequest.JobDeleteUser,
       delivery: Delivery
-  ): Unit =
+  )(using dbClient: DbClient.DataSource): Unit =
     Logger.root.info(s"Handling JobDeleteUser $job")
     UserDeletionService
       .deleteUserEverything(UserId(job.userId))

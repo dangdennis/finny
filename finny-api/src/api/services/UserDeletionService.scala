@@ -12,19 +12,19 @@ import api.repositories.TransactionRepository
 import scalikejdbc.*
 
 import scala.util.Try
+import scalasql.core.DbClient
 
 object UserDeletionService:
-  def deleteUserEverything(userId: UserId): Either[AppError, Boolean] =
+  def deleteUserEverything(userId: UserId)(using
+      dbClient: DbClient.DataSource
+  ): Either[AppError, Boolean] =
     ProfileRepository
-      .getProfile(userId)
-      .flatMap(userOpt =>
-        userOpt match
-          case Some(user) =>
-            deleteItemsAndProfile(user)
-          case None =>
-            Logger.root.error(s"User with id $userId not found")
-            Left(AppError.NotFoundError(s"User with id $userId not found"))
-      )
+      .getProfile(userId) match
+      case Left(AppError.NotFoundError(msg)) =>
+        Logger.root.error(s"User with id $userId not found", msg)
+        Left(AppError.NotFoundError(s"User with id $userId not found"))
+      case Right(profile) =>
+        deleteItemsAndProfile(profile)
 
   private def deleteItemsAndProfile(user: Profile): Either[AppError, Boolean] =
     for

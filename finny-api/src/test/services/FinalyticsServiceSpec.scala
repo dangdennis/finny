@@ -1,19 +1,17 @@
 package test.services
 
 import api.common.Environment.DatabaseConfig
-import api.repositories.TransactionRepository
-import org.scalatest.flatspec.AnyFlatSpec
-import java.util.UUID
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.EitherValues
+import api.database.DatabaseScalaSql
+import api.services.FinalyticsService
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.BeforeAndAfterEach
-import api.services.FinalyticsService
-import api.database.DatabaseScalaSql
-import scalasql.*, PostgresDialect.*
-import scalasql.core.*
-import scalasql.core.SqlStr.*
+import org.scalatest.EitherValues
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 import scalasql.core.DbClient.DataSource
+
+import java.util.UUID
+import api.models.FinalyticKeys
 
 // To run this test, run `docker compose up` and then `make restore-prod-db`.
 // This ensures we have a database with prod data.
@@ -25,37 +23,52 @@ class FinalyticsServiceSpec
       BeforeAndAfterAll,
       BeforeAndAfterEach:
 
-  var dbClient: DataSource = scala.compiletime.uninitialized
-  given DataSource = dbClient
+  var dbClient: Option[DataSource] = None
+  given DataSource = dbClient.getOrElse(
+    throw new IllegalStateException("DB Client not initialized")
+  )
 
   override protected def beforeAll(): Unit = {
-    dbClient = DatabaseScalaSql
-      .init(
-        DatabaseConfig(
-          host = "jdbc:postgresql://localhost:5432/postgres",
-          user = "postgres",
-          password = "postgres"
+    dbClient = Some(
+      DatabaseScalaSql
+        .init(
+          DatabaseConfig(
+            host = "jdbc:postgresql://localhost:5432/postgres",
+            user = "postgres",
+            password = "postgres"
+          )
         )
-      )
-      .value
+        .value
+    )
   }
 
-  "Using scalasql" should "be able to query transactions from the prod dump db" in:
+  "recalculateActualSavingsAndInvestmentsThisMonth" should "persist the retirement savings for the current month" in:
     val userId = UUID.fromString("5eaa8ae7-dbcb-445e-8058-dbd51a912c8d")
     val accountId = UUID.fromString("495f3ee1-6187-4dcb-98a4-f6fa4b01b0b9")
-
-    val results = dbClient.transaction: db =>
-      db.runSql[Double](
-        sql"""select count(*) from transactions where account_id = ${accountId}"""
-      )
-
-    assert(results(0) == 337)
-
-  "calculateRetirementSavingsForCurrentMonth" should "return the correct retirement savings for the current month" in:
-
-    val userId = UUID.fromString("5eaa8ae7-dbcb-445e-8058-dbd51a912c8d")
     val result =
-      FinalyticsService
-        .calculateRetirementSavingsForCurrentMonth(userId)
+      FinalyticsService.recalculateActualSavingsAndInvestmentsThisMonth(userId)
     assert(result.isRight)
     assert(result.value == -7238.82)
+    val result2 = FinalyticsService.getFinalytics(
+      userId,
+      FinalyticKeys.ActualSavingsAndInvestmentsThisMonth
+    )
+    assert(result2.value == "-7238.82")
+
+  "updateFinalytics" should "update the finalytics table" in:
+    val userId = UUID.fromString("5eaa8ae7-dbcb-445e-8058-dbd51a912c8d")
+    val value = 1000.00
+    val result = FinalyticsService.updateFinalytics(
+      userId,
+      FinalyticKeys.ActualSavingsAndInvestmentsThisMonth,
+      value.toString()
+    )
+    println(result)
+    assert(result.value == 1)
+
+    val result2 = FinalyticsService.getFinalytics(
+      userId,
+      FinalyticKeys.ActualSavingsAndInvestmentsThisMonth
+    )
+    println(result2)
+    assert(result2.value == value.toString())

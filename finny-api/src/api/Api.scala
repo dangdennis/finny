@@ -10,6 +10,7 @@ import sttp.tapir.*
 import sttp.tapir.server.nima.NimaServerInterpreter
 
 import Environment.*
+import api.database.DatabaseScalaSql
 
 @main
 def main: Unit =
@@ -26,8 +27,18 @@ def main: Unit =
       Logger.root.info(s"Running in production mode.")
 
   Logger.configureLogging()
-  DatabaseJdbc.init(databaseConfig)
-  Jobs.init()
+
+  DatabaseJdbc
+    .init(databaseConfig)
+    .getOrElse(
+      throw new IllegalStateException("Scalikejdbc Client not initialized")
+    )
+
+  Jobs.init().getOrElse(throw new IllegalStateException("Jobs not initialized"))
+
+  given dbClient: scalasql.core.DbClient.DataSource = DatabaseScalaSql
+    .init(databaseConfig)
+    .getOrElse(throw new IllegalStateException("DB Client not initialized"))
 
   val handler = NimaServerInterpreter().toHandler(
     Routes.createRoutes(Routes.AuthConfig(jwtSecret, jwtIssue))
