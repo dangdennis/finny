@@ -26,7 +26,7 @@ fix:
 	make clean && mill api.fix && mill test.fix && mill cli.fix
 
 fmt:
-	make all.reformat
+	mill all.reformat
 
 clean:
 	mill clean
