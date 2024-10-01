@@ -25,6 +25,7 @@ object UserDeletionService:
         Left(AppError.NotFoundError(s"User with id $userId not found"))
       case Right(profile) =>
         deleteItemsAndProfile(profile)
+      case Left(e) => Left(e)
 
   private def deleteItemsAndProfile(user: Profile): Either[AppError, Boolean] =
     for
