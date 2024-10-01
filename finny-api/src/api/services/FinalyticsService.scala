@@ -38,7 +38,7 @@ object FinalyticsService:
       profile <- ProfileRepository.getProfile(userId)
       fv <- getFreedomFutureValueOfCurrentExpenses(expCalc, userId)
       pv <- GoalRepository.getAssignedBalanceOnRetirementGoal(userId)
-      pmt <- calculateActualSavingsAndInvestmentsThisMonth(userId)
+      pmt <- calculateActualSavingsThisMonth(userId)
       currentAge <- Right(profile.age.getOrElse(0))
     yield calculatePeriodFromFutureValue(fv, pv, pmt, annualInterestRate)
 
@@ -51,7 +51,7 @@ object FinalyticsService:
       dbClient: DbClient.DataSource
   ): Either[AppError, Double] =
     for
-      value <- calculateActualSavingsAndInvestmentsThisMonth(userId)
+      value <- calculateActualSavingsThisMonth(userId)
       _ <- updateFinalytics(
         userId,
         FinalyticKeys.ActualSavingsAndInvestmentsThisMonth,
@@ -127,7 +127,7 @@ object FinalyticsService:
       .map(e => AppError.DatabaseError(e.getMessage))
       .map(rows => rows)
 
-  def calculateActualSavingsAndInvestmentsThisMonth(
+  def calculateActualSavingsThisMonth(
       userId: UUID
   )(using dbClient: DbClient.DataSource): Either[AppError, Double] =
     Try:
@@ -208,7 +208,7 @@ object FinalyticsService:
       yearsToRetirement <- calculateYearsToRetirement(userId)
       retirementGoalCurrentBalance <- getAssignedBalanceOnRetirementGoal(userId)
       pv = -(retirementGoalCurrentBalance.abs)
-      savings <- calculateActualSavingsAndInvestmentsThisMonth(userId)
+      savings <- calculateActualSavingsThisMonth(userId)
       pmt = -(savings.abs)
     yield calculateFutureValue(
       rate = annualInterestRate,
@@ -240,6 +240,8 @@ object FinalyticsService:
       pmt = 0
     )
 
+  /** How much it costs to maintain the current lifestyle at retirement
+    */
   private def getFreedomFutureValueOfCurrentExpenses(
       expCalc: ExpenseCalculation,
       userId: UUID
@@ -327,52 +329,72 @@ object FinalyticsService:
       Try:
         dbClient.transaction: db =>
           db.runSql[(Double, Double)](sql"""
-              WITH monthly_regular_transactions AS (
-                SELECT
-                  DATE_TRUNC('month', date) AS month,
-                  SUM(CASE WHEN amount < 0 THEN ABS(amount) ELSE 0 END) AS monthly_inflows,
-                  SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) AS monthly_outflows
-                FROM
-                  transactions
-                  JOIN accounts ON transactions.account_id = accounts.id
-                WHERE
-                  date >= (CURRENT_DATE - INTERVAL '12 months')
-                  AND category NOT IN ('TRANSFER_IN', 'TRANSFER_OUT')
-                GROUP BY
-                  DATE_TRUNC('month', date)
-              ),
-              monthly_transfer_transactions AS (
-                SELECT
-                  DATE_TRUNC('month', date) AS month,
-                  SUM(CASE WHEN category = 'TRANSFER_IN' THEN amount ELSE -amount END) AS net_transfer
-                FROM
-                  transactions
-                WHERE
-                  date >= (CURRENT_DATE - INTERVAL '12 months')
-                  AND category IN ('TRANSFER_IN', 'TRANSFER_OUT')
-                GROUP BY
-                  DATE_TRUNC('month', date)
-              ),
-              adjusted_monthly_totals AS (
-                SELECT
-                  mrt.month,
-                  CASE
-                    WHEN COALESCE(mtt.net_transfer, 0) > 0 THEN mrt.monthly_inflows + COALESCE(mtt.net_transfer, 0)
-                    ELSE mrt.monthly_inflows
-                  END AS adjusted_inflows,
-                  CASE
-                    WHEN COALESCE(mtt.net_transfer, 0) < 0 THEN mrt.monthly_outflows - COALESCE(mtt.net_transfer, 0)
-                    ELSE mrt.monthly_outflows
-                  END AS adjusted_outflows
-                FROM
-                  monthly_regular_transactions mrt
-                  LEFT JOIN monthly_transfer_transactions mtt ON mrt.month = mtt.month
-              )
+            WITH monthly_regular_transactions AS (
               SELECT
-                AVG(adjusted_inflows) AS inflows,
-                AVG(adjusted_outflows) AS outflows
+                date_trunc('month', date) AS month,
+                sum(
+                  CASE WHEN amount < 0 THEN
+                    abs(amount)
+                  ELSE
+                    0
+                  END) AS monthly_inflows,
+                sum(
+                  CASE WHEN amount > 0 THEN
+                    amount
+                  ELSE
+                    0
+                  END) AS monthly_outflows
               FROM
-                adjusted_monthly_totals;
+                transactions
+                JOIN accounts ON transactions.account_id = accounts.id
+              WHERE
+                date >= (CURRENT_DATE - INTERVAL '12 months')
+                AND category NOT IN ('TRANSFER_IN', 'TRANSFER_OUT')
+                AND accounts.user_id = $userId
+              GROUP BY
+                date_trunc('month', date)
+            ),
+            monthly_transfer_transactions AS (
+              SELECT
+                date_trunc('month', date) AS month,
+                sum(
+                  CASE WHEN category = 'TRANSFER_IN' THEN
+                    amount
+                  ELSE
+                    - amount
+                  END) AS net_transfer
+              FROM
+                transactions join accounts on transactions.account_id = accounts.id
+              WHERE
+                date >= (CURRENT_DATE - INTERVAL '12 months')
+                AND category IN ('TRANSFER_IN', 'TRANSFER_OUT')
+                AND accounts.user_id = $userId
+              GROUP BY
+                date_trunc('month', date)
+            ),
+            adjusted_monthly_totals AS (
+              SELECT
+                mrt.month,
+                CASE WHEN coalesce(mtt.net_transfer, 0) > 0 THEN
+                  mrt.monthly_inflows + coalesce(mtt.net_transfer, 0)
+                ELSE
+                  mrt.monthly_inflows
+                END AS adjusted_inflows,
+                CASE WHEN coalesce(mtt.net_transfer, 0) < 0 THEN
+                  mrt.monthly_outflows - coalesce(mtt.net_transfer, 0)
+                ELSE
+                  mrt.monthly_outflows
+                END AS adjusted_outflows
+              FROM
+                monthly_regular_transactions mrt
+                LEFT JOIN monthly_transfer_transactions mtt ON mrt.month = mtt.month
+            )
+            SELECT
+              avg(adjusted_inflows) AS inflows,
+              avg(adjusted_outflows) AS outflows
+            FROM
+              adjusted_monthly_totals;
+
           """)
 
     result.toEither.left
