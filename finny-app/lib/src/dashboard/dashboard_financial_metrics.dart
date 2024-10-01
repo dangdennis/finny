@@ -74,7 +74,7 @@ class _FinancialMetricsCardState extends State<FinancialMetricsCard> {
             const SizedBox(height: 8),
             FutureBuilder(
               future: widget.finalyticsController
-                  .getTargetSavingsAndInvestmentsThisMonth(
+                  .calculateTargetSavingsAndInvestmentsThisMonth(
                       _selectedExpenseCalc),
               builder: (context, snapshot) {
                 return _buildMetricTile(
@@ -88,7 +88,7 @@ class _FinancialMetricsCardState extends State<FinancialMetricsCard> {
             const SizedBox(height: 8),
             FutureBuilder(
               future: widget.finalyticsController
-                  .getActualSavingsAndInvestmentsThisMonth(
+                  .calculateActualSavingsAndInvestmentsThisMonth(
                       _selectedExpenseCalc),
               builder: (context, snapshot) {
                 return _buildMetricTile(
@@ -102,7 +102,7 @@ class _FinancialMetricsCardState extends State<FinancialMetricsCard> {
             const SizedBox(height: 8),
             FutureBuilder(
               future: widget.finalyticsController
-                  .getActualSavingsAtRetirement(_selectedExpenseCalc),
+                  .calculateActualSavingsAtRetirement(_selectedExpenseCalc),
               builder: (context, snapshot) {
                 return _buildMetricTile(
                   context,
@@ -115,7 +115,7 @@ class _FinancialMetricsCardState extends State<FinancialMetricsCard> {
             const SizedBox(height: 8),
             FutureBuilder(
               future: widget.finalyticsController
-                  .getTargetSavingsAtRetirement(_selectedExpenseCalc),
+                  .calculateExpectedSavingsAtRetirement(_selectedExpenseCalc),
               builder: (context, snapshot) {
                 return _buildMetricTile(
                   context,

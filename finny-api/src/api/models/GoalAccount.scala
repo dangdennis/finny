@@ -6,7 +6,7 @@ case class GoalAccount(
     id: UUID,
     goalId: UUID,
     accountId: UUID,
-    assignedAmount: AssignedAmount,
+    assignedAmount: AssignedAmount
 )
 
 enum AssignedAmount:

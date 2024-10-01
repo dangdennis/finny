@@ -311,7 +311,9 @@ object GoalRepository:
         var balance = 0.0
 
         for ga <- goalAccounts do
-          val account = AccountRepository2.getMinimalAccountById(ga.accountId).getOrElse(MinimalAccountBalance(ga.accountId, 0.0))
+          val account = AccountRepository2
+            .getMinimalAccountById(ga.accountId)
+            .getOrElse(MinimalAccountBalance(ga.accountId, 0.0))
           ga.assignedAmount match
             case AssignedAmount.Fixed(amount) =>
               balance += amount

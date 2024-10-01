@@ -13,6 +13,7 @@ import api.models.UserId
 import api.models.FinalyticKeys
 import api.repositories.ProfileRepository
 import api.repositories.GoalRepository
+import api.repositories.GoalRepository.getAssignedBalanceOnRetirementGoal
 
 case class FinalyticsTable[T[_]](
     id: T[UUID],
@@ -37,21 +38,20 @@ object FinalyticsService:
       profile <- ProfileRepository.getProfile(userId)
       fv <- getFreedomFutureValueOfCurrentExpenses(expCalc, userId)
       pv <- GoalRepository.getAssignedBalanceOnRetirementGoal(userId)
-      pmt <- calculateActualSavingsAndInvestmentsThisMonth(userId).toEither.left
-        .map(e => AppError.DatabaseError(e.getMessage))
+      pmt <- calculateActualSavingsAndInvestmentsThisMonth(userId)
       currentAge <- Right(profile.age.getOrElse(0))
     yield calculatePeriodFromFutureValue(fv, pv, pmt, annualInterestRate)
 
   end getActualRetirementAge
 
+  /** Recalculates the actual savings and investments this month and persists
+    * the value in the database
+    */
   def recalculateActualSavingsAndInvestmentsThisMonth(userId: UserId)(using
       dbClient: DbClient.DataSource
   ): Either[AppError, Double] =
     for
-      value <- calculateActualSavingsAndInvestmentsThisMonth(
-        userId
-      ).toEither.left
-        .map(e => AppError.DatabaseError(e.getMessage))
+      value <- calculateActualSavingsAndInvestmentsThisMonth(userId)
       _ <- updateFinalytics(
         userId,
         FinalyticKeys.ActualSavingsAndInvestmentsThisMonth,
@@ -59,6 +59,35 @@ object FinalyticsService:
       )
     yield value
   end recalculateActualSavingsAndInvestmentsThisMonth
+
+  def recalculateTargetSavingsAndInvestmentsThisMonth(userId: UserId)(using
+      dbClient: DbClient.DataSource
+  ): Either[AppError, Double] =
+    for
+      value <- calculateTargetSavingsAndInvestmentsThisMonth(userId)
+      _ <- updateFinalytics(
+        userId,
+        FinalyticKeys.TargetSavingsAndInvestmentsThisMonth,
+        value.toString()
+      )
+    yield value
+  end recalculateTargetSavingsAndInvestmentsThisMonth
+
+  def recalculateActualSavingsAtRetirement(userId: UserId)(using
+      dbClient: DbClient.DataSource
+  ): Either[AppError, Double] =
+    for
+      value <- calculateActualSavingsAtRetirement(
+        userId,
+        ExpenseCalculation.Average
+      )
+      _ <- updateFinalytics(
+        userId,
+        FinalyticKeys.ActualSavingsAtRetirement,
+        value.toString()
+      )
+    yield value
+  end recalculateActualSavingsAtRetirement
 
   def getFinalytics(userId: UserId, key: FinalyticKeys)(using
       dbClient: DbClient.DataSource
@@ -100,7 +129,7 @@ object FinalyticsService:
 
   def calculateActualSavingsAndInvestmentsThisMonth(
       userId: UUID
-  )(using dbClient: DbClient.DataSource): Try[Double] =
+  )(using dbClient: DbClient.DataSource): Either[AppError, Double] =
     Try:
       val result = dbClient.transaction: db =>
         db.runSql[Double](sql"""
@@ -144,6 +173,72 @@ object FinalyticsService:
             WHERE mr.most_recent_balance_date >= som.start_balance_date
           """)
       result.headOption.getOrElse(0.0)
+    .toEither.left.map(e => AppError.DatabaseError(e.getMessage))
+
+  def calculateTargetSavingsAndInvestmentsThisMonth(userId: UUID)(using
+      dbClient: DbClient.DataSource
+  ): Either[AppError, Double] =
+    for
+      profile <- ProfileRepository.getProfile(userId)
+      retirementGoalCurrentBalance <- GoalRepository
+        .getAssignedBalanceOnRetirementGoal(userId)
+      pv = -(retirementGoalCurrentBalance.abs)
+      fv <- getFreedomFutureValueOfCurrentExpensesAtRetirement(
+        ExpenseCalculation.Average,
+        userId
+      )
+      years <- calculateYearsToRetirement(userId)
+      yearlySavingsTarget = calculatePaymentFromFutureValue(
+        pv = pv,
+        fv = fv,
+        rate = 0.08,
+        years = years
+      )
+    yield yearlySavingsTarget / 12
+
+  def calculateActualSavingsAtRetirement(
+      userId: UUID,
+      expCalc: ExpenseCalculation
+  )(using
+      dbClient: DbClient.DataSource
+  ): Either[AppError, Double] =
+    for
+      profile <- ProfileRepository.getProfile(userId)
+      annualInterestRate = 0.08
+      yearsToRetirement <- calculateYearsToRetirement(userId)
+      retirementGoalCurrentBalance <- getAssignedBalanceOnRetirementGoal(userId)
+      pv = -(retirementGoalCurrentBalance.abs)
+      savings <- calculateActualSavingsAndInvestmentsThisMonth(userId)
+      pmt = -(savings.abs)
+    yield calculateFutureValue(
+      rate = annualInterestRate,
+      years = yearsToRetirement,
+      pv = pv,
+      pmt = pmt
+    )
+
+  def calculateExpectedSavingsAtRetirement(
+      exp: ExpenseCalculation,
+      userId: UUID
+  )(using
+      dbClient: DbClient.DataSource
+  ): Either[AppError, Double] =
+    for
+      profile <- ProfileRepository.getProfile(userId)
+      yearsToRetirement <- calculateYearsToRetirement(userId)
+      freedomFVCurrentExpense <- getFreedomFutureValueOfCurrentExpenses(
+        exp,
+        userId
+      )
+      fv = freedomFVCurrentExpense.abs
+      rate = 0.02 // 2% annual inflation rate
+      pv = freedomFVCurrentExpense.abs
+    yield calculateFutureValue(
+      rate = rate,
+      years = yearsToRetirement,
+      pv = pv,
+      pmt = 0
+    )
 
   private def getFreedomFutureValueOfCurrentExpenses(
       expCalc: ExpenseCalculation,
@@ -156,6 +251,22 @@ object FinalyticsService:
         getAverageMonthlyInflowOutflow(userId).map(
           _.outflow * 12 / 0.04 // 4% withdrawal rate
         )
+
+  private def getFreedomFutureValueOfCurrentExpensesAtRetirement(
+      expCalc: ExpenseCalculation,
+      userId: UUID
+  )(using dbClient: DbClient.DataSource): Either[AppError, Double] =
+    for
+      profile <- ProfileRepository.getProfile(userId)
+      freedomFutureValueOfCurrentExpenses <-
+        getFreedomFutureValueOfCurrentExpenses(expCalc, userId)
+      yearsToRetirement <- calculateYearsToRetirement(userId)
+    yield calculateFutureValue(
+      pv = freedomFutureValueOfCurrentExpenses,
+      pmt = 0,
+      rate = 0.02, // 2% annual inflation rate
+      yearsToRetirement
+    )
 
   def getLast12MonthsInflowOutflow(userId: UUID)(using
       dbClient: DbClient.DataSource
@@ -295,3 +406,78 @@ object FinalyticsService:
         math.log(1 + annualInterestRate)
 
       n.round.toInt
+
+  def calculateYearsToRetirement(userId: UUID)(using
+      dbClient: DbClient.DataSource
+  ): Either[AppError, Int] =
+    for
+      profile <- ProfileRepository.getProfile(userId)
+      retirementAge <- profile.retirementAge.toRight(
+        AppError.NotFoundError("Retirement age not found")
+      )
+      age <- profile.age.toRight(AppError.NotFoundError("Age not found"))
+    yield retirementAge - age
+
+  /** Calculates the future value of an investment with a given present value,
+    * yearly investment, annual interest rate, and number of years.
+    *
+    * @param presentValue
+    *   The initial amount of money.
+    * @param yearlyInvestment
+    *   The amount of money added to the investment each year.
+    * @param annualInterestRate
+    *   The annual interest rate as a decimal. Example: 0.08 for 8%
+    * @param years
+    *   The number of years the investment will grow.
+    * @return
+    *   The future value of the investment.
+    */
+  def calculateFutureValue(
+      pv: Double,
+      pmt: Double,
+      rate: Double,
+      years: Int
+  ): Double =
+    val futureValue = pv * math.pow(1 + rate, years) +
+      pmt * ((math.pow(
+        1 + rate,
+        years
+      ) - 1) / rate)
+
+    if (pmt < 0 && pv < 0) then -futureValue
+    else futureValue
+
+  /** Calculates the payment from the future value of an investment.
+    *
+    * @param fv
+    *   The future value of the investment.
+    * @param pv
+    *   The present value of the investment.
+    * @param rate
+    *   The annual interest rate as a decimal. Example: 0.08 for 8%
+    * @param years
+    *   The number of years the investment will grow.
+    * @return
+    */
+  def calculatePaymentFromFutureValue(
+      fv: Double,
+      pv: Double,
+      rate: Double,
+      years: Int
+  ): Double =
+    // Calculate the payment using the future value formula for annual payments
+    val payment =
+      if (rate == 0) then
+        // If interest rate is 0, use simple division
+        (fv - pv) / years
+      else
+        (fv - pv * math.pow(1 + rate, years)) /
+          ((math.pow(1 + rate, years) - 1) / rate)
+
+    // Adjust the sign if both FV and PV are negative
+    val adjustedPayment = if (fv < 0 && pv < 0) then -payment else payment
+
+    // Round to 2 decimal places
+    BigDecimal(adjustedPayment)
+      .setScale(2, BigDecimal.RoundingMode.HALF_UP)
+      .toDouble

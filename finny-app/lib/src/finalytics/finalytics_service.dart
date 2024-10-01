@@ -52,7 +52,7 @@ class FinalyticsService {
     }
   }
 
-  Future<double> getFreedomFutureValueOfCurrentExpensesAtRetirement(
+  Future<double> calculateExpectedSavingsAtRetirement(
       ExpenseCalculation exp) async {
     final profile = await profileService.getProfile();
     if (profile == null) {
@@ -70,7 +70,7 @@ class FinalyticsService {
         years: yearsToRetirement);
   }
 
-  Future<double> getTargetSavingsAndInvestmentsThisMonth(
+  Future<double> calculateTargetSavingsAndInvestmentsThisMonth(
       ExpenseCalculation exp) async {
     final profile = await profileService.getProfile();
     if (profile == null) {
@@ -80,7 +80,7 @@ class FinalyticsService {
     final pv = -((await getAssignedBalanceOnRetirementGoal()).abs());
     final period = await calculateYearsToRetirement(profile);
     const interest = 8.0;
-    final fv = await getFreedomFutureValueOfCurrentExpensesAtRetirement(exp);
+    final fv = await calculateExpectedSavingsAtRetirement(exp);
     final yearlySavingsTarget = calculatePaymentFromFutureValue(
       fv: fv,
       pv: pv,
@@ -91,14 +91,14 @@ class FinalyticsService {
     return yearlySavingsTarget / 12;
   }
 
-  Future<double> getActualSavingsAndInvestmentsThisMonth(
+  Future<double> calculateActualSavingsAndInvestmentsThisMonth(
       ExpenseCalculation exp) async {
     final savings = await getActualSavingsThisMonthForRetirementGoal();
     final investment = await getActualInvestmentThisMonthForRetirementGoal();
     return savings + investment;
   }
 
-  Future<double> getActualSavingsAtRetirement(ExpenseCalculation exp) async {
+  Future<double> calculateActualSavingsAtRetirement(ExpenseCalculation exp) async {
     final profile = await profileService.getProfile();
     if (profile == null) {
       throw Exception('Profile not found');
