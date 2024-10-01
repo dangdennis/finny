@@ -13,7 +13,6 @@ import api.models.UserId
 import api.models.FinalyticKeys
 import api.repositories.ProfileRepository
 import api.repositories.GoalRepository
-import scalikejdbc.DBSession
 
 case class FinalyticsTable[T[_]](
     id: T[UUID],
@@ -31,8 +30,7 @@ enum ExpenseCalculation:
 
 object FinalyticsService:
   def getActualRetirementAge(userId: UserId, expCalc: ExpenseCalculation)(using
-      dbClient: DbClient.DataSource,
-      scalikejdc: DBSession
+      dbClient: DbClient.DataSource
   ): Either[AppError, Int] =
     val annualInterestRate = 0.08
     for
@@ -263,7 +261,7 @@ object FinalyticsService:
                 AVG(adjusted_inflows) AS inflows,
                 AVG(adjusted_outflows) AS outflows
               FROM
-                adjusted_monthly_totals;            
+                adjusted_monthly_totals;
           """)
 
     result.toEither.left

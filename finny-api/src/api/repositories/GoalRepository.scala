@@ -15,6 +15,7 @@ import scalasql.PostgresDialect.*
 import scala.util.{Failure, Success}
 import api.models.GoalAccount
 import api.models.AssignedAmount
+import api.repositories.AccountRepository2.MinimalAccountBalance
 
 case class GoalTable[T[_]](
     id: T[UUID],
@@ -287,8 +288,7 @@ object GoalRepository:
         )
 
   def getAssignedBalanceOnRetirementGoal(userId: UserId)(using
-      dbClient: DbClient.DataSource,
-      scalikejdbc: DBSession
+      dbClient: DbClient.DataSource
   ): Either[AppError, Double] =
     val retirementGoalType = GoalType.Retirement.value
 
@@ -308,22 +308,14 @@ object GoalRepository:
         Left(AppError.DatabaseError(exception.getMessage()))
       case Success(goal) =>
         val goalAccounts = getAssignedAccountsOnGoal(goal.id).getOrElse(List())
-        val accounts =
-          AccountRepository
-            .getAccountsByIds(goalAccounts.map(_.accountId))
-            .getOrElse(List())
         var balance = 0.0
 
-        val accountBalanceMap =
-          accounts.map(a => (a.id, a.currentBalance)).toMap
-
-        println(accountBalanceMap)
-
         for ga <- goalAccounts do
+          val account = AccountRepository2.getMinimalAccountById(ga.accountId).getOrElse(MinimalAccountBalance(ga.accountId, 0.0))
           ga.assignedAmount match
             case AssignedAmount.Fixed(amount) =>
               balance += amount
             case AssignedAmount.Percentage(percentage) =>
-              balance += accountBalanceMap(ga.accountId) * percentage
+              balance += account.balance * percentage
 
         Right(balance)
