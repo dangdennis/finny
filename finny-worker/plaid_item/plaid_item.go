@@ -1,4 +1,4 @@
-package plaid_items
+package plaid_item
 
 import (
 	"errors"

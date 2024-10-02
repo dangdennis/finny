@@ -6,8 +6,9 @@ import (
 	"os"
 
 	"github.com/finny/worker/database"
-	finalytics "github.com/finny/worker/finalytics"
-	"github.com/finny/worker/plaid_items"
+	"github.com/finny/worker/finalytics"
+	"github.com/finny/worker/plaid_item"
+	"github.com/finny/worker/profile"
 	"github.com/finny/worker/queue"
 
 	"github.com/joho/godotenv"
@@ -45,10 +46,11 @@ func main() {
 	}
 	defer qm.Close()
 
-	finalyticsSvc := finalytics.NewFinalyticsService(db)
-	plaidItemsRepo := plaid_items.NewPlaidItemRepository(db)
+	profileRepo := profile.NewProfileRepository(db)
+	plaidItemRepo := plaid_item.NewPlaidItemRepository(db)
+	finalyticsSvc := finalytics.NewFinalyticsService(db, profileRepo)
 
-	workerManager, err := finalytics.NewWorkerManager(db, qm, finalyticsSvc, plaidItemsRepo)
+	workerManager, err := finalytics.NewWorkerManager(db, qm, finalyticsSvc, plaidItemRepo)
 	if err != nil {
 		log.Fatalf("Failed to open a channel: %v", err)
 	}

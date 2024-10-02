@@ -7,7 +7,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/finny/worker/plaid_items"
+	"github.com/finny/worker/plaid_item"
 	"github.com/finny/worker/queue"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"gorm.io/gorm"
@@ -22,7 +22,7 @@ type WorkerManager struct {
 	workerStarted atomic.Bool
 	startOnce     sync.Once
 	waitTimeSecs  int64
-	plaidItemRepo *plaid_items.PlaidItemRepository
+	plaidItemRepo *plaid_item.PlaidItemRepository
 	finalyticsSvc *FinalyticsService
 }
 
@@ -34,7 +34,7 @@ func WithWaitTime(waitTime time.Duration) WorkerManagerOption {
 	}
 }
 
-func NewWorkerManager(db *gorm.DB, qm *queue.QueueManager, fin *FinalyticsService, plaidItemsRepo *plaid_items.PlaidItemRepository, options ...WorkerManagerOption) (*WorkerManager, error) {
+func NewWorkerManager(db *gorm.DB, qm *queue.QueueManager, fin *FinalyticsService, plaidItemRepo *plaid_item.PlaidItemRepository, options ...WorkerManagerOption) (*WorkerManager, error) {
 	ch, err := qm.Channel()
 	if err != nil {
 		return nil, err
@@ -46,7 +46,7 @@ func NewWorkerManager(db *gorm.DB, qm *queue.QueueManager, fin *FinalyticsServic
 		ch:            ch,
 		waitTimeSecs:  10,
 		finalyticsSvc: fin,
-		plaidItemRepo: plaidItemsRepo,
+		plaidItemRepo: plaidItemRepo,
 	}
 
 	for _, option := range options {
