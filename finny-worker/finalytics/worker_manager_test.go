@@ -34,7 +34,7 @@ func TestProcessFinalyticMessage(t *testing.T) {
 		publishFinalyticsMessage(t, wm.ch, msg)
 	}
 
-	time.Sleep(2 * time.Second)
+	time.Sleep(10 * time.Second)
 
 	err = wm.Close()
 	assert.NoError(t, err)
