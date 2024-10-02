@@ -9,7 +9,7 @@ import (
 )
 
 func TestGetItem(t *testing.T) {
-	db, err := database.NewTestDatabase()
+	db, err := database.NewTestCalcDatabase()
 	assert.NoError(t, err)
 
 	repo := NewPlaidItemRepository(db)

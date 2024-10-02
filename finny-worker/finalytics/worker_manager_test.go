@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/finny/worker/database"
+	"github.com/finny/worker/plaid_items"
 	"github.com/finny/worker/queue"
 	"github.com/google/uuid"
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -13,13 +14,17 @@ import (
 )
 
 func TestProcessFinalyticMessage(t *testing.T) {
-	db, err := database.NewTestDatabase()
+	db, err := database.NewTestCalcDatabase()
 	assert.NoError(t, err)
 
-	conn, err := queue.NewTestQueueManager()
+	finalyticsService := NewFinalyticsService(db)
+
+	qm, err := queue.NewTestQueueManager()
 	assert.NoError(t, err)
 
-	wm, err := NewWorkerManager(conn, db, WithWaitTime(10*time.Second))
+	plaidItemRepo := plaid_items.NewPlaidItemRepository(db)
+
+	wm, err := NewWorkerManager(db, qm, finalyticsService, plaidItemRepo, WithWaitTime(10*time.Second))
 	assert.NoError(t, err)
 
 	err = wm.StartWorker()
@@ -34,7 +39,7 @@ func TestProcessFinalyticMessage(t *testing.T) {
 		publishFinalyticsMessage(t, wm.ch, msg)
 	}
 
-	time.Sleep(10 * time.Second)
+	time.Sleep(2 * time.Second)
 
 	err = wm.Close()
 	assert.NoError(t, err)
