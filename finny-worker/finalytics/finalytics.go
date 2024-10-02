@@ -5,10 +5,28 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/google/uuid"
 	amqp "github.com/rabbitmq/amqp091-go"
+	"gorm.io/gorm"
 )
 
-func processFinalyticMessage(msg *amqp.Delivery) error {
+type FinalyticsService struct {
+	db *gorm.DB
+}
+
+func NewFinalyticsService(db *gorm.DB) *FinalyticsService {
+	return &FinalyticsService{
+		db: db,
+	}
+}
+
+type FinalyticMessage struct {
+	MessageId string `json:"message_id"`
+	ItemId    string `json:"item_id"`
+	Op        string `json:"op"`
+}
+
+func (s *FinalyticsService) ProcessFinalyticMessage(msg *amqp.Delivery) error {
 	var finalyticMsg FinalyticMessage
 	err := json.Unmarshal(msg.Body, &finalyticMsg)
 	if err != nil {
@@ -22,8 +40,14 @@ func processFinalyticMessage(msg *amqp.Delivery) error {
 	return nil
 }
 
-type FinalyticMessage struct {
-	MessageId string `json:"message_id"`
-	ItemId    string `json:"item_id"`
-	Op        string `json:"op"`
+type ExpenseCalculation int
+
+const (
+	Last12Months ExpenseCalculation = iota
+	Average
+)
+
+func (s *FinalyticsService) GetActualRetirementAge(userId uuid.UUID, calcType ExpenseCalculation) (int, error) {
+	var age int
+	return age, nil
 }

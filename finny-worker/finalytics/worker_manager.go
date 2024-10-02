@@ -21,8 +21,9 @@ type WorkerManager struct {
 	ch            *amqp.Channel
 	workerStarted atomic.Bool
 	startOnce     sync.Once
-	plaidItemRepo *plaid_items.PlaidItemRepository
 	waitTimeSecs  int64
+	plaidItemRepo *plaid_items.PlaidItemRepository
+	finalyticsSvc *FinalyticsService
 }
 
 type WorkerManagerOption func(*WorkerManager)
@@ -33,17 +34,19 @@ func WithWaitTime(waitTime time.Duration) WorkerManagerOption {
 	}
 }
 
-func NewWorkerManager(qm *queue.QueueManager, db *gorm.DB, options ...WorkerManagerOption) (*WorkerManager, error) {
+func NewWorkerManager(db *gorm.DB, qm *queue.QueueManager, fin *FinalyticsService, plaidItemsRepo *plaid_items.PlaidItemRepository, options ...WorkerManagerOption) (*WorkerManager, error) {
 	ch, err := qm.Channel()
 	if err != nil {
 		return nil, err
 	}
 
 	wm := &WorkerManager{
-		db:           db,
-		qm:           qm,
-		ch:           ch,
-		waitTimeSecs: 10,
+		db:            db,
+		qm:            qm,
+		ch:            ch,
+		waitTimeSecs:  10,
+		finalyticsSvc: fin,
+		plaidItemRepo: plaidItemsRepo,
 	}
 
 	for _, option := range options {
@@ -115,7 +118,7 @@ func (wm *WorkerManager) processFinalyticsMessages() {
 
 			fmt.Printf("Received a message: %s\n", msg.Body)
 
-			if err := processFinalyticMessage(&msg); err != nil {
+			if err := wm.finalyticsSvc.ProcessFinalyticMessage(&msg); err != nil {
 				continue
 			}
 
