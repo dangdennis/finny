@@ -6,6 +6,7 @@ import api.models.PlaidItemId
 import api.models.UserId
 import api.services.PlaidSyncService
 import api.services.UserDeletionService
+import api.services.StartWorkerService
 import cats.syntax.all.*
 import com.rabbitmq.client.Channel
 import com.rabbitmq.client.Connection
@@ -25,6 +26,7 @@ object Jobs:
   val jobConnection: Connection = LavinMqClient.createConnection()
   val jobChannel: Channel = LavinMqClient.createChannel(jobConnection)
   val jobQueueName = "jobs"
+  val jobFinalyticsQueueName = "finalytics"
 
   def init(): Either[Throwable, Unit] =
     Try:
@@ -34,6 +36,10 @@ object Jobs:
 
   private def declareJobQueue() = Try(
     jobChannel.queueDeclare(jobQueueName, true, false, false, null)
+  )
+
+  private def declareFinalyticsQueue() = Try(
+    jobChannel.queueDeclare(jobFinalyticsQueueName, true, false, false, null)
   )
 
   def enqueueJob(job: JobRequest): Either[Throwable, Unit] =
@@ -47,6 +53,23 @@ object Jobs:
       case e: Exception =>
         Left(e)
   end enqueueJob
+
+  def enqueueFinalyticsJob(job: JobFinalytics): Either[Throwable, Unit] =
+    val payload = job.asJson.noSpaces
+    try
+      jobChannel.txSelect()
+      jobChannel.basicPublish(
+        "",
+        jobFinalyticsQueueName,
+        null,
+        payload.getBytes("UTF-8")
+      )
+      jobChannel.txCommit()
+      StartWorkerService.requestWorkerStart()
+      Right(())
+    catch
+      case e: Exception =>
+        Left(e)
 
   enum SyncType:
     case Initial
@@ -85,6 +108,24 @@ object Jobs:
     )
     case JobDeleteUser(id: UUID = UUID.randomUUID(), userId: UUID)
 
+  enum FinalyticsOp:
+    case RecalculateAll
+
+    override def toString: String = this match
+      case RecalculateAll => "recalculate_all"
+
+  object FinalyticsOp:
+    given Encoder[FinalyticsOp] = Encoder.encodeString.contramap(_.toString)
+
+  case class JobFinalytics(
+      message_id: UUID = UUID.randomUUID(),
+      item_id: UUID,
+      op: FinalyticsOp
+  )
+
+  object JobFinalytics:
+    given Encoder[JobFinalytics] = deriveEncoder[JobFinalytics]
+
   object JobRequest:
     given Codec[JobSyncPlaidItem] = deriveCodec
     given Codec[JobDeleteUser] = deriveCodec
@@ -107,7 +148,7 @@ object Jobs:
           case Right(job) =>
             job match
               case job: JobRequest.JobDeleteUser =>
-                handleAnotherJob(job, delivery)
+                handleDeleteJob(job, delivery)
               case job: JobRequest.JobSyncPlaidItem =>
                 handleJobSyncPlaidItem(job, delivery)
 
@@ -135,7 +176,15 @@ object Jobs:
               )
             case _ =>
               jobChannel.basicAck(delivery.getEnvelope.getDeliveryTag, false)
+              enqueueFinalyticsJob(
+                JobFinalytics(
+                  item_id = job.itemId,
+                  op = FinalyticsOp.RecalculateAll,
+                  message_id = UUID.randomUUID()
+                )
+              )
           }(using ExecutionContext.global)
+
       case SyncType.Historical =>
         PlaidSyncService
           .syncHistorical(itemId = PlaidItemId(job.itemId))
@@ -156,10 +205,17 @@ object Jobs:
                 )
               case _ =>
                 jobChannel.basicAck(delivery.getEnvelope.getDeliveryTag, false)
+                enqueueFinalyticsJob(
+                  JobFinalytics(
+                    item_id = job.itemId,
+                    op = FinalyticsOp.RecalculateAll,
+                    message_id = UUID.randomUUID()
+                  )
+                )
             }(using ExecutionContext.global)
           }
 
-  private def handleAnotherJob(
+  private def handleDeleteJob(
       job: JobRequest.JobDeleteUser,
       delivery: Delivery
   )(using dbClient: DbClient.DataSource): Unit =
