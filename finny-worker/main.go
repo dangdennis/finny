@@ -82,7 +82,7 @@ func (wm *WorkerManager) StartWorker(c echo.Context) error {
 func (wm *WorkerManager) processFinalyticsMessages() {
 	// todo: inject service should create the queue and publish message
 	// todo: inject service should also start the worker via POST /start
-	queueName := "finalytics_queue"
+	queueName := "finalytics"
 	q, err := wm.ch.QueueDeclare(
 		queueName, // name
 		true,      // durable
@@ -142,11 +142,11 @@ func processFinalyticMessage(msg *amqp.Delivery) {
 	}
 
 	fmt.Printf("Received a message: MessageID=%s, UserID=%s, Op=%s\n",
-		finalyticMsg.MessageId, finalyticMsg.UserId, finalyticMsg.Op)
+		finalyticMsg.MessageId, finalyticMsg.ItemId, finalyticMsg.Op)
 }
 
 type FinalyticMessage struct {
 	MessageId string `json:"message_id"`
-	UserId    string `json:"user_id"`
+	ItemId    string `json:"item_id"`
 	Op        string `json:"op"`
 }
