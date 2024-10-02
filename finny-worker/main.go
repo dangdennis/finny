@@ -13,6 +13,8 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	amqp "github.com/rabbitmq/amqp091-go"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 func main() {
@@ -28,7 +30,17 @@ func main() {
 		log.Fatal("LAVIN_MQ_URL is not set")
 	}
 
+	databaseUrl := os.Getenv("DATABASE_URL")
+	if databaseUrl == "" {
+		log.Fatal("DATABASE_URL is not set")
+	}
+
 	e := echo.New()
+
+	db, err := gorm.Open(postgres.Open(databaseUrl), &gorm.Config{})
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	}
 
 	conn, err := amqp.Dial(lavinMqUrl)
 	if err != nil {
@@ -42,7 +54,7 @@ func main() {
 	}
 	defer ch.Close()
 
-	workerManager := NewWorkerManager(conn, ch)
+	workerManager := NewWorkerManager(conn, ch, db)
 
 	e.POST("/start", func(c echo.Context) error {
 		return workerManager.StartWorker(c)
@@ -53,14 +65,16 @@ func main() {
 }
 
 type WorkerManager struct {
+	db            *gorm.DB
 	conn          *amqp.Connection
 	ch            *amqp.Channel
 	workerStarted atomic.Bool
 	startOnce     sync.Once
 }
 
-func NewWorkerManager(conn *amqp.Connection, ch *amqp.Channel) *WorkerManager {
+func NewWorkerManager(conn *amqp.Connection, ch *amqp.Channel, db *gorm.DB) *WorkerManager {
 	return &WorkerManager{
+		db:   db,
 		conn: conn,
 		ch:   ch,
 	}
