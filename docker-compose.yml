@@ -4,8 +4,8 @@ services:
     ports:
       - "5672:5672" # main port
       - "15672:15672" # management UI
-  postgres-prod-dump:
-    image: postgres:15
+  postgres-fixture:
+    image: postgres:16
     ports:
       - "5432:5432"
     environment:
