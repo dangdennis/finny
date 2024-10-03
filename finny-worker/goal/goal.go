@@ -23,6 +23,8 @@ type Goal struct {
 	GoalType   string    `gorm:"column:goal_type;type:text;not null"`
 }
 
+type GoalAccount struct{}
+
 type GoalRepository struct {
 	db *gorm.DB
 }
@@ -34,6 +36,11 @@ func NewGoalRepository(db *gorm.DB) *GoalRepository {
 }
 
 func (g *GoalRepository) GetAssignedBalanceOnRetirementGoal(userId uuid.UUID) (float64, error) {
+	_, err := g.GetRetirementGoal(userId)
+	if err != nil {
+		return 0, err
+	}
+
 	return 0, nil
 }
 
@@ -47,4 +54,8 @@ func (g *GoalRepository) GetRetirementGoal(userId uuid.UUID) (*Goal, error) {
 		return nil, err
 	}
 	return &item, nil
+}
+
+func (g *GoalRepository) GetAssignedAccountsOnGoal(goalId uuid.UUID) ([]GoalAccount, error) {
+	return []GoalAccount{}, nil
 }
