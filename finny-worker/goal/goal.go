@@ -4,6 +4,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/finny/worker/account"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -16,43 +17,70 @@ const (
 )
 
 type Goal struct {
-	ID         uuid.UUID `gorm:"type:uuid;default:gen_random_uuid();primaryKey"`
-	Name       string    `gorm:"type:text;not null"`
-	Amount     float64   `gorm:"type:double precision;not null"`
-	TargetDate time.Time `gorm:"column:target_date;type:timestamp(6) with time zone;not null"`
-	GoalType   string    `gorm:"column:goal_type;type:text;default:retirement;not null"`
+	ID         uuid.UUID      `gorm:"type:uuid;default:gen_random_uuid();primaryKey"`
+	Name       string         `gorm:"type:text;not null"`
+	Amount     float64        `gorm:"type:double precision;not null"`
+	TargetDate time.Time      `gorm:"type:timestamp(6) with time zone;not null"`
+	UserID     uuid.UUID      `gorm:"type:uuid;not null"`
+	Progress   float64        `gorm:"type:double precision;not null;default:0"`
+	CreatedAt  time.Time      `gorm:"type:timestamp(6) with time zone;not null;default:CURRENT_TIMESTAMP"`
+	UpdatedAt  time.Time      `gorm:"type:timestamp(6) with time zone;not null;default:CURRENT_TIMESTAMP"`
+	DeletedAt  gorm.DeletedAt `gorm:"type:timestamp(6) with time zone"`
+	GoalType   string         `gorm:"type:text;default:'retirement'"`
 }
 
 type GoalAccount struct {
-	ID         uuid.UUID `gorm:"type:uuid;default:gen_random_uuid();primaryKey"`
-	GoalID     uuid.UUID `gorm:"column:goal_id;type:uuid;not null"`
-	AccountID  uuid.UUID `gorm:"column:account_id;type:uuid;not null"`
-	Amount     float64   `gorm:"type:numeric;not null"`
-	Percentage float64   `gorm:"type:numeric;not null"`
-}
+	ID         uuid.UUID      `gorm:"type:uuid;default:gen_random_uuid();primaryKey"`
+	GoalID     uuid.UUID      `gorm:"type:uuid;not null"`
+	AccountID  uuid.UUID      `gorm:"type:uuid;not null"`
+	Amount     float64        `gorm:"type:numeric(10,2);not null"`
+	Percentage float64        `gorm:"type:numeric(5,2);not null"`
+	CreatedAt  time.Time      `gorm:"type:timestamp without time zone;not null;default:CURRENT_TIMESTAMP"`
+	UpdatedAt  time.Time      `gorm:"type:timestamp without time zone;not null;default:CURRENT_TIMESTAMP"`
+	DeletedAt  gorm.DeletedAt `gorm:"type:timestamp without time zone"`
 
+	// Goal    Goal    `gorm:"foreignKey:GoalID"`
+	// Account Account `gorm:"foreignKey:AccountID"`
+}
 type GoalRepository struct {
-	db *gorm.DB
+	db          *gorm.DB
+	accountRepo *account.AccountRepository
 }
 
-func NewGoalRepository(db *gorm.DB) *GoalRepository {
+func NewGoalRepository(db *gorm.DB, accountRepo *account.AccountRepository) *GoalRepository {
 	return &GoalRepository{
-		db: db,
+		db:          db,
+		accountRepo: accountRepo,
 	}
 }
 
-func (g *GoalRepository) GetAssignedBalanceOnRetirementGoal(userId uuid.UUID) (float64, error) {
-	_, err := g.GetRetirementGoal(userId)
+func (g *GoalRepository) GetAssignedBalanceOnRetirementGoal(userID uuid.UUID) (float64, error) {
+	retGoal, err := g.GetRetirementGoal(userID)
 	if err != nil {
 		return 0, err
 	}
 
-	return 0, nil
+	goalAccs, err := g.GetAssignedAccountsOnGoal(retGoal.ID)
+	if err != nil {
+		return 0, err
+	}
+
+	var balance float64
+	for _, goalAcc := range goalAccs {
+		account, err := g.accountRepo.GetAccount(goalAcc.AccountID)
+		if err != nil {
+			return 0, err
+		}
+
+		balance += account.CurrentBalance * (goalAcc.Percentage / 100)
+	}
+
+	return balance, nil
 }
 
-func (g *GoalRepository) GetRetirementGoal(userId uuid.UUID) (*Goal, error) {
+func (g *GoalRepository) GetRetirementGoal(userID uuid.UUID) (*Goal, error) {
 	var item Goal
-	err := g.db.Where("user_id = ?", userId).Where("goal_type = 'retirement'").First(&item).Error
+	err := g.db.Where("user_id = ?", userID).Where("goal_type = 'retirement'").First(&item).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
@@ -62,9 +90,9 @@ func (g *GoalRepository) GetRetirementGoal(userId uuid.UUID) (*Goal, error) {
 	return &item, nil
 }
 
-func (g *GoalRepository) GetAssignedAccountsOnGoal(goalId uuid.UUID) ([]GoalAccount, error) {
+func (g *GoalRepository) GetAssignedAccountsOnGoal(goalID uuid.UUID) ([]GoalAccount, error) {
 	var goalAccounts []GoalAccount
-	tx := g.db.Where("goal_id = ?", goalId).Find(&goalAccounts)
+	tx := g.db.Where("goal_id = ?", goalID).Find(&goalAccounts)
 	if tx.Error != nil {
 		if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
 			return goalAccounts, nil
