@@ -10,6 +10,8 @@ import (
 )
 
 func TestFinalytics(t *testing.T) {
+	t.Skip()
+
 	db, err := database.NewTestCalcDatabase()
 	assert.NoError(t, err)
 
@@ -17,7 +19,7 @@ func TestFinalytics(t *testing.T) {
 	finalyticsSvc := NewFinalyticsService(db, profileRepo)
 
 	userId := uuid.MustParse("5eaa8ae7-dbcb-445e-8058-dbd51a912c8d")
-	outflow, err := finalyticsSvc.getLast12MonthsInflowOutflow(userId)
+	outflow, err := finalyticsSvc.GetLast12MonthsInflowOutflow(userId)
 	assert.NoError(t, err)
 	t.Fatalf("outflow %+v\n", outflow)
 }

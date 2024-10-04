@@ -20,10 +20,16 @@ type Goal struct {
 	Name       string    `gorm:"type:text;not null"`
 	Amount     float64   `gorm:"type:double precision;not null"`
 	TargetDate time.Time `gorm:"column:target_date;type:timestamp(6) with time zone;not null"`
-	GoalType   string    `gorm:"column:goal_type;type:text;not null"`
+	GoalType   string    `gorm:"column:goal_type;type:text;default:retirement;not null"`
 }
 
-type GoalAccount struct{}
+type GoalAccount struct {
+	ID         uuid.UUID `gorm:"type:uuid;default:gen_random_uuid();primaryKey"`
+	GoalID     uuid.UUID `gorm:"column:goal_id;type:uuid;not null"`
+	AccountID  uuid.UUID `gorm:"column:account_id;type:uuid;not null"`
+	Amount     float64   `gorm:"type:numeric;not null"`
+	Percentage float64   `gorm:"type:numeric;not null"`
+}
 
 type GoalRepository struct {
 	db *gorm.DB
@@ -57,5 +63,14 @@ func (g *GoalRepository) GetRetirementGoal(userId uuid.UUID) (*Goal, error) {
 }
 
 func (g *GoalRepository) GetAssignedAccountsOnGoal(goalId uuid.UUID) ([]GoalAccount, error) {
-	return []GoalAccount{}, nil
+	var goalAccounts []GoalAccount
+	tx := g.db.Where("goal_id = ?", goalId).Find(&goalAccounts)
+	if tx.Error != nil {
+		if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
+			return goalAccounts, nil
+		}
+		return goalAccounts, tx.Error
+	}
+
+	return goalAccounts, nil
 }
