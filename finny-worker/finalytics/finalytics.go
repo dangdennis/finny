@@ -8,21 +8,25 @@ import (
 	"github.com/finny/worker/goal"
 	"github.com/finny/worker/profile"
 	"github.com/finny/worker/time_helper"
+	"github.com/finny/worker/transaction"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
 )
 
 type FinalyticsService struct {
-	db          *gorm.DB
-	profileRepo *profile.ProfileRepository
-	goalRepo    *goal.GoalRepository
+	db              *gorm.DB
+	profileRepo     *profile.ProfileRepository
+	goalRepo        *goal.GoalRepository
+	transactionRepo *transaction.TransactionRepository
 }
 
-func NewFinalyticsService(db *gorm.DB, profileRepo *profile.ProfileRepository) *FinalyticsService {
+func NewFinalyticsService(db *gorm.DB, profileRepo *profile.ProfileRepository, goalRepo *goal.GoalRepository, transactionRepo *transaction.TransactionRepository) *FinalyticsService {
 	return &FinalyticsService{
-		db:          db,
-		profileRepo: profileRepo,
+		db:              db,
+		profileRepo:     profileRepo,
+		goalRepo:        goalRepo,
+		transactionRepo: transactionRepo,
 	}
 }
 
@@ -206,13 +210,18 @@ type ActualSavingsThisMonthResult struct {
 	NetBalanceChange float64 `gorm:"column:net_balance_change"`
 }
 
-func (s *FinalyticsService) GetActualSavingsThisMonth(userId uuid.UUID, month time.Time) (float64, error) {
-	retirementGoal, err := s.goalRepo.GetRetirementGoal(userId)
+func (s *FinalyticsService) GetActualSavingsThisMonth(userID uuid.UUID, month time.Time) (float64, error) {
+	retirementGoal, err := s.goalRepo.GetRetirementGoal(userID)
 	if err != nil || retirementGoal == nil {
 		return 0.0, err
 	}
 
 	_, err = s.goalRepo.GetAssignedAccountsOnGoal(retirementGoal.ID)
+	if err != nil {
+		return 0.0, err
+	}
+
+	_, err = s.GetAccountBalancesAtStartOfMonth(userID, time_helper.Now())
 	if err != nil {
 		return 0.0, err
 	}
@@ -276,22 +285,46 @@ func (s *FinalyticsService) GetActualSavingsThisMonth(userId uuid.UUID, month ti
 	return result.NetBalanceChange, nil
 }
 
+// GetAccountBalanceAtDate uses the earliest recorded balance for the given account in the current month.
+// Then it adds the transactions from that point to the targetDate, inclusive.
+func (s *FinalyticsService) GetAccountBalanceAtDate(userID uuid.UUID, accountID uuid.UUID, targetDate time.Time) (decimal.Decimal, error) {
+	var output StartOfMonthBalance
+	err := s.MakeAccountBalancesAtStartOfMonthQuery(userID, targetDate).Where("account_id = ?", accountID).First(&output).Error
+	if err != nil {
+		return decimal.NewFromFloat(0.0), err
+	}
+
+	transactions, err := s.transactionRepo.GetTransactionsByAccountID(transaction.GetTransactionsInput{
+		AccountID: accountID,
+		StartDate: time_helper.FirstDayOfMonth(targetDate),
+		EndDate:   targetDate,
+	})
+	if err != nil {
+		return decimal.NewFromFloat(0.0), err
+	}
+
+	sum := decimal.NewFromFloat(0.0)
+	for _, transaction := range transactions {
+		sum = sum.Add(transaction.Amount)
+	}
+	// We flip the sign because inflows are negative and outflows are positive.
+	sum = sum.Neg()
+
+	fmt.Printf("sum: %+v\n", sum)
+
+	return output.CurrentBalance.Add(sum), nil
+}
+
 type StartOfMonthBalance struct {
 	AccountID      uuid.UUID       `gorm:"column:account_id"`
 	BalanceDate    time.Time       `gorm:"column:balance_date"`
 	CurrentBalance decimal.Decimal `gorm:"column:current_balance"`
 }
 
-func (s *FinalyticsService) GetAccountBalancesAtStartOfMonth(userId uuid.UUID, date time.Time) ([]StartOfMonthBalance, error) {
+func (s *FinalyticsService) GetAccountBalancesAtStartOfMonth(userID uuid.UUID, date time.Time) ([]StartOfMonthBalance, error) {
 	var results []StartOfMonthBalance
 
-	firstDayOfMonth := time_helper.FirstDayOfMonth(date)
-	err := s.db.Table("account_balances ab").
-		Select("DISTINCT ON (account_id) ab.account_id, ab.balance_date, ab.current_balance").
-		Joins("JOIN accounts ON ab.account_id = accounts.id").
-		Where("accounts.user_id = ?", userId).
-		Where("balance_date >= ?", firstDayOfMonth).
-		Order("account_id, balance_date").
+	err := s.MakeAccountBalancesAtStartOfMonthQuery(userID, date).
 		Scan(&results).Error
 
 	if err != nil {
@@ -301,9 +334,19 @@ func (s *FinalyticsService) GetAccountBalancesAtStartOfMonth(userId uuid.UUID, d
 	return results, nil
 }
 
+func (s *FinalyticsService) MakeAccountBalancesAtStartOfMonthQuery(userID uuid.UUID, date time.Time) *gorm.DB {
+	firstDayOfMonth := time_helper.FirstDayOfMonth(date)
+	return s.db.Table("account_balances ab").
+		Select("DISTINCT ON (account_id) ab.account_id, ab.balance_date, ab.current_balance").
+		Joins("JOIN accounts ON ab.account_id = accounts.id").
+		Where("accounts.user_id = ?", userID).
+		Where("balance_date >= ?", firstDayOfMonth).
+		Order("account_id, balance_date")
+}
+
 // todo: implement
 func (s *FinalyticsService) GetActualInvestmentThisMonth(userId uuid.UUID) (float64, error) {
-	return 0.0, nil
+	return 0.0, fmt.Errorf("Not implemented")
 }
 
 type PeriodFromFutureValueInput struct {

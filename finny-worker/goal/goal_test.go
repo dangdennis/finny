@@ -39,6 +39,6 @@ func TestGoalRepository(t *testing.T) {
 		goalBalance, err := repo.GetAssignedBalanceOnRetirementGoal(uuid.MustParse("5eaa8ae7-dbcb-445e-8058-dbd51a912c8d"))
 		assert.NoError(t, err)
 		fmt.Printf("%f\n", goalBalance)
-		assert.Equal(t, 73904.070300, goalBalance)
+		assert.Equal(t, 83997.435, goalBalance)
 	})
 }

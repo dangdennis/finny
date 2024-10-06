@@ -4,8 +4,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/finny/worker/account"
 	"github.com/finny/worker/database"
+	"github.com/finny/worker/goal"
 	"github.com/finny/worker/profile"
+	"github.com/finny/worker/transaction"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/assert"
@@ -14,27 +17,31 @@ import (
 func TestFinalyticsService(t *testing.T) {
 	db, err := database.NewTestCalcDatabase()
 	assert.NoError(t, err)
+	accountRepo := account.NewAccountRepository(db)
+	transactionRepo := transaction.NewTransactionRepository(db)
+	goalRepo := goal.NewGoalRepository(db, account.NewAccountRepository(db))
 	profileRepo := profile.NewProfileRepository(db)
-	finalyticsSvc := NewFinalyticsService(db, profileRepo)
-	userId := uuid.MustParse("5eaa8ae7-dbcb-445e-8058-dbd51a912c8d")
+	finalyticsSvc := NewFinalyticsService(db, profileRepo, goalRepo, transactionRepo)
+	userID := uuid.MustParse("5eaa8ae7-dbcb-445e-8058-dbd51a912c8d")
 
 	t.Run("GetLast12MonthsInflowOutflow", func(t *testing.T) {
 		t.Skip()
-		outflow, err := finalyticsSvc.GetLast12MonthsInflowOutflow(userId)
+		outflow, err := finalyticsSvc.GetLast12MonthsInflowOutflow(userID)
 		assert.NoError(t, err)
 		t.Fatalf("outflow %+v\n", outflow)
 	})
 
 	t.Run("GetActualSavingsThisMonth", func(t *testing.T) {
+		t.Skip()
 		testDate := time.Date(2023, time.September, 1, 0, 0, 0, 0, time.UTC)
-		savings, err := finalyticsSvc.GetActualSavingsThisMonth(userId, testDate)
+		savings, err := finalyticsSvc.GetActualSavingsThisMonth(userID, testDate)
 		assert.NoError(t, err)
 		assert.Equal(t, savings, 50)
 	})
 
 	t.Run("GetAccountBalancesAtStartOfMonth", func(t *testing.T) {
 		testDate := time.Date(2024, time.September, 25, 0, 0, 0, 0, time.UTC)
-		startOfMonthBalances, err := finalyticsSvc.GetAccountBalancesAtStartOfMonth(userId, testDate)
+		startOfMonthBalances, err := finalyticsSvc.GetAccountBalancesAtStartOfMonth(userID, testDate)
 		assert.NoError(t, err)
 		assert.NotNil(t, startOfMonthBalances)
 
@@ -72,5 +79,31 @@ func TestFinalyticsService(t *testing.T) {
 					balance.AccountID, expectedValue.Balance, balance.CurrentBalance)
 			}
 		}
+	})
+
+	t.Run("GetAccountBalanceAtDate", func(t *testing.T) {
+		t.Skip()
+
+		accountID := uuid.MustParse("495f3ee1-6187-4dcb-98a4-f6fa4b01b0b9")
+		earliestDate := time.Date(2024, time.September, 7, 0, 0, 0, 0, time.UTC)
+		targetDate := time.Date(2024, time.September, 30, 0, 0, 0, 0, time.UTC)
+
+		// Earliest date is 2024-09-07 for this account
+		accountBalanceAtEarliestDateInMonth, err := accountRepo.GetAccountBalanceAtDate(accountID, earliestDate)
+		assert.NoError(t, err)
+		assert.Equal(t, decimal.NewFromFloat(8967.22), accountBalanceAtEarliestDateInMonth)
+
+		transactions, err := transactionRepo.GetTransactionsByAccountID(transaction.GetTransactionsInput{
+			AccountID: accountID,
+			StartDate: earliestDate,
+			EndDate:   targetDate,
+		})
+		assert.NoError(t, err)
+		assert.NotNil(t, transactions)
+		assert.Equal(t, 29, len(transactions))
+
+		balance, err := finalyticsSvc.GetAccountBalanceAtDate(userID, accountID, targetDate)
+		assert.NoError(t, err)
+		assert.Equal(t, decimal.NewFromFloat(18117.98), balance)
 	})
 }

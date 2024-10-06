@@ -4,6 +4,10 @@ import (
 	"time"
 )
 
+func Now() time.Time {
+	return time.Now().UTC()
+}
+
 // FirstDayOfMonth returns the first day of the month for the given date in UTC.
 func FirstDayOfMonth(date time.Time) time.Time {
 	y, m, _ := date.Date()

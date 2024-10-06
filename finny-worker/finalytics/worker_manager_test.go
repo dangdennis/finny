@@ -5,10 +5,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/finny/worker/account"
 	"github.com/finny/worker/database"
+	"github.com/finny/worker/goal"
 	"github.com/finny/worker/plaid_item"
 	"github.com/finny/worker/profile"
 	"github.com/finny/worker/queue"
+	"github.com/finny/worker/transaction"
 	"github.com/google/uuid"
 	"github.com/rabbitmq/amqp091-go"
 	"github.com/stretchr/testify/assert"
@@ -21,7 +24,9 @@ func TestProcessFinalyticMessage(t *testing.T) {
 	assert.NoError(t, err)
 
 	profileRepo := profile.NewProfileRepository(db)
-	finalyticsService := NewFinalyticsService(db, profileRepo)
+	goalRepo := goal.NewGoalRepository(db, account.NewAccountRepository(db))
+	transactionRepo := transaction.NewTransactionRepository(db)
+	finalyticsService := NewFinalyticsService(db, profileRepo, goalRepo, transactionRepo)
 
 	qm, err := queue.NewTestQueueManager()
 	assert.NoError(t, err)

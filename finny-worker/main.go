@@ -5,11 +5,14 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/finny/worker/account"
 	"github.com/finny/worker/database"
 	"github.com/finny/worker/finalytics"
+	"github.com/finny/worker/goal"
 	"github.com/finny/worker/plaid_item"
 	"github.com/finny/worker/profile"
 	"github.com/finny/worker/queue"
+	"github.com/finny/worker/transaction"
 
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
@@ -46,9 +49,12 @@ func main() {
 	}
 	defer qm.Close()
 
+	accountRepo := account.NewAccountRepository(db)
+	transactionRepo := transaction.NewTransactionRepository(db)
+	goalRepo := goal.NewGoalRepository(db, accountRepo)
 	profileRepo := profile.NewProfileRepository(db)
 	plaidItemRepo := plaid_item.NewPlaidItemRepository(db)
-	finalyticsSvc := finalytics.NewFinalyticsService(db, profileRepo)
+	finalyticsSvc := finalytics.NewFinalyticsService(db, profileRepo, goalRepo, transactionRepo)
 
 	workerManager, err := finalytics.NewWorkerManager(db, qm, finalyticsSvc, plaidItemRepo)
 	if err != nil {
