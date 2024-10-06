@@ -1,14 +1,12 @@
 package finalytics
 
 import (
-	"encoding/json"
 	"fmt"
-	"log"
 	"math"
+	"time"
 
 	"github.com/finny/worker/profile"
 	"github.com/google/uuid"
-	amqp "github.com/rabbitmq/amqp091-go"
 	"gorm.io/gorm"
 )
 
@@ -22,26 +20,6 @@ func NewFinalyticsService(db *gorm.DB, profileRepo *profile.ProfileRepository) *
 		db:          db,
 		profileRepo: profileRepo,
 	}
-}
-
-type FinalyticMessage struct {
-	MessageId string `json:"message_id"`
-	ItemId    string `json:"item_id"`
-	Op        string `json:"op"`
-}
-
-func (s *FinalyticsService) ProcessFinalyticMessage(msg *amqp.Delivery) error {
-	var finalyticMsg FinalyticMessage
-	err := json.Unmarshal(msg.Body, &finalyticMsg)
-	if err != nil {
-		log.Printf("Error unmarshaling message: %v", err)
-		return err
-	}
-
-	fmt.Printf("Received a message: MessageID=%s, UserID=%s, Op=%s\n",
-		finalyticMsg.MessageId, finalyticMsg.ItemId, finalyticMsg.Op)
-
-	return nil
 }
 
 type ExpenseCalculation int
@@ -61,7 +39,7 @@ func (s *FinalyticsService) GetActualRetirementAge(userId uuid.UUID, calcType Ex
 
 	pv := 0.0
 
-	pmt, err := s.GetActualSavingsThisMonth(userId)
+	pmt, err := s.GetActualSavingsThisMonth(userId, time.Now())
 	if err != nil {
 		return 0, nil
 	}
@@ -234,52 +212,87 @@ func (s *FinalyticsService) GetAverageMonthlyInflowOutflow(userId uuid.UUID) (In
 	return InflowOutflow{}, nil
 }
 
-func (s *FinalyticsService) GetActualSavingsThisMonth(userId uuid.UUID) (float64, error) {
-	sqlParams := map[string]interface{}{
-		"userId": userId,
-	}
-	s.db.Raw(`
-		WITH retirement_goal AS (
-      SELECT id
-      FROM goals
-      WHERE goals.goal_type = 'retirement' AND goals.user_id = @userId
-      LIMIT 1
-    ),
-    assigned_accounts AS (
-      SELECT account_id
-      FROM goal_accounts
-      JOIN retirement_goal ON retirement_goal.id = goal_accounts.goal_id
-    ),
-    start_of_month_balances AS (
-      -- Get the earliest balance in the current month for each account
-      SELECT DISTINCT ON (ab.account_id)
-        ab.account_id,
-        ab.balance_date AS start_balance_date,
-        ab.current_balance AS start_balance
-      FROM account_balances ab
-      WHERE ab.balance_date >= date_trunc('month', CURRENT_DATE)
-        AND ab.account_id IN (SELECT account_id FROM assigned_accounts)
-      ORDER BY ab.account_id, ab.balance_date
-    ),
-    most_recent_balances AS (
-      -- Get the most recent balance for each account
-      SELECT DISTINCT ON (ab.account_id)
-        ab.account_id,
-        ab.balance_date AS most_recent_balance_date,
-        ab.current_balance AS most_recent_balance
-      FROM account_balances ab
-      WHERE ab.account_id IN (SELECT account_id FROM assigned_accounts)
-      ORDER BY ab.account_id, ab.balance_date DESC
-    )
-    SELECT
-      SUM(mr.most_recent_balance - som.start_balance) AS net_balance_change
-    FROM most_recent_balances mr
-    JOIN start_of_month_balances som ON mr.account_id = som.account_id
-    JOIN accounts ON mr.account_id = accounts.id
-    WHERE mr.most_recent_balance_date >= som.start_balance_date
-		`, sqlParams)
+type ActualSavingsThisMonthResult struct {
+	NetBalanceChange float64 `gorm:"column:net_balance_change"`
+}
 
-	return 0.0, nil
+func (s *FinalyticsService) GetActualSavingsThisMonth(userId uuid.UUID, month time.Time) (float64, error) {
+	// sqlParams := map[string]interface{}{
+	// 	"userID": userId,
+	// }
+	// retGoal, err := s.
+	var result ActualSavingsThisMonthResult
+	// err := s.db.Raw(`
+	// 	WITH retirement_goal AS (
+	// 				SELECT
+	// 					id
+	// 				FROM
+	// 					goals
+	// 				WHERE
+	// 					goals.goal_type = 'retirement'
+	// 					AND goals.user_id = @userID
+	// 				LIMIT 1
+	// 	),
+	// 	assigned_accounts AS (
+	// 				SELECT
+	// 					account_id
+	// 				FROM
+	// 					goal_accounts
+	// 					JOIN retirement_goal ON retirement_goal.id = goal_accounts.goal_id
+	// 	),
+	// 	start_of_month_balances AS (
+	// 				-- Get the earliest balance in the current month for each account
+	// 				SELECT DISTINCT ON (ab.account_id)
+	// 					ab.account_id,
+	// 					ab.balance_date AS start_balance_date,
+	// 					ab.current_balance AS start_balance
+	// 				FROM
+	// 					account_balances ab
+	// 				WHERE
+	// 					ab.balance_date >= date_trunc('month', '2023-09-01'::date)
+	// 					AND ab.account_id IN (
+	// 						SELECT
+	// 							account_id
+	// 						FROM
+	// 							assigned_accounts)
+	// 					ORDER BY
+	// 						ab.account_id,
+	// 						ab.balance_date
+	// 	),
+	// 	most_recent_balances AS (
+	// 				-- Get the most recent balance for each account
+	// 				SELECT DISTINCT ON (ab.account_id)
+	// 					ab.account_id,
+	// 					ab.balance_date AS most_recent_balance_date,
+	// 					ab.current_balance AS most_recent_balance
+	// 				FROM
+	// 					account_balances ab
+	// 				WHERE
+	// 					ab.account_id IN (
+	// 						SELECT
+	// 							account_id
+	// 						FROM
+	// 							assigned_accounts)
+	// 					ORDER BY
+	// 						ab.account_id,
+	// 						ab.balance_date DESC
+	// 	)
+	// 	SELECT
+	// 				GREATEST (coalesce(sum(mr.most_recent_balance - som.start_balance), 0), 0) AS net_balance_change
+	// 	FROM
+	// 				most_recent_balances mr
+	// 				JOIN start_of_month_balances som ON mr.account_id = som.account_id
+	// 				JOIN accounts ON mr.account_id = accounts.id
+	// 	WHERE
+	// 				mr.most_recent_balance_date >= som.start_balance_date
+	// `, sqlParams).Scan(&result).Error
+
+	var err error
+	if err != nil {
+		return 0, fmt.Errorf("error calculating actual savings: %w", err)
+	}
+
+	return result.NetBalanceChange, nil
 }
 
 type PeriodFromFutureValueInput struct {

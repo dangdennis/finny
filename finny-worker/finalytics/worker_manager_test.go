@@ -10,7 +10,7 @@ import (
 	"github.com/finny/worker/profile"
 	"github.com/finny/worker/queue"
 	"github.com/google/uuid"
-	amqp "github.com/rabbitmq/amqp091-go"
+	"github.com/rabbitmq/amqp091-go"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -49,7 +49,7 @@ func TestProcessFinalyticMessage(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func publishFinalyticsMessage(t *testing.T, ch *amqp.Channel, msg FinalyticMessage) {
+func publishFinalyticsMessage(t *testing.T, ch *amqp091.Channel, msg FinalyticMessage) {
 	body, err := json.Marshal(msg)
 	assert.NoError(t, err)
 
@@ -57,7 +57,7 @@ func publishFinalyticsMessage(t *testing.T, ch *amqp.Channel, msg FinalyticMessa
 		FINALYTICS_QUEUE_NAME,
 		false,
 		false,
-		amqp.Publishing{
+		amqp091.Publishing{
 			ContentType: "application/json",
 			Body:        body,
 		})

@@ -9,7 +9,7 @@ import (
 
 	"github.com/finny/worker/plaid_item"
 	"github.com/finny/worker/queue"
-	amqp "github.com/rabbitmq/amqp091-go"
+	"github.com/rabbitmq/amqp091-go"
 	"gorm.io/gorm"
 )
 
@@ -18,7 +18,7 @@ const FINALYTICS_QUEUE_NAME = "finalytics"
 type WorkerManager struct {
 	db            *gorm.DB
 	qm            *queue.QueueManager
-	ch            *amqp.Channel
+	ch            *amqp091.Channel
 	workerStarted atomic.Bool
 	startOnce     sync.Once
 	waitTimeSecs  int64

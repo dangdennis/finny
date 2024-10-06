@@ -1,21 +1,19 @@
 package queue
 
-import (
-	amqp "github.com/rabbitmq/amqp091-go"
-)
+import "github.com/rabbitmq/amqp091-go"
 
 type QueueManager struct {
-	conn *amqp.Connection
+	conn *amqp091.Connection
 }
 
-func NewQueueManager(conn *amqp.Connection) *QueueManager {
+func NewQueueManager(conn *amqp091.Connection) *QueueManager {
 	return &QueueManager{
 		conn: conn,
 	}
 }
 
 func NewLavinMqQueue(url string) (*QueueManager, error) {
-	conn, err := amqp.Dial(url)
+	conn, err := amqp091.Dial(url)
 	if err != nil {
 		return nil, err
 	}
@@ -36,6 +34,6 @@ func (qm *QueueManager) Close() error {
 	return nil
 }
 
-func (qm *QueueManager) Channel() (*amqp.Channel, error) {
+func (qm *QueueManager) Channel() (*amqp091.Channel, error) {
 	return qm.conn.Channel()
 }
