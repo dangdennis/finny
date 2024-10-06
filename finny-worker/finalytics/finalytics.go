@@ -72,12 +72,13 @@ type InflowOutflow struct {
 	Outflows float64 `gorm:"column:outflows"`
 }
 
-func (s *FinalyticsService) GetLast12MonthsInflowOutflow(userId uuid.UUID) (InflowOutflow, error) {
+func (s *FinalyticsService) GetLast12MonthsInflowOutflow(userID uuid.UUID) (InflowOutflow, error) {
 	sqlParams := map[string]interface{}{
-		"userId": userId,
+		"userID": userID,
 	}
 
-	tx := s.db.Raw(`
+	var output InflowOutflow
+	err := s.db.Raw(`
 				WITH regular_transactions AS (
 	               SELECT
 	                   SUM(CASE WHEN amount < 0 THEN ABS(amount) ELSE 0 END) AS total_inflows,
@@ -88,7 +89,7 @@ func (s *FinalyticsService) GetLast12MonthsInflowOutflow(userId uuid.UUID) (Infl
 	               WHERE
 	                   date >= (CURRENT_DATE - INTERVAL '12 months')
 	                   AND category NOT IN ('TRANSFER_IN', 'TRANSFER_OUT')
-	                   AND accounts.user_id = @userId
+	                   AND accounts.user_id = @userID
 	           ),
 	           transfer_transactions AS (
 	               SELECT
@@ -99,7 +100,7 @@ func (s *FinalyticsService) GetLast12MonthsInflowOutflow(userId uuid.UUID) (Infl
 	               WHERE
 	                   date >= (CURRENT_DATE - INTERVAL '12 months')
 	                   AND category IN ('TRANSFER_IN', 'TRANSFER_OUT')
-	                   AND accounts.user_id = @userId
+	                   AND accounts.user_id = @userID
 	           )
 	           SELECT
 	               CASE
@@ -112,25 +113,10 @@ func (s *FinalyticsService) GetLast12MonthsInflowOutflow(userId uuid.UUID) (Infl
 	               END AS outflows
 	                       FROM
 	                           regular_transactions rt, transfer_transactions tt;
-		`, sqlParams)
+		`, sqlParams).Scan(&output).Error
 
-	if tx.Error != nil {
-		return InflowOutflow{}, tx.Error
-	}
-
-	rows, err := tx.Rows()
 	if err != nil {
 		return InflowOutflow{}, err
-	}
-
-	fmt.Printf("rows = %+v", rows)
-
-	var output InflowOutflow
-	if rows.Next() {
-		err = rows.Scan(&output)
-		if err != nil {
-			return output, err
-		}
 	}
 
 	return InflowOutflow{}, nil
