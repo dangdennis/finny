@@ -5,14 +5,18 @@ import (
 	"math"
 	"time"
 
+	"github.com/finny/worker/goal"
 	"github.com/finny/worker/profile"
+	"github.com/finny/worker/time_helper"
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
 )
 
 type FinalyticsService struct {
 	db          *gorm.DB
 	profileRepo *profile.ProfileRepository
+	goalRepo    *goal.GoalRepository
 }
 
 func NewFinalyticsService(db *gorm.DB, profileRepo *profile.ProfileRepository) *FinalyticsService {
@@ -203,29 +207,21 @@ type ActualSavingsThisMonthResult struct {
 }
 
 func (s *FinalyticsService) GetActualSavingsThisMonth(userId uuid.UUID, month time.Time) (float64, error) {
+	retirementGoal, err := s.goalRepo.GetRetirementGoal(userId)
+	if err != nil || retirementGoal == nil {
+		return 0.0, err
+	}
+
+	_, err = s.goalRepo.GetAssignedAccountsOnGoal(retirementGoal.ID)
+	if err != nil {
+		return 0.0, err
+	}
+
 	// sqlParams := map[string]interface{}{
 	// 	"userID": userId,
 	// }
 	// retGoal, err := s.
 	var result ActualSavingsThisMonthResult
-	// err := s.db.Raw(`
-	// 	WITH retirement_goal AS (
-	// 				SELECT
-	// 					id
-	// 				FROM
-	// 					goals
-	// 				WHERE
-	// 					goals.goal_type = 'retirement'
-	// 					AND goals.user_id = @userID
-	// 				LIMIT 1
-	// 	),
-	// 	assigned_accounts AS (
-	// 				SELECT
-	// 					account_id
-	// 				FROM
-	// 					goal_accounts
-	// 					JOIN retirement_goal ON retirement_goal.id = goal_accounts.goal_id
-	// 	),
 	// 	start_of_month_balances AS (
 	// 				-- Get the earliest balance in the current month for each account
 	// 				SELECT DISTINCT ON (ab.account_id)
@@ -273,12 +269,41 @@ func (s *FinalyticsService) GetActualSavingsThisMonth(userId uuid.UUID, month ti
 	// 				mr.most_recent_balance_date >= som.start_balance_date
 	// `, sqlParams).Scan(&result).Error
 
-	var err error
 	if err != nil {
 		return 0, fmt.Errorf("error calculating actual savings: %w", err)
 	}
 
 	return result.NetBalanceChange, nil
+}
+
+type StartOfMonthBalance struct {
+	AccountID      uuid.UUID       `gorm:"column:account_id"`
+	BalanceDate    time.Time       `gorm:"column:balance_date"`
+	CurrentBalance decimal.Decimal `gorm:"column:current_balance"`
+}
+
+func (s *FinalyticsService) GetAccountBalancesAtStartOfMonth(userId uuid.UUID, date time.Time) ([]StartOfMonthBalance, error) {
+	var results []StartOfMonthBalance
+
+	firstDayOfMonth := time_helper.FirstDayOfMonth(date)
+	err := s.db.Table("account_balances ab").
+		Select("DISTINCT ON (account_id) ab.account_id, ab.balance_date, ab.current_balance").
+		Joins("JOIN accounts ON ab.account_id = accounts.id").
+		Where("accounts.user_id = ?", userId).
+		Where("balance_date >= ?", firstDayOfMonth).
+		Order("account_id, balance_date").
+		Scan(&results).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}
+
+// todo: implement
+func (s *FinalyticsService) GetActualInvestmentThisMonth(userId uuid.UUID) (float64, error) {
+	return 0.0, nil
 }
 
 type PeriodFromFutureValueInput struct {

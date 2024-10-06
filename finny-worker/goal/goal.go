@@ -56,7 +56,7 @@ func NewGoalRepository(db *gorm.DB, accountRepo *account.AccountRepository) *Goa
 
 func (g *GoalRepository) GetAssignedBalanceOnRetirementGoal(userID uuid.UUID) (float64, error) {
 	retGoal, err := g.GetRetirementGoal(userID)
-	if err != nil {
+	if err != nil || retGoal == nil {
 		return 0, err
 	}
 
