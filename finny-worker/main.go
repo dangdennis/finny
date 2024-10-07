@@ -15,7 +15,6 @@ import (
 	"github.com/finny/worker/transaction"
 
 	"github.com/joho/godotenv"
-	"github.com/labstack/echo/v4"
 )
 
 func main() {
@@ -35,8 +34,6 @@ func main() {
 	if databaseUrl == "" {
 		log.Fatal("DATABASE_URL is not set")
 	}
-
-	e := echo.New()
 
 	db, err := database.NewDatabase(databaseUrl)
 	if err != nil {
@@ -62,11 +59,11 @@ func main() {
 	}
 	defer workerManager.Close()
 
-	e.POST("/start", func(c echo.Context) error {
+	http.HandleFunc("POST /start", func(w http.ResponseWriter, r *http.Request) {
 		workerManager.StartWorker()
-		return c.String(http.StatusOK, "Worker started")
+		w.Write([]byte("Worker started"))
 	})
 
 	log.Println("Worker is ready to start on demand")
-	e.Logger.Fatal(e.Start(":8080"))
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
