@@ -23,7 +23,7 @@ test:
 	fi
 
 fix:
-	make clean && ./mill api.fix && ./mill test.fix && ./mill cli.fix
+	./mill api.fix && ./mill test.fix && ./mill cli.fix
 
 fmt:
 	scala fmt src/

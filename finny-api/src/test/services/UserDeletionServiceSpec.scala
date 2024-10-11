@@ -1,5 +1,7 @@
 package test.services
 
+import api.common.Environment
+import api.database.DatabaseScalaSql
 import api.models.GoalType
 import api.models.PlaidItemStatus
 import api.repositories.AccountRepository
@@ -12,12 +14,10 @@ import api.repositories.TransactionRepository.UpsertTransactionInput
 import api.services.UserDeletionService
 import org.scalatest.flatspec.AnyFlatSpec
 import repositories.AuthUserRepository
+import scalasql.*
 import test.helpers.*
 
 import java.util.UUID
-import api.database.DatabaseScalaSql
-import scalasql.*
-import api.common.Environment
 
 class UserDeletionServiceSpec extends TestInfra:
   override protected def beforeAll(): Unit = super.beforeAll()

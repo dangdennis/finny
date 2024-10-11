@@ -1,12 +1,12 @@
 package api.repositories
 
 import api.common.AppError
-
-import java.util.UUID
-import scala.util.Try
 import scalasql.*
 import scalasql.PostgresDialect.*
+
 import java.time.Instant
+import java.util.UUID
+import scala.util.Try
 
 case class AccountTable[T[_]](
     id: T[UUID],

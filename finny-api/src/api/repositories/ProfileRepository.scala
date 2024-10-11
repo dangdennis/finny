@@ -7,17 +7,16 @@ import api.models.Profile
 import api.models.RiskProfile
 import api.models.UserId
 import io.circe.parser.*
-import scalikejdbc.*
-
-import java.time.LocalDate
-import java.util.UUID
-import scala.util.Try
-
 import scalasql.*
 import scalasql.PostgresDialect.*
+import scalikejdbc.*
+
 import java.time.Instant
-import scala.util.Success
+import java.time.LocalDate
+import java.util.UUID
 import scala.util.Failure
+import scala.util.Success
+import scala.util.Try
 
 case class ProfileTable[T[_]](
     id: T[UUID],

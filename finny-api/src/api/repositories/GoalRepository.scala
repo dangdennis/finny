@@ -1,21 +1,22 @@
 package api.repositories
 
 import api.common.AppError
+import api.models.AssignedAmount
 import api.models.Goal
+import api.models.GoalAccount
 import api.models.GoalType
 import api.models.UserId
+import api.repositories.AccountRepository2.MinimalAccountBalance
+import scalasql.*
+import scalasql.PostgresDialect.*
+import scalasql.core.*
 import scalikejdbc.*
 
 import java.time.Instant
 import java.util.UUID
+import scala.util.Failure
+import scala.util.Success
 import scala.util.Try
-import scalasql.core.*
-import scalasql.*
-import scalasql.PostgresDialect.*
-import scala.util.{Failure, Success}
-import api.models.GoalAccount
-import api.models.AssignedAmount
-import api.repositories.AccountRepository2.MinimalAccountBalance
 
 case class GoalTable[T[_]](
     id: T[UUID],

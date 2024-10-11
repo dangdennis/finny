@@ -9,10 +9,10 @@ import api.repositories.GoalRepository
 import api.repositories.PlaidItemRepository
 import api.repositories.ProfileRepository
 import api.repositories.TransactionRepository
+import scalasql.*
 import scalikejdbc.*
 
 import scala.util.Try
-import scalasql.*
 
 object UserDeletionService:
   def deleteUserEverything(userId: UserId)(using
