@@ -1,6 +1,11 @@
 package api.services
 
 import api.common.*
+import api.models.FinalyticKeys
+import api.models.UserId
+import api.repositories.GoalRepository
+import api.repositories.GoalRepository.getAssignedBalanceOnRetirementGoal
+import api.repositories.ProfileRepository
 import scalasql.*
 import scalasql.core.*
 import scalasql.core.SqlStr.*
@@ -9,11 +14,6 @@ import java.util.UUID
 import scala.util.Try
 
 import PostgresDialect.*
-import api.models.UserId
-import api.models.FinalyticKeys
-import api.repositories.ProfileRepository
-import api.repositories.GoalRepository
-import api.repositories.GoalRepository.getAssignedBalanceOnRetirementGoal
 
 case class FinalyticsTable[T[_]](
     id: T[UUID],

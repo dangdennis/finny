@@ -2,16 +2,16 @@ package api
 
 import api.common.*
 import api.database.DatabaseJdbc
+import api.database.DatabaseScalaSql
 import api.jobs.Jobs
 import api.routes.Routes
 import io.helidon.webserver.WebServer
 import io.helidon.webserver.accesslog.AccessLogFeature
+import scalasql.DbClient
 import sttp.tapir.*
 import sttp.tapir.server.nima.NimaServerInterpreter
 
 import Environment.*
-import api.database.DatabaseScalaSql
-import scalasql.DbClient
 
 @main
 def main: Unit =

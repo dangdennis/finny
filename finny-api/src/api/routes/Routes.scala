@@ -8,6 +8,7 @@ import api.repositories.ProfileRepository
 import com.auth0.jwt.*
 import com.auth0.jwt.algorithms.Algorithm
 import io.circe.generic.auto.*
+import scalasql.*
 import sttp.shared.Identity
 import sttp.tapir.*
 import sttp.tapir.json.circe.*
@@ -19,7 +20,6 @@ import java.util.UUID
 import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
-import scalasql.*
 
 object Routes:
   def createRoutes(

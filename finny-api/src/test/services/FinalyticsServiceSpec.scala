@@ -1,21 +1,16 @@
 package test.services
 
+import api.common.Environment
 import api.common.Environment.DatabaseConfig
+import api.database.DatabaseJdbc
 import api.database.DatabaseScalaSql
-import api.services.FinalyticsService
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.EitherValues
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import scalasql.*
-
-import java.util.UUID
-import api.models.FinalyticKeys
-import api.services.ExpenseCalculation
 import scalikejdbc.DBSession
-import api.database.DatabaseJdbc
-import api.common.Environment
 
 // To run this test, run `docker compose up` and then `make restore-prod-db`.
 // This ensures we have a database with prod data.

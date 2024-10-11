@@ -348,50 +348,62 @@ object PlaidService:
   def getInvestmentTransactions(
       client: PlaidApi,
       itemId: PlaidItemId
-  ): Either[AppError, InvestmentsTransactionsGetResponse] = PlaidItemRepository
-    .getById(itemId.toUUID)
-    .flatMap(plaidItem =>
-      val today = Time.nowUtc()
-      val yearAgo = today.minusYears(2)
-      val req = InvestmentsTransactionsGetRequest()
-        .accessToken(plaidItem.plaidAccessToken)
-        .startDate(yearAgo.toLocalDate())
-        .endDate(today.toLocalDate())
-      handlePlaidResponse(
-        Try(client.investmentsTransactionsGet(req).execute()),
-        respBody =>
-          respBody.left
-            .map(error =>
-              PlaidApiEventRepository.create(
-                PlaidApiEventCreateInput(
-                  userId = Some(plaidItem.userId),
-                  itemId = Some(itemId.toUUID),
-                  plaidMethod = "investmentsTransactionsGet",
-                  arguments = Map(),
-                  requestId = Some(error.requestId),
-                  errorType = Some(error.errorType),
-                  errorCode = Some(error.errorCode)
-                )
-              )
+  ): Either[AppError, InvestmentsTransactionsGetResponse] =
+    for
+      plaidItem <- PlaidItemRepository.getById(itemId.toUUID)
+      response <- fetchInvestmentTransactions(client, plaidItem)
+    yield response
+
+  private def fetchInvestmentTransactions(
+      client: PlaidApi,
+      plaidItem: PlaidItem
+  ): Either[AppError, InvestmentsTransactionsGetResponse] =
+    val today = Time.nowUtc()
+    val twoYearsAgo = today.minusYears(2)
+    val req = InvestmentsTransactionsGetRequest()
+      .accessToken(plaidItem.plaidAccessToken)
+      .startDate(twoYearsAgo.toLocalDate())
+      .endDate(today.toLocalDate())
+
+    def createPlaidApiEvent(
+        plaidItem: PlaidItem,
+        req: InvestmentsTransactionsGetRequest
+    )(
+        respBody: Either[PlaidError, InvestmentsTransactionsGetResponse]
+    ): Unit =
+      respBody match
+        case Left(error) =>
+          PlaidApiEventRepository.create(
+            PlaidApiEventCreateInput(
+              userId = Some(plaidItem.userId),
+              itemId = Some(plaidItem.id.toUUID),
+              plaidMethod = "investmentsTransactionsGet",
+              arguments = Map(),
+              requestId = Some(error.requestId),
+              errorType = Some(error.errorType),
+              errorCode = Some(error.errorCode)
             )
-            .map(body =>
-              PlaidApiEventRepository.create(
-                PlaidApiEventCreateInput(
-                  userId = Some(plaidItem.userId),
-                  itemId = Some(itemId.toUUID),
-                  plaidMethod = "investmentsTransactionsGet",
-                  arguments = Map(
-                    "startDate" -> req.getStartDate().toString,
-                    "endDate" -> req.getEndDate().toString,
-                    "itemId" -> plaidItem.id.toString
-                  ),
-                  requestId = Some(body.getRequestId()),
-                  errorType = None,
-                  errorCode = None
-                )
-              )
+          )
+        case Right(body) =>
+          PlaidApiEventRepository.create(
+            PlaidApiEventCreateInput(
+              userId = Some(plaidItem.userId),
+              itemId = Some(plaidItem.id.toUUID),
+              plaidMethod = "investmentsTransactionsGet",
+              arguments = Map(
+                "startDate" -> req.getStartDate().toString,
+                "endDate" -> req.getEndDate().toString,
+                "itemId" -> plaidItem.id.toString
+              ),
+              requestId = Some(body.getRequestId()),
+              errorType = None,
+              errorCode = None
             )
-      )
+          )
+
+    handlePlaidResponse(
+      Try(client.investmentsTransactionsGet(req).execute()),
+      createPlaidApiEvent(plaidItem, req)
     )
 
   def getInvestmentHoldings(

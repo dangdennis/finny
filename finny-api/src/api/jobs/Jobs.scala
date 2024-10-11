@@ -5,8 +5,8 @@ import api.common.Logger
 import api.models.PlaidItemId
 import api.models.UserId
 import api.services.PlaidSyncService
-import api.services.UserDeletionService
 import api.services.StartWorkerService
+import api.services.UserDeletionService
 import cats.syntax.all.*
 import com.rabbitmq.client.Channel
 import com.rabbitmq.client.Connection
@@ -16,11 +16,11 @@ import io.circe.*
 import io.circe.generic.semiauto.*
 import io.circe.parser.*
 import io.circe.syntax.*
+import scalasql.*
 
 import java.util.UUID
 import scala.concurrent.ExecutionContext
 import scala.util.Try
-import scalasql.*
 
 object Jobs:
   val jobConnection: Connection = LavinMqClient.createConnection()

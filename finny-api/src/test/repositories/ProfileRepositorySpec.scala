@@ -1,11 +1,11 @@
 package test.repositories
 
+import api.common.Environment
+import api.database.DatabaseScalaSql
 import api.repositories.ProfileRepository
 import org.scalatest.flatspec.AnyFlatSpec
-import test.helpers.*
 import scalasql.*
-import api.database.DatabaseScalaSql
-import api.common.Environment
+import test.helpers.*
 
 class ProfileRepositorySpec extends TestInfra:
   override protected def beforeAll(): Unit = super.beforeAll()
