@@ -47,9 +47,7 @@ object PlaidSyncService:
       Retry.decorateRunnable(
         retry,
         () =>
-          Logger.root.info(
-            s"Syncing transactions and accounts for item: $itemId"
-          )
+          Logger.root.info(s"Syncing transactions and accounts for item: $itemId")
           (
             for
               item <- PlaidItemRepository.getById(itemId.toUUID)
@@ -83,29 +81,32 @@ object PlaidSyncService:
       )
     )
 
-    Future {
-      decoratedTask.run()
-    }.onComplete {
+    val result = for {
+      _ <- Future(decoratedTask.run())
+      _ <- Future.successful(())
+    } yield ()
+
+    result.transform { 
       case Success(_) =>
-        Logger.root.info(s"Sync for item ${itemId} completed successfully.")
+        Logger.root.info(s"Sync for item $itemId completed successfully.")
+        Success(())
       case Failure(ex) =>
-        Logger.root.error(s"Sync for item ${itemId} failed.", ex)
+        Logger.root.error(s"Sync for item $itemId failed.", ex)
+        Failure(ex)
     }
   }
 
-  def syncAccounts(item: PlaidItem) = PlaidService
-    .getAccounts(PlaidService.makePlaidClientFromEnv(), item)
-    .map(accountsResp =>
-      accountsResp.getAccounts.asScala.map(account =>
-        upsertAccount(item, account)
-      )
-    )
+  def syncAccounts(item: PlaidItem): Either[AppError, List[Unit]] = for {
+    accountsResp <- PlaidService.getAccounts(PlaidService.makePlaidClientFromEnv(), item)
+    results <- Right(accountsResp.getAccounts.asScala.map(account => upsertAccount(item, account)).toList)
+  } yield results
 
-  def syncHistorical(itemId: PlaidItemId) = PlaidItemRepository
-    .updateTransactionCursor(itemId = itemId.toUUID, cursor = None)
-    .map { _ =>
-      sync(itemId)
-    }
+  def syncHistorical(itemId: PlaidItemId): Either[AppError, Future[Unit]] = 
+    for {
+      item <- PlaidItemRepository.getById(itemId.toUUID)
+      _ <- PlaidItemRepository.updateTransactionCursor(itemId = itemId.toUUID, cursor = None)
+      _ <- syncInvestmentAccounts(item)
+    } yield sync(itemId)
 
   def runPlaidSyncPeriodically(): Unit =
     while true do
@@ -193,9 +194,11 @@ object PlaidSyncService:
       item
     ) match
       case Left(appError) => handleSyncError(item, appError)
-      case Right(resp)    => processInvestmentResponse(item, resp)
+      case Right(resp)    => processInvestmentHoldingsResponse(item, resp)
+    
+    // todo: getInvestmentTransactions and sync
 
-  private def processInvestmentResponse(
+  private def processInvestmentHoldingsResponse(
       item: PlaidItem,
       resp: InvestmentsHoldingsGetResponse
   ): Either[AppError, Unit] =
