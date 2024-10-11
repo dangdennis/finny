@@ -35,11 +35,9 @@ object FinalyticsService:
   ): Either[AppError, Int] =
     val annualInterestRate = 0.08
     for
-      profile <- ProfileRepository.getProfile(userId)
       fv <- getFreedomFutureValueOfCurrentExpenses(expCalc, userId)
       pv <- GoalRepository.getAssignedBalanceOnRetirementGoal(userId)
       pmt <- calculateActualSavingsThisMonth(userId)
-      currentAge <- Right(profile.age.getOrElse(0))
     yield calculatePeriodFromFutureValue(fv, pv, pmt, annualInterestRate)
 
   end getActualRetirementAge

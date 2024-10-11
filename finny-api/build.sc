@@ -41,7 +41,8 @@ trait CommonModule
     ivy"io.circe:circe-parser_3:0.14.9",
     ivy"io.helidon.webserver:helidon-webserver-access-log:4.0.11",
     ivy"com.lihaoyi::scalasql:0.1.9",
-    ivy"com.zaxxer:HikariCP:6.0.0"
+    ivy"com.zaxxer:HikariCP:6.0.0",
+    ivy"org.scala-lang::toolkit:0.1.7"
   )
 }
 
@@ -64,7 +65,7 @@ object test extends TestModule.ScalaTest with CommonModule {
     super.ivyDeps() ++
       Agg(
         ivy"com.softwaremill.sttp.tapir::tapir-sttp-stub-server:1.10.8",
-        ivy"org.scalatest::scalatest:3.2.18",
+        ivy"org.scalatest::scalatest:3.2.18"
         // ivy"com.dimafeng::testcontainers-scala-scalatest:0.41.4",
         // ivy"org.testcontainers:testcontainers:1.19.8",
         // ivy"com.dimafeng::testcontainers-scala-postgresql:0.41.4"
