@@ -20,7 +20,6 @@ import 'src/connections/connections_service.dart';
 import 'src/powersync/powersync.dart';
 import 'src/settings/settings_controller.dart';
 import 'src/settings/settings_service.dart';
-import 'src/transactions/transactions_controller.dart';
 
 void main() async {
   Logger.root.level = Level.INFO;
@@ -76,9 +75,6 @@ void main() async {
     accountService: accountsService,
     profileService: profileService,
   );
-  final transactionsController = TransactionsController(
-    appDb: appDb,
-  );
   final settingsController = SettingsController(
     profileService: profileService,
     settingsService: settingsService,
@@ -108,7 +104,6 @@ void main() async {
                   goalsController: goalsController,
                   onboardingController: onboardingController,
                   settingsController: settingsController,
-                  transactionsController: transactionsController,
                 ),
               ),
             ));
@@ -124,7 +119,6 @@ void main() async {
           goalsController: goalsController,
           onboardingController: onboardingController,
           settingsController: settingsController,
-          transactionsController: transactionsController,
         ),
       ),
     );

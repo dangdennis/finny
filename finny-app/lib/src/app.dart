@@ -12,9 +12,6 @@ import 'package:finny/src/goals/goals_new_form_view.dart';
 import 'package:finny/src/onboarding/onboarding_controller.dart';
 import 'package:finny/src/settings/settings_controller.dart';
 import 'package:finny/src/settings/settings_view.dart';
-import 'package:finny/src/transactions/transaction_details_view.dart';
-import 'package:finny/src/transactions/transaction_list_view.dart';
-import 'package:finny/src/transactions/transactions_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
@@ -28,13 +25,11 @@ class MyApp extends StatelessWidget {
       required this.connectionsController,
       required this.goalsController,
       required this.settingsController,
-      required this.transactionsController,
       required this.finalyticsController,
       required this.onboardingController});
 
   final SettingsController settingsController;
   final AccountsController accountsController;
-  final TransactionsController transactionsController;
   final ConnectionsController connectionsController;
   final GoalsController goalsController;
   final FinalyticsController finalyticsController;
@@ -93,7 +88,6 @@ class MyApp extends StatelessWidget {
                   goalsController: goalsController,
                   finalyticsController: finalyticsController,
                   settingsController: settingsController,
-                  transactionsController: transactionsController,
                 );
               } else {
                 return LoginView(authProvider: authProvider);
@@ -139,12 +133,6 @@ class MyApp extends StatelessWidget {
                       authProvider: authProvider,
                       settingsController: settingsController,
                     );
-                  case TransactionDetailsView.routeName:
-                    return const TransactionDetailsView();
-                  case TransactionListView.routeName:
-                    return TransactionListView(
-                      transactionsController: transactionsController,
-                    );
                   default:
                     return LoginView(
                       authProvider: authProvider,
@@ -166,7 +154,6 @@ class MainView extends StatefulWidget {
     required this.connectionsController,
     required this.goalsController,
     required this.settingsController,
-    required this.transactionsController,
     required this.finalyticsController,
     required this.onboardingController,
     required this.authProvider,
@@ -175,7 +162,6 @@ class MainView extends StatefulWidget {
   final ConnectionsController connectionsController;
   final GoalsController goalsController;
   final SettingsController settingsController;
-  final TransactionsController transactionsController;
   final FinalyticsController finalyticsController;
   final OnboardingController onboardingController;
   final AccountsController accountsController;
@@ -203,9 +189,6 @@ class _MainViewState extends State<MainView> {
       AccountListView(
         accountsController: widget.accountsController,
       ),
-      TransactionListView(
-        transactionsController: widget.transactionsController,
-      ),
       SettingsView(
         settingsController: widget.settingsController,
         authProvider: widget.authProvider,
@@ -232,10 +215,6 @@ class _MainViewState extends State<MainView> {
           BottomNavigationBarItem(
             icon: Icon(Icons.layers),
             label: 'Accounts',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.credit_card),
-            label: 'Transactions',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),

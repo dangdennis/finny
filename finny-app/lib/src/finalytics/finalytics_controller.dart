@@ -25,11 +25,13 @@ class FinalyticsController {
     return _finalytics.calculateActualSavingsAndInvestmentsThisMonth(exp);
   }
 
-  Future<double> calculateActualSavingsAtRetirement(ExpenseCalculation exp) async {
+  Future<double> calculateActualSavingsAtRetirement(
+      ExpenseCalculation exp) async {
     return _finalytics.calculateActualSavingsAtRetirement(exp);
   }
 
-  Future<double> calculateExpectedSavingsAtRetirement(ExpenseCalculation exp) async {
+  Future<double> calculateExpectedSavingsAtRetirement(
+      ExpenseCalculation exp) async {
     return _finalytics.calculateExpectedSavingsAtRetirement(exp);
   }
 }
