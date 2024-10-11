@@ -47,7 +47,7 @@ func (s *FinalyticsService) GetActualRetirementAge(userId uuid.UUID, calcType Ex
 
 	pv := 0.0
 
-	pmt, err := s.GetActualSavingsThisMonth(userId, time.Now())
+	pmt, err := s.GetContributionsThisMonth(userId, time.Now())
 	if err != nil {
 		return 0, nil
 	}
@@ -210,7 +210,7 @@ type ActualSavingsThisMonthResult struct {
 	NetBalanceChange float64 `gorm:"column:net_balance_change"`
 }
 
-func (s *FinalyticsService) GetActualSavingsThisMonth(userID uuid.UUID, month time.Time) (float64, error) {
+func (s *FinalyticsService) GetContributionsThisMonth(userID uuid.UUID, month time.Time) (float64, error) {
 	retirementGoal, err := s.goalRepo.GetRetirementGoal(userID)
 	if err != nil || retirementGoal == nil {
 		return 0.0, err
@@ -345,7 +345,7 @@ func (s *FinalyticsService) MakeAccountBalancesAtStartOfMonthQuery(userID uuid.U
 }
 
 // todo: implement
-func (s *FinalyticsService) GetActualInvestmentThisMonth(userId uuid.UUID) (float64, error) {
+func (s *FinalyticsService) GetInvestmentContributionsThisMonth(userId uuid.UUID) (float64, error) {
 	return 0.0, fmt.Errorf("Not implemented")
 }
 

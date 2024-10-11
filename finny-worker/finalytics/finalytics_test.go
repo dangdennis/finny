@@ -34,7 +34,7 @@ func TestFinalyticsService(t *testing.T) {
 	t.Run("GetActualSavingsThisMonth", func(t *testing.T) {
 		t.Skip()
 		testDate := time.Date(2023, time.September, 1, 0, 0, 0, 0, time.UTC)
-		savings, err := finalyticsSvc.GetActualSavingsThisMonth(userID, testDate)
+		savings, err := finalyticsSvc.GetContributionsThisMonth(userID, testDate)
 		assert.NoError(t, err)
 		assert.Equal(t, savings, 50)
 	})
