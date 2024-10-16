@@ -16,3 +16,8 @@ bacon
 ```
 cargo test
 ```
+
+
+# Deployment
+
+fly deploy
