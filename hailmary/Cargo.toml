@@ -1,67 +1,19 @@
-bench = []
-example = []
-
-[[bin]]
-path = "src/main.rs"
-name = "hailmary"
-plugin = false
-proc-macro = false
-edition = "2021"
-required-features = []
-
-[[test]]
-path = "tests/finalytics_tests.rs"
-name = "finalytics_tests"
-plugin = false
-proc-macro = false
-edition = "2021"
-required-features = []
-
-[[test]]
-path = "tests/profile_tests.rs"
-name = "profile_tests"
-plugin = false
-proc-macro = false
-edition = "2021"
-required-features = []
-
 [package]
 name = "hailmary"
+version = "0.1.0"
 edition = "2021"
-version = "0.0.1"
 
 [dependencies]
 anyhow = "1.0.89"
 axum = "0.6"
 chrono = "0.4.38"
 dotenvy = "0.15.7"
+serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+sqlx = { version = "0.6", features = ["runtime-tokio-native-tls", "postgres", "uuid", "json"] }
 thiserror = "1.0.64"
-
-[dependencies.serde]
-version = "1.0"
-features = ["derive"]
-
-[dependencies.sqlx]
-version = "0.6"
-features = ["runtime-tokio-native-tls", "postgres", "uuid", "json"]
-
-[dependencies.tokio]
-version = "1.28"
-features = ["full"]
-
-[dependencies.uuid]
-version = "1.11.0"
-features = ["v4"]
-
-[lib]
-path = "src/lib.rs"
-name = "hailmary"
-plugin = false
-proc-macro = false
-edition = "2021"
-required-features = []
-crate-type = ["rlib"]
+tokio = { version = "1.28", features = ["full"] }
+uuid = { version = "1.11.0", features = ["v4"] }
 
 [profile.dev.package.sqlx-macros]
 opt-level = 3
