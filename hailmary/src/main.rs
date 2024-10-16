@@ -1,12 +1,6 @@
-mod budget;
-mod config;
-mod database;
-mod error;
-mod finalytics;
-
-use crate::budget::Budget;
-use crate::config::Config;
-use crate::error::Result;
+use hailmary::budget::Budget;
+use hailmary::config::Config;
+use hailmary::error::Result;
 
 fn main() -> Result<()> {
     let config = Config::load()?;
