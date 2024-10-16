@@ -33,8 +33,8 @@ func NewFinalyticsService(db *gorm.DB, profileRepo *profile.ProfileRepository, g
 type ExpenseCalculation int
 
 const (
-	Last12Months ExpenseCalculation = iota
-	Average
+	Last12Months ExpenseCalculation = 0
+	Average                         = 1
 )
 
 func (s *FinalyticsService) GetActualRetirementAge(userId uuid.UUID, calcType ExpenseCalculation) (int32, error) {
@@ -66,7 +66,7 @@ func (s *FinalyticsService) GetFreedomFutureValueOfCurrentExpenses(userId uuid.U
 	switch exp {
 	case Last12Months:
 		flows, err := s.GetLast12MonthsInflowOutflow(userId)
-		return flows.Inflows, err
+		return flows.Outflows, err
 	case Average:
 		flows, err := s.GetAverageMonthlyInflowOutflow(userId)
 		return flows.Outflows * 12 / 0.04, err
@@ -80,7 +80,125 @@ type InflowOutflow struct {
 	Outflows float64 `gorm:"column:outflows"`
 }
 
+func (s *FinalyticsService) GetLast12MonthsInflow(userID uuid.UUID) (decimal.Decimal, error) {
+	var inflowsTotalStr string
+
+	// Inflows are negative, so we need to negate the result
+	regularTransactionsQuery := `
+			SELECT
+				(- sum(amount))::text AS total_inflows
+			FROM
+					transactions
+					JOIN accounts ON transactions.account_id = accounts.id
+			WHERE
+					date >= (CURRENT_DATE - INTERVAL '12 months')
+					AND amount < 0
+					AND category NOT IN ('TRANSFER_IN', 'TRANSFER_OUT')
+					AND pending = false
+					AND accounts.user_id = ?;
+  `
+
+	err := s.db.Raw(regularTransactionsQuery, userID).Scan(&inflowsTotalStr).Error
+	if err != nil {
+		return decimal.Zero, err
+	}
+
+	inflowsTotal, err := decimal.NewFromString(inflowsTotalStr)
+	if err != nil {
+		return decimal.Zero, err
+	}
+
+	transferTransactionsQuery := `
+        SELECT
+        		COALESCE(SUM(CASE WHEN category = 'TRANSFER_IN' THEN abs(amount) ELSE -(abs(amount)) END), 0)::text AS net_transfer
+        FROM
+        		transactions
+        JOIN
+        		accounts ON transactions.account_id = accounts.id
+        WHERE
+            date >= (CURRENT_DATE - INTERVAL '12 months')
+            AND date <= CURRENT_DATE
+            AND category IN ('TRANSFER_IN', 'TRANSFER_OUT')
+            AND pending = false
+            AND accounts.user_id = ?
+    `
+
+	err = s.db.Raw(transferTransactionsQuery, userID).Scan(&inflowsTotalStr).Error
+	if err != nil {
+		return decimal.Zero, err
+	}
+
+	netTransfer, err := decimal.NewFromString(inflowsTotalStr)
+	if err != nil {
+		return decimal.Zero, err
+	}
+
+	if netTransfer.GreaterThan(decimal.Zero) {
+		inflowsTotal = inflowsTotal.Add(netTransfer)
+	}
+
+	return inflowsTotal, nil
+}
+
+func (s *FinalyticsService) GetLast12MonthsOutflowflow(userID uuid.UUID) (decimal.Decimal, error) {
+	var outflowsTotalStr string
+
+	regularTransactionsQuery := `
+        SELECT
+        		COALESCE(SUM(CASE WHEN amount > 0 THEN -(amount) ELSE 0 END), 0)::text AS total_inflows
+        FROM
+        		transactions
+        JOIN
+        		accounts ON transactions.account_id = accounts.id
+        WHERE
+            date >= (CURRENT_DATE - INTERVAL '12 months')
+            AND category NOT IN ('TRANSFER_IN', 'TRANSFER_OUT')
+            AND accounts.user_id = ?
+    `
+
+	err := s.db.Raw(regularTransactionsQuery, userID).Scan(&outflowsTotalStr).Error
+	if err != nil {
+		return decimal.Zero, err
+	}
+
+	inflowTotal, err := decimal.NewFromString(outflowsTotalStr)
+	if err != nil {
+		return decimal.Zero, err
+	}
+
+	transferTransactionsQuery := `
+        SELECT
+        		COALESCE(SUM(CASE WHEN category = 'TRANSFER_IN' THEN abs(amount) ELSE -(abs(amount)) END), 0)::text AS net_transfer
+        FROM
+        		transactions
+        JOIN
+        		accounts ON transactions.account_id = accounts.id
+        WHERE
+            date >= (CURRENT_DATE - INTERVAL '12 months')
+            AND category IN ('TRANSFER_IN', 'TRANSFER_OUT')
+            AND accounts.user_id = ?
+    `
+
+	err = s.db.Raw(transferTransactionsQuery, userID).Scan(&outflowsTotalStr).Error
+	if err != nil {
+		return decimal.Zero, err
+	}
+
+	netTransfer, err := decimal.NewFromString(outflowsTotalStr)
+	if err != nil {
+		return decimal.Zero, err
+	}
+
+	if netTransfer.GreaterThan(decimal.Zero) {
+		inflowTotal = inflowTotal.Add(netTransfer)
+	}
+
+	return inflowTotal, nil
+}
+
 func (s *FinalyticsService) GetLast12MonthsInflowOutflow(userID uuid.UUID) (InflowOutflow, error) {
+	// todo calculate inflows separately from outflows
+	//
 	sqlParams := map[string]interface{}{
 		"userID": userID,
 	}
