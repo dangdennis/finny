@@ -1,5 +1,6 @@
 mod budget;
 mod config;
+mod database;
 mod error;
 mod finalytics;
 
