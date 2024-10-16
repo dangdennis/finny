@@ -2,11 +2,19 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum Error {
-    #[error("IO error: {0}")]
-    Io(#[from] std::io::Error),
+    #[error("Database error: {0}")]
+    DatabaseError(#[from] sqlx::Error),
+
     #[error("JSON error: {0}")]
-    Json(#[from] serde_json::Error),
-    // Add more error types as needed
+    JsonError(#[from] serde_json::Error),
+
+    #[error("IO error: {0}")]
+    IoError(#[from] std::io::Error),
+
+    #[error("Parse error: {0}")]
+    UuidParseError(uuid::Error)
+
+    // Add other error variants as needed
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
