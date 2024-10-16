@@ -23,7 +23,7 @@ struct Category {
 
 #[derive(Serialize, Deserialize)]
 struct BudgetSql {
-    data: Budget
+    data: Budget,
 }
 
 impl Budget {
@@ -64,14 +64,13 @@ impl Budget {
     }
 
     pub async fn from_database(pool: &PgPool, user_id: Uuid) -> Result<Budget> {
-        let row =
-            sqlx::query("SELECT categories_json FROM ynab_raw WHERE user_id = $1")
-                .bind(user_id)
-                .fetch_one(pool) 
-                .await?;
+        let row = sqlx::query("SELECT categories_json FROM ynab_raw WHERE user_id = $1")
+            .bind(user_id)
+            .fetch_one(pool)
+            .await?;
 
         let categories_json: serde_json::Value = row.try_get("categories_json")?;
-                
+
         let budget_data: BudgetSql = serde_json::from_value(categories_json)?;
 
         Ok(Budget {

@@ -12,8 +12,10 @@ pub enum Error {
     IoError(#[from] std::io::Error),
 
     #[error("Parse error: {0}")]
-    UuidParseError(uuid::Error)
+    UuidParseError(uuid::Error),
 
+    #[error("Error: {0}")]
+    ServerError(#[from] anyhow::Error),
     // Add other error variants as needed
 }
 
