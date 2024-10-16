@@ -14,14 +14,14 @@ impl Finalytics {
 
     /// If pmt and pv are negative - money is leaving the person because they're investing -
     /// then vf should be positive because money is going back to the person.
-    pub fn future_value(&self, input: FutureValueInput) -> f64 {
+    pub fn fv(&self, input: FutureValueInput) -> f64 {
         let growth_factor = (1.0 + input.rate).powi(input.years as i32);
         let fv = input.pv * growth_factor + input.pmt * (growth_factor - 1.0) / input.rate;
 
         -fv
     }
 
-    pub fn payment_from_future_value(&self, input: PaymentFromFutureValueInput) -> f64 {
+    pub fn pmt(&self, input: PaymentFromFutureValueInput) -> f64 {
         let n = input.years as f64;
         let r = input.rate; // This is already in decimal form (e.g., 0.02 for 2%)
         let fv = input.fv;
@@ -38,6 +38,37 @@ impl Finalytics {
         // The payment should have the opposite sign of FV
         -payment.copysign(fv)
     }
+
+    pub fn nper(&self, input: PeriodFromFutureValueInput) -> f64 {
+        let fv = input.fv;
+        let pv = input.pv;
+        let pmt = input.pmt;
+        let rate = input.rate;
+
+        if pmt > 0.0 {
+            return 0.0;
+        }
+
+        if pv >= 0.0 && pmt >= 0.0 {
+            return 0.0;
+        }
+
+        if rate < 0.0 {
+            return 0.0;
+        }
+
+        if rate == 0.0 {
+            if pmt == 0.0 {
+                return 0.0;
+            }
+
+            return -(fv + pv) / pmt;
+        }
+
+        let z = pmt / rate;
+
+        ((-fv + z) / (pv + z)).ln() / (1.0 + rate).ln()
+    }
 }
 
 pub struct PaymentFromFutureValueInput {
@@ -52,4 +83,11 @@ pub struct FutureValueInput {
     pub pmt: f64,
     pub rate: f64,
     pub years: i8,
+}
+
+pub struct PeriodFromFutureValueInput {
+    pub fv: f64,
+    pub pv: f64,
+    pub pmt: f64,
+    pub rate: f64,
 }
