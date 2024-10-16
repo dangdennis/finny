@@ -2,7 +2,7 @@ use axum::{response::IntoResponse, routing::get, Router};
 use hailmary::budget::Budget;
 use hailmary::config::Config;
 use hailmary::database;
-use hailmary::error::{Error, Result};
+use hailmary::error::Result;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -25,7 +25,7 @@ async fn main() -> Result<()> {
     axum::Server::bind(&"0.0.0.0:8080".parse().unwrap()) // Listening on port 8080
         .serve(app.into_make_service())
         .await
-        .map_err(|e| Error::ServerError(e.into()))?;
+        .unwrap();
 
     Ok(())
 }
