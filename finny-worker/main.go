@@ -6,12 +6,11 @@ import (
 	"os"
 
 	"github.com/finny/worker/account"
+	"github.com/finny/worker/budget"
 	"github.com/finny/worker/database"
 	"github.com/finny/worker/finalytics"
 	"github.com/finny/worker/goal"
-	"github.com/finny/worker/plaid_item"
 	"github.com/finny/worker/profile"
-	"github.com/finny/worker/queue"
 	"github.com/finny/worker/transaction"
 
 	"github.com/joho/godotenv"
@@ -25,11 +24,6 @@ func main() {
 		log.Println(".env file loaded successfully")
 	}
 
-	lavinMqUrl := os.Getenv("LAVIN_MQ_URL")
-	if lavinMqUrl == "" {
-		log.Fatal("LAVIN_MQ_URL is not set")
-	}
-
 	databaseUrl := os.Getenv("DATABASE_URL")
 	if databaseUrl == "" {
 		log.Fatal("DATABASE_URL is not set")
@@ -40,27 +34,14 @@ func main() {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 
-	qm, err := queue.NewLavinMqQueue(lavinMqUrl)
-	if err != nil {
-		log.Fatalf("Failed to connect to LavinMQ: %v", err)
-	}
-	defer qm.Close()
-
 	accountRepo := account.NewAccountRepository(db)
 	transactionRepo := transaction.NewTransactionRepository(db)
 	goalRepo := goal.NewGoalRepository(db, accountRepo)
 	profileRepo := profile.NewProfileRepository(db)
-	plaidItemRepo := plaid_item.NewPlaidItemRepository(db)
-	finalyticsSvc := finalytics.NewFinalyticsService(db, profileRepo, goalRepo, transactionRepo)
-
-	workerManager, err := finalytics.NewWorkerManager(db, qm, finalyticsSvc, plaidItemRepo)
-	if err != nil {
-		log.Fatalf("Failed to open a channel: %v", err)
-	}
-	defer workerManager.Close()
+	_ = finalytics.NewFinalyticsService(db, profileRepo, goalRepo, transactionRepo)
+	_ = budget.NewBudgetService(db)
 
 	http.HandleFunc("POST /start", func(w http.ResponseWriter, r *http.Request) {
-		workerManager.StartWorker()
 		w.Write([]byte("Worker started"))
 	})
 
