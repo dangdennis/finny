@@ -15,6 +15,7 @@ require (
 )
 
 require (
+	github.com/brunomvsouza/ynab.go v1.4.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/supabase-community/functions-go v0.0.0-20220927045802-22373e6cb51d // indirect
