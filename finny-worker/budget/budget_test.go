@@ -1,38 +1,74 @@
 package budget
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 	"testing"
 
 	"math/rand"
 
+	"github.com/brunomvsouza/ynab.go/api/category"
 	"github.com/finny/worker/database"
 	"github.com/finny/worker/supabaseclient"
-	"github.com/stretchr/testify/assert"
+	"github.com/finny/worker/ynabclient"
+	"github.com/stretchr/testify/require"
 	"github.com/supabase-community/gotrue-go/types"
 )
 
 func TestBudgetService(t *testing.T) {
 	testDB, err := database.NewTestDatabase()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
-	sbc, err := supabaseclient.NewTestSupabase()
-	assert.NoError(t, err)
+	t.Run("CalculateCashflow", func(t *testing.T) {
+		sbc, err := supabaseclient.NewTestSupabase()
+		require.NoError(t, err)
 
-	userRes, err := sbc.Auth.Signup(types.SignupRequest{
-		Email:    generateRandomEmail(),
-		Password: generateRandomPassword(8),
+		t.Run("FromFile", func(t *testing.T) {
+			userRes, err := sbc.Auth.Signup(types.SignupRequest{
+				Email:    generateRandomEmail(),
+				Password: generateRandomPassword(8),
+			})
+			require.NoError(t, err)
+			require.NotNil(t, userRes)
+
+			budgetService := NewBudgetService(testDB, ynabclient.NewYNABClient(""))
+			budget, err := budgetService.FromFile("../calc_fixtures/budget.json")
+			require.NoError(t, err)
+
+			ynabInOutflow, err := budgetService.CalculateCashflow(budget, []string{"Credit Card Payments", "Internal Master Category"})
+			require.Equal(t, 2689.35, ynabInOutflow.inflow)
+			require.Equal(t, -8312.81, ynabInOutflow.outflow)
+		})
+
+		t.Run("FromDatabase", func(t *testing.T) {
+			userRes, err := sbc.Auth.Signup(types.SignupRequest{
+				Email:    generateRandomEmail(),
+				Password: generateRandomPassword(8),
+			})
+			require.NoError(t, err)
+			require.NotNil(t, userRes)
+
+			categoriesJson, err := os.ReadFile("../calc_fixtures/budget.json")
+			require.NoError(t, err)
+
+			var groupsWithCategories []*category.GroupWithCategories
+			err = json.Unmarshal(categoriesJson, &groupsWithCategories)
+			require.NoError(t, err)
+
+			budgetService := NewBudgetService(testDB, ynabclient.NewYNABClient(""))
+
+			err = budgetService.CreateYNABData(testDB, userRes.ID, groupsWithCategories, 0)
+			require.NoError(t, err)
+
+			budget, err := budgetService.FromDatabase(userRes.ID)
+			require.NoError(t, err)
+
+			ynabInOutflow, err := budgetService.CalculateCashflow(budget, []string{"Credit Card Payments", "Internal Master Category"})
+			require.Equal(t, 2689.35, ynabInOutflow.inflow)
+			require.Equal(t, -8312.81, ynabInOutflow.outflow)
+		})
 	})
-	assert.NoError(t, err)
-	assert.NotNil(t, userRes)
-
-	budgetService := NewBudgetService(testDB)
-	budget, err := budgetService.FromFile("../calc_fixtures/budget.json")
-	assert.NoError(t, err)
-
-	ynabInOutflow, err := budgetService.CalculateSpending(budget, []string{"Credit Card Payments", "Internal Master Category"})
-	assert.Equal(t, 2689.35, ynabInOutflow.inflow)
-	assert.Equal(t, -8304.97, ynabInOutflow.outflow)
 }
 
 func generateRandomPassword(length int) string {
