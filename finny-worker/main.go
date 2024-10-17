@@ -12,6 +12,7 @@ import (
 	"github.com/finny/worker/goal"
 	"github.com/finny/worker/profile"
 	"github.com/finny/worker/transaction"
+	"github.com/finny/worker/ynabclient"
 
 	"github.com/joho/godotenv"
 )
@@ -29,6 +30,11 @@ func main() {
 		log.Fatal("DATABASE_URL is not set")
 	}
 
+	ynabSecret := os.Getenv("YNAB_SECRET")
+	if ynabSecret == "" {
+		log.Fatal("YNAB_SECRET is not set")
+	}
+
 	db, err := database.NewDatabase(databaseUrl)
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
@@ -38,8 +44,9 @@ func main() {
 	transactionRepo := transaction.NewTransactionRepository(db)
 	goalRepo := goal.NewGoalRepository(db, accountRepo)
 	profileRepo := profile.NewProfileRepository(db)
+	ynabClient := ynabclient.NewYNABClient(ynabSecret)
 	_ = finalytics.NewFinalyticsService(db, profileRepo, goalRepo, transactionRepo)
-	_ = budget.NewBudgetService(db)
+	_ = budget.NewBudgetService(db, ynabClient)
 
 	http.HandleFunc("POST /start", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Worker started"))

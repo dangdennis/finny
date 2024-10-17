@@ -14,14 +14,14 @@ import (
 	"github.com/finny/worker/transaction"
 	"github.com/google/uuid"
 	"github.com/rabbitmq/amqp091-go"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestProcessFinalyticMessage(t *testing.T) {
 	t.SkipNow()
 
 	db, err := database.NewTestCalcDatabase()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	profileRepo := profile.NewProfileRepository(db)
 	goalRepo := goal.NewGoalRepository(db, account.NewAccountRepository(db))
@@ -29,15 +29,15 @@ func TestProcessFinalyticMessage(t *testing.T) {
 	finalyticsService := NewFinalyticsService(db, profileRepo, goalRepo, transactionRepo)
 
 	qm, err := queue.NewTestQueueManager()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	plaidItemRepo := plaid_item.NewPlaidItemRepository(db)
 
 	wm, err := NewWorkerManager(db, qm, finalyticsService, plaidItemRepo, WithWaitTime(10*time.Second))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = wm.StartWorker()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	for i := 0; i < 10; i++ {
 		msg := FinalyticMessage{
@@ -51,12 +51,12 @@ func TestProcessFinalyticMessage(t *testing.T) {
 	time.Sleep(500 * time.Millisecond)
 
 	err = wm.Close()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func publishFinalyticsMessage(t *testing.T, ch *amqp091.Channel, msg FinalyticMessage) {
 	body, err := json.Marshal(msg)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = ch.Publish("",
 		FINALYTICS_QUEUE_NAME,
@@ -66,5 +66,5 @@ func publishFinalyticsMessage(t *testing.T, ch *amqp091.Channel, msg FinalyticMe
 			ContentType: "application/json",
 			Body:        body,
 		})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }

@@ -2,9 +2,28 @@ package ynabclient
 
 import (
 	"github.com/brunomvsouza/ynab.go"
+	"github.com/brunomvsouza/ynab.go/api"
+	"github.com/brunomvsouza/ynab.go/api/category"
+	"github.com/google/uuid"
 )
 
-func NewYNABClient(accessToken string) *ynab.ClientServicer {
-	c := ynab.NewClient(accessToken)
-	return &c
+type YNABClient struct {
+	client ynab.ClientServicer
+}
+
+// todo(dennis): get user's access token instead of using my personal access token
+func NewYNABClient(accessToken string) *YNABClient {
+	client := ynab.NewClient(accessToken)
+	return &YNABClient{client: client}
+}
+
+func (c *YNABClient) GetCategories(userID uuid.UUID, lastKnowledgeOfServer uint64) (*category.SearchResultSnapshot, error) {
+	var filter *api.Filter
+	if lastKnowledgeOfServer > 0 {
+		filter = &api.Filter{
+			LastKnowledgeOfServer: lastKnowledgeOfServer,
+		}
+	}
+
+	return c.client.Category().GetCategories("last-used", filter)
 }

@@ -8,12 +8,12 @@ import (
 	"github.com/finny/worker/goal"
 	"github.com/finny/worker/profile"
 	"github.com/finny/worker/transaction"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestFinalyticsService(t *testing.T) {
 	db, err := database.NewTestDatabase()
-	assert.NoError(t, err, "Failed to connect to database")
+	require.NoError(t, err, "Failed to connect to database")
 	accountRepo := account.NewAccountRepository(db)
 	profileRepo := profile.NewProfileRepository(db)
 	goalRepo := goal.NewGoalRepository(db, accountRepo)
@@ -51,8 +51,8 @@ func TestFinalyticsService(t *testing.T) {
 				pv:         tc.Pv,
 				fv:         tc.Fv,
 			})
-			assert.NoError(t, err)
-			assert.Equal(t, tc.ExpectedPmt, pmt)
+			require.NoError(t, err)
+			require.Equal(t, tc.ExpectedPmt, pmt)
 		}
 	})
 
@@ -88,8 +88,8 @@ func TestFinalyticsService(t *testing.T) {
 					pv:   tc.Pv,
 					fv:   tc.Fv,
 				})
-				assert.NoError(t, err)
-				assert.Equal(t, tc.ExpectedNper, pmt)
+				require.NoError(t, err)
+				require.Equal(t, tc.ExpectedNper, pmt)
 			}
 		})
 
@@ -124,7 +124,7 @@ func TestFinalyticsService(t *testing.T) {
 					pv:   tc.Pv,
 					fv:   tc.Fv,
 				})
-				assert.Error(t, err)
+				require.Error(t, err)
 			}
 		})
 	})
@@ -162,8 +162,8 @@ func TestFinalyticsService(t *testing.T) {
 					pv:         tc.Pv,
 					numPeriods: tc.NumPeriods,
 				})
-				assert.NoError(t, err)
-				assert.Equal(t, tc.ExpectedFv, fv)
+				require.NoError(t, err)
+				require.Equal(t, tc.ExpectedFv, fv)
 			}
 		})
 

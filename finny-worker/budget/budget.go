@@ -6,60 +6,75 @@ import (
 	"fmt"
 	"os"
 	"slices"
+	"time"
 
+	"github.com/brunomvsouza/ynab.go/api/category"
+	"github.com/finny/worker/ynabclient"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type BudgetService struct {
-	db *gorm.DB
+	db   *gorm.DB
+	ynab *ynabclient.YNABClient
 }
 
-func NewBudgetService(db *gorm.DB) *BudgetService {
+func NewBudgetService(db *gorm.DB, ynab *ynabclient.YNABClient) *BudgetService {
 	return &BudgetService{
-		db: db,
+		db:   db,
+		ynab: ynab,
 	}
 }
 
-type Budget struct {
-	CategoryGroups []CategoryGroup `json:"category_groups"`
+func (b *BudgetService) GetAndCreateYNABData(db *gorm.DB, userID uuid.UUID) error {
+	categories, err := b.ynab.GetCategories(userID, 0)
+	if err != nil {
+		return fmt.Errorf("failed to fetch categories: %w", err)
+	}
+
+	return b.CreateYNABData(db, userID, categories.GroupWithCategories, categories.ServerKnowledge)
 }
 
-type CategoryGroup struct {
-	Categories []Category `json:"categories"`
+func (b *BudgetService) CreateYNABData(db *gorm.DB, userID uuid.UUID, categories []*category.GroupWithCategories, serverKnowledge uint64) error {
+	categoriesJson, err := json.Marshal(categories)
+	if err != nil {
+		return fmt.Errorf("failed to marshal categories: %w", err)
+	}
+
+	var ynabRaw YnabRaw
+	result := db.Where("user_id = ?", userID).First(&ynabRaw)
+
+	if result.Error == gorm.ErrRecordNotFound {
+		ynabRaw = YnabRaw{
+			UserID:                          userID,
+			CategoriesJSON:                  categoriesJson,
+			CategoriesLastUpdated:           time.Now(),
+			CategoriesLastKnowledgeOfServer: int(serverKnowledge),
+		}
+		return db.Create(&ynabRaw).Error
+	} else if result.Error != nil {
+		return result.Error
+	}
+
+	ynabRaw.CategoriesJSON = categoriesJson
+	ynabRaw.CategoriesLastUpdated = time.Now()
+	ynabRaw.CategoriesLastKnowledgeOfServer = int(serverKnowledge)
+
+	return db.Save(&ynabRaw).Error
 }
 
-type Category struct {
-	Activity          float64 `json:"activity"`
-	CategoryGroupName string  `json:"category_group_name"`
-	Name              string  `json:"name"`
-}
-
-type BudgetJson struct {
-	Data Budget `json:"data"`
-}
-
-type BudgetSQL struct {
-	Data Budget `json:"data"`
-}
-
-type YNABInflowOutflow struct {
-	outflow float64
-	inflow  float64
-}
-
-func (b *BudgetService) CalculateSpending(budget *Budget, ignoredCategories []string) (YNABInflowOutflow, error) {
+func (b *BudgetService) CalculateCashflow(budget *Budget, ignoredCategories []string) (YNABInflowOutflow, error) {
 	var positiveCategorySum float64
 	var negativeCategorySum float64
 
 	for _, group := range budget.CategoryGroups {
 		for _, category := range group.Categories {
 			if category.Activity > 0.0 {
-				if !slices.Contains(ignoredCategories, category.CategoryGroupName) {
-					positiveCategorySum += category.Activity
+				if !slices.Contains(ignoredCategories, group.Name) {
+					positiveCategorySum += float64(category.Activity)
 				}
 			} else {
-				negativeCategorySum += category.Activity
+				negativeCategorySum += float64(category.Activity)
 			}
 		}
 	}
@@ -79,14 +94,14 @@ func (b *BudgetService) FromFile(path string) (*Budget, error) {
 		return nil, err
 	}
 
-	var budget BudgetJson
-	err = json.Unmarshal(jsonData, &budget)
+	var groupsWithCategories []category.GroupWithCategories
+	err = json.Unmarshal(jsonData, &groupsWithCategories)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Budget{
-		CategoryGroups: budget.Data.CategoryGroups,
+		CategoryGroups: groupsWithCategories,
 	}, nil
 }
 
@@ -107,15 +122,22 @@ func (b *BudgetService) FromDatabase(userID uuid.UUID) (*Budget, error) {
 		return nil, err
 	}
 
-	categoriesJSON := result.CategoriesJSON
-
-	var budgetSQL BudgetSQL
-	err = json.Unmarshal(categoriesJSON, &budgetSQL)
+	var groupsWithCategories []category.GroupWithCategories
+	err = json.Unmarshal(result.CategoriesJSON, &groupsWithCategories)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Budget{
-		CategoryGroups: budgetSQL.Data.CategoryGroups,
+		CategoryGroups: groupsWithCategories,
 	}, nil
+}
+
+type Budget struct {
+	CategoryGroups []category.GroupWithCategories
+}
+
+type YNABInflowOutflow struct {
+	outflow float64
+	inflow  float64
 }
