@@ -98,7 +98,8 @@ class FinalyticsService {
     return savings + investment;
   }
 
-  Future<double> calculateActualSavingsAtRetirement(ExpenseCalculation exp) async {
+  Future<double> calculateActualSavingsAtRetirement(
+      ExpenseCalculation exp) async {
     final profile = await profileService.getProfile();
     if (profile == null) {
       throw Exception('Profile not found');

@@ -365,45 +365,36 @@ object PlaidService:
       .startDate(twoYearsAgo.toLocalDate())
       .endDate(today.toLocalDate())
 
-    def createPlaidApiEvent(
-        plaidItem: PlaidItem,
-        req: InvestmentsTransactionsGetRequest
-    )(
-        respBody: Either[PlaidError, InvestmentsTransactionsGetResponse]
-    ): Unit =
-      respBody match
-        case Left(error) =>
-          PlaidApiEventRepository.create(
-            PlaidApiEventCreateInput(
-              userId = Some(plaidItem.userId),
-              itemId = Some(plaidItem.id.toUUID),
-              plaidMethod = "investmentsTransactionsGet",
-              arguments = Map(),
-              requestId = Some(error.requestId),
-              errorType = Some(error.errorType),
-              errorCode = Some(error.errorCode)
-            )
-          )
-        case Right(body) =>
-          PlaidApiEventRepository.create(
-            PlaidApiEventCreateInput(
-              userId = Some(plaidItem.userId),
-              itemId = Some(plaidItem.id.toUUID),
-              plaidMethod = "investmentsTransactionsGet",
-              arguments = Map(
-                "startDate" -> req.getStartDate().toString,
-                "endDate" -> req.getEndDate().toString,
-                "itemId" -> plaidItem.id.toString
-              ),
-              requestId = Some(body.getRequestId()),
-              errorType = None,
-              errorCode = None
-            )
-          )
+    def createPlaidApiEvent(respBody: Either[PlaidError, InvestmentsTransactionsGetResponse]): Unit =
+      val event = respBody.fold(
+        error => PlaidApiEventCreateInput(
+          userId = Some(plaidItem.userId),
+          itemId = Some(plaidItem.id.toUUID),
+          plaidMethod = "investmentsTransactionsGet",
+          arguments = Map.empty,
+          requestId = Some(error.requestId),
+          errorType = Some(error.errorType),
+          errorCode = Some(error.errorCode)
+        ),
+        body => PlaidApiEventCreateInput(
+          userId = Some(plaidItem.userId),
+          itemId = Some(plaidItem.id.toUUID),
+          plaidMethod = "investmentsTransactionsGet",
+          arguments = Map(
+            "startDate" -> req.getStartDate().toString,
+            "endDate" -> req.getEndDate().toString,
+            "itemId" -> plaidItem.id.toString
+          ),
+          requestId = Some(body.getRequestId()),
+          errorType = None,
+          errorCode = None
+        )
+      )
+      PlaidApiEventRepository.create(event)
 
     handlePlaidResponse(
       Try(client.investmentsTransactionsGet(req).execute()),
-      createPlaidApiEvent(plaidItem, req)
+      createPlaidApiEvent
     )
 
   def getInvestmentHoldings(
@@ -531,7 +522,7 @@ object PlaidService:
 
   private def handlePlaidResponse[T: ClassTag](
       responseTry: Try[Response[T]],
-      recordEvent: (Either[PlaidError, T]) => Unit
+      recordEvent: Either[PlaidError, T] => Unit
   ): Either[AppError, T] =
     responseTry match
       case Success(response) if response.isSuccessful =>
@@ -541,17 +532,14 @@ object PlaidService:
       case Success(response) =>
         val errorBody = response.errorBody().string()
         Logger.root.error(s"Plaid API error: $errorBody")
-        val appError =
-          PlaidError.fromJson(errorBody) match {
-            case Right(plaidError) =>
-              Left(AppError.ServiceError(plaidError))
-            case Left(e) =>
-              Left(AppError.ValidationError(e.getMessage))
-          }
+        val appError = PlaidError.fromJson(errorBody).fold(
+          e => AppError.ValidationError(e.getMessage),
+          plaidError => AppError.ServiceError(plaidError)
+        )
         appError match
-          case Left(AppError.ServiceError(plaidError)) =>
-            recordEvent(Left(plaidError))
-        appError
+          case AppError.ServiceError(plaidError) => recordEvent(Left(plaidError))
+          case _ =>
+        Left(appError)
       case Failure(exception) =>
         Logger.root.error(s"Unexpected exception on plaid call", exception)
         Left(AppError.NetworkError(exception.getMessage))

@@ -16,9 +16,9 @@ func NewDatabase(url string) (*gorm.DB, error) {
 	return db, nil
 }
 
-// NewTestDatabase connects to Supabase.
+// NewTestDatabase connects to local Supabase.
 func NewTestDatabase() (*gorm.DB, error) {
-	db, err := gorm.Open(postgres.Open("postgres://postgres:postgres@localhost:54322/postgres"), &gorm.Config{
+	db, err := gorm.Open(postgres.Open("postgresql://postgres:postgres@127.0.0.1:54322/postgres"), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
 	})
 	if err != nil {

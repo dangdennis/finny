@@ -37,6 +37,18 @@ func (p *Profile) Age() int {
 	return age
 }
 
+func (p *Profile) YearsToRetirement() int {
+	currentAge := p.Age()
+	yearsToRetirement := p.RetirementAge - currentAge
+
+	// Return 0 if already past retirement age
+	if yearsToRetirement < 0 {
+		return 0
+	}
+
+	return yearsToRetirement
+}
+
 type ProfileRepository struct {
 	db *gorm.DB
 }
