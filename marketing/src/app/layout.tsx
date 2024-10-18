@@ -13,7 +13,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: {
     template: '%s - Finny',
-    default: 'Finny - Invest at the perfect time.',
+    default: 'Finny - Know financial freedom.',
   },
   description:
     'By leveraging insights from our network of industry insiders, you’ll know exactly when to buy to maximize profit, and exactly when to sell to avoid painful losses.',
