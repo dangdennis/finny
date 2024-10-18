@@ -108,8 +108,8 @@ export function Hero() {
               Know financial freedom.
             </h1>
             <p className="mt-6 text-lg text-gray-600">
-              By leveraging real-time insights on your finances, you&aposll know
-              exactly how much to save and choose your retirement day.
+              By leveraging real-time insights on your finances, you&apos;ll
+              know exactly how much to save and choose your retirement day.
             </p>
             <div className="mt-8 flex flex-wrap gap-x-6 gap-y-4">
               <AppStoreLink />
