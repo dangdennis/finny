@@ -2,7 +2,7 @@ import { Container } from '@/components/Container'
 
 export default function PrivacyPolicy() {
   return (
-    <div className="overflow-hidden py-20 sm:py-32">
+    <div className="overflow-hidden">
       <Container>
         <div className="mx-auto max-w-2xl lg:mx-0">
           <h1 className="text-4xl font-medium tracking-tight text-gray-900">
@@ -71,11 +71,10 @@ export default function PrivacyPolicy() {
                 <strong>Cloud Hosting:</strong> We use Fly and Vercel to host
                 our application and website.
               </li>
-              {/* <li>
-                <strong>Analytics:</strong> We use [Analytics Tool, e.g., Google
-                Analytics] to understand how users interact with our
-                application. This helps us improve our service.
-              </li> */}
+              <li>
+                <strong>Analytics:</strong> We use Vercel Analytics to track
+                page visits on our website.
+              </li>
               <li>
                 <strong>Error Tracking:</strong> We use Sentry on Finny iOS to
                 monitor and quickly resolve any issues that may occur in our
