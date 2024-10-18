@@ -1,10 +1,15 @@
 package finalytics
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/alpeb/go-finance/fin"
+	"github.com/finny/worker/account"
 	"github.com/finny/worker/goal"
 	"github.com/finny/worker/profile"
 	"github.com/finny/worker/transaction"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -13,11 +18,21 @@ type FinalyticsService struct {
 	profileRepo     *profile.ProfileRepository
 	goalRepo        *goal.GoalRepository
 	transactionRepo *transaction.TransactionRepository
+	accountRepo     *account.AccountRepository
 }
 
-func NewFinalyticsService(db *gorm.DB, profileRepo *profile.ProfileRepository, goalRepo *goal.GoalRepository, transactionRepo *transaction.TransactionRepository) *FinalyticsService {
+func NewFinalyticsService(db *gorm.DB,
+	accountRepo *account.AccountRepository,
+	profileRepo *profile.ProfileRepository,
+	goalRepo *goal.GoalRepository,
+	transactionRepo *transaction.TransactionRepository,
+) *FinalyticsService {
 	return &FinalyticsService{
-		db: db,
+		db:              db,
+		accountRepo:     accountRepo,
+		profileRepo:     profileRepo,
+		goalRepo:        goalRepo,
+		transactionRepo: transactionRepo,
 	}
 }
 
@@ -28,7 +43,7 @@ type NperInput struct {
 	fv   float64
 }
 
-func (s *FinalyticsService) Nper(input NperInput) (float64, error) {
+func (f *FinalyticsService) Nper(input NperInput) (float64, error) {
 	return fin.Periods(input.rate, input.pmt, input.pv, input.fv, fin.PayEnd)
 }
 
@@ -39,7 +54,7 @@ type PmtInput struct {
 	fv         float64
 }
 
-func (s *FinalyticsService) Pmt(input PmtInput) (float64, error) {
+func (f *FinalyticsService) Pmt(input PmtInput) (float64, error) {
 	return fin.Payment(input.rate, input.numPeriods, input.pv, input.fv, fin.PayEnd)
 }
 
@@ -50,6 +65,501 @@ type FvInput struct {
 	numPeriods int
 }
 
-func (s *FinalyticsService) Fv(input FvInput) (float64, error) {
+func (f *FinalyticsService) Fv(input FvInput) (float64, error) {
 	return fin.FutureValue(input.rate, input.numPeriods, input.pmt, input.pv, fin.PayEnd)
 }
+
+type ComputeAccountBalanceInput struct {
+	AccountID          uuid.UUID
+	StartDateInclusive time.Time
+	EndDateInclusive   time.Time
+	Persist            bool
+}
+
+type ComputeAccountBalanceOutput struct {
+	AccountID uuid.UUID
+	Balances  []Balance
+}
+
+type Balance struct {
+	Date       time.Time
+	CurrentBal float64
+}
+
+func (f *FinalyticsService) ComputeAccountBalance(input ComputeAccountBalanceInput) (ComputeAccountBalanceOutput, error) {
+	startDate := input.StartDateInclusive.Truncate(24 * time.Hour)
+	endDate := input.EndDateInclusive.Truncate(24 * time.Hour)
+
+	fetchedAccount, err := f.accountRepo.GetAccount(input.AccountID)
+	if err != nil {
+		return ComputeAccountBalanceOutput{}, err
+	}
+
+	fmt.Println("account")
+	fmt.Println(fetchedAccount)
+
+	if fetchedAccount == nil {
+		return ComputeAccountBalanceOutput{}, fmt.Errorf("finalytics: account not found")
+	}
+
+	transactions, err := f.transactionRepo.GetTransactionsByAccountID(transaction.GetTransactionsInput{
+		AccountID:          fetchedAccount.ID,
+		StartDateInclusive: startDate,
+		EndDateInclusive:   endDate,
+	})
+	if err != nil {
+		return ComputeAccountBalanceOutput{}, err
+	}
+
+	transactionsByDate := make(map[time.Time][]transaction.Transaction)
+
+	// Group transactions by date
+	for _, tx := range transactions {
+		transactionsByDate[tx.Date] = append(transactionsByDate[tx.Date], tx)
+	}
+
+	// Create a date series ranging from end date to start date
+	var dateSeries []time.Time
+	for date := input.EndDateInclusive; date.After(startDate.AddDate(0, 0, -1)); date = date.AddDate(0, 0, -1) {
+		dateSeries = append(dateSeries, date)
+	}
+
+	var output ComputeAccountBalanceOutput
+
+	// We'll assume the account balance is always updated with the latest transactions.
+	currentBalance := fetchedAccount.CurrentBalance
+	for _, date := range dateSeries {
+		transactions := transactionsByDate[date]
+
+		for _, transaction := range transactions {
+			// outflows are positive amounts. but we'll subtract them from the current balance.
+			if transaction.Amount > 0 {
+				currentBalance -= transaction.Amount
+			} else {
+				// inflows are negative amounts. but we'll add them to the current balance.
+				currentBalance += -transaction.Amount
+			}
+		}
+
+		output.Balances = append(output.Balances, Balance{
+			Date:       date,
+			CurrentBal: currentBalance,
+		})
+	}
+
+	if input.Persist {
+		var accountBalances []account.AccountBalance
+		for _, balance := range output.Balances {
+			accountBalances = append(accountBalances, account.AccountBalance{
+				AccountID:        fetchedAccount.ID,
+				BalanceDate:      balance.Date,
+				CurrentBalance:   balance.CurrentBal,
+				AvailableBalance: nil,
+			})
+		}
+
+		err = f.accountRepo.UpsertAccountBalancesBulk(accountBalances)
+		if err != nil {
+			return ComputeAccountBalanceOutput{}, fmt.Errorf("finalytics: failed to upsert account balances: %w", err)
+		}
+	}
+
+	return output, nil
+}
+
+// type ExpenseCalculation int
+
+// const (
+// 	Last12Months ExpenseCalculation = iota
+// 	Average
+// )
+
+// func (s *FinalyticsService) GetActualRetirementAge(userId uuid.UUID, calcType ExpenseCalculation) (int32, error) {
+// 	annualInterestRate := 0.08
+
+// 	fv, err := s.GetFreedomFutureValueOfCurrentExpenses(userId, calcType)
+// 	if err != nil {
+// 		return 0, err
+// 	}
+
+// 	pv := 0.0
+
+// 	pmt, err := s.GetActualSavingsThisMonth(userId, time.Now())
+// 	if err != nil {
+// 		return 0, nil
+// 	}
+
+// 	period := s.GetPeriodFromFutureValue(PeriodFromFutureValueInput{
+// 		fv:                 fv,
+// 		pv:                 pv,
+// 		pmt:                pmt,
+// 		annualInterestRate: annualInterestRate,
+// 	})
+
+// 	return period, nil
+// }
+
+// func (s *FinalyticsService) GetFreedomFutureValueOfCurrentExpenses(userId uuid.UUID, exp ExpenseCalculation) (float64, error) {
+// 	switch exp {
+// 	case Last12Months:
+// 		flows, err := s.GetLast12MonthsInflowOutflow(userId)
+// 		return flows.Inflows, err
+// 	case Average:
+// 		flows, err := s.GetAverageMonthlyInflowOutflow(userId)
+// 		return flows.Outflows * 12 / 0.04, err
+// 	default:
+// 		return 0.0, fmt.Errorf("Invalid expense calculation: %+v", exp)
+// 	}
+// }
+
+// type InflowOutflow struct {
+// 	Inflows  float64 `gorm:"column:inflows"`
+// 	Outflows float64 `gorm:"column:outflows"`
+// }
+
+// func (s *FinalyticsService) GetLast12MonthsInflowOutflow(userID uuid.UUID) (InflowOutflow, error) {
+// 	sqlParams := map[string]interface{}{
+// 		"userID": userID,
+// 	}
+
+// 	var output InflowOutflow
+// 	err := s.db.Raw(`
+// 				WITH regular_transactions AS (
+// 	               SELECT
+// 	                   SUM(CASE WHEN amount < 0 THEN ABS(amount) ELSE 0 END) AS total_inflows,
+// 	                   SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) AS total_outflows
+// 	               FROM
+// 	                   transactions
+// 	                   JOIN accounts ON transactions.account_id = accounts.id
+// 	               WHERE
+// 	                   date >= (CURRENT_DATE - INTERVAL '12 months')
+// 	                   AND category NOT IN ('TRANSFER_IN', 'TRANSFER_OUT')
+// 	                   AND accounts.user_id = @userID
+// 	           ),
+// 	           transfer_transactions AS (
+// 	               SELECT
+// 	                   SUM(CASE WHEN category = 'TRANSFER_IN' THEN amount ELSE -amount END) AS net_transfer
+// 	               FROM
+// 	                   transactions
+// 	               JOIN accounts on transactions.account_id = accounts.id
+// 	               WHERE
+// 	                   date >= (CURRENT_DATE - INTERVAL '12 months')
+// 	                   AND category IN ('TRANSFER_IN', 'TRANSFER_OUT')
+// 	                   AND accounts.user_id = @userID
+// 	           )
+// 	           SELECT
+// 	               CASE
+// 	                   WHEN tt.net_transfer > 0 THEN rt.total_inflows + tt.net_transfer
+// 	                   ELSE rt.total_inflows
+// 	               END AS inflows,
+// 	               CASE
+// 	                   WHEN tt.net_transfer < 0 THEN rt.total_outflows - tt.net_transfer
+// 	                   ELSE rt.total_outflows
+// 	               END AS outflows
+// 	                       FROM
+// 	                           regular_transactions rt, transfer_transactions tt;
+// 		`, sqlParams).Scan(&output).Error
+
+// 	if err != nil {
+// 		return InflowOutflow{}, err
+// 	}
+
+// 	return InflowOutflow{}, nil
+// }
+
+// func (s *FinalyticsService) GetAverageMonthlyInflowOutflow(userId uuid.UUID) (InflowOutflow, error) {
+// 	inputs := map[string]interface{}{
+// 		"userId": userId,
+// 	}
+
+// 	s.db.Raw(`
+// 		WITH monthly_regular_transactions AS (
+// 	     SELECT
+// 	       date_trunc('month', date) AS month,
+// 	       sum(
+// 	         CASE WHEN amount < 0 THEN
+// 	           abs(amount)
+// 	         ELSE
+// 	           0
+// 	         END) AS monthly_inflows,
+// 	       sum(
+// 	         CASE WHEN amount > 0 THEN
+// 	           amount
+// 	         ELSE
+// 	           0
+// 	         END) AS monthly_outflows
+// 	     FROM
+// 	       transactions
+// 	       JOIN accounts ON transactions.account_id = accounts.id
+// 	     WHERE
+// 	       date >= (CURRENT_DATE - INTERVAL '12 months')
+// 	       AND category NOT IN ('TRANSFER_IN', 'TRANSFER_OUT')
+// 	       AND accounts.user_id = @userId
+// 	     GROUP BY
+// 	       date_trunc('month', date)
+// 	   ),
+// 	   monthly_transfer_transactions AS (
+// 	     SELECT
+// 	       date_trunc('month', date) AS month,
+// 	       sum(
+// 	         CASE WHEN category = 'TRANSFER_IN' THEN
+// 	           amount
+// 	         ELSE
+// 	           - amount
+// 	         END) AS net_transfer
+// 	     FROM
+// 	       transactions join accounts on transactions.account_id = accounts.id
+// 	     WHERE
+// 	       date >= (CURRENT_DATE - INTERVAL '12 months')
+// 	       AND category IN ('TRANSFER_IN', 'TRANSFER_OUT')
+// 	       AND accounts.user_id = @userId
+// 	     GROUP BY
+// 	       date_trunc('month', date)
+// 	   ),
+// 	   adjusted_monthly_totals AS (
+// 	     SELECT
+// 	       mrt.month,
+// 	       CASE WHEN coalesce(mtt.net_transfer, 0) > 0 THEN
+// 	         mrt.monthly_inflows + coalesce(mtt.net_transfer, 0)
+// 	       ELSE
+// 	         mrt.monthly_inflows
+// 	       END AS adjusted_inflows,
+// 	       CASE WHEN coalesce(mtt.net_transfer, 0) < 0 THEN
+// 	         mrt.monthly_outflows - coalesce(mtt.net_transfer, 0)
+// 	       ELSE
+// 	         mrt.monthly_outflows
+// 	       END AS adjusted_outflows
+// 	     FROM
+// 	       monthly_regular_transactions mrt
+// 	       LEFT JOIN monthly_transfer_transactions mtt ON mrt.month = mtt.month
+// 	   )
+// 	   SELECT
+// 	     avg(adjusted_inflows) AS inflows,
+// 	     avg(adjusted_outflows) AS outflows
+// 	   FROM
+// 	     adjusted_monthly_totals;
+// 		`, inputs)
+
+// 	return InflowOutflow{}, nil
+// }
+
+// type ActualSavingsThisMonthResult struct {
+// 	NetBalanceChange float64 `gorm:"column:net_balance_change"`
+// }
+
+// func (s *FinalyticsService) GetActualSavingsThisMonth(userID uuid.UUID, month time.Time) (float64, error) {
+// 	retirementGoal, err := s.goalRepo.GetRetirementGoal(userID)
+// 	if err != nil || retirementGoal == nil {
+// 		return 0.0, err
+// 	}
+
+// 	_, err = s.goalRepo.GetAssignedAccountsOnGoal(retirementGoal.ID)
+// 	if err != nil {
+// 		return 0.0, err
+// 	}
+
+// 	_, err = s.GetAccountBalancesAtStartOfMonth(userID, time_helper.Now())
+// 	if err != nil {
+// 		return 0.0, err
+// 	}
+
+// 	// sqlParams := map[string]interface{}{
+// 	// 	"userID": userId,
+// 	// }
+// 	// retGoal, err := s.
+// 	var result ActualSavingsThisMonthResult
+// 	// 	start_of_month_balances AS (
+// 	// 				-- Get the earliest balance in the current month for each account
+// 	// 				SELECT DISTINCT ON (ab.account_id)
+// 	// 					ab.account_id,
+// 	// 					ab.balance_date AS start_balance_date,
+// 	// 					ab.current_balance AS start_balance
+// 	// 				FROM
+// 	// 					account_balances ab
+// 	// 				WHERE
+// 	// 					ab.balance_date >= date_trunc('month', '2023-09-01'::date)
+// 	// 					AND ab.account_id IN (
+// 	// 						SELECT
+// 	// 							account_id
+// 	// 						FROM
+// 	// 							assigned_accounts)
+// 	// 					ORDER BY
+// 	// 						ab.account_id,
+// 	// 						ab.balance_date
+// 	// 	),
+// 	// 	most_recent_balances AS (
+// 	// 				-- Get the most recent balance for each account
+// 	// 				SELECT DISTINCT ON (ab.account_id)
+// 	// 					ab.account_id,
+// 	// 					ab.balance_date AS most_recent_balance_date,
+// 	// 					ab.current_balance AS most_recent_balance
+// 	// 				FROM
+// 	// 					account_balances ab
+// 	// 				WHERE
+// 	// 					ab.account_id IN (
+// 	// 						SELECT
+// 	// 							account_id
+// 	// 						FROM
+// 	// 							assigned_accounts)
+// 	// 					ORDER BY
+// 	// 						ab.account_id,
+// 	// 						ab.balance_date DESC
+// 	// 	)
+// 	// 	SELECT
+// 	// 				GREATEST (coalesce(sum(mr.most_recent_balance - som.start_balance), 0), 0) AS net_balance_change
+// 	// 	FROM
+// 	// 				most_recent_balances mr
+// 	// 				JOIN start_of_month_balances som ON mr.account_id = som.account_id
+// 	// 				JOIN accounts ON mr.account_id = accounts.id
+// 	// 	WHERE
+// 	// 				mr.most_recent_balance_date >= som.start_balance_date
+// 	// `, sqlParams).Scan(&result).Error
+
+// 	if err != nil {
+// 		return 0, fmt.Errorf("error calculating actual savings: %w", err)
+// 	}
+
+// 	return result.NetBalanceChange, nil
+// }
+
+// // GetAccountBalanceAtDate uses the earliest recorded balance for the given account in the current month.
+// // Then it adds the transactions from that point to the targetDate, inclusive.
+// func (s *FinalyticsService) GetAccountBalanceAtDate(userID uuid.UUID, accountID uuid.UUID, targetDate time.Time) (decimal.Decimal, error) {
+// 	var output StartOfMonthBalance
+// 	err := s.MakeAccountBalancesAtStartOfMonthQuery(userID, targetDate).Where("account_id = ?", accountID).First(&output).Error
+// 	if err != nil {
+// 		return decimal.NewFromFloat(0.0), err
+// 	}
+
+// 	transactions, err := s.transactionRepo.GetTransactionsByAccountID(transaction.GetTransactionsInput{
+// 		AccountID: accountID,
+// 		StartDate: time_helper.FirstDayOfMonth(targetDate),
+// 		EndDate:   targetDate,
+// 	})
+// 	if err != nil {
+// 		return decimal.NewFromFloat(0.0), err
+// 	}
+
+// 	sum := decimal.NewFromFloat(0.0)
+// 	for _, transaction := range transactions {
+// 		sum = sum.Add(transaction.Amount)
+// 	}
+// 	// We flip the sign because inflows are negative and outflows are positive.
+// 	sum = sum.Neg()
+
+// 	fmt.Printf("sum: %+v\n", sum)
+
+// 	return output.CurrentBalance.Add(sum), nil
+// }
+
+// type StartOfMonthBalance struct {
+// 	AccountID      uuid.UUID       `gorm:"column:account_id"`
+// 	BalanceDate    time.Time       `gorm:"column:balance_date"`
+// 	CurrentBalance decimal.Decimal `gorm:"column:current_balance"`
+// }
+
+// func (s *FinalyticsService) GetAccountBalancesAtStartOfMonth(userID uuid.UUID, date time.Time) ([]StartOfMonthBalance, error) {
+// 	var results []StartOfMonthBalance
+
+// 	err := s.MakeAccountBalancesAtStartOfMonthQuery(userID, date).
+// 		Scan(&results).Error
+
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	return results, nil
+// }
+
+// func (s *FinalyticsService) MakeAccountBalancesAtStartOfMonthQuery(userID uuid.UUID, date time.Time) *gorm.DB {
+// 	firstDayOfMonth := time_helper.FirstDayOfMonth(date)
+// 	return s.db.Table("account_balances ab").
+// 		Select("DISTINCT ON (account_id) ab.account_id, ab.balance_date, ab.current_balance").
+// 		Joins("JOIN accounts ON ab.account_id = accounts.id").
+// 		Where("accounts.user_id = ?", userID).
+// 		Where("balance_date >= ?", firstDayOfMonth).
+// 		Order("account_id, balance_date")
+// }
+
+// // todo: implement
+// func (s *FinalyticsService) GetActualInvestmentThisMonth(userId uuid.UUID) (float64, error) {
+// 	return 0.0, fmt.Errorf("Not implemented")
+// }
+
+// type PeriodFromFutureValueInput struct {
+// 	fv                 float64
+// 	pv                 float64
+// 	pmt                float64
+// 	annualInterestRate float64
+// }
+
+// func (s *FinalyticsService) GetPeriodFromFutureValue(input PeriodFromFutureValueInput) int32 {
+// 	if input.annualInterestRate == 0 {
+// 		return int32(math.Round((input.fv - input.pv) / input.pmt))
+// 	}
+
+// 	absFv := math.Abs(input.fv)
+// 	absPv := math.Abs(input.pv)
+// 	absPmt := math.Abs(input.pmt)
+
+// 	period := math.Log((absFv*input.annualInterestRate+absPmt)/
+// 		(absPv*input.annualInterestRate+absPmt)) /
+// 		math.Log(1+input.annualInterestRate)
+
+// 	return int32(math.Round(period))
+// }
+
+// type FutureValueInput struct {
+// 	pv    float64
+// 	pmt   float64
+// 	rate  float64
+// 	years int
+// }
+
+// func (s *FinalyticsService) GetFutureValue(input FutureValueInput) float64 {
+// 	futureValue := input.pv*math.Pow(1+input.rate, float64(input.years)) +
+// 		input.pmt*((math.Pow(1+input.rate, float64(input.years))-1)/input.rate)
+
+// 	if input.pmt < 0 && input.pv < 0 {
+// 		return -futureValue
+// 	} else {
+// 		return futureValue
+// 	}
+// }
+
+// func (s *FinalyticsService) GetYearsToRetirement(userId uuid.UUID) (int32, error) {
+// 	profile, err := s.profileRepo.GetProfile(userId)
+// 	if err != nil {
+// 		return 0, err
+// 	}
+
+// 	retirementAge := profile.RetirementAge
+// 	if retirementAge == 0 {
+// 		return 0, fmt.Errorf("Retirement age is missing")
+// 	}
+
+// 	return int32(retirementAge) - int32(profile.Age()), nil
+// }
+
+// type PaymentFromFutureValueInput struct {
+// 	fv    float64
+// 	pv    float64
+// 	rate  float64
+// 	years int
+// }
+
+// func (s *FinalyticsService) GetPaymentFromFutureValue(input PaymentFromFutureValueInput) float64 {
+// 	var payment float64
+// 	if input.rate == 0 {
+// 		payment = (input.fv - input.pv) / float64(input.years)
+// 	} else {
+// 		payment = (input.fv - input.pv*math.Pow(1+input.rate, float64(input.years))/
+// 			(math.Pow(1+input.rate, float64(input.years)-1)/input.rate))
+// 	}
+
+// 	if input.fv < 0 && input.pv < 0 {
+// 		payment = -payment
+// 	}
+
+// 	return math.Trunc(payment)
+// }

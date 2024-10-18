@@ -5,27 +5,26 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
 )
 
 type Transaction struct {
-	ID                     uuid.UUID       `gorm:"type:uuid;default:gen_random_uuid();primaryKey"`
-	AccountID              uuid.UUID       `gorm:"type:uuid;not null"`
-	PlaidTransactionID     string          `gorm:"type:text;not null;uniqueIndex:uq:transactions.plaid_transaction_id"`
-	Category               string          `gorm:"type:text"`
-	Subcategory            string          `gorm:"type:text"`
-	Type                   string          `gorm:"type:text;not null"`
-	Name                   string          `gorm:"type:text;not null"`
-	Amount                 decimal.Decimal `gorm:"type:decimal;not null"`
-	IsoCurrencyCode        string          `gorm:"type:text"`
-	UnofficialCurrencyCode string          `gorm:"type:text"`
-	Date                   time.Time       `gorm:"type:date;not null"`
-	Pending                bool            `gorm:"type:boolean;not null"`
-	AccountOwner           string          `gorm:"type:text"`
-	CreatedAt              time.Time       `gorm:"type:timestamp(6) with time zone;not null;default:CURRENT_TIMESTAMP"`
-	UpdatedAt              time.Time       `gorm:"type:timestamp(6) with time zone;not null;default:CURRENT_TIMESTAMP"`
-	DeletedAt              gorm.DeletedAt  `gorm:"type:timestamp(6) with time zone"`
+	ID                     uuid.UUID      `gorm:"type:uuid;default:gen_random_uuid();primaryKey"`
+	AccountID              uuid.UUID      `gorm:"type:uuid;not null"`
+	PlaidTransactionID     string         `gorm:"type:text;not null;uniqueIndex:uq:transactions.plaid_transaction_id"`
+	Category               string         `gorm:"type:text"`
+	Subcategory            string         `gorm:"type:text"`
+	Type                   string         `gorm:"type:text;not null"`
+	Name                   string         `gorm:"type:text;not null"`
+	Amount                 float64        `gorm:"type:decimal;not null"`
+	IsoCurrencyCode        string         `gorm:"type:text"`
+	UnofficialCurrencyCode string         `gorm:"type:text"`
+	Date                   time.Time      `gorm:"type:date;not null"`
+	Pending                bool           `gorm:"type:boolean;not null"`
+	AccountOwner           string         `gorm:"type:text"`
+	CreatedAt              time.Time      `gorm:"type:timestamp(6) with time zone;not null;default:CURRENT_TIMESTAMP"`
+	UpdatedAt              time.Time      `gorm:"type:timestamp(6) with time zone;not null;default:CURRENT_TIMESTAMP"`
+	DeletedAt              gorm.DeletedAt `gorm:"type:timestamp(6) with time zone"`
 }
 
 type TransactionRepository struct {
@@ -39,16 +38,16 @@ func NewTransactionRepository(db *gorm.DB) *TransactionRepository {
 }
 
 type GetTransactionsInput struct {
-	AccountID uuid.UUID
-	StartDate time.Time
-	EndDate   time.Time
+	AccountID          uuid.UUID
+	StartDateInclusive time.Time
+	EndDateInclusive   time.Time
 }
 
 func (t *TransactionRepository) GetTransactionsByAccountID(input GetTransactionsInput) ([]Transaction, error) {
 	var transactions []Transaction
 	err := t.db.Where("account_id = ?", input.AccountID).
-		Where("date >= ?", input.StartDate).
-		Where("date <= ?", input.EndDate).
+		Where("date >= ?", input.StartDateInclusive).
+		Where("date <= ?", input.EndDateInclusive).
 		Find(&transactions).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -57,4 +56,18 @@ func (t *TransactionRepository) GetTransactionsByAccountID(input GetTransactions
 		return transactions, err
 	}
 	return transactions, nil
+}
+
+func (t *TransactionRepository) GetLatestTransactionDate(accountID uuid.UUID) (time.Time, error) {
+	var latestTransaction Transaction
+	err := t.db.Where("account_id = ?", accountID).
+		Order("date DESC").
+		First(&latestTransaction).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return time.Time{}, nil
+		}
+		return time.Time{}, err
+	}
+	return latestTransaction.Date, nil
 }

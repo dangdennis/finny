@@ -45,7 +45,7 @@ func main() {
 	goalRepo := goal.NewGoalRepository(db, accountRepo)
 	profileRepo := profile.NewProfileRepository(db)
 	ynabClient := ynabclient.NewYNABClient(ynabSecret)
-	_ = finalytics.NewFinalyticsService(db, profileRepo, goalRepo, transactionRepo)
+	_ = finalytics.NewFinalyticsService(db, accountRepo, profileRepo, goalRepo, transactionRepo)
 	_ = budget.NewBudgetService(db, ynabClient)
 
 	http.HandleFunc("POST /start", func(w http.ResponseWriter, r *http.Request) {

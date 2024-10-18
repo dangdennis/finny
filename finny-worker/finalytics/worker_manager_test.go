@@ -23,10 +23,11 @@ func TestProcessFinalyticMessage(t *testing.T) {
 	db, err := database.NewTestCalcDatabase()
 	require.NoError(t, err)
 
+	accountRepo := account.NewAccountRepository(db)
 	profileRepo := profile.NewProfileRepository(db)
 	goalRepo := goal.NewGoalRepository(db, account.NewAccountRepository(db))
 	transactionRepo := transaction.NewTransactionRepository(db)
-	finalyticsService := NewFinalyticsService(db, profileRepo, goalRepo, transactionRepo)
+	finalyticsService := NewFinalyticsService(db, accountRepo, profileRepo, goalRepo, transactionRepo)
 
 	qm, err := queue.NewTestQueueManager()
 	require.NoError(t, err)
