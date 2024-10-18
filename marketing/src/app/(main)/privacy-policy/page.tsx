@@ -31,8 +31,9 @@ export default function PrivacyPolicy() {
               </li>
               <li>
                 OAuth Access Token: Finny uses an OAuth access token to interact
-                with YNAB's API and retrieve your financial data securely. We do
-                not store or request any other financial account credentials.
+                with YNAB&apos;s API and retrieve your financial data securely.
+                We do not store or request any other financial account
+                credentials.
               </li>
             </ul>
 
@@ -42,14 +43,14 @@ export default function PrivacyPolicy() {
                 Personal Budget Management: Your budget categories and balances
                 are used solely to help you manage and understand your finances
                 within Finny. This data will not be used for any other purposes
-                beyond what is necessary to provide you with the app's
+                beyond what is necessary to provide you with the app&apos;s
                 functionality.
               </li>
               <li>
                 No Third-Party Sharing: Finny guarantees that your data,
-                including data retrieved from YNAB's API, will not be knowingly
-                shared or sold to any third party. We will only use the data
-                internally to support Finny's features.
+                including data retrieved from YNAB&apos;s API, will not be
+                knowingly shared or sold to any third party. We will only use
+                the data internally to support Finny&apos;s features.
               </li>
             </ul>
 
