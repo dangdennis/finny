@@ -1,17 +1,23 @@
 -- last 12 months. optionally can exclude current month
-WITH net_transfer_transactions AS (
+
+WITH net_transfer_and_creditcard_payment_transactions AS (
 	SELECT
 		t1.id AS t1_id,
 		t2.id AS t2_id
 	FROM
 		transactions t1
-		JOIN transactions t2 ON - t2.amount = t1.amount
+		JOIN transactions t2 ON -t2.amount = t1.amount
 			AND t2.account_id != t1.account_id
-			AND abs(extract(DAY FROM t1.date::timestamp - t2.date::timestamp)) <= 2
-			AND t2.category = 'TRANSFER_IN'
+			AND abs(extract(DAY FROM t1.date::timestamp - t2.date::timestamp)) <= 3
+			-- Credit card payments are recorded as a pair of transactions:
+			-- a withdrawal (debit) from the checking account labeled as LOAN_PAYMENTS, and a corresponding deposit
+			-- (credit) to the credit card account labeled as TRANSFER_IN or LOAN_PAYMENTS.
+			-- For some banks like Wells Fargo/Bilt, they strangely record the credit transaction under TRANSFER_IN,
+			AND (t2.category = 'LOAN_PAYMENTS' or t2.category = 'TRANSFER_IN')
 	WHERE
 		t1.amount > 0
-		AND t1.category = 'TRANSFER_OUT'
+		-- Certain banks like Wells Fargo and Bilt
+		AND (t1.category = 'LOAN_PAYMENTS' or t1.category = 'TRANSFER_OUT')
 		AND t1.date >= (date_trunc('month', CURRENT_DATE) - INTERVAL '12 months')
 		--		AND t1.date < date_trunc('month', CURRENT_DATE)
 	ORDER BY
@@ -39,7 +45,7 @@ FROM
 		date >= (date_trunc('month', CURRENT_DATE) - INTERVAL '12 months')
 		--		AND date < date_trunc('month', CURRENT_DATE)
 		-- Exclude transfers
-		AND category NOT IN ('TRANSFER_IN', 'TRANSFER_OUT')
+		AND category NOT IN ('TRANSFER_IN', 'TRANSFER_OUT', 'LOAN_PAYMENTS')
 		-- Exclude credit card payments, but continue to include "personal" loan payments like to Paypal, Affirm, BNPY-type schemes
 		AND subcategory != 'LOAN_PAYMENTS_CREDIT_CARD_PAYMENT'
 	GROUP BY
@@ -69,12 +75,12 @@ monthly_transfer_transactions AS (
 		--		AND date < date_trunc('month', CURRENT_DATE)
 		AND category IN ('TRANSFER_IN', 'TRANSFER_OUT')
 		AND transactions.id NOT IN (
-			-- Exclude transactions from net_transfer_transactions
+			-- Exclude net transfer transactions
 			SELECT
-				t1_id FROM net_transfer_transactions
+				t1_id FROM net_transfer_and_creditcard_payment_transactions
 			UNION
 			SELECT
-				t2_id FROM net_transfer_transactions)
+				t2_id FROM net_transfer_and_creditcard_payment_transactions)
 	GROUP BY
 		date_trunc('month', date)
 	ORDER BY
