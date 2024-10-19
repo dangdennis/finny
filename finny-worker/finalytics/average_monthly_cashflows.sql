@@ -1,66 +1,88 @@
-WITH monthly_regular_transactions AS (
+-- last 12 months. optionally can exclude current month
+WITH net_transfer_transactions AS (
+	SELECT
+		t1.id AS t1_id,
+		t2.id AS t2_id
+	FROM
+		transactions t1
+		JOIN transactions t2 ON - t2.amount = t1.amount
+			AND t2.account_id != t1.account_id
+			AND abs(extract(DAY FROM t1.date::timestamp - t2.date::timestamp)) <= 2
+			AND t2.category = 'TRANSFER_IN'
+	WHERE
+		t1.amount > 0
+		AND t1.category = 'TRANSFER_OUT'
+		AND t1.date >= (date_trunc('month', CURRENT_DATE) - INTERVAL '12 months')
+		--		AND t1.date < date_trunc('month', CURRENT_DATE)
+	ORDER BY
+		t1.date DESC
+),
+monthly_regular_transactions AS (
 	SELECT
 		date_trunc('month', date) AS month,
-		sum(
-			CASE WHEN amount < 0 THEN
-				abs(amount)
-			ELSE
-				0
-			END) AS monthly_inflows,
-		sum(
-			CASE WHEN amount > 0 THEN
-				amount
-			ELSE
-				0
-			END) AS monthly_outflows
-	FROM
-		transactions
-		JOIN accounts ON transactions.account_id = accounts.id
+	sum(
+		CASE WHEN amount < 0 THEN
+			abs(amount)
+		ELSE
+			0
+		END) AS monthly_inflows,
+	sum(
+		CASE WHEN amount > 0 THEN
+			amount
+		ELSE
+			0
+		END) AS monthly_outflows
+FROM
+	transactions
+	JOIN accounts ON transactions.account_id = accounts.id
 	WHERE
-		date >= (CURRENT_DATE - INTERVAL '12 months')
+		date >= (date_trunc('month', CURRENT_DATE) - INTERVAL '12 months')
+		--		AND date < date_trunc('month', CURRENT_DATE)
+		-- Exclude transfers
 		AND category NOT IN ('TRANSFER_IN', 'TRANSFER_OUT')
-		AND accounts.user_id = '5eaa8ae7-dbcb-445e-8058-dbd51a912c8d'
+		-- Exclude credit card payments, but continue to include "personal" loan payments like to Paypal, Affirm, BNPY-type schemes
+		AND subcategory != 'LOAN_PAYMENTS_CREDIT_CARD_PAYMENT'
 	GROUP BY
 		date_trunc('month', date)
+	ORDER BY
+		month
 ),
 monthly_transfer_transactions AS (
 	SELECT
 		date_trunc('month', date) AS month,
 		sum(
 			CASE WHEN category = 'TRANSFER_IN' THEN
-				amount
+				abs(amount)
 			ELSE
-				- amount
-			END) AS net_transfer
+				0
+			END) AS monthly_inflows,
+		sum(
+			CASE WHEN category = 'TRANSFER_OUT' THEN
+				abs(amount)
+			ELSE
+				0
+			END) AS monthly_outflows
 	FROM
 		transactions
-		JOIN accounts ON transactions.account_id = accounts.id
 	WHERE
-		date >= (CURRENT_DATE - INTERVAL '12 months')
+		date >= (date_trunc('month', CURRENT_DATE) - INTERVAL '12 months')
+		--		AND date < date_trunc('month', CURRENT_DATE)
 		AND category IN ('TRANSFER_IN', 'TRANSFER_OUT')
-		AND accounts.user_id = '5eaa8ae7-dbcb-445e-8058-dbd51a912c8d'
+		AND transactions.id NOT IN (
+			-- Exclude transactions from net_transfer_transactions
+			SELECT
+				t1_id FROM net_transfer_transactions
+			UNION
+			SELECT
+				t2_id FROM net_transfer_transactions)
 	GROUP BY
 		date_trunc('month', date)
-),
-adjusted_monthly_totals AS (
-	SELECT
-		mrt.month,
-		CASE WHEN coalesce(mtt.net_transfer, 0) > 0 THEN
-			mrt.monthly_inflows + coalesce(mtt.net_transfer, 0)
-		ELSE
-			mrt.monthly_inflows
-		END AS adjusted_inflows,
-		CASE WHEN coalesce(mtt.net_transfer, 0) < 0 THEN
-			mrt.monthly_outflows - coalesce(mtt.net_transfer, 0)
-		ELSE
-			mrt.monthly_outflows
-		END AS adjusted_outflows
-	FROM
-		monthly_regular_transactions mrt
-		LEFT JOIN monthly_transfer_transactions mtt ON mrt.month = mtt.month
+	ORDER BY
+		month DESC
 )
 SELECT
-	avg(adjusted_inflows) AS inflows,
-	avg(adjusted_outflows) AS outflows
+	avg(mrt.monthly_inflows + mtt.monthly_inflows) AS monthly_inflows,
+	avg(mrt.monthly_outflows + mtt.monthly_outflows) AS monthly_outflows
 FROM
-	adjusted_monthly_totals;
+	monthly_regular_transactions mrt
+	JOIN monthly_transfer_transactions mtt ON mrt.month = mtt.month
