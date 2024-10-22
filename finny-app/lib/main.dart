@@ -78,7 +78,7 @@ void main() async {
   final settingsController = SettingsController(
     profileService: profileService,
     settingsService: settingsService,
-    authProvider: authProvider,
+    authService: authService,
   );
   final finalyticsController =
       FinalyticsController(finalyticsService, profileService);
@@ -97,7 +97,7 @@ void main() async {
                   ChangeNotifierProvider(create: (_) => authProvider)
                 ],
                 child: MyApp(
-                  authProvider: authProvider,
+                  authService: authService,
                   accountsController: accountsController,
                   connectionsController: connectionsController,
                   finalyticsController: finalyticsController,
@@ -112,7 +112,7 @@ void main() async {
       MultiProvider(
         providers: [ChangeNotifierProvider(create: (_) => authProvider)],
         child: MyApp(
-          authProvider: authProvider,
+          authService: authService,
           accountsController: accountsController,
           connectionsController: connectionsController,
           finalyticsController: finalyticsController,

@@ -1,15 +1,15 @@
-import 'package:finny/src/auth/auth_provider.dart';
+import 'package:finny/src/auth/auth_service.dart';
 import 'package:finny/src/context_extension.dart';
 import 'package:finny/src/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 class LoginView extends StatefulWidget {
-  const LoginView({super.key, required this.authProvider});
+  const LoginView({super.key, required this.authService});
 
   static const routeName = Routes.login;
 
-  final AuthProvider authProvider;
+  final AuthService authService;
 
   @override
   State<LoginView> createState() => _LoginViewState();
@@ -17,24 +17,17 @@ class LoginView extends StatefulWidget {
 
 class _LoginViewState extends State<LoginView> {
   late final TextEditingController _emailController;
+  bool isLoading = false;
 
   @override
   void initState() {
     _emailController = TextEditingController();
     super.initState();
-    widget.authProvider.initAuthStateListener(context);
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (widget.authProvider.isLoggedIn) {
-        Navigator.restorablePushNamed(context, Routes.accounts);
-      }
-    });
   }
 
   @override
   void dispose() {
     _emailController.dispose();
-    widget.authProvider.dispose();
     super.dispose();
   }
 
@@ -78,10 +71,10 @@ class _LoginViewState extends State<LoginView> {
                 ),
                 const SizedBox(height: 12),
                 ElevatedButton(
-                  onPressed: widget.authProvider.isLoading
+                  onPressed: isLoading
                       ? null
-                      : () => widget.authProvider.signInWithEmail(
-                          _emailController.text, context, context.showSnackBar),
+                      : () => widget.authService.signInWithEmail(
+                          _emailController.text, context.showSnackBar),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
@@ -89,9 +82,7 @@ class _LoginViewState extends State<LoginView> {
                     ),
                   ),
                   child: Text(
-                    widget.authProvider.isLoading
-                        ? 'Logging...'
-                        : 'Sign In with Email',
+                    isLoading ? 'Logging...' : 'Sign In with Email',
                     style: const TextStyle(fontSize: 16),
                   ),
                 ),
@@ -109,7 +100,7 @@ class _LoginViewState extends State<LoginView> {
                 SignInWithAppleButton(
                   height: 52,
                   onPressed: () {
-                    widget.authProvider.signInWithApple(context);
+                    widget.authService.signInWithApple();
                   },
                   style: SignInWithAppleButtonStyle.black,
                 ),

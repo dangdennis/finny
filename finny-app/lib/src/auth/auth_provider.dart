@@ -1,81 +1,77 @@
 import 'dart:async';
 
 import 'package:finny/src/auth/auth_service.dart';
+import 'package:finny/src/powersync/powersync.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// A provider for managing authentication state and handling sign in and sign out.
+/// A provider for app auth state.
 class AuthProvider extends ChangeNotifier {
   AuthProvider({
     required this.authService,
   }) {
-    Supabase.instance.client.auth.onAuthStateChange.listen((data) {
-      checkAuthStatus();
-    });
+    initAuthListener();
   }
 
   AuthService authService;
-
   final Logger _logger = Logger('AuthProvider');
-  bool _isLoading = false;
-  bool _isLoggedIn = Supabase.instance.client.auth.currentSession != null;
 
   bool get isLoading => _isLoading;
+  bool _isLoading = false;
+
   bool get isLoggedIn => _isLoggedIn;
+  bool _isLoggedIn = Supabase.instance.client.auth.currentSession != null;
 
-  Future<void> signInWithEmail(String email, BuildContext context,
-      Function(String, {bool isError}) showSnackBar) async {
-    _setLoading(true, context);
-    await authService.signInWithEmail(email, showSnackBar);
-    if (context.mounted) {
-      _setLoading(false, context);
+  @override
+  void dispose() {
+    _logger.info("disposing auth provider");
+    _authStateChangeSubscription.cancel();
+    super.dispose();
+  }
+
+  late final StreamSubscription<AuthState> _authStateChangeSubscription;
+
+  void initAuthListener() {
+    PowersyncSupabaseConnector? currentConnector;
+
+    if (isLoggedIn) {
+      // If the user is already logged in, connect immediately.
+      // Otherwise, connect once logged in.
+      currentConnector = PowersyncSupabaseConnector(powersyncDb);
+      powersyncDb.connect(connector: currentConnector);
     }
-  }
 
-  Future<void> signInWithApple(BuildContext context) async {
-    try {
-      _setLoading(true, context);
-      await authService.signInWithApple();
-    } catch (e) {
-      _logger.severe('Error signing in with Apple', e);
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to sign in with Apple'),
-            backgroundColor: Colors.red,
-          ),
-        );
+    _authStateChangeSubscription =
+        Supabase.instance.client.auth.onAuthStateChange.listen((data) async {
+      final AuthChangeEvent event = data.event;
+      if (event == AuthChangeEvent.signedIn) {
+        // Connect to PowerSync when the user is signed in
+        currentConnector = PowersyncSupabaseConnector(powersyncDb);
+        powersyncDb.connect(connector: currentConnector!);
+        _isLoggedIn = true;
+        _isLoading = false;
+        _logger.info('Signed in');
+        notifyListeners();
+      } else if (event == AuthChangeEvent.signedOut) {
+        // Implicit sign out - disconnect, but don't delete data
+        currentConnector = null;
+        await powersyncDb.disconnect();
+        _isLoggedIn = false;
+        _isLoading = false;
+        _logger.info('Signed out');
+        notifyListeners();
+      } else if (event == AuthChangeEvent.tokenRefreshed) {
+        // Supabase token refreshed - trigger token refresh for PowerSync.
+        currentConnector?.prefetchCredentials();
+        _logger.info('Token refreshed');
+      } else if (event == AuthChangeEvent.initialSession) {
+        _logger.info("Initial session");
+      } else if (event == AuthChangeEvent.userUpdated) {
+        _logger.info("User updated");
+      } else if (event == AuthChangeEvent.passwordRecovery) {
+        _logger.info("Password recovery");
       }
-    } finally {
-      if (context.mounted) {
-        _setLoading(false, context);
-      }
-    }
-  }
-
-  Future<void> signOut() async {
-    _isLoggedIn = false;
-    notifyListeners();
-    await authService.signOut();
-  }
-
-  void checkAuthStatus() {
-    _isLoggedIn = Supabase.instance.client.auth.currentSession != null;
-    notifyListeners();
-  }
-
-  Future<void> deleteSelf() async {
-    await authService.deleteSelf();
-    await signOut();
-  }
-
-  void initAuthStateListener(BuildContext context) {
-    authService.initAuthListener(context);
-  }
-
-  void _setLoading(bool isLoading, BuildContext context) {
-    _isLoading = isLoading;
-    (context as Element).markNeedsBuild();
+    });
   }
 }

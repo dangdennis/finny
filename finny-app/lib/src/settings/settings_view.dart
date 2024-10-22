@@ -1,4 +1,4 @@
-import 'package:finny/src/auth/auth_provider.dart';
+import 'package:finny/src/auth/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'settings_controller.dart';
 
@@ -6,13 +6,13 @@ class SettingsView extends StatefulWidget {
   const SettingsView({
     super.key,
     required this.settingsController,
-    required this.authProvider,
+    required this.authService,
   });
 
   static const routeName = '/settings';
 
   final SettingsController settingsController;
-  final AuthProvider authProvider;
+  final AuthService authService;
 
   @override
   State<SettingsView> createState() => _SettingsViewState();

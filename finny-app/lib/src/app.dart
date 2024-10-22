@@ -2,6 +2,7 @@ import 'package:finny/src/accounts/account_details_view.dart';
 import 'package:finny/src/accounts/account_list_view.dart';
 import 'package:finny/src/accounts/accounts_controller.dart';
 import 'package:finny/src/auth/auth_provider.dart';
+import 'package:finny/src/auth/auth_service.dart';
 import 'package:finny/src/auth/login_view.dart';
 import 'package:finny/src/connections/connections_controller.dart';
 import 'package:finny/src/connections/connections_list_view.dart';
@@ -20,7 +21,7 @@ import 'package:provider/provider.dart';
 class MyApp extends StatelessWidget {
   const MyApp(
       {super.key,
-      required this.authProvider,
+      required this.authService,
       required this.accountsController,
       required this.connectionsController,
       required this.goalsController,
@@ -34,7 +35,7 @@ class MyApp extends StatelessWidget {
   final GoalsController goalsController;
   final FinalyticsController finalyticsController;
   final OnboardingController onboardingController;
-  final AuthProvider authProvider;
+  final AuthService authService;
 
   @override
   Widget build(BuildContext context) {
@@ -81,7 +82,7 @@ class MyApp extends StatelessWidget {
             builder: (context, authProvider, child) {
               if (authProvider.isLoggedIn) {
                 return MainView(
-                  authProvider: authProvider,
+                  authService: authService,
                   onboardingController: onboardingController,
                   accountsController: accountsController,
                   connectionsController: connectionsController,
@@ -90,7 +91,7 @@ class MyApp extends StatelessWidget {
                   settingsController: settingsController,
                 );
               } else {
-                return LoginView(authProvider: authProvider);
+                return LoginView(authService: authService);
               }
             },
           ),
@@ -126,16 +127,16 @@ class MyApp extends StatelessWidget {
                     );
                   case LoginView.routeName:
                     return LoginView(
-                      authProvider: authProvider,
+                      authService: authService,
                     );
                   case SettingsView.routeName:
                     return SettingsView(
-                      authProvider: authProvider,
+                      authService: authService,
                       settingsController: settingsController,
                     );
                   default:
                     return LoginView(
-                      authProvider: authProvider,
+                      authService: authService,
                     );
                 }
               },
@@ -156,7 +157,7 @@ class MainView extends StatefulWidget {
     required this.settingsController,
     required this.finalyticsController,
     required this.onboardingController,
-    required this.authProvider,
+    required this.authService,
   });
 
   final ConnectionsController connectionsController;
@@ -165,7 +166,7 @@ class MainView extends StatefulWidget {
   final FinalyticsController finalyticsController;
   final OnboardingController onboardingController;
   final AccountsController accountsController;
-  final AuthProvider authProvider;
+  final AuthService authService;
 
   @override
   State<MainView> createState() => _MainViewState();
@@ -191,7 +192,7 @@ class _MainViewState extends State<MainView> {
       ),
       SettingsView(
         settingsController: widget.settingsController,
-        authProvider: widget.authProvider,
+        authService: widget.authService,
       ),
     ];
   }
