@@ -1,4 +1,6 @@
 -- last 12 months. optionally can exclude current month
+-- this query does not account for multitenancy yet. it will require
+-- a join to the plaid items table with user id.
 
 WITH net_transfer_and_creditcard_payment_transactions AS (
 	SELECT
