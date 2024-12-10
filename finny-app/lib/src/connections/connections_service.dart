@@ -24,9 +24,11 @@ class ConnectionsService {
 
     final token = await createPlaidLinkToken();
 
-    LinkConfiguration configuration = LinkTokenConfiguration(
+    LinkTokenConfiguration configuration = LinkTokenConfiguration(
       token: token,
     );
+
+    PlaidLink.create(configuration: configuration);
 
     PlaidLink.onSuccess.listen((LinkSuccess success) async {
       _logger.info("Success: ${success.toJson()}");
@@ -44,7 +46,7 @@ class ConnectionsService {
       _logger.info('Event: $event');
     });
 
-    await PlaidLink.open(configuration: configuration);
+    await PlaidLink.open();
   }
 
   Future<void> createPlaidItem(String publicToken) async {
