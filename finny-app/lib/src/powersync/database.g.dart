@@ -436,6 +436,36 @@ class AccountsDbData extends DataClass implements Insertable<AccountsDbData> {
         updatedAt: updatedAt ?? this.updatedAt,
         deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
       );
+  AccountsDbData copyWithCompanion(AccountsDbCompanion data) {
+    return AccountsDbData(
+      id: data.id.present ? data.id.value : this.id,
+      itemId: data.itemId.present ? data.itemId.value : this.itemId,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      name: data.name.present ? data.name.value : this.name,
+      mask: data.mask.present ? data.mask.value : this.mask,
+      officialName: data.officialName.present
+          ? data.officialName.value
+          : this.officialName,
+      currentBalance: data.currentBalance.present
+          ? data.currentBalance.value
+          : this.currentBalance,
+      availableBalance: data.availableBalance.present
+          ? data.availableBalance.value
+          : this.availableBalance,
+      isoCurrencyCode: data.isoCurrencyCode.present
+          ? data.isoCurrencyCode.value
+          : this.isoCurrencyCode,
+      unofficialCurrencyCode: data.unofficialCurrencyCode.present
+          ? data.unofficialCurrencyCode.value
+          : this.unofficialCurrencyCode,
+      type: data.type.present ? data.type.value : this.type,
+      subtype: data.subtype.present ? data.subtype.value : this.subtype,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('AccountsDbData(')
@@ -1145,6 +1175,33 @@ class TransactionsDbData extends DataClass
         updatedAt: updatedAt ?? this.updatedAt,
         deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
       );
+  TransactionsDbData copyWithCompanion(TransactionsDbCompanion data) {
+    return TransactionsDbData(
+      id: data.id.present ? data.id.value : this.id,
+      accountId: data.accountId.present ? data.accountId.value : this.accountId,
+      category: data.category.present ? data.category.value : this.category,
+      subcategory:
+          data.subcategory.present ? data.subcategory.value : this.subcategory,
+      type: data.type.present ? data.type.value : this.type,
+      name: data.name.present ? data.name.value : this.name,
+      amount: data.amount.present ? data.amount.value : this.amount,
+      isoCurrencyCode: data.isoCurrencyCode.present
+          ? data.isoCurrencyCode.value
+          : this.isoCurrencyCode,
+      unofficialCurrencyCode: data.unofficialCurrencyCode.present
+          ? data.unofficialCurrencyCode.value
+          : this.unofficialCurrencyCode,
+      date: data.date.present ? data.date.value : this.date,
+      pending: data.pending.present ? data.pending.value : this.pending,
+      accountOwner: data.accountOwner.present
+          ? data.accountOwner.value
+          : this.accountOwner,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('TransactionsDbData(')
@@ -1808,6 +1865,33 @@ class InvestmentHoldingsDbData extends DataClass
         updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
         deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
       );
+  InvestmentHoldingsDbData copyWithCompanion(
+      InvestmentHoldingsDbCompanion data) {
+    return InvestmentHoldingsDbData(
+      id: data.id.present ? data.id.value : this.id,
+      accountId: data.accountId.present ? data.accountId.value : this.accountId,
+      institutionPrice: data.institutionPrice.present
+          ? data.institutionPrice.value
+          : this.institutionPrice,
+      institutionPriceAsOf: data.institutionPriceAsOf.present
+          ? data.institutionPriceAsOf.value
+          : this.institutionPriceAsOf,
+      institutionValue: data.institutionValue.present
+          ? data.institutionValue.value
+          : this.institutionValue,
+      costBasis: data.costBasis.present ? data.costBasis.value : this.costBasis,
+      quantity: data.quantity.present ? data.quantity.value : this.quantity,
+      isoCurrencyCode: data.isoCurrencyCode.present
+          ? data.isoCurrencyCode.value
+          : this.isoCurrencyCode,
+      vestedValue:
+          data.vestedValue.present ? data.vestedValue.value : this.vestedValue,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('InvestmentHoldingsDbData(')
@@ -2331,6 +2415,22 @@ class GoalsDbData extends DataClass implements Insertable<GoalsDbData> {
         updatedAt: updatedAt ?? this.updatedAt,
         deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
       );
+  GoalsDbData copyWithCompanion(GoalsDbCompanion data) {
+    return GoalsDbData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      amount: data.amount.present ? data.amount.value : this.amount,
+      targetDate:
+          data.targetDate.present ? data.targetDate.value : this.targetDate,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      progress: data.progress.present ? data.progress.value : this.progress,
+      goalType: data.goalType.present ? data.goalType.value : this.goalType,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('GoalsDbData(')
@@ -2776,6 +2876,20 @@ class GoalAccountsDbData extends DataClass
         updatedAt: updatedAt ?? this.updatedAt,
         deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
       );
+  GoalAccountsDbData copyWithCompanion(GoalAccountsDbCompanion data) {
+    return GoalAccountsDbData(
+      id: data.id.present ? data.id.value : this.id,
+      goalId: data.goalId.present ? data.goalId.value : this.goalId,
+      accountId: data.accountId.present ? data.accountId.value : this.accountId,
+      amount: data.amount.present ? data.amount.value : this.amount,
+      percentage:
+          data.percentage.present ? data.percentage.value : this.percentage,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('GoalAccountsDbData(')
@@ -3134,6 +3248,21 @@ class ProfilesDbData extends DataClass implements Insertable<ProfilesDbData> {
         riskProfile: riskProfile.present ? riskProfile.value : this.riskProfile,
         fireProfile: fireProfile.present ? fireProfile.value : this.fireProfile,
       );
+  ProfilesDbData copyWithCompanion(ProfilesDbCompanion data) {
+    return ProfilesDbData(
+      id: data.id.present ? data.id.value : this.id,
+      dateOfBirth:
+          data.dateOfBirth.present ? data.dateOfBirth.value : this.dateOfBirth,
+      retirementAge: data.retirementAge.present
+          ? data.retirementAge.value
+          : this.retirementAge,
+      riskProfile:
+          data.riskProfile.present ? data.riskProfile.value : this.riskProfile,
+      fireProfile:
+          data.fireProfile.present ? data.fireProfile.value : this.fireProfile,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('ProfilesDbData(')
@@ -3258,7 +3387,7 @@ class ProfilesDbCompanion extends UpdateCompanion<ProfilesDbData> {
 
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
-  _$AppDatabaseManager get managers => _$AppDatabaseManager(this);
+  $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $AccountsDbTable accountsDb = $AccountsDbTable(this);
   late final $TransactionsDbTable transactionsDb = $TransactionsDbTable(this);
   late final $InvestmentHoldingsDbTable investmentHoldingsDb =
@@ -3280,7 +3409,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       ];
 }
 
-typedef $$AccountsDbTableInsertCompanionBuilder = AccountsDbCompanion Function({
+typedef $$AccountsDbTableCreateCompanionBuilder = AccountsDbCompanion Function({
   required String id,
   required String itemId,
   required String userId,
@@ -3317,26 +3446,206 @@ typedef $$AccountsDbTableUpdateCompanionBuilder = AccountsDbCompanion Function({
   Value<int> rowid,
 });
 
+class $$AccountsDbTableFilterComposer
+    extends Composer<_$AppDatabase, $AccountsDbTable> {
+  $$AccountsDbTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get itemId => $composableBuilder(
+      column: $table.itemId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get userId => $composableBuilder(
+      column: $table.userId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get mask => $composableBuilder(
+      column: $table.mask, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get officialName => $composableBuilder(
+      column: $table.officialName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get currentBalance => $composableBuilder(
+      column: $table.currentBalance,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get availableBalance => $composableBuilder(
+      column: $table.availableBalance,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get isoCurrencyCode => $composableBuilder(
+      column: $table.isoCurrencyCode,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get unofficialCurrencyCode => $composableBuilder(
+      column: $table.unofficialCurrencyCode,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get type => $composableBuilder(
+      column: $table.type, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get subtype => $composableBuilder(
+      column: $table.subtype, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get deletedAt => $composableBuilder(
+      column: $table.deletedAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$AccountsDbTableOrderingComposer
+    extends Composer<_$AppDatabase, $AccountsDbTable> {
+  $$AccountsDbTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get itemId => $composableBuilder(
+      column: $table.itemId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get userId => $composableBuilder(
+      column: $table.userId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get mask => $composableBuilder(
+      column: $table.mask, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get officialName => $composableBuilder(
+      column: $table.officialName,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get currentBalance => $composableBuilder(
+      column: $table.currentBalance,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get availableBalance => $composableBuilder(
+      column: $table.availableBalance,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get isoCurrencyCode => $composableBuilder(
+      column: $table.isoCurrencyCode,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get unofficialCurrencyCode => $composableBuilder(
+      column: $table.unofficialCurrencyCode,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get type => $composableBuilder(
+      column: $table.type, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get subtype => $composableBuilder(
+      column: $table.subtype, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get deletedAt => $composableBuilder(
+      column: $table.deletedAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$AccountsDbTableAnnotationComposer
+    extends Composer<_$AppDatabase, $AccountsDbTable> {
+  $$AccountsDbTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get itemId =>
+      $composableBuilder(column: $table.itemId, builder: (column) => column);
+
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get mask =>
+      $composableBuilder(column: $table.mask, builder: (column) => column);
+
+  GeneratedColumn<String> get officialName => $composableBuilder(
+      column: $table.officialName, builder: (column) => column);
+
+  GeneratedColumn<double> get currentBalance => $composableBuilder(
+      column: $table.currentBalance, builder: (column) => column);
+
+  GeneratedColumn<double> get availableBalance => $composableBuilder(
+      column: $table.availableBalance, builder: (column) => column);
+
+  GeneratedColumn<String> get isoCurrencyCode => $composableBuilder(
+      column: $table.isoCurrencyCode, builder: (column) => column);
+
+  GeneratedColumn<String> get unofficialCurrencyCode => $composableBuilder(
+      column: $table.unofficialCurrencyCode, builder: (column) => column);
+
+  GeneratedColumn<String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
+
+  GeneratedColumn<String> get subtype =>
+      $composableBuilder(column: $table.subtype, builder: (column) => column);
+
+  GeneratedColumn<String> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<String> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+}
+
 class $$AccountsDbTableTableManager extends RootTableManager<
     _$AppDatabase,
     $AccountsDbTable,
     AccountsDbData,
     $$AccountsDbTableFilterComposer,
     $$AccountsDbTableOrderingComposer,
-    $$AccountsDbTableProcessedTableManager,
-    $$AccountsDbTableInsertCompanionBuilder,
-    $$AccountsDbTableUpdateCompanionBuilder> {
+    $$AccountsDbTableAnnotationComposer,
+    $$AccountsDbTableCreateCompanionBuilder,
+    $$AccountsDbTableUpdateCompanionBuilder,
+    (
+      AccountsDbData,
+      BaseReferences<_$AppDatabase, $AccountsDbTable, AccountsDbData>
+    ),
+    AccountsDbData,
+    PrefetchHooks Function()> {
   $$AccountsDbTableTableManager(_$AppDatabase db, $AccountsDbTable table)
       : super(TableManagerState(
           db: db,
           table: table,
-          filteringComposer:
-              $$AccountsDbTableFilterComposer(ComposerState(db, table)),
-          orderingComposer:
-              $$AccountsDbTableOrderingComposer(ComposerState(db, table)),
-          getChildManagerBuilder: (p) =>
-              $$AccountsDbTableProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          createFilteringComposer: () =>
+              $$AccountsDbTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AccountsDbTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AccountsDbTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
             Value<String> id = const Value.absent(),
             Value<String> itemId = const Value.absent(),
             Value<String> userId = const Value.absent(),
@@ -3372,7 +3681,7 @@ class $$AccountsDbTableTableManager extends RootTableManager<
             deletedAt: deletedAt,
             rowid: rowid,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             required String id,
             required String itemId,
             required String userId,
@@ -3408,181 +3717,29 @@ class $$AccountsDbTableTableManager extends RootTableManager<
             deletedAt: deletedAt,
             rowid: rowid,
           ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
         ));
 }
 
-class $$AccountsDbTableProcessedTableManager extends ProcessedTableManager<
+typedef $$AccountsDbTableProcessedTableManager = ProcessedTableManager<
     _$AppDatabase,
     $AccountsDbTable,
     AccountsDbData,
     $$AccountsDbTableFilterComposer,
     $$AccountsDbTableOrderingComposer,
-    $$AccountsDbTableProcessedTableManager,
-    $$AccountsDbTableInsertCompanionBuilder,
-    $$AccountsDbTableUpdateCompanionBuilder> {
-  $$AccountsDbTableProcessedTableManager(super.$state);
-}
-
-class $$AccountsDbTableFilterComposer
-    extends FilterComposer<_$AppDatabase, $AccountsDbTable> {
-  $$AccountsDbTableFilterComposer(super.$state);
-  ColumnFilters<String> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get itemId => $state.composableBuilder(
-      column: $state.table.itemId,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get userId => $state.composableBuilder(
-      column: $state.table.userId,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get name => $state.composableBuilder(
-      column: $state.table.name,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get mask => $state.composableBuilder(
-      column: $state.table.mask,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get officialName => $state.composableBuilder(
-      column: $state.table.officialName,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<double> get currentBalance => $state.composableBuilder(
-      column: $state.table.currentBalance,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<double> get availableBalance => $state.composableBuilder(
-      column: $state.table.availableBalance,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get isoCurrencyCode => $state.composableBuilder(
-      column: $state.table.isoCurrencyCode,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get unofficialCurrencyCode => $state.composableBuilder(
-      column: $state.table.unofficialCurrencyCode,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get type => $state.composableBuilder(
-      column: $state.table.type,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get subtype => $state.composableBuilder(
-      column: $state.table.subtype,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get createdAt => $state.composableBuilder(
-      column: $state.table.createdAt,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get updatedAt => $state.composableBuilder(
-      column: $state.table.updatedAt,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get deletedAt => $state.composableBuilder(
-      column: $state.table.deletedAt,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-}
-
-class $$AccountsDbTableOrderingComposer
-    extends OrderingComposer<_$AppDatabase, $AccountsDbTable> {
-  $$AccountsDbTableOrderingComposer(super.$state);
-  ColumnOrderings<String> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get itemId => $state.composableBuilder(
-      column: $state.table.itemId,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get userId => $state.composableBuilder(
-      column: $state.table.userId,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get name => $state.composableBuilder(
-      column: $state.table.name,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get mask => $state.composableBuilder(
-      column: $state.table.mask,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get officialName => $state.composableBuilder(
-      column: $state.table.officialName,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<double> get currentBalance => $state.composableBuilder(
-      column: $state.table.currentBalance,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<double> get availableBalance => $state.composableBuilder(
-      column: $state.table.availableBalance,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get isoCurrencyCode => $state.composableBuilder(
-      column: $state.table.isoCurrencyCode,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get unofficialCurrencyCode =>
-      $state.composableBuilder(
-          column: $state.table.unofficialCurrencyCode,
-          builder: (column, joinBuilders) =>
-              ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get type => $state.composableBuilder(
-      column: $state.table.type,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get subtype => $state.composableBuilder(
-      column: $state.table.subtype,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get createdAt => $state.composableBuilder(
-      column: $state.table.createdAt,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get updatedAt => $state.composableBuilder(
-      column: $state.table.updatedAt,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get deletedAt => $state.composableBuilder(
-      column: $state.table.deletedAt,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-}
-
-typedef $$TransactionsDbTableInsertCompanionBuilder = TransactionsDbCompanion
+    $$AccountsDbTableAnnotationComposer,
+    $$AccountsDbTableCreateCompanionBuilder,
+    $$AccountsDbTableUpdateCompanionBuilder,
+    (
+      AccountsDbData,
+      BaseReferences<_$AppDatabase, $AccountsDbTable, AccountsDbData>
+    ),
+    AccountsDbData,
+    PrefetchHooks Function()>;
+typedef $$TransactionsDbTableCreateCompanionBuilder = TransactionsDbCompanion
     Function({
   required String id,
   required String accountId,
@@ -3621,27 +3778,203 @@ typedef $$TransactionsDbTableUpdateCompanionBuilder = TransactionsDbCompanion
   Value<int> rowid,
 });
 
+class $$TransactionsDbTableFilterComposer
+    extends Composer<_$AppDatabase, $TransactionsDbTable> {
+  $$TransactionsDbTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get accountId => $composableBuilder(
+      column: $table.accountId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get category => $composableBuilder(
+      column: $table.category, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get subcategory => $composableBuilder(
+      column: $table.subcategory, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get type => $composableBuilder(
+      column: $table.type, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get amount => $composableBuilder(
+      column: $table.amount, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get isoCurrencyCode => $composableBuilder(
+      column: $table.isoCurrencyCode,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get unofficialCurrencyCode => $composableBuilder(
+      column: $table.unofficialCurrencyCode,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get date => $composableBuilder(
+      column: $table.date, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get pending => $composableBuilder(
+      column: $table.pending, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get accountOwner => $composableBuilder(
+      column: $table.accountOwner, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get deletedAt => $composableBuilder(
+      column: $table.deletedAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$TransactionsDbTableOrderingComposer
+    extends Composer<_$AppDatabase, $TransactionsDbTable> {
+  $$TransactionsDbTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get accountId => $composableBuilder(
+      column: $table.accountId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get category => $composableBuilder(
+      column: $table.category, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get subcategory => $composableBuilder(
+      column: $table.subcategory, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get type => $composableBuilder(
+      column: $table.type, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get amount => $composableBuilder(
+      column: $table.amount, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get isoCurrencyCode => $composableBuilder(
+      column: $table.isoCurrencyCode,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get unofficialCurrencyCode => $composableBuilder(
+      column: $table.unofficialCurrencyCode,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get date => $composableBuilder(
+      column: $table.date, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get pending => $composableBuilder(
+      column: $table.pending, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get accountOwner => $composableBuilder(
+      column: $table.accountOwner,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get deletedAt => $composableBuilder(
+      column: $table.deletedAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$TransactionsDbTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TransactionsDbTable> {
+  $$TransactionsDbTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get accountId =>
+      $composableBuilder(column: $table.accountId, builder: (column) => column);
+
+  GeneratedColumn<String> get category =>
+      $composableBuilder(column: $table.category, builder: (column) => column);
+
+  GeneratedColumn<String> get subcategory => $composableBuilder(
+      column: $table.subcategory, builder: (column) => column);
+
+  GeneratedColumn<String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<double> get amount =>
+      $composableBuilder(column: $table.amount, builder: (column) => column);
+
+  GeneratedColumn<String> get isoCurrencyCode => $composableBuilder(
+      column: $table.isoCurrencyCode, builder: (column) => column);
+
+  GeneratedColumn<String> get unofficialCurrencyCode => $composableBuilder(
+      column: $table.unofficialCurrencyCode, builder: (column) => column);
+
+  GeneratedColumn<String> get date =>
+      $composableBuilder(column: $table.date, builder: (column) => column);
+
+  GeneratedColumn<int> get pending =>
+      $composableBuilder(column: $table.pending, builder: (column) => column);
+
+  GeneratedColumn<String> get accountOwner => $composableBuilder(
+      column: $table.accountOwner, builder: (column) => column);
+
+  GeneratedColumn<String> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<String> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+}
+
 class $$TransactionsDbTableTableManager extends RootTableManager<
     _$AppDatabase,
     $TransactionsDbTable,
     TransactionsDbData,
     $$TransactionsDbTableFilterComposer,
     $$TransactionsDbTableOrderingComposer,
-    $$TransactionsDbTableProcessedTableManager,
-    $$TransactionsDbTableInsertCompanionBuilder,
-    $$TransactionsDbTableUpdateCompanionBuilder> {
+    $$TransactionsDbTableAnnotationComposer,
+    $$TransactionsDbTableCreateCompanionBuilder,
+    $$TransactionsDbTableUpdateCompanionBuilder,
+    (
+      TransactionsDbData,
+      BaseReferences<_$AppDatabase, $TransactionsDbTable, TransactionsDbData>
+    ),
+    TransactionsDbData,
+    PrefetchHooks Function()> {
   $$TransactionsDbTableTableManager(
       _$AppDatabase db, $TransactionsDbTable table)
       : super(TableManagerState(
           db: db,
           table: table,
-          filteringComposer:
-              $$TransactionsDbTableFilterComposer(ComposerState(db, table)),
-          orderingComposer:
-              $$TransactionsDbTableOrderingComposer(ComposerState(db, table)),
-          getChildManagerBuilder: (p) =>
-              $$TransactionsDbTableProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          createFilteringComposer: () =>
+              $$TransactionsDbTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TransactionsDbTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TransactionsDbTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
             Value<String> id = const Value.absent(),
             Value<String> accountId = const Value.absent(),
             Value<String> category = const Value.absent(),
@@ -3677,7 +4010,7 @@ class $$TransactionsDbTableTableManager extends RootTableManager<
             deletedAt: deletedAt,
             rowid: rowid,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             required String id,
             required String accountId,
             required String category,
@@ -3713,181 +4046,29 @@ class $$TransactionsDbTableTableManager extends RootTableManager<
             deletedAt: deletedAt,
             rowid: rowid,
           ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
         ));
 }
 
-class $$TransactionsDbTableProcessedTableManager extends ProcessedTableManager<
+typedef $$TransactionsDbTableProcessedTableManager = ProcessedTableManager<
     _$AppDatabase,
     $TransactionsDbTable,
     TransactionsDbData,
     $$TransactionsDbTableFilterComposer,
     $$TransactionsDbTableOrderingComposer,
-    $$TransactionsDbTableProcessedTableManager,
-    $$TransactionsDbTableInsertCompanionBuilder,
-    $$TransactionsDbTableUpdateCompanionBuilder> {
-  $$TransactionsDbTableProcessedTableManager(super.$state);
-}
-
-class $$TransactionsDbTableFilterComposer
-    extends FilterComposer<_$AppDatabase, $TransactionsDbTable> {
-  $$TransactionsDbTableFilterComposer(super.$state);
-  ColumnFilters<String> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get accountId => $state.composableBuilder(
-      column: $state.table.accountId,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get category => $state.composableBuilder(
-      column: $state.table.category,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get subcategory => $state.composableBuilder(
-      column: $state.table.subcategory,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get type => $state.composableBuilder(
-      column: $state.table.type,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get name => $state.composableBuilder(
-      column: $state.table.name,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<double> get amount => $state.composableBuilder(
-      column: $state.table.amount,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get isoCurrencyCode => $state.composableBuilder(
-      column: $state.table.isoCurrencyCode,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get unofficialCurrencyCode => $state.composableBuilder(
-      column: $state.table.unofficialCurrencyCode,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get date => $state.composableBuilder(
-      column: $state.table.date,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<int> get pending => $state.composableBuilder(
-      column: $state.table.pending,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get accountOwner => $state.composableBuilder(
-      column: $state.table.accountOwner,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get createdAt => $state.composableBuilder(
-      column: $state.table.createdAt,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get updatedAt => $state.composableBuilder(
-      column: $state.table.updatedAt,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get deletedAt => $state.composableBuilder(
-      column: $state.table.deletedAt,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-}
-
-class $$TransactionsDbTableOrderingComposer
-    extends OrderingComposer<_$AppDatabase, $TransactionsDbTable> {
-  $$TransactionsDbTableOrderingComposer(super.$state);
-  ColumnOrderings<String> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get accountId => $state.composableBuilder(
-      column: $state.table.accountId,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get category => $state.composableBuilder(
-      column: $state.table.category,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get subcategory => $state.composableBuilder(
-      column: $state.table.subcategory,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get type => $state.composableBuilder(
-      column: $state.table.type,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get name => $state.composableBuilder(
-      column: $state.table.name,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<double> get amount => $state.composableBuilder(
-      column: $state.table.amount,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get isoCurrencyCode => $state.composableBuilder(
-      column: $state.table.isoCurrencyCode,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get unofficialCurrencyCode =>
-      $state.composableBuilder(
-          column: $state.table.unofficialCurrencyCode,
-          builder: (column, joinBuilders) =>
-              ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get date => $state.composableBuilder(
-      column: $state.table.date,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<int> get pending => $state.composableBuilder(
-      column: $state.table.pending,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get accountOwner => $state.composableBuilder(
-      column: $state.table.accountOwner,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get createdAt => $state.composableBuilder(
-      column: $state.table.createdAt,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get updatedAt => $state.composableBuilder(
-      column: $state.table.updatedAt,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get deletedAt => $state.composableBuilder(
-      column: $state.table.deletedAt,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-}
-
-typedef $$InvestmentHoldingsDbTableInsertCompanionBuilder
+    $$TransactionsDbTableAnnotationComposer,
+    $$TransactionsDbTableCreateCompanionBuilder,
+    $$TransactionsDbTableUpdateCompanionBuilder,
+    (
+      TransactionsDbData,
+      BaseReferences<_$AppDatabase, $TransactionsDbTable, TransactionsDbData>
+    ),
+    TransactionsDbData,
+    PrefetchHooks Function()>;
+typedef $$InvestmentHoldingsDbTableCreateCompanionBuilder
     = InvestmentHoldingsDbCompanion Function({
   required String id,
   Value<String?> accountId,
@@ -3920,27 +4101,182 @@ typedef $$InvestmentHoldingsDbTableUpdateCompanionBuilder
   Value<int> rowid,
 });
 
+class $$InvestmentHoldingsDbTableFilterComposer
+    extends Composer<_$AppDatabase, $InvestmentHoldingsDbTable> {
+  $$InvestmentHoldingsDbTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get accountId => $composableBuilder(
+      column: $table.accountId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get institutionPrice => $composableBuilder(
+      column: $table.institutionPrice,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get institutionPriceAsOf => $composableBuilder(
+      column: $table.institutionPriceAsOf,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get institutionValue => $composableBuilder(
+      column: $table.institutionValue,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get costBasis => $composableBuilder(
+      column: $table.costBasis, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get quantity => $composableBuilder(
+      column: $table.quantity, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get isoCurrencyCode => $composableBuilder(
+      column: $table.isoCurrencyCode,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get vestedValue => $composableBuilder(
+      column: $table.vestedValue, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get deletedAt => $composableBuilder(
+      column: $table.deletedAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$InvestmentHoldingsDbTableOrderingComposer
+    extends Composer<_$AppDatabase, $InvestmentHoldingsDbTable> {
+  $$InvestmentHoldingsDbTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get accountId => $composableBuilder(
+      column: $table.accountId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get institutionPrice => $composableBuilder(
+      column: $table.institutionPrice,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get institutionPriceAsOf => $composableBuilder(
+      column: $table.institutionPriceAsOf,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get institutionValue => $composableBuilder(
+      column: $table.institutionValue,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get costBasis => $composableBuilder(
+      column: $table.costBasis, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get quantity => $composableBuilder(
+      column: $table.quantity, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get isoCurrencyCode => $composableBuilder(
+      column: $table.isoCurrencyCode,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get vestedValue => $composableBuilder(
+      column: $table.vestedValue, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get deletedAt => $composableBuilder(
+      column: $table.deletedAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$InvestmentHoldingsDbTableAnnotationComposer
+    extends Composer<_$AppDatabase, $InvestmentHoldingsDbTable> {
+  $$InvestmentHoldingsDbTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get accountId =>
+      $composableBuilder(column: $table.accountId, builder: (column) => column);
+
+  GeneratedColumn<double> get institutionPrice => $composableBuilder(
+      column: $table.institutionPrice, builder: (column) => column);
+
+  GeneratedColumn<String> get institutionPriceAsOf => $composableBuilder(
+      column: $table.institutionPriceAsOf, builder: (column) => column);
+
+  GeneratedColumn<double> get institutionValue => $composableBuilder(
+      column: $table.institutionValue, builder: (column) => column);
+
+  GeneratedColumn<double> get costBasis =>
+      $composableBuilder(column: $table.costBasis, builder: (column) => column);
+
+  GeneratedColumn<double> get quantity =>
+      $composableBuilder(column: $table.quantity, builder: (column) => column);
+
+  GeneratedColumn<String> get isoCurrencyCode => $composableBuilder(
+      column: $table.isoCurrencyCode, builder: (column) => column);
+
+  GeneratedColumn<double> get vestedValue => $composableBuilder(
+      column: $table.vestedValue, builder: (column) => column);
+
+  GeneratedColumn<String> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<String> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+}
+
 class $$InvestmentHoldingsDbTableTableManager extends RootTableManager<
     _$AppDatabase,
     $InvestmentHoldingsDbTable,
     InvestmentHoldingsDbData,
     $$InvestmentHoldingsDbTableFilterComposer,
     $$InvestmentHoldingsDbTableOrderingComposer,
-    $$InvestmentHoldingsDbTableProcessedTableManager,
-    $$InvestmentHoldingsDbTableInsertCompanionBuilder,
-    $$InvestmentHoldingsDbTableUpdateCompanionBuilder> {
+    $$InvestmentHoldingsDbTableAnnotationComposer,
+    $$InvestmentHoldingsDbTableCreateCompanionBuilder,
+    $$InvestmentHoldingsDbTableUpdateCompanionBuilder,
+    (
+      InvestmentHoldingsDbData,
+      BaseReferences<_$AppDatabase, $InvestmentHoldingsDbTable,
+          InvestmentHoldingsDbData>
+    ),
+    InvestmentHoldingsDbData,
+    PrefetchHooks Function()> {
   $$InvestmentHoldingsDbTableTableManager(
       _$AppDatabase db, $InvestmentHoldingsDbTable table)
       : super(TableManagerState(
           db: db,
           table: table,
-          filteringComposer: $$InvestmentHoldingsDbTableFilterComposer(
-              ComposerState(db, table)),
-          orderingComposer: $$InvestmentHoldingsDbTableOrderingComposer(
-              ComposerState(db, table)),
-          getChildManagerBuilder: (p) =>
-              $$InvestmentHoldingsDbTableProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          createFilteringComposer: () =>
+              $$InvestmentHoldingsDbTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$InvestmentHoldingsDbTableOrderingComposer(
+                  $db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$InvestmentHoldingsDbTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
             Value<String> id = const Value.absent(),
             Value<String?> accountId = const Value.absent(),
             Value<double?> institutionPrice = const Value.absent(),
@@ -3970,7 +4306,7 @@ class $$InvestmentHoldingsDbTableTableManager extends RootTableManager<
             deletedAt: deletedAt,
             rowid: rowid,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             required String id,
             Value<String?> accountId = const Value.absent(),
             Value<double?> institutionPrice = const Value.absent(),
@@ -4000,151 +4336,31 @@ class $$InvestmentHoldingsDbTableTableManager extends RootTableManager<
             deletedAt: deletedAt,
             rowid: rowid,
           ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
         ));
 }
 
-class $$InvestmentHoldingsDbTableProcessedTableManager
-    extends ProcessedTableManager<
+typedef $$InvestmentHoldingsDbTableProcessedTableManager
+    = ProcessedTableManager<
         _$AppDatabase,
         $InvestmentHoldingsDbTable,
         InvestmentHoldingsDbData,
         $$InvestmentHoldingsDbTableFilterComposer,
         $$InvestmentHoldingsDbTableOrderingComposer,
-        $$InvestmentHoldingsDbTableProcessedTableManager,
-        $$InvestmentHoldingsDbTableInsertCompanionBuilder,
-        $$InvestmentHoldingsDbTableUpdateCompanionBuilder> {
-  $$InvestmentHoldingsDbTableProcessedTableManager(super.$state);
-}
-
-class $$InvestmentHoldingsDbTableFilterComposer
-    extends FilterComposer<_$AppDatabase, $InvestmentHoldingsDbTable> {
-  $$InvestmentHoldingsDbTableFilterComposer(super.$state);
-  ColumnFilters<String> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get accountId => $state.composableBuilder(
-      column: $state.table.accountId,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<double> get institutionPrice => $state.composableBuilder(
-      column: $state.table.institutionPrice,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get institutionPriceAsOf => $state.composableBuilder(
-      column: $state.table.institutionPriceAsOf,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<double> get institutionValue => $state.composableBuilder(
-      column: $state.table.institutionValue,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<double> get costBasis => $state.composableBuilder(
-      column: $state.table.costBasis,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<double> get quantity => $state.composableBuilder(
-      column: $state.table.quantity,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get isoCurrencyCode => $state.composableBuilder(
-      column: $state.table.isoCurrencyCode,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<double> get vestedValue => $state.composableBuilder(
-      column: $state.table.vestedValue,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get createdAt => $state.composableBuilder(
-      column: $state.table.createdAt,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get updatedAt => $state.composableBuilder(
-      column: $state.table.updatedAt,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get deletedAt => $state.composableBuilder(
-      column: $state.table.deletedAt,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-}
-
-class $$InvestmentHoldingsDbTableOrderingComposer
-    extends OrderingComposer<_$AppDatabase, $InvestmentHoldingsDbTable> {
-  $$InvestmentHoldingsDbTableOrderingComposer(super.$state);
-  ColumnOrderings<String> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get accountId => $state.composableBuilder(
-      column: $state.table.accountId,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<double> get institutionPrice => $state.composableBuilder(
-      column: $state.table.institutionPrice,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get institutionPriceAsOf => $state.composableBuilder(
-      column: $state.table.institutionPriceAsOf,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<double> get institutionValue => $state.composableBuilder(
-      column: $state.table.institutionValue,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<double> get costBasis => $state.composableBuilder(
-      column: $state.table.costBasis,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<double> get quantity => $state.composableBuilder(
-      column: $state.table.quantity,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get isoCurrencyCode => $state.composableBuilder(
-      column: $state.table.isoCurrencyCode,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<double> get vestedValue => $state.composableBuilder(
-      column: $state.table.vestedValue,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get createdAt => $state.composableBuilder(
-      column: $state.table.createdAt,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get updatedAt => $state.composableBuilder(
-      column: $state.table.updatedAt,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get deletedAt => $state.composableBuilder(
-      column: $state.table.deletedAt,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-}
-
-typedef $$GoalsDbTableInsertCompanionBuilder = GoalsDbCompanion Function({
+        $$InvestmentHoldingsDbTableAnnotationComposer,
+        $$InvestmentHoldingsDbTableCreateCompanionBuilder,
+        $$InvestmentHoldingsDbTableUpdateCompanionBuilder,
+        (
+          InvestmentHoldingsDbData,
+          BaseReferences<_$AppDatabase, $InvestmentHoldingsDbTable,
+              InvestmentHoldingsDbData>
+        ),
+        InvestmentHoldingsDbData,
+        PrefetchHooks Function()>;
+typedef $$GoalsDbTableCreateCompanionBuilder = GoalsDbCompanion Function({
   required String id,
   required String name,
   required double amount,
@@ -4171,25 +4387,149 @@ typedef $$GoalsDbTableUpdateCompanionBuilder = GoalsDbCompanion Function({
   Value<int> rowid,
 });
 
+class $$GoalsDbTableFilterComposer
+    extends Composer<_$AppDatabase, $GoalsDbTable> {
+  $$GoalsDbTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get amount => $composableBuilder(
+      column: $table.amount, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get targetDate => $composableBuilder(
+      column: $table.targetDate, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get userId => $composableBuilder(
+      column: $table.userId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get progress => $composableBuilder(
+      column: $table.progress, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get goalType => $composableBuilder(
+      column: $table.goalType, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get deletedAt => $composableBuilder(
+      column: $table.deletedAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$GoalsDbTableOrderingComposer
+    extends Composer<_$AppDatabase, $GoalsDbTable> {
+  $$GoalsDbTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get amount => $composableBuilder(
+      column: $table.amount, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get targetDate => $composableBuilder(
+      column: $table.targetDate, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get userId => $composableBuilder(
+      column: $table.userId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get progress => $composableBuilder(
+      column: $table.progress, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get goalType => $composableBuilder(
+      column: $table.goalType, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get deletedAt => $composableBuilder(
+      column: $table.deletedAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$GoalsDbTableAnnotationComposer
+    extends Composer<_$AppDatabase, $GoalsDbTable> {
+  $$GoalsDbTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<double> get amount =>
+      $composableBuilder(column: $table.amount, builder: (column) => column);
+
+  GeneratedColumn<String> get targetDate => $composableBuilder(
+      column: $table.targetDate, builder: (column) => column);
+
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<double> get progress =>
+      $composableBuilder(column: $table.progress, builder: (column) => column);
+
+  GeneratedColumn<String> get goalType =>
+      $composableBuilder(column: $table.goalType, builder: (column) => column);
+
+  GeneratedColumn<String> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<String> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+}
+
 class $$GoalsDbTableTableManager extends RootTableManager<
     _$AppDatabase,
     $GoalsDbTable,
     GoalsDbData,
     $$GoalsDbTableFilterComposer,
     $$GoalsDbTableOrderingComposer,
-    $$GoalsDbTableProcessedTableManager,
-    $$GoalsDbTableInsertCompanionBuilder,
-    $$GoalsDbTableUpdateCompanionBuilder> {
+    $$GoalsDbTableAnnotationComposer,
+    $$GoalsDbTableCreateCompanionBuilder,
+    $$GoalsDbTableUpdateCompanionBuilder,
+    (GoalsDbData, BaseReferences<_$AppDatabase, $GoalsDbTable, GoalsDbData>),
+    GoalsDbData,
+    PrefetchHooks Function()> {
   $$GoalsDbTableTableManager(_$AppDatabase db, $GoalsDbTable table)
       : super(TableManagerState(
           db: db,
           table: table,
-          filteringComposer:
-              $$GoalsDbTableFilterComposer(ComposerState(db, table)),
-          orderingComposer:
-              $$GoalsDbTableOrderingComposer(ComposerState(db, table)),
-          getChildManagerBuilder: (p) => $$GoalsDbTableProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          createFilteringComposer: () =>
+              $$GoalsDbTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$GoalsDbTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$GoalsDbTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
             Value<String> id = const Value.absent(),
             Value<String> name = const Value.absent(),
             Value<double> amount = const Value.absent(),
@@ -4215,7 +4555,7 @@ class $$GoalsDbTableTableManager extends RootTableManager<
             deletedAt: deletedAt,
             rowid: rowid,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             required String id,
             required String name,
             required double amount,
@@ -4241,130 +4581,26 @@ class $$GoalsDbTableTableManager extends RootTableManager<
             deletedAt: deletedAt,
             rowid: rowid,
           ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
         ));
 }
 
-class $$GoalsDbTableProcessedTableManager extends ProcessedTableManager<
+typedef $$GoalsDbTableProcessedTableManager = ProcessedTableManager<
     _$AppDatabase,
     $GoalsDbTable,
     GoalsDbData,
     $$GoalsDbTableFilterComposer,
     $$GoalsDbTableOrderingComposer,
-    $$GoalsDbTableProcessedTableManager,
-    $$GoalsDbTableInsertCompanionBuilder,
-    $$GoalsDbTableUpdateCompanionBuilder> {
-  $$GoalsDbTableProcessedTableManager(super.$state);
-}
-
-class $$GoalsDbTableFilterComposer
-    extends FilterComposer<_$AppDatabase, $GoalsDbTable> {
-  $$GoalsDbTableFilterComposer(super.$state);
-  ColumnFilters<String> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get name => $state.composableBuilder(
-      column: $state.table.name,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<double> get amount => $state.composableBuilder(
-      column: $state.table.amount,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get targetDate => $state.composableBuilder(
-      column: $state.table.targetDate,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get userId => $state.composableBuilder(
-      column: $state.table.userId,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<double> get progress => $state.composableBuilder(
-      column: $state.table.progress,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get goalType => $state.composableBuilder(
-      column: $state.table.goalType,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get createdAt => $state.composableBuilder(
-      column: $state.table.createdAt,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get updatedAt => $state.composableBuilder(
-      column: $state.table.updatedAt,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get deletedAt => $state.composableBuilder(
-      column: $state.table.deletedAt,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-}
-
-class $$GoalsDbTableOrderingComposer
-    extends OrderingComposer<_$AppDatabase, $GoalsDbTable> {
-  $$GoalsDbTableOrderingComposer(super.$state);
-  ColumnOrderings<String> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get name => $state.composableBuilder(
-      column: $state.table.name,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<double> get amount => $state.composableBuilder(
-      column: $state.table.amount,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get targetDate => $state.composableBuilder(
-      column: $state.table.targetDate,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get userId => $state.composableBuilder(
-      column: $state.table.userId,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<double> get progress => $state.composableBuilder(
-      column: $state.table.progress,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get goalType => $state.composableBuilder(
-      column: $state.table.goalType,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get createdAt => $state.composableBuilder(
-      column: $state.table.createdAt,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get updatedAt => $state.composableBuilder(
-      column: $state.table.updatedAt,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get deletedAt => $state.composableBuilder(
-      column: $state.table.deletedAt,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-}
-
-typedef $$GoalAccountsDbTableInsertCompanionBuilder = GoalAccountsDbCompanion
+    $$GoalsDbTableAnnotationComposer,
+    $$GoalsDbTableCreateCompanionBuilder,
+    $$GoalsDbTableUpdateCompanionBuilder,
+    (GoalsDbData, BaseReferences<_$AppDatabase, $GoalsDbTable, GoalsDbData>),
+    GoalsDbData,
+    PrefetchHooks Function()>;
+typedef $$GoalAccountsDbTableCreateCompanionBuilder = GoalAccountsDbCompanion
     Function({
   required String id,
   required String goalId,
@@ -4389,27 +4625,135 @@ typedef $$GoalAccountsDbTableUpdateCompanionBuilder = GoalAccountsDbCompanion
   Value<int> rowid,
 });
 
+class $$GoalAccountsDbTableFilterComposer
+    extends Composer<_$AppDatabase, $GoalAccountsDbTable> {
+  $$GoalAccountsDbTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get goalId => $composableBuilder(
+      column: $table.goalId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get accountId => $composableBuilder(
+      column: $table.accountId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get amount => $composableBuilder(
+      column: $table.amount, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get percentage => $composableBuilder(
+      column: $table.percentage, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get deletedAt => $composableBuilder(
+      column: $table.deletedAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$GoalAccountsDbTableOrderingComposer
+    extends Composer<_$AppDatabase, $GoalAccountsDbTable> {
+  $$GoalAccountsDbTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get goalId => $composableBuilder(
+      column: $table.goalId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get accountId => $composableBuilder(
+      column: $table.accountId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get amount => $composableBuilder(
+      column: $table.amount, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get percentage => $composableBuilder(
+      column: $table.percentage, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get deletedAt => $composableBuilder(
+      column: $table.deletedAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$GoalAccountsDbTableAnnotationComposer
+    extends Composer<_$AppDatabase, $GoalAccountsDbTable> {
+  $$GoalAccountsDbTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get goalId =>
+      $composableBuilder(column: $table.goalId, builder: (column) => column);
+
+  GeneratedColumn<String> get accountId =>
+      $composableBuilder(column: $table.accountId, builder: (column) => column);
+
+  GeneratedColumn<String> get amount =>
+      $composableBuilder(column: $table.amount, builder: (column) => column);
+
+  GeneratedColumn<String> get percentage => $composableBuilder(
+      column: $table.percentage, builder: (column) => column);
+
+  GeneratedColumn<String> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<String> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+}
+
 class $$GoalAccountsDbTableTableManager extends RootTableManager<
     _$AppDatabase,
     $GoalAccountsDbTable,
     GoalAccountsDbData,
     $$GoalAccountsDbTableFilterComposer,
     $$GoalAccountsDbTableOrderingComposer,
-    $$GoalAccountsDbTableProcessedTableManager,
-    $$GoalAccountsDbTableInsertCompanionBuilder,
-    $$GoalAccountsDbTableUpdateCompanionBuilder> {
+    $$GoalAccountsDbTableAnnotationComposer,
+    $$GoalAccountsDbTableCreateCompanionBuilder,
+    $$GoalAccountsDbTableUpdateCompanionBuilder,
+    (
+      GoalAccountsDbData,
+      BaseReferences<_$AppDatabase, $GoalAccountsDbTable, GoalAccountsDbData>
+    ),
+    GoalAccountsDbData,
+    PrefetchHooks Function()> {
   $$GoalAccountsDbTableTableManager(
       _$AppDatabase db, $GoalAccountsDbTable table)
       : super(TableManagerState(
           db: db,
           table: table,
-          filteringComposer:
-              $$GoalAccountsDbTableFilterComposer(ComposerState(db, table)),
-          orderingComposer:
-              $$GoalAccountsDbTableOrderingComposer(ComposerState(db, table)),
-          getChildManagerBuilder: (p) =>
-              $$GoalAccountsDbTableProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          createFilteringComposer: () =>
+              $$GoalAccountsDbTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$GoalAccountsDbTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$GoalAccountsDbTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
             Value<String> id = const Value.absent(),
             Value<String> goalId = const Value.absent(),
             Value<String> accountId = const Value.absent(),
@@ -4431,7 +4775,7 @@ class $$GoalAccountsDbTableTableManager extends RootTableManager<
             deletedAt: deletedAt,
             rowid: rowid,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             required String id,
             required String goalId,
             required String accountId,
@@ -4453,110 +4797,29 @@ class $$GoalAccountsDbTableTableManager extends RootTableManager<
             deletedAt: deletedAt,
             rowid: rowid,
           ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
         ));
 }
 
-class $$GoalAccountsDbTableProcessedTableManager extends ProcessedTableManager<
+typedef $$GoalAccountsDbTableProcessedTableManager = ProcessedTableManager<
     _$AppDatabase,
     $GoalAccountsDbTable,
     GoalAccountsDbData,
     $$GoalAccountsDbTableFilterComposer,
     $$GoalAccountsDbTableOrderingComposer,
-    $$GoalAccountsDbTableProcessedTableManager,
-    $$GoalAccountsDbTableInsertCompanionBuilder,
-    $$GoalAccountsDbTableUpdateCompanionBuilder> {
-  $$GoalAccountsDbTableProcessedTableManager(super.$state);
-}
-
-class $$GoalAccountsDbTableFilterComposer
-    extends FilterComposer<_$AppDatabase, $GoalAccountsDbTable> {
-  $$GoalAccountsDbTableFilterComposer(super.$state);
-  ColumnFilters<String> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get goalId => $state.composableBuilder(
-      column: $state.table.goalId,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get accountId => $state.composableBuilder(
-      column: $state.table.accountId,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get amount => $state.composableBuilder(
-      column: $state.table.amount,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get percentage => $state.composableBuilder(
-      column: $state.table.percentage,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get createdAt => $state.composableBuilder(
-      column: $state.table.createdAt,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get updatedAt => $state.composableBuilder(
-      column: $state.table.updatedAt,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get deletedAt => $state.composableBuilder(
-      column: $state.table.deletedAt,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-}
-
-class $$GoalAccountsDbTableOrderingComposer
-    extends OrderingComposer<_$AppDatabase, $GoalAccountsDbTable> {
-  $$GoalAccountsDbTableOrderingComposer(super.$state);
-  ColumnOrderings<String> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get goalId => $state.composableBuilder(
-      column: $state.table.goalId,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get accountId => $state.composableBuilder(
-      column: $state.table.accountId,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get amount => $state.composableBuilder(
-      column: $state.table.amount,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get percentage => $state.composableBuilder(
-      column: $state.table.percentage,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get createdAt => $state.composableBuilder(
-      column: $state.table.createdAt,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get updatedAt => $state.composableBuilder(
-      column: $state.table.updatedAt,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get deletedAt => $state.composableBuilder(
-      column: $state.table.deletedAt,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-}
-
-typedef $$ProfilesDbTableInsertCompanionBuilder = ProfilesDbCompanion Function({
+    $$GoalAccountsDbTableAnnotationComposer,
+    $$GoalAccountsDbTableCreateCompanionBuilder,
+    $$GoalAccountsDbTableUpdateCompanionBuilder,
+    (
+      GoalAccountsDbData,
+      BaseReferences<_$AppDatabase, $GoalAccountsDbTable, GoalAccountsDbData>
+    ),
+    GoalAccountsDbData,
+    PrefetchHooks Function()>;
+typedef $$ProfilesDbTableCreateCompanionBuilder = ProfilesDbCompanion Function({
   required String id,
   Value<String?> dateOfBirth,
   Value<int?> retirementAge,
@@ -4573,26 +4836,108 @@ typedef $$ProfilesDbTableUpdateCompanionBuilder = ProfilesDbCompanion Function({
   Value<int> rowid,
 });
 
+class $$ProfilesDbTableFilterComposer
+    extends Composer<_$AppDatabase, $ProfilesDbTable> {
+  $$ProfilesDbTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get dateOfBirth => $composableBuilder(
+      column: $table.dateOfBirth, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get retirementAge => $composableBuilder(
+      column: $table.retirementAge, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get riskProfile => $composableBuilder(
+      column: $table.riskProfile, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get fireProfile => $composableBuilder(
+      column: $table.fireProfile, builder: (column) => ColumnFilters(column));
+}
+
+class $$ProfilesDbTableOrderingComposer
+    extends Composer<_$AppDatabase, $ProfilesDbTable> {
+  $$ProfilesDbTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get dateOfBirth => $composableBuilder(
+      column: $table.dateOfBirth, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get retirementAge => $composableBuilder(
+      column: $table.retirementAge,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get riskProfile => $composableBuilder(
+      column: $table.riskProfile, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get fireProfile => $composableBuilder(
+      column: $table.fireProfile, builder: (column) => ColumnOrderings(column));
+}
+
+class $$ProfilesDbTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ProfilesDbTable> {
+  $$ProfilesDbTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get dateOfBirth => $composableBuilder(
+      column: $table.dateOfBirth, builder: (column) => column);
+
+  GeneratedColumn<int> get retirementAge => $composableBuilder(
+      column: $table.retirementAge, builder: (column) => column);
+
+  GeneratedColumn<String> get riskProfile => $composableBuilder(
+      column: $table.riskProfile, builder: (column) => column);
+
+  GeneratedColumn<String> get fireProfile => $composableBuilder(
+      column: $table.fireProfile, builder: (column) => column);
+}
+
 class $$ProfilesDbTableTableManager extends RootTableManager<
     _$AppDatabase,
     $ProfilesDbTable,
     ProfilesDbData,
     $$ProfilesDbTableFilterComposer,
     $$ProfilesDbTableOrderingComposer,
-    $$ProfilesDbTableProcessedTableManager,
-    $$ProfilesDbTableInsertCompanionBuilder,
-    $$ProfilesDbTableUpdateCompanionBuilder> {
+    $$ProfilesDbTableAnnotationComposer,
+    $$ProfilesDbTableCreateCompanionBuilder,
+    $$ProfilesDbTableUpdateCompanionBuilder,
+    (
+      ProfilesDbData,
+      BaseReferences<_$AppDatabase, $ProfilesDbTable, ProfilesDbData>
+    ),
+    ProfilesDbData,
+    PrefetchHooks Function()> {
   $$ProfilesDbTableTableManager(_$AppDatabase db, $ProfilesDbTable table)
       : super(TableManagerState(
           db: db,
           table: table,
-          filteringComposer:
-              $$ProfilesDbTableFilterComposer(ComposerState(db, table)),
-          orderingComposer:
-              $$ProfilesDbTableOrderingComposer(ComposerState(db, table)),
-          getChildManagerBuilder: (p) =>
-              $$ProfilesDbTableProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          createFilteringComposer: () =>
+              $$ProfilesDbTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ProfilesDbTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ProfilesDbTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
             Value<String> id = const Value.absent(),
             Value<String?> dateOfBirth = const Value.absent(),
             Value<int?> retirementAge = const Value.absent(),
@@ -4608,7 +4953,7 @@ class $$ProfilesDbTableTableManager extends RootTableManager<
             fireProfile: fireProfile,
             rowid: rowid,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             required String id,
             Value<String?> dateOfBirth = const Value.absent(),
             Value<int?> retirementAge = const Value.absent(),
@@ -4624,82 +4969,32 @@ class $$ProfilesDbTableTableManager extends RootTableManager<
             fireProfile: fireProfile,
             rowid: rowid,
           ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
         ));
 }
 
-class $$ProfilesDbTableProcessedTableManager extends ProcessedTableManager<
+typedef $$ProfilesDbTableProcessedTableManager = ProcessedTableManager<
     _$AppDatabase,
     $ProfilesDbTable,
     ProfilesDbData,
     $$ProfilesDbTableFilterComposer,
     $$ProfilesDbTableOrderingComposer,
-    $$ProfilesDbTableProcessedTableManager,
-    $$ProfilesDbTableInsertCompanionBuilder,
-    $$ProfilesDbTableUpdateCompanionBuilder> {
-  $$ProfilesDbTableProcessedTableManager(super.$state);
-}
+    $$ProfilesDbTableAnnotationComposer,
+    $$ProfilesDbTableCreateCompanionBuilder,
+    $$ProfilesDbTableUpdateCompanionBuilder,
+    (
+      ProfilesDbData,
+      BaseReferences<_$AppDatabase, $ProfilesDbTable, ProfilesDbData>
+    ),
+    ProfilesDbData,
+    PrefetchHooks Function()>;
 
-class $$ProfilesDbTableFilterComposer
-    extends FilterComposer<_$AppDatabase, $ProfilesDbTable> {
-  $$ProfilesDbTableFilterComposer(super.$state);
-  ColumnFilters<String> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get dateOfBirth => $state.composableBuilder(
-      column: $state.table.dateOfBirth,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<int> get retirementAge => $state.composableBuilder(
-      column: $state.table.retirementAge,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get riskProfile => $state.composableBuilder(
-      column: $state.table.riskProfile,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get fireProfile => $state.composableBuilder(
-      column: $state.table.fireProfile,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-}
-
-class $$ProfilesDbTableOrderingComposer
-    extends OrderingComposer<_$AppDatabase, $ProfilesDbTable> {
-  $$ProfilesDbTableOrderingComposer(super.$state);
-  ColumnOrderings<String> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get dateOfBirth => $state.composableBuilder(
-      column: $state.table.dateOfBirth,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<int> get retirementAge => $state.composableBuilder(
-      column: $state.table.retirementAge,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get riskProfile => $state.composableBuilder(
-      column: $state.table.riskProfile,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get fireProfile => $state.composableBuilder(
-      column: $state.table.fireProfile,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-}
-
-class _$AppDatabaseManager {
+class $AppDatabaseManager {
   final _$AppDatabase _db;
-  _$AppDatabaseManager(this._db);
+  $AppDatabaseManager(this._db);
   $$AccountsDbTableTableManager get accountsDb =>
       $$AccountsDbTableTableManager(_db, _db.accountsDb);
   $$TransactionsDbTableTableManager get transactionsDb =>

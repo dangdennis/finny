@@ -12,11 +12,18 @@ For help getting started with Flutter development, view the
 [online documentation](https://flutter.dev/docs), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
 
-## Development
+## First-Time Setup
 
-`flutter run`
-`make f` to fix format and lint
-`make a` to typecheck
+1. Get instated as team member on Apple App Store Connect (get dev certificates).
+2. `flutter pub get` to install dependencies.
+3. `dart run build_runner build` to generate database.g.dart.
+4. `flutter run` to run the app. This should also install any ios/android dependencies.
+
+## Development
+- `flutter run` to run the app.
+- `flutter clean` to clean all build artifacts in case some weird dependency issue arises.
+- `make f` to fix format and lint
+- `make a` to typecheck
 
 ## Assets
 
@@ -43,4 +50,3 @@ To build this Flutter project for iOS:
 2. Run `flutter pub get` to update dependencies.
 3. Execute `flutter build ios` to compile the project for iOS.
 4. Use `flutter run` to launch the app on an iOS simulator or connected device.
-
