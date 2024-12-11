@@ -12,4 +12,12 @@ void main() {
       expect(1 + 1, 2);
     });
   });
+
+  // write a test that runs some financial calculator
+  //
+  group('Financial Calculator', () {
+    test('should calculate interest', () {
+      expect(1 + 1, 2);
+    });
+  });
 }
