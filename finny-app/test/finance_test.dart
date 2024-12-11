@@ -113,6 +113,15 @@ void main() {
           expected: -144.14,
         ),
         PmtTestCase(
+          name: 'beginning of period payments',
+          rate: 0.12,
+          nper: 12,
+          pv: 1000,
+          fv: 0,
+          end: true,
+          expected: -161.44,
+        ),
+        PmtTestCase(
           name: 'high interest rate',
           rate: 0.15,
           nper: 36,
