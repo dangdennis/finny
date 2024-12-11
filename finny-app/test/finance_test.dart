@@ -53,5 +53,10 @@ void main() {
         });
       }
     });
+
+    // test pmt
+    // test nper
+    // test pv
+    // test rate
   });
 }
