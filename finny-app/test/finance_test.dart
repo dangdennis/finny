@@ -19,6 +19,26 @@ class FvTestCase {
   });
 }
 
+class PmtTestCase {
+  final String name;
+  final double rate;
+  final int nper;
+  final double pv;
+  final double fv;
+  final bool end;
+  final double expected;
+
+  PmtTestCase({
+    required this.name,
+    required this.rate,
+    required this.nper,
+    required this.pv,
+    required this.fv,
+    this.end = true,
+    required this.expected,
+  });
+}
+
 void main() {
   group("Finance", () {
     group("should calculate fv", () {
@@ -55,6 +75,91 @@ void main() {
     });
 
     // test pmt
+    group("should calculate pmt", () {
+      final structuredTestCases = [
+        PmtTestCase(
+          name: 'simple loan payment',
+          rate: 0.1,
+          nper: 12,
+          pv: 1000,
+          fv: 0,
+          expected: -146.76,
+        ),
+        PmtTestCase(
+          name: 'zero interest rate',
+          rate: 0,
+          nper: 12,
+          pv: 1200,
+          fv: 0,
+          expected: -100,
+        ),
+        PmtTestCase(
+          name: 'with future value',
+          rate: 0.08,
+          nper: 24,
+          pv: 5000,
+          fv: 1000,
+          expected: -489.87,
+        ),
+
+        //"End" being false matters.  which means exepected result is the last FV paid at negative which will be -144.14. otherwise, if end is true, it will still be set at -161.44
+        PmtTestCase(
+          name: 'beginning of period payments',
+          rate: 0.12,
+          nper: 12,
+          pv: 1000,
+          fv: 0,
+          end: false,
+          expected: -144.14,
+        ),
+        PmtTestCase(
+          name: 'high interest rate',
+          rate: 0.15,
+          nper: 36,
+          pv: 10000,
+          fv: 0,
+          expected: -1509.86,
+        ),
+        PmtTestCase(
+          name: 'negative principal with short term',
+          rate: 0.06,
+          nper: 6,
+          pv: -5000,
+          fv: 0,
+          expected: 1016.81,
+        ),
+        PmtTestCase(
+          name: 'very long term loan',
+          rate: 0.035, // 3.5% annual rate
+          nper: 360, // 30 years
+          pv: 300000, // $300k mortgage
+          fv: 0,
+          expected: -10500.04,
+        ),
+        PmtTestCase(
+          name: 'saving for future with negative fv',
+          rate: 0.09,
+          nper: 16,
+          pv: 0,
+          fv: -50000, // saving target
+          expected: 1515,
+        ),
+      ];
+
+      for (final testCase in structuredTestCases) {
+        test('should calculate pmt with ${testCase.name}', () {
+          final pmt = Finance.pmt(
+            rate: testCase.rate,
+            nper: testCase.nper,
+            pv: testCase.pv,
+            fv: testCase.fv,
+            end: testCase.end,
+          );
+          expect(pmt, closeTo(testCase.expected, 0.01));
+        });
+      }
+    });
+
     // test nper
     // test pv
     // test rate
