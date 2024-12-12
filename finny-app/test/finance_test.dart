@@ -1,44 +1,6 @@
 import 'package:finny/src/finance/finance.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-class FvTestCase {
-  final String name;
-  final int nper;
-  final double pmt;
-  final double pv;
-  final double rate;
-  final double expected;
-
-  FvTestCase({
-    required this.name,
-    required this.nper,
-    required this.pmt,
-    required this.pv,
-    required this.rate,
-    required this.expected,
-  });
-}
-
-class PmtTestCase {
-  final String name;
-  final double rate;
-  final int nper;
-  final double pv;
-  final double fv;
-  final bool end;
-  final double expected;
-
-  PmtTestCase({
-    required this.name,
-    required this.rate,
-    required this.nper,
-    required this.pv,
-    required this.fv,
-    this.end = true,
-    required this.expected,
-  });
-}
-
 void main() {
   group("Finance", () {
     group("should calculate fv", () {
@@ -164,5 +126,43 @@ void main() {
     // test nper
     // test pv
     // test rate
+  });
+}
+
+class FvTestCase {
+  final String name;
+  final int nper;
+  final double pmt;
+  final double pv;
+  final double rate;
+  final double expected;
+
+  FvTestCase({
+    required this.name,
+    required this.nper,
+    required this.pmt,
+    required this.pv,
+    required this.rate,
+    required this.expected,
+  });
+}
+
+class PmtTestCase {
+  final String name;
+  final double rate;
+  final int nper;
+  final double pv;
+  final double fv;
+  final bool end;
+  final double expected;
+
+  PmtTestCase({
+    required this.name,
+    required this.rate,
+    required this.nper,
+    required this.pv,
+    required this.fv,
+    this.end = true,
+    required this.expected,
   });
 }
