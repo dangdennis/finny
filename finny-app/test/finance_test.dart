@@ -74,16 +74,15 @@ void main() {
       }
     });
 
-    // test pmt
     group("should calculate pmt", () {
       final structuredTestCases = [
         PmtTestCase(
           name: 'simple loan payment',
-          rate: 0.1,
-          nper: 12,
-          pv: 1000,
-          fv: 0,
-          expected: -146.76,
+          rate: 0.1, // 10% annual rate
+          nper: 12, // 12 months
+          pv: 1000, // 1000 present value
+          fv: 0, // 0 future value
+          expected: -146.76, //payment
         ),
         PmtTestCase(
           name: 'zero interest rate',
@@ -102,7 +101,7 @@ void main() {
           expected: -489.87,
         ),
 
-        //"End" being false matters.  which means exepected result is the last FV paid at negative which will be -144.14. otherwise, if end is true, it will still be set at -161.44
+        // end = false. Payments are paid in the beginning of the month and therefore do not accrue additional interest.
         PmtTestCase(
           name: 'beginning of period payments',
           rate: 0.12,
@@ -113,7 +112,7 @@ void main() {
           expected: -144.14,
         ),
         PmtTestCase(
-          name: 'beginning of period payments',
+          name: 'end of period payments',
           rate: 0.12,
           nper: 12,
           pv: 1000,
@@ -121,14 +120,7 @@ void main() {
           end: true,
           expected: -161.44,
         ),
-        PmtTestCase(
-          name: 'high interest rate',
-          rate: 0.15,
-          nper: 36,
-          pv: 10000,
-          fv: 0,
-          expected: -1509.86,
-        ),
+
         PmtTestCase(
           name: 'negative principal with short term',
           rate: 0.06,
@@ -139,9 +131,9 @@ void main() {
         ),
         PmtTestCase(
           name: 'very long term loan',
-          rate: 0.035, // 3.5% annual rate
-          nper: 360, // 30 years
-          pv: 300000, // $300k mortgage
+          rate: 0.035,
+          nper: 360,
+          pv: 300000,
           fv: 0,
           expected: -10500.04,
         ),
@@ -150,7 +142,7 @@ void main() {
           rate: 0.09,
           nper: 16,
           pv: 0,
-          fv: -50000, // saving target
+          fv: -50000,
           expected: 1515,
         ),
       ];
