@@ -170,8 +170,6 @@ void main() {
       }
     });
 
-    // test nper
-
     // test pv
     // test rate
   });
@@ -230,6 +228,26 @@ class NperTestCase {
     required this.pmt,
     required this.pv,
     this.fv = 0,
+    this.end = true,
+    required this.expected,
+  });
+}
+
+class PvTestCase {
+  final String name;
+  final double rate;
+  final int nper;
+  final double pmt;
+  final double fv;
+  final bool end;
+  final double expected;
+
+  PvTestCase({
+    required this.name,
+    required this.rate,
+    required this.nper,
+    required this.pmt,
+    required this.fv,
     this.end = true,
     required this.expected,
   });
