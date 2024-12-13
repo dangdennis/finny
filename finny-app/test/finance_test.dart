@@ -195,6 +195,15 @@ void main() {
           fv: 1000,
           expected: -2263.45,
         ),
+        PvTestCase(
+          name: 'with future value and beginning of period',
+          rate: 0.05,
+          nper: 60,
+          pmt: 250,
+          fv: 2000,
+          end: false,
+          expected: -5076.01,
+        ),
       ];
 
       for (final testCase in structureTestCases) {
