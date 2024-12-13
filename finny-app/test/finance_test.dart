@@ -179,6 +179,22 @@ void main() {
             pmt: 100, // 100 amount
             fv: 0,
             expected: -681.37),
+        PvTestCase(
+          name: 'zero interest rate',
+          rate: 0,
+          nper: 12,
+          pmt: 100,
+          fv: 0,
+          expected: -1200,
+        ),
+        PvTestCase(
+          name: 'with future value',
+          rate: .08,
+          nper: 24,
+          pmt: 200,
+          fv: 1000,
+          expected: -2263.45,
+        ),
       ];
 
       for (final testCase in structureTestCases) {
