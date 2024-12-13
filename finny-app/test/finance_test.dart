@@ -123,7 +123,55 @@ void main() {
       }
     });
 
+    group("should calculate nper", () {
+      final structuredTestCases = [
+        NperTestCase(
+          name: 'standard loan term',
+          rate: 0.07, // 7% annually
+          pmt: 150, //pmt needs to be positive
+          pv: 8000, //present value
+          expected: -22.97,
+        ),
+        NperTestCase(
+          name: 'high interest loan',
+          rate: .12,
+          pmt: 300,
+          pv: 10000,
+          expected: -14.20,
+        ),
+        NperTestCase(
+          name: "low interest loan",
+          rate: .045,
+          pmt: 500,
+          pv: 20000,
+          expected: -23.39,
+        ),
+        NperTestCase(
+          name: 'beginning of period',
+          rate: .10,
+          pmt: 250,
+          pv: 5000,
+          end: false,
+          expected: -10.87,
+        ),
+      ];
+
+      for (final testCase in structuredTestCases) {
+        test('should calculate nper with ${testCase.name}', () {
+          final periods = Finance.nper(
+            rate: testCase.rate,
+            pmt: testCase.pmt,
+            pv: testCase.pv,
+            fv: testCase.fv,
+            end: testCase.end,
+          );
+          expect(periods, closeTo(testCase.expected, 0.01));
+        });
+      }
+    });
+
     // test nper
+
     // test pv
     // test rate
   });
@@ -162,6 +210,26 @@ class PmtTestCase {
     required this.nper,
     required this.pv,
     required this.fv,
+    this.end = true,
+    required this.expected,
+  });
+}
+
+class NperTestCase {
+  final String name;
+  final double rate;
+  final double pmt;
+  final double pv;
+  final double fv;
+  final bool end;
+  final double expected;
+
+  NperTestCase({
+    required this.name,
+    required this.rate,
+    required this.pmt,
+    required this.pv,
+    this.fv = 0,
     this.end = true,
     required this.expected,
   });
