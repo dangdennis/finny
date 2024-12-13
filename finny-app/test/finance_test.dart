@@ -170,7 +170,31 @@ void main() {
       }
     });
 
-    // test pv
+    group("should calculate pv", () {
+      final structureTestCases = [
+        PvTestCase(
+            name: 'standard loan calculation',
+            rate: .10, // 10% annual rate
+            nper: 12, // 12 payments
+            pmt: 100, // 100 amount
+            fv: 0,
+            expected: -681.37),
+      ];
+
+      for (final testCase in structureTestCases) {
+        test('should calculate pv with ${testCase.name}', () {
+          final pv = Finance.pv(
+            rate: testCase.rate,
+            nper: testCase.nper,
+            pmt: testCase.pmt,
+            fv: testCase.fv,
+            end: testCase.end,
+          );
+          expect(pv, closeTo(testCase.expected, 0.01));
+        });
+      }
+    });
+
     // test rate
   });
 }
