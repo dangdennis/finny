@@ -4,6 +4,9 @@ services:
     ports:
       
       
+      
+      
+      
       - "5672:5672" # main port
       - "15672:15672" # management UI
   postgres-fixture:
