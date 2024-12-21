@@ -1,18 +1,15 @@
-import 'package:finny/src/auth/auth_provider.dart';
+import 'package:finny/src/settings/settings_controller.dart';
 import 'package:flutter/material.dart';
-import 'settings_controller.dart';
 
 class SettingsView extends StatefulWidget {
   const SettingsView({
     super.key,
     required this.settingsController,
-    required this.authProvider,
   });
 
   static const routeName = '/settings';
 
   final SettingsController settingsController;
-  final AuthProvider authProvider;
 
   @override
   State<SettingsView> createState() => _SettingsViewState();
@@ -47,8 +44,6 @@ class _SettingsViewState extends State<SettingsView> {
             _buildThemeSelector(),
             const SizedBox(height: 24),
             _buildDangerZone(context),
-            const Spacer(),
-            _buildLogoutButton(),
           ],
         ),
       ),
@@ -115,16 +110,6 @@ class _SettingsViewState extends State<SettingsView> {
     );
   }
 
-  Widget _buildLogoutButton() {
-    return ElevatedButton(
-      onPressed: widget.settingsController.signOut,
-      style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-      ),
-      child: const Text('Logout', style: TextStyle(fontSize: 18)),
-    );
-  }
-
   void _showDeleteConfirmationDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -142,7 +127,6 @@ class _SettingsViewState extends State<SettingsView> {
             ElevatedButton(
               onPressed: () async {
                 Navigator.of(context).pop();
-                await widget.settingsController.deleteSelf();
               },
               child: const Text('Delete'),
             ),
