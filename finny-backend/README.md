@@ -1,9 +1,10 @@
-# Finny Worker
+# Finny Backend
 
-`go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest`
+## Setup
+
+### Install dependencies
+
 `go install github.com/air-verse/air@latest`
-
-`sqlc generate`
 
 `air`
 

@@ -28,4 +28,4 @@ COPY --from=builder /app/main .
 EXPOSE 8080
 
 # Run the binary
-CMD ["./main"]
+CMD ["./main", "serve"]
