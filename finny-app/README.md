@@ -1,4 +1,4 @@
-# mobile
+# Finny App
 
 A new Flutter project.
 
@@ -15,9 +15,7 @@ samples, guidance on mobile development, and a full API reference.
 ## First-Time Setup
 
 1. Get instated as team member on Apple App Store Connect (get dev certificates).
-2. `flutter pub get` to install dependencies.
-3. `dart run build_runner build` to generate database.g.dart.
-4. `flutter run` to run the app. This should also install any ios/android dependencies.
+2. `flutter run` to run the app. This should also install any ios/android dependencies.
 
 ## Development
 - `flutter run` to run the app.
@@ -42,11 +40,10 @@ To support additional languages, please visit the tutorial on
 [Internationalizing Flutter
 apps](https://flutter.dev/docs/development/accessibility-and-localization/internationalization)
 
-## Building for iOS
+## Release for iOS
 
 To build this Flutter project for iOS:
 
 1. Ensure you have Xcode, Flutter SDK, and CocoaPods installed.
-2. Run `flutter pub get` to update dependencies.
-3. Execute `flutter build ios` to compile the project for iOS.
-4. Use `flutter run` to launch the app on an iOS simulator or connected device.
+2. Execute `flutter build ios --release` to compile the project for iOS.
+3. In Xcode, Archive and distribute the app.

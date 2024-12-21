@@ -1,20 +1,10 @@
 PODS:
-  - app_links (0.0.2):
-    - Flutter
   - Flutter (1.0.0)
   - package_info_plus (0.4.5):
     - Flutter
   - path_provider_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
-  - Plaid (5.6.1)
-  - plaid_flutter (0.0.1):
-    - Flutter
-    - Plaid (= 5.6.1)
-  - powersync-sqlite-core (0.3.6)
-  - powersync_flutter_libs (0.0.1):
-    - Flutter
-    - powersync-sqlite-core (~> 0.3.6)
   - Sentry/HybridSDK (8.41.0)
   - sentry_flutter (8.11.0):
     - Flutter
@@ -25,88 +15,41 @@ PODS:
     - FlutterMacOS
   - sign_in_with_apple (0.0.1):
     - Flutter
-  - sqlite3 (3.47.1):
-    - sqlite3/common (= 3.47.1)
-  - sqlite3/common (3.47.1)
-  - sqlite3/dbstatvtab (3.47.1):
-    - sqlite3/common
-  - sqlite3/fts5 (3.47.1):
-    - sqlite3/common
-  - sqlite3/perf-threadsafe (3.47.1):
-    - sqlite3/common
-  - sqlite3/rtree (3.47.1):
-    - sqlite3/common
-  - sqlite3_flutter_libs (0.0.1):
-    - Flutter
-    - FlutterMacOS
-    - sqlite3 (~> 3.47.1)
-    - sqlite3/dbstatvtab
-    - sqlite3/fts5
-    - sqlite3/perf-threadsafe
-    - sqlite3/rtree
-  - url_launcher_ios (0.0.1):
-    - Flutter
 
 DEPENDENCIES:
-  - app_links (from `.symlinks/plugins/app_links/ios`)
   - Flutter (from `Flutter`)
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
-  - plaid_flutter (from `.symlinks/plugins/plaid_flutter/ios`)
-  - powersync_flutter_libs (from `.symlinks/plugins/powersync_flutter_libs/ios`)
   - sentry_flutter (from `.symlinks/plugins/sentry_flutter/ios`)
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
   - sign_in_with_apple (from `.symlinks/plugins/sign_in_with_apple/ios`)
-  - sqlite3_flutter_libs (from `.symlinks/plugins/sqlite3_flutter_libs/darwin`)
-  - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
 
 SPEC REPOS:
   trunk:
-    - Plaid
-    - powersync-sqlite-core
     - Sentry
-    - sqlite3
 
 EXTERNAL SOURCES:
-  app_links:
-    :path: ".symlinks/plugins/app_links/ios"
   Flutter:
     :path: Flutter
   package_info_plus:
     :path: ".symlinks/plugins/package_info_plus/ios"
   path_provider_foundation:
     :path: ".symlinks/plugins/path_provider_foundation/darwin"
-  plaid_flutter:
-    :path: ".symlinks/plugins/plaid_flutter/ios"
-  powersync_flutter_libs:
-    :path: ".symlinks/plugins/powersync_flutter_libs/ios"
   sentry_flutter:
     :path: ".symlinks/plugins/sentry_flutter/ios"
   shared_preferences_foundation:
     :path: ".symlinks/plugins/shared_preferences_foundation/darwin"
   sign_in_with_apple:
     :path: ".symlinks/plugins/sign_in_with_apple/ios"
-  sqlite3_flutter_libs:
-    :path: ".symlinks/plugins/sqlite3_flutter_libs/darwin"
-  url_launcher_ios:
-    :path: ".symlinks/plugins/url_launcher_ios/ios"
 
 SPEC CHECKSUMS:
-  app_links: e7a6750a915a9e161c58d91bc610e8cd1d4d0ad0
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   package_info_plus: c0502532a26c7662a62a356cebe2692ec5fe4ec4
   path_provider_foundation: 2b6b4c569c0fb62ec74538f866245ac84301af46
-  Plaid: 93c9e80b93f5cea960a1120047ef2b689394ff91
-  plaid_flutter: b60dc1bcb779c05656a8a61109f9b38ee379a19c
-  powersync-sqlite-core: e6217cc9e89e8803550f1b5bb7fd5b00becc903a
-  powersync_flutter_libs: eb2694b322e1e4ef9a0f1e32dee600847f21ccbc
   Sentry: 54d0fe6c0df448497c8ed4cce66ccf7027e1823e
   sentry_flutter: 83a84efb7f978522c9127fbc0c07dab09663eecc
   shared_preferences_foundation: fcdcbc04712aee1108ac7fda236f363274528f78
   sign_in_with_apple: f3bf75217ea4c2c8b91823f225d70230119b8440
-  sqlite3: 1e522f0938463e44b7faf50393b40bdc1e1e456d
-  sqlite3_flutter_libs: 1b4e98da20ebd4e9b1240269b78cdcf492dbe9f3
-  url_launcher_ios: 5334b05cef931de560670eeae103fd3e431ac3fe
 
 PODFILE CHECKSUM: 4c438addb11b6da45ed7ae408823d68256222460
 
