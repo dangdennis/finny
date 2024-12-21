@@ -17,10 +17,9 @@ class _GradientBannerState extends State<GradientBanner> {
   void initState() {
     super.initState();
     colors = [
+      Colors.primaries[Random().nextInt(Colors.primaries.length)].withAlpha(1),
       Colors.primaries[Random().nextInt(Colors.primaries.length)]
-          .withOpacity(1),
-      Colors.primaries[Random().nextInt(Colors.primaries.length)]
-          .withOpacity(0.8),
+          .withValues(alpha: 0.8),
     ];
   }
 
