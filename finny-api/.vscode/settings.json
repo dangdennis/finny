@@ -1,9 +1,0 @@
-{
-    "files.watcherExclude": {
-        "**/target": true
-    },
-    "metals.serverProperties": [
-        "-Dmetals.enable-best-effort=true"
-    ],
-    "makefile.configureOnOpen": false
-}
