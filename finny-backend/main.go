@@ -8,7 +8,6 @@ import (
 )
 
 func main() {
-
 	if len(os.Args) < 2 {
 		fmt.Println("expected 'serve' subcommand")
 		os.Exit(1)
