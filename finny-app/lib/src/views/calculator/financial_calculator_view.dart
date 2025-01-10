@@ -12,35 +12,44 @@ class _CalculatorViewState extends State<CalculatorView> {
   final _formKey = GlobalKey<FormState>();
   bool _showResults = false;
 
+  void _unfocus() {
+    FocusScope.of(context).unfocus();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Financial Independence'),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _buildInputForm(),
-            const SizedBox(height: 20),
-            if (_showResults) _buildResults(),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                if (_formKey.currentState!.validate()) {
-                  setState(() {
-                    _showResults = true;
-                  });
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.all(16),
+    return GestureDetector(
+      onTap: _unfocus,
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        appBar: AppBar(
+          title: const Text('Financial Independence'),
+        ),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildInputForm(),
+              const SizedBox(height: 20),
+              if (_showResults) _buildResults(),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  _unfocus();
+                  if (_formKey.currentState!.validate()) {
+                    setState(() {
+                      _showResults = true;
+                    });
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.all(16),
+                ),
+                child: const Text('Calculate', style: TextStyle(fontSize: 18)),
               ),
-              child: const Text('Calculate', style: TextStyle(fontSize: 18)),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
