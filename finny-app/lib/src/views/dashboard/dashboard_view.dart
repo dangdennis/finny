@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:finny/src/views/settings/settings_view.dart';
+import 'package:finny/src/views/calculator/financial_calculator_view.dart';
 
 class DashboardView extends StatefulWidget {
   const DashboardView({
@@ -28,6 +29,7 @@ class _DashboardViewState extends State<DashboardView> {
               ),
             ),
           ),
+          const CalculatorView(),
           const SettingsView(),
         ],
       ),
@@ -40,13 +42,15 @@ class _DashboardViewState extends State<DashboardView> {
         },
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons
-                .dashboard), // Changed from Icon.settings to Icons.dashboard
+            icon: Icon(Icons.dashboard),
             label: 'Dashboard',
           ),
           BottomNavigationBarItem(
-            icon: Icon(
-                Icons.settings), // Changed from Icon.settings to Icons.settings
+            icon: Icon(Icons.calculate),
+            label: 'Calculator',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
             label: 'Settings',
           ),
         ],
