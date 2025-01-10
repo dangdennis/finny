@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:finny/src/views/settings/settings_view.dart';
+import 'package:finny/src/settings/settings_controller.dart';
 
 class DashboardView extends StatefulWidget {
   const DashboardView({
