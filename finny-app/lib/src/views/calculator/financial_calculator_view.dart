@@ -195,15 +195,7 @@ class _CalculatorViewState extends State<CalculatorView> {
   }
 
   String _formatLargeNumber(num value) {
-    if (value.abs() >= 1000000000) {
-      return '\$${(value / 1000000000).toStringAsFixed(1)}B';
-    } else if (value.abs() >= 1000000) {
-      return '\$${(value / 1000000).toStringAsFixed(1)}M';
-    } else if (value.abs() >= 1000) {
-      return '\$${value.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}';
-    } else {
-      return '\$${value.toStringAsFixed(2)}';
-    }
+    return '\$${value.toStringAsFixed(2).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}';
   }
 
   String _getTargetFreedomNumberAtToday() {
@@ -221,31 +213,32 @@ class _CalculatorViewState extends State<CalculatorView> {
 
     const double inflationRate = 0.02;
     double nper = (retirementAge - currentAge).toDouble();
-    double monthlyExpense = annualExpense / 12;
 
     num futureValue = Finance.fv(
       rate: inflationRate,
       nper: nper,
-      pmt: monthlyExpense,
+      pmt: -annualExpense,
       pv: currentSavings,
     );
     return _formatLargeNumber(futureValue.abs());
   }
 
   String _getTargetMonthlyFreedomSavings() {
-    double annualExpense = double.tryParse(_annualExpenseController.text) ?? 0;
     int currentAge = int.tryParse(_currentAgeController.text) ?? 0;
     int retirementAge = int.tryParse(_retirementAgeController.text) ?? 0;
     double currentSavings =
         double.tryParse(_currentSavingsController.text) ?? 0;
-    const double inflationRate = 0.02;
-    double nper = (retirementAge - currentAge).toDouble();
-    double monthlyExpense = annualExpense / 12;
-    double futureValue = monthlyExpense * 300;
+
+    final double monthlyRate = 0.0016667;
+    int totalMonths = (retirementAge - currentAge) * 12;
+
+    double futureValue = double.tryParse(_getTargetFreedomNumberAtRetirement()
+            .replaceAll(RegExp(r'[\$,]'), '')) ??
+        0;
 
     num monthlySavings = Finance.pmt(
-      rate: inflationRate,
-      nper: nper,
+      rate: monthlyRate,
+      nper: totalMonths.toDouble(),
       pv: -currentSavings,
       fv: futureValue,
     );
