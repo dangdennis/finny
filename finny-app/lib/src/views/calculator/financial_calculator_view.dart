@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:finny/src/finance/finance.dart';
 
 class CalculatorView extends StatefulWidget {
   const CalculatorView({super.key});
@@ -12,8 +13,27 @@ class _CalculatorViewState extends State<CalculatorView> {
   final _formKey = GlobalKey<FormState>();
   bool _showResults = false;
 
+  final TextEditingController _annualExpenseController =
+      TextEditingController();
+  final TextEditingController _currentAgeController = TextEditingController();
+  final TextEditingController _retirementAgeController =
+      TextEditingController();
+  final TextEditingController _currentSavingsController =
+      TextEditingController();
+
+  String _freedomNumberToday = '';
+  String _freedomNumberAtRetirement = '';
+
   void _unfocus() {
     FocusScope.of(context).unfocus();
+  }
+
+  @override
+  void dispose() {
+    _annualExpenseController.dispose();
+    _currentAgeController.dispose();
+    _retirementAgeController.dispose();
+    _currentSavingsController.dispose();
   }
 
   @override
@@ -39,6 +59,9 @@ class _CalculatorViewState extends State<CalculatorView> {
                   _unfocus();
                   if (_formKey.currentState!.validate()) {
                     setState(() {
+                      _freedomNumberToday = _getTargetFreedomNumberAtToday();
+                      _freedomNumberAtRetirement =
+                          _getTargetFreedomNumberAtRetirement();
                       _showResults = true;
                     });
                   }
@@ -63,21 +86,25 @@ class _CalculatorViewState extends State<CalculatorView> {
           _buildNumberInput(
             label: 'Annual Expense (\$)',
             hintText: 'Enter your annual expenses',
+            controller: _annualExpenseController,
           ),
           const SizedBox(height: 16),
           _buildNumberInput(
             label: 'Current Age',
             hintText: 'Enter your current age',
+            controller: _currentAgeController,
           ),
           const SizedBox(height: 16),
           _buildNumberInput(
             label: 'Desired Retirement Age',
             hintText: 'Enter your desired retirement age',
+            controller: _retirementAgeController,
           ),
           const SizedBox(height: 16),
           _buildNumberInput(
             label: 'Current Savings (\$)',
             hintText: 'Enter your current savings',
+            controller: _currentSavingsController,
           ),
         ],
       ),
@@ -87,8 +114,10 @@ class _CalculatorViewState extends State<CalculatorView> {
   Widget _buildNumberInput({
     required String label,
     required String hintText,
+    required TextEditingController controller,
   }) {
     return TextFormField(
+      controller: controller,
       decoration: InputDecoration(
         labelText: label,
         hintText: hintText,
@@ -122,8 +151,9 @@ class _CalculatorViewState extends State<CalculatorView> {
               ),
             ),
             const SizedBox(height: 16),
-            _buildResultRow('Freedom Number Today:', '\$2,500,000'),
-            _buildResultRow('Freedom Number at Retirement:', '\$3,750,000'),
+            _buildResultRow('Freedom Number Today:', _freedomNumberToday),
+            _buildResultRow(
+                'Freedom Number at Retirement:', _freedomNumberAtRetirement),
             _buildResultRow('Monthly Savings Goal:', '\$2,500'),
             _buildResultRow('Projected Retirement Savings:', '\$4,000,000'),
           ],
@@ -136,21 +166,67 @@ class _CalculatorViewState extends State<CalculatorView> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: const TextStyle(fontSize: 16),
+          Expanded(
+            flex: 3,
+            child: Text(
+              label,
+              style: const TextStyle(fontSize: 16),
+            ),
           ),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
+          Expanded(
+            flex: 4,
+            child: Text(
+              value,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.right,
+              softWrap: true,
             ),
           ),
         ],
       ),
     );
+  }
+
+  String _formatLargeNumber(num value) {
+    if (value.abs() >= 1000000000) {
+      return '\$${(value / 1000000000).toStringAsFixed(1)}B';
+    } else if (value.abs() >= 1000000) {
+      return '\$${(value / 1000000).toStringAsFixed(1)}M';
+    } else if (value.abs() >= 1000) {
+      return '\$${value.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}';
+    } else {
+      return '\$${value.toStringAsFixed(2)}';
+    }
+  }
+
+  String _getTargetFreedomNumberAtToday() {
+    double annualExpense = double.tryParse(_annualExpenseController.text) ?? 0;
+    double freedomNumber = annualExpense / 12;
+    return _formatLargeNumber(freedomNumber);
+  }
+
+  String _getTargetFreedomNumberAtRetirement() {
+    double annualExpense = double.tryParse(_annualExpenseController.text) ?? 0;
+    int currentAge = int.tryParse(_currentAgeController.text) ?? 0;
+    int retirementAge = int.tryParse(_retirementAgeController.text) ?? 0;
+    double currentSavings =
+        double.tryParse(_currentSavingsController.text) ?? 0;
+
+    const double inflationRate = 0.02;
+    double nper = (retirementAge - currentAge).toDouble();
+    double monthlyExpense = annualExpense / 12;
+
+    num futureValue = Finance.fv(
+      rate: inflationRate,
+      nper: nper,
+      pmt: monthlyExpense,
+      pv: currentSavings,
+    );
+    return _formatLargeNumber(futureValue.abs());
   }
 }
