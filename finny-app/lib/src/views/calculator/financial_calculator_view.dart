@@ -23,6 +23,7 @@ class _CalculatorViewState extends State<CalculatorView> {
 
   String _freedomNumberToday = '';
   String _freedomNumberAtRetirement = '';
+  String _monthlySavingsGoal = '';
 
   void _unfocus() {
     FocusScope.of(context).unfocus();
@@ -62,6 +63,7 @@ class _CalculatorViewState extends State<CalculatorView> {
                       _freedomNumberToday = _getTargetFreedomNumberAtToday();
                       _freedomNumberAtRetirement =
                           _getTargetFreedomNumberAtRetirement();
+                      _monthlySavingsGoal = _getTargetMonthlyFreedomSavings();
                       _showResults = true;
                     });
                   }
@@ -154,8 +156,8 @@ class _CalculatorViewState extends State<CalculatorView> {
             _buildResultRow('Freedom Number Today:', _freedomNumberToday),
             _buildResultRow(
                 'Freedom Number at Retirement:', _freedomNumberAtRetirement),
-            _buildResultRow('Monthly Savings Goal:', '\$2,500'),
-            _buildResultRow('Projected Retirement Savings:', '\$4,000,000'),
+            _buildResultRow('Monthly Savings Goal:', _monthlySavingsGoal),
+            _buildResultRow('Actual Retirement Savings:', '\$4,000,000'),
           ],
         ),
       ),
@@ -228,5 +230,26 @@ class _CalculatorViewState extends State<CalculatorView> {
       pv: currentSavings,
     );
     return _formatLargeNumber(futureValue.abs());
+  }
+
+  String _getTargetMonthlyFreedomSavings() {
+    double annualExpense = double.tryParse(_annualExpenseController.text) ?? 0;
+    int currentAge = int.tryParse(_currentAgeController.text) ?? 0;
+    int retirementAge = int.tryParse(_retirementAgeController.text) ?? 0;
+    double currentSavings =
+        double.tryParse(_currentSavingsController.text) ?? 0;
+    const double inflationRate = 0.02;
+    double nper = (retirementAge - currentAge).toDouble();
+    double monthlyExpense = annualExpense / 12;
+    double futureValue = monthlyExpense * 300;
+
+    num monthlySavings = Finance.pmt(
+      rate: inflationRate,
+      nper: nper,
+      pv: -currentSavings,
+      fv: futureValue,
+    );
+
+    return _formatLargeNumber(monthlySavings.abs());
   }
 }
