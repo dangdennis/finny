@@ -14,9 +14,29 @@ use migration::Migrator;
 use std::path::Path;
 
 #[allow(unused_imports)]
-use crate::{controllers, models::_entities::users, tasks, workers::downloader::DownloadWorker};
+use crate::{
+    config::ynab::YnabOAuthConfig,
+    controllers, 
+    models::_entities::users, 
+    tasks, 
+    workers::downloader::DownloadWorker
+};
 
 pub struct App;
+
+#[derive(Clone)]
+pub struct AppConfig {
+    pub ynab: Option<YnabOAuthConfig>,
+}
+
+impl AppConfig {
+    pub fn from_config(config: &Config) -> Self {
+        Self {
+            ynab: YnabOAuthConfig::from_config(config),
+        }
+    }
+}
+
 #[async_trait]
 impl Hooks for App {
     fn app_name() -> &'static str {
@@ -38,7 +58,9 @@ impl Hooks for App {
         environment: &Environment,
         config: Config,
     ) -> Result<BootResult> {
-        create_app::<Self, Migrator>(mode, environment, config).await
+        let app_config = AppConfig::from_config(&config);
+        let boot = create_app::<Self, Migrator>(mode, environment, config).await?;
+        Ok(boot.with_state(app_config))
     }
 
     async fn initializers(_ctx: &AppContext) -> Result<Vec<Box<dyn Initializer>>> {
@@ -48,6 +70,7 @@ impl Hooks for App {
     fn routes(_ctx: &AppContext) -> AppRoutes {
         AppRoutes::with_default_routes() // controller routes below
             .add_route(controllers::auth::routes())
+            .add_route(controllers::ynab_oauth::routes())
     }
     async fn connect_workers(ctx: &AppContext, queue: &Queue) -> Result<()> {
         queue.register(DownloadWorker::build(ctx)).await?;
