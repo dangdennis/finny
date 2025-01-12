@@ -21,6 +21,14 @@ void main() {
           rate: 0.15,
           expected: 1868.1249999999993,
         ),
+         FvTestCase(
+          name: 'example 3',
+          nper: 35,
+          pmt: 0,
+          pv: -3000000,
+          rate: 0.02,
+          expected: 5999668.657987369,
+        ),
       ];
 
       for (final testCase in structuredTestCases) {

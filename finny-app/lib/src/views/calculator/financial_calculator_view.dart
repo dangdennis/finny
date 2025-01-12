@@ -31,6 +31,7 @@ class _CalculatorViewState extends State<CalculatorView> {
 
   @override
   void dispose() {
+    super.dispose();
     _annualExpenseController.dispose();
     _currentAgeController.dispose();
     _retirementAgeController.dispose();
@@ -60,10 +61,11 @@ class _CalculatorViewState extends State<CalculatorView> {
                   _unfocus();
                   if (_formKey.currentState!.validate()) {
                     setState(() {
-                      _freedomNumberToday = _getTargetFreedomNumberAtToday();
-                      _freedomNumberAtRetirement =
-                          _getTargetFreedomNumberAtRetirement();
-                      _monthlySavingsGoal = _getTargetMonthlyFreedomSavings();
+                      _freedomNumberToday = _formatLargeNumber(
+                          _getTargetFreedomNumberAtToday().abs());
+                      _freedomNumberAtRetirement = _formatLargeNumber(
+                          _getTargetFreedomNumberAtRetirement().abs());
+                      _monthlySavingsGoal = printTargetMonthlyFreedomSavings();
                       _showResults = true;
                     });
                   }
@@ -198,18 +200,16 @@ class _CalculatorViewState extends State<CalculatorView> {
     return '\$${value.toStringAsFixed(2).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}';
   }
 
-  String _getTargetFreedomNumberAtToday() {
+  num _getTargetFreedomNumberAtToday() {
     double annualExpense = double.tryParse(_annualExpenseController.text) ?? 0;
-    double freedomNumber = annualExpense / 12;
-    return _formatLargeNumber(freedomNumber);
+    double freedomNumber = annualExpense / 0.04;
+    return freedomNumber;
   }
 
-  String _getTargetFreedomNumberAtRetirement() {
-    double annualExpense = double.tryParse(_annualExpenseController.text) ?? 0;
+  num _getTargetFreedomNumberAtRetirement() {
     int currentAge = int.tryParse(_currentAgeController.text) ?? 0;
     int retirementAge = int.tryParse(_retirementAgeController.text) ?? 0;
-    double currentSavings =
-        double.tryParse(_currentSavingsController.text) ?? 0;
+    final pv = _getTargetFreedomNumberAtToday();
 
     const double inflationRate = 0.02;
     double nper = (retirementAge - currentAge).toDouble();
@@ -217,32 +217,34 @@ class _CalculatorViewState extends State<CalculatorView> {
     num futureValue = Finance.fv(
       rate: inflationRate,
       nper: nper,
-      pmt: -annualExpense,
-      pv: currentSavings,
+      pmt: 0,
+      pv: pv,
     );
-    return _formatLargeNumber(futureValue.abs());
+
+    return futureValue;
   }
 
-  String _getTargetMonthlyFreedomSavings() {
+  num _getTargetMonthlyFreedomSavings() {
     int currentAge = int.tryParse(_currentAgeController.text) ?? 0;
     int retirementAge = int.tryParse(_retirementAgeController.text) ?? 0;
     double currentSavings =
         double.tryParse(_currentSavingsController.text) ?? 0;
 
-    final double monthlyRate = 0.0016667;
-    int totalMonths = (retirementAge - currentAge) * 12;
+    final nper = retirementAge - currentAge;
+    final fv = -_getTargetFreedomNumberAtRetirement();
+    final pv = -currentSavings;
 
-    double futureValue = double.tryParse(_getTargetFreedomNumberAtRetirement()
-            .replaceAll(RegExp(r'[\$,]'), '')) ??
-        0;
-
-    num monthlySavings = Finance.pmt(
-      rate: monthlyRate,
-      nper: totalMonths.toDouble(),
-      pv: -currentSavings,
-      fv: futureValue,
+    num annualSavingsGoal = Finance.pmt(
+      rate: 0.08,
+      nper: nper,
+      pv: pv,
+      fv: fv,
     );
 
-    return _formatLargeNumber(monthlySavings.abs());
+    return annualSavingsGoal / 12;
+  }
+
+  String printTargetMonthlyFreedomSavings() {
+    return _formatLargeNumber(_getTargetMonthlyFreedomSavings().abs());
   }
 }
