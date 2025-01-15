@@ -157,41 +157,93 @@ class _CalculatorViewState extends State<CalculatorView> {
     return Card(
       elevation: 4,
       child: Padding(
-        padding: const EdgeInsets.all(10.0),
+        padding: const EdgeInsets.all(8.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
               'Results',
               style: TextStyle(
-                fontSize: 18,
+                fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 10),
-            _buildResultRow('Freedom Number Today:', _freedomNumberToday),
+            const SizedBox(height: 8),
             _buildResultRow(
-                'Freedom Number at Retirement:', _freedomNumberAtRetirement),
-            _buildResultRow('Monthly Savings Goal:', _monthlySavingsGoal),
-            _buildResultRow('Actual Retirement Savings:', _actualFreedomNumber),
-            _buildResultRow('Actual Retirement Age:', _actualRetirementAge),
+              'Freedom Number Today:',
+              _freedomNumberToday,
+              tooltip:
+                  'This is the amount of money you need to have invested today to be financially independent based on your current annual expenses.',
+            ),
+            _buildResultRow(
+                'Freedom Number at Retirement:', _freedomNumberAtRetirement,
+                tooltip:
+                    'This is your required savings at retirement, adjusted for 2% inflation.'),
+            _buildResultRow('Monthly Savings Goal:', _monthlySavingsGoal,
+                tooltip:
+                    'This is how much you need to save monthly to reach your freedom number by your target retirement age.'),
+            _buildResultRow('Actual Retirement Savings:', _actualFreedomNumber,
+                tooltip:
+                    'This is how much you will actually have saved at retirement with your current savings rate.'),
+            _buildResultRow('Actual Retirement Age:', _actualRetirementAge,
+                tooltip:
+                    'This is the age you will reach financial indpendence with your current savings rate.'),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildResultRow(String label, String value) {
+  Widget _buildResultRow(String label, String value, {String? tooltip}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      padding: const EdgeInsets.symmetric(vertical: 2.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
             flex: 3,
-            child: Text(
-              label,
-              style: const TextStyle(fontSize: 16),
+            child: Row(
+              children: [
+                Flexible(
+                  child: Text(
+                    label,
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                ),
+                if (tooltip != null)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 4.0),
+                    child: PopupMenuButton(
+                      padding: EdgeInsets.zero,
+                      offset: const Offset(-100, 20), // Adjust popup position
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      color: Colors.grey[800], // Dark background for popup
+                      icon: const Icon(
+                        Icons.info_outline,
+                        size: 16,
+                        color: Colors.grey,
+                      ),
+                      itemBuilder: (context) => [
+                        PopupMenuItem(
+                          enabled: false, // Makes the item non-clickable
+                          child: Container(
+                            constraints: const BoxConstraints(maxWidth: 200),
+                            padding: const EdgeInsets.all(8),
+                            child: Text(
+                              tooltip,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
             ),
           ),
           Expanded(
