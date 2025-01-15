@@ -118,8 +118,8 @@ class _CalculatorViewState extends State<CalculatorView> {
           ),
           const SizedBox(height: 12),
           _buildNumberInput(
-            label: 'Monthly Savings (\$)',
-            hintText: 'Enter your monthly savings',
+            label: 'Estimated Monthly Savings (\$)',
+            hintText: 'Enter your estimated monthly savings',
             controller: _monthlySavingsController,
           ),
         ],
