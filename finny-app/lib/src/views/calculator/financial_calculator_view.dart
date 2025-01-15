@@ -58,9 +58,9 @@ class _CalculatorViewState extends State<CalculatorView> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _buildInputForm(),
-              const SizedBox(height: 20),
+              const SizedBox(height: 10),
               if (_showResults) _buildResults(),
-              const SizedBox(height: 20),
+              const SizedBox(height: 12),
               ElevatedButton(
                 onPressed: () {
                   _unfocus();
@@ -68,8 +68,8 @@ class _CalculatorViewState extends State<CalculatorView> {
                     setState(() {
                       _freedomNumberToday = _formatLargeNumber(
                           _getTargetFreedomNumberAtToday().abs());
-                      _freedomNumberAtRetirement = _formatLargeNumber(
-                          _getTargetFreedomNumberAtRetirement().abs());
+                      _freedomNumberAtRetirement =
+                          printTargetFreedomNumberAtRetirement();
                       _monthlySavingsGoal = printTargetMonthlyFreedomSavings();
                       _actualFreedomNumber = printActualFreedomNumber();
                       _actualRetirementAge = printActualRetirementAge();
@@ -99,25 +99,25 @@ class _CalculatorViewState extends State<CalculatorView> {
             hintText: 'Enter your annual expenses',
             controller: _annualExpenseController,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           _buildNumberInput(
             label: 'Current Age',
             hintText: 'Enter your current age',
             controller: _currentAgeController,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           _buildNumberInput(
             label: 'Desired Retirement Age',
             hintText: 'Enter your desired retirement age',
             controller: _retirementAgeController,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           _buildNumberInput(
             label: 'Current Savings (\$)',
             hintText: 'Enter your current savings',
             controller: _currentSavingsController,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           _buildNumberInput(
             label: 'Monthly Savings (\$)',
             hintText: 'Enter your monthly savings',
@@ -136,11 +136,13 @@ class _CalculatorViewState extends State<CalculatorView> {
     return TextFormField(
       controller: controller,
       decoration: InputDecoration(
-        labelText: label,
-        hintText: hintText,
-        border: const OutlineInputBorder(),
-        filled: true,
-      ),
+          labelText: label,
+          hintText: hintText,
+          border: const OutlineInputBorder(),
+          filled: true,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+          isDense: true),
       keyboardType: TextInputType.number,
       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
       validator: (value) {
@@ -156,18 +158,18 @@ class _CalculatorViewState extends State<CalculatorView> {
     return Card(
       elevation: 4,
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(10.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
               'Results',
               style: TextStyle(
-                fontSize: 20,
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 10),
             _buildResultRow('Freedom Number Today:', _freedomNumberToday),
             _buildResultRow(
                 'Freedom Number at Retirement:', _freedomNumberAtRetirement),
@@ -182,7 +184,7 @@ class _CalculatorViewState extends State<CalculatorView> {
 
   Widget _buildResultRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -236,6 +238,10 @@ class _CalculatorViewState extends State<CalculatorView> {
     );
 
     return futureValue;
+  }
+
+  String printTargetFreedomNumberAtRetirement() {
+    return _formatLargeNumber(_getTargetFreedomNumberAtRetirement().abs());
   }
 
   num _getTargetMonthlyFreedomSavings() {
