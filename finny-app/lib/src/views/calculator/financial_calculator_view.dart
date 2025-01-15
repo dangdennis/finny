@@ -66,8 +66,7 @@ class _CalculatorViewState extends State<CalculatorView> {
                   _unfocus();
                   if (_formKey.currentState!.validate()) {
                     setState(() {
-                      _freedomNumberToday = _formatLargeNumber(
-                          _getTargetFreedomNumberAtToday().abs());
+                      _freedomNumberToday = printTargetFreedomNumberToday();
                       _freedomNumberAtRetirement =
                           printTargetFreedomNumberAtRetirement();
                       _monthlySavingsGoal = printTargetMonthlyFreedomSavings();
@@ -220,6 +219,10 @@ class _CalculatorViewState extends State<CalculatorView> {
     double annualExpense = double.tryParse(_annualExpenseController.text) ?? 0;
     double freedomNumber = annualExpense / 0.04;
     return freedomNumber;
+  }
+
+  String printTargetFreedomNumberToday() {
+    return _formatLargeNumber(_getTargetFreedomNumberAtToday().abs());
   }
 
   num _getTargetFreedomNumberAtRetirement() {
