@@ -20,6 +20,8 @@ class _CalculatorViewState extends State<CalculatorView> {
       TextEditingController();
   final TextEditingController _currentSavingsController =
       TextEditingController();
+  final TextEditingController _monthlySavingsController =
+      TextEditingController();
 
   String _freedomNumberToday = '';
   String _freedomNumberAtRetirement = '';
@@ -36,6 +38,7 @@ class _CalculatorViewState extends State<CalculatorView> {
     _currentAgeController.dispose();
     _retirementAgeController.dispose();
     _currentSavingsController.dispose();
+    _monthlySavingsController.dispose();
   }
 
   @override
@@ -109,6 +112,12 @@ class _CalculatorViewState extends State<CalculatorView> {
             label: 'Current Savings (\$)',
             hintText: 'Enter your current savings',
             controller: _currentSavingsController,
+          ),
+          const SizedBox(height: 16),
+          _buildNumberInput(
+            label: 'Monthly Savings (\$)',
+            hintText: 'Enter your monthly savings',
+            controller: _monthlySavingsController,
           ),
         ],
       ),
