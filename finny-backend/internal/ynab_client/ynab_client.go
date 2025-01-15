@@ -1,4 +1,4 @@
-package ynabclient
+package ynab_client
 
 import (
 	"github.com/brunomvsouza/ynab.go"

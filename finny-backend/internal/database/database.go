@@ -1,25 +1,31 @@
 package database
 
 import (
-	"gorm.io/driver/sqlite"
+	"fmt"
+	"net/url"
+
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
 
-func NewDatabase(path string) (*gorm.DB, error) {
-	db, err := gorm.Open(sqlite.Open(path), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Error),
-	})
+func NewDatabase(databaseURL string) (*gorm.DB, error) {
+	u, err := url.Parse(databaseURL)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse database URL: %w", err)
 	}
-	return db, nil
-}
 
-// NewTestDatabase connects to a test SQLite database
-func NewTestDatabase() (*gorm.DB, error) {
-	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
+	password, _ := u.User.Password()
+	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s",
+		u.Hostname(),
+		u.Port(),
+		u.User.Username(),
+		password,
+		u.Path[1:], // remove leading '/'
+	)
+
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Error),
 	})
 	if err != nil {
 		return nil, err
