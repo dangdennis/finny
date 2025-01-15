@@ -26,6 +26,7 @@ class _CalculatorViewState extends State<CalculatorView> {
   String _freedomNumberToday = '';
   String _freedomNumberAtRetirement = '';
   String _monthlySavingsGoal = '';
+  String _actualFreedomNumber = '';
 
   void _unfocus() {
     FocusScope.of(context).unfocus();
@@ -69,6 +70,7 @@ class _CalculatorViewState extends State<CalculatorView> {
                       _freedomNumberAtRetirement = _formatLargeNumber(
                           _getTargetFreedomNumberAtRetirement().abs());
                       _monthlySavingsGoal = printTargetMonthlyFreedomSavings();
+                      _actualFreedomNumber = printActualFreedomNumber();
                       _showResults = true;
                     });
                   }
@@ -168,7 +170,7 @@ class _CalculatorViewState extends State<CalculatorView> {
             _buildResultRow(
                 'Freedom Number at Retirement:', _freedomNumberAtRetirement),
             _buildResultRow('Monthly Savings Goal:', _monthlySavingsGoal),
-            _buildResultRow('Actual Retirement Savings:', '\$4,000,000'),
+            _buildResultRow('Actual Retirement Savings:', _actualFreedomNumber),
           ],
         ),
       ),
@@ -255,5 +257,31 @@ class _CalculatorViewState extends State<CalculatorView> {
 
   String printTargetMonthlyFreedomSavings() {
     return _formatLargeNumber(_getTargetMonthlyFreedomSavings().abs());
+  }
+
+  num _getActualFreedomNumberAtRetirement() {
+    int currentAge = int.tryParse(_currentAgeController.text) ?? 0;
+    int retirementAge = int.tryParse(_retirementAgeController.text) ?? 0;
+    const double inflationRate = 0.08;
+    double nper = (retirementAge - currentAge).toDouble();
+    double monthlySavings =
+        double.tryParse(_monthlySavingsController.text) ?? 0;
+    double currentSavings =
+        double.tryParse(_currentSavingsController.text) ?? 0;
+
+    final pv = -currentSavings;
+
+    num trueFutureValue = Finance.fv(
+      rate: inflationRate,
+      nper: nper,
+      pmt: monthlySavings,
+      pv: pv,
+    );
+
+    return trueFutureValue;
+  }
+
+  String printActualFreedomNumber() {
+    return _formatLargeNumber(_getActualFreedomNumberAtRetirement().abs());
   }
 }
