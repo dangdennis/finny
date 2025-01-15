@@ -38,7 +38,7 @@ func StartServer() {
 	ynabClient := ynabclient.NewYNABClient(ynabSecret)
 	_ = budget.NewBudgetService(db, ynabClient)
 
-	http.HandleFunc("POST /start", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("POST /api/get-expense", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Worker started"))
 	})
 
