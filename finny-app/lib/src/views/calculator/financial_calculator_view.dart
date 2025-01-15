@@ -27,6 +27,7 @@ class _CalculatorViewState extends State<CalculatorView> {
   String _freedomNumberAtRetirement = '';
   String _monthlySavingsGoal = '';
   String _actualFreedomNumber = '';
+  String _actualRetirementAge = '';
 
   void _unfocus() {
     FocusScope.of(context).unfocus();
@@ -71,6 +72,7 @@ class _CalculatorViewState extends State<CalculatorView> {
                           _getTargetFreedomNumberAtRetirement().abs());
                       _monthlySavingsGoal = printTargetMonthlyFreedomSavings();
                       _actualFreedomNumber = printActualFreedomNumber();
+                      _actualRetirementAge = printActualRetirementAge();
                       _showResults = true;
                     });
                   }
@@ -171,6 +173,7 @@ class _CalculatorViewState extends State<CalculatorView> {
                 'Freedom Number at Retirement:', _freedomNumberAtRetirement),
             _buildResultRow('Monthly Savings Goal:', _monthlySavingsGoal),
             _buildResultRow('Actual Retirement Savings:', _actualFreedomNumber),
+            _buildResultRow('Actual Retirement Age:', _actualRetirementAge),
           ],
         ),
       ),
@@ -283,5 +286,36 @@ class _CalculatorViewState extends State<CalculatorView> {
 
   String printActualFreedomNumber() {
     return _formatLargeNumber(_getActualFreedomNumberAtRetirement().abs());
+  }
+
+  num _getActualRetirementAge() {
+    int currentAge = int.tryParse(_currentAgeController.text) ?? 0;
+    const double inflationRate = 0.08;
+    double currentSavings =
+        double.tryParse(_currentSavingsController.text) ?? 0;
+
+    final pv = -currentSavings;
+    double monthlySavings =
+        double.tryParse(_monthlySavingsController.text) ?? 0;
+    final fv = _getTargetFreedomNumberAtRetirement();
+
+    num nper = Finance.nper(
+      pmt: monthlySavings,
+      rate: inflationRate,
+      pv: pv,
+      fv: -fv,
+    );
+
+    final trueRetirementAge = nper + currentAge;
+
+    return trueRetirementAge;
+  }
+
+  String printActualRetirementAge() {
+    num age = _getActualRetirementAge();
+    if (age.isFinite) {
+      return '${age.ceil()} years old'; // or just '${age.ceil()}'
+    }
+    return 'N/A';
   }
 }
