@@ -9,25 +9,23 @@ import (
 	"time"
 
 	"github.com/brunomvsouza/ynab.go/api/category"
-	"github.com/finny/finny-backend/internal/ynabclient"
+	"github.com/finny/finny-backend/internal/ynab_client"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type BudgetService struct {
-	db   *gorm.DB
-	ynab *ynabclient.YNABClient
+	db *gorm.DB
 }
 
-func NewBudgetService(db *gorm.DB, ynab *ynabclient.YNABClient) *BudgetService {
+func NewBudgetService(db *gorm.DB) *BudgetService {
 	return &BudgetService{
-		db:   db,
-		ynab: ynab,
+		db: db,
 	}
 }
 
-func (b *BudgetService) GetAndCreateYNABData(db *gorm.DB, userID uuid.UUID) error {
-	categories, err := b.ynab.GetCategories(userID, 0)
+func (b *BudgetService) GetAndCreateYNABData(db *gorm.DB, ynab *ynab_client.YNABClient, userID uuid.UUID) error {
+	categories, err := ynab.GetCategories(userID, 0)
 	if err != nil {
 		return fmt.Errorf("failed to fetch categories: %w", err)
 	}
