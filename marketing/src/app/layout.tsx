@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     default: 'Finny - Know financial freedom.',
   },
   description:
-    'By leveraging insights from our network of industry insiders, you’ll know exactly when to buy to maximize profit, and exactly when to sell to avoid painful losses.',
+    'Empowering you with financial knowledge and tools to understand your money better, make informed decisions, and work towards your goal of financial independence.',
 }
 
 export default function RootLayout({
