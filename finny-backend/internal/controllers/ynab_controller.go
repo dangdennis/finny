@@ -19,3 +19,15 @@ func NewYNABController(ynabOAuthService *ynab_auth.YNABAuthService) *YNABControl
 func (y *YNABController) SomeRouteHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Hello, World!"))
 }
+
+func (y *YNABController) InitiateOAuth(w http.ResponseWriter, r *http.Request) {
+	state, err := y.ynabOAuthService.GenerateState()
+	if err != nil {
+		http.Error(w, "Failed to generate state", http.StatusInternalServerError)
+		return
+	}
+
+	authURL := y.ynabOAuthService.GetAuthorizationURL(state)
+
+	http.Redirect(w, r, authURL, http.StatusTemporaryRedirect)
+}
