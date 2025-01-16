@@ -31,3 +31,21 @@ func (y *YNABController) InitiateOAuth(w http.ResponseWriter, r *http.Request) {
 
 	http.Redirect(w, r, authURL, http.StatusTemporaryRedirect)
 }
+
+func (y *YNABController) HandleCallback(w http.ResponseWriter, r *http.Request) {
+	code := r.URL.Query().Get("code")
+	if code == "" {
+		http.Error(w, "Missing authorization code", http.StatusBadRequest)
+		return
+	}
+
+	tokens, err := y.ynabOAuthService.ExchangeCodeForTokens(code)
+	if err != nil {
+		http.Error(w, "Failed to exchange code for tokens", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write([]byte(`{"message": "Successfully authenticated with YNAB!"}`))
+
+}
