@@ -32,3 +32,8 @@ func TestInitiateOAuth(t *testing.T) {
 		t.Error("Invalid URL")
 	}
 }
+
+func TestExchangeCodeForTokens(t *testing.T) {
+	// todo(rani): test this
+	// t.FailNow()
+}
