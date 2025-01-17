@@ -49,6 +49,10 @@ func StartServer() {
 		ynabOAuthController.InitiateOAuth(w, r)
 	})
 
+	http.HandleFunc("GET /api/oauth/ynab/callback", func(w http.ResponseWriter, r *http.Request) {
+		ynabOAuthController.HandleCallback(w, r)
+	})
+
 	log.Println("Finny server is listening on port 8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
