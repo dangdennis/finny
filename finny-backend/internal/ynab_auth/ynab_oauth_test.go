@@ -9,7 +9,6 @@ type MockRandomReader struct {
 }
 
 func (m *MockRandomReader) Read(b []byte) (int, error) {
-	// Fill with predictable data for testing
 	for i := range b {
 		b[i] = byte(i)
 	}

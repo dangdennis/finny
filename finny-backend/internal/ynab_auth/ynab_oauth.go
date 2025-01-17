@@ -22,6 +22,8 @@ type TokenResponse struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
+// todo(rani): Create a interface for YNABAuthService
+
 type YNABAuthService struct {
 	randReader RandomReader
 }

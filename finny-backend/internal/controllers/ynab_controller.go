@@ -2,18 +2,22 @@ package controllers
 
 import (
 	"net/http"
-	"os"
 
 	"github.com/finny/finny-backend/internal/ynab_auth"
 )
 
 type YNABController struct {
+	// todo(rani): ynabOAuthService *ynab_auth.YNABAuthServiceIntf some kind of interface should replace the type `*ynab_auth.YNABAuthService`
 	ynabOAuthService *ynab_auth.YNABAuthService
+	ynabClientID     string
+	ynabRedirectURI  string
 }
 
-func NewYNABController(ynabOAuthService *ynab_auth.YNABAuthService) *YNABController {
+func NewYNABController(ynabOAuthService *ynab_auth.YNABAuthService, ynabClientID string, ynabRedirectURI string) *YNABController {
 	return &YNABController{
 		ynabOAuthService: ynabOAuthService,
+		ynabClientID:     ynabClientID,
+		ynabRedirectURI:  ynabRedirectURI,
 	}
 }
 
@@ -22,10 +26,7 @@ func (y *YNABController) SomeRouteHandler(w http.ResponseWriter, r *http.Request
 }
 
 func (y *YNABController) InitiateOAuth(w http.ResponseWriter, r *http.Request) {
-	clientID := os.Getenv("YNAB_CLIENT_ID")
-	redirectURI := os.Getenv("YNAB_REDIRECT_URI")
-
-	authURL, err := y.ynabOAuthService.InitiateOAuth(clientID, redirectURI)
+	authURL, err := y.ynabOAuthService.InitiateOAuth(y.ynabClientID, y.ynabRedirectURI)
 	if err != nil {
 		http.Error(w, "Failed to generate state", http.StatusInternalServerError)
 		return

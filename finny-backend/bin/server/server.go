@@ -22,6 +22,16 @@ func StartServer() {
 		log.Println(".env file loaded successfully")
 	}
 
+	ynabClientID := os.Getenv("YNAB_CLIENT_ID")
+	if ynabClientID == "" {
+		log.Fatal("YNAB_CLIENT_ID is not set")
+	}
+
+	ynabRedirectURI := os.Getenv("YNAB_REDIRECT_URI")
+	if ynabRedirectURI == "" {
+		log.Fatal("YNAB_REDIRECT_URI is not set")
+	}
+
 	databaseUrl := os.Getenv("DATABASE_URL")
 	if databaseUrl == "" {
 		log.Fatal("DATABASE_URL is not set")
@@ -36,7 +46,7 @@ func StartServer() {
 	ynabAuthService := ynab_auth.NewYNABAuthService(rand.Reader)
 
 	budgetController := controllers.NewBudgetController(budgetService)
-	ynabOAuthController := controllers.NewYNABController(ynabAuthService)
+	ynabOAuthController := controllers.NewYNABController(ynabAuthService, ynabClientID, ynabRedirectURI)
 
 	http.HandleFunc("POST /api/get-expense", func(w http.ResponseWriter, r *http.Request) {
 		budgetController.GetExpense(w, r)
@@ -46,6 +56,8 @@ func StartServer() {
 		ynabOAuthController.SomeRouteHandler(w, r)
 	})
 
+	// todo(rani): we want to test certain behaviors from this route
+	// 1.
 	http.HandleFunc("GET /api/oauth/ynab/authorize", func(w http.ResponseWriter, r *http.Request) {
 		ynabOAuthController.InitiateOAuth(w, r)
 	})
