@@ -11,4 +11,6 @@ func TestYNABControllerPostAuthorize(t *testing.T) {
 	// assertions
 	// 1. i get some url (ynaboauth service should return any string)
 	// 2. i get a 307
+	//
+	// we want to use httptest to make a real POST request to our server
 }
