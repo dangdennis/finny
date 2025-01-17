@@ -39,7 +39,7 @@ func (y *YNABController) HandleCallback(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	tokens, err := y.ynabOAuthService.ExchangeCodeForTokens(code)
+	_, err := y.ynabOAuthService.ExchangeCodeForTokens(code)
 	if err != nil {
 		http.Error(w, "Failed to exchange code for tokens", http.StatusInternalServerError)
 		return
