@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"os"
 
 	"github.com/finny/finny-backend/internal/ynab_auth"
 )
@@ -21,13 +22,14 @@ func (y *YNABController) SomeRouteHandler(w http.ResponseWriter, r *http.Request
 }
 
 func (y *YNABController) InitiateOAuth(w http.ResponseWriter, r *http.Request) {
-	state, err := y.ynabOAuthService.GenerateState()
+	clientID := os.Getenv("YNAB_CLIENT_ID")
+	redirectURI := os.Getenv("YNAB_REDIRECT_URI")
+
+	authURL, err := y.ynabOAuthService.InitiateOAuth(clientID, redirectURI)
 	if err != nil {
 		http.Error(w, "Failed to generate state", http.StatusInternalServerError)
 		return
 	}
-
-	authURL := y.ynabOAuthService.GetAuthorizationURL(state)
 
 	http.Redirect(w, r, authURL, http.StatusTemporaryRedirect)
 }

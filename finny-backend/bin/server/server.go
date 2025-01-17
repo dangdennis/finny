@@ -1,6 +1,7 @@
 package server
 
 import (
+	"crypto/rand"
 	"log"
 	"net/http"
 	"os"
@@ -32,7 +33,7 @@ func StartServer() {
 	}
 
 	budgetService := budget.NewBudgetService(db)
-	ynabAuthService := ynab_auth.NewYNABAuthService()
+	ynabAuthService := ynab_auth.NewYNABAuthService(rand.Reader)
 
 	budgetController := controllers.NewBudgetController(budgetService)
 	ynabOAuthController := controllers.NewYNABController(ynabAuthService)

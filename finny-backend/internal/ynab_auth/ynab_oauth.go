@@ -11,6 +11,10 @@ import (
 	"strings"
 )
 
+type RandomReader interface {
+	Read([]byte) (int, error)
+}
+
 type TokenResponse struct {
 	AccessToken  string `json:"access_token"`
 	TokenType    string `json:"token_type"`
@@ -19,23 +23,38 @@ type TokenResponse struct {
 }
 
 type YNABAuthService struct {
+	randReader RandomReader
 }
 
-func NewYNABAuthService() *YNABAuthService {
-	return &YNABAuthService{}
+func NewYNABAuthService(randReader RandomReader) *YNABAuthService {
+	if randReader == nil {
+		randReader = rand.Reader
+	}
+	return &YNABAuthService{
+		randReader: randReader,
+	}
 }
 
 func (y *YNABAuthService) GenerateState() (string, error) {
 	b := make([]byte, 32)
-	if _, err := rand.Read(b); err != nil {
+	if _, err := y.randReader.Read(b); err != nil {
 		return "", err
 	}
 	return base64.URLEncoding.EncodeToString(b), nil
 }
 
-func (y *YNABAuthService) GetAuthorizationURL(state string) string {
-	clientID := os.Getenv("YNAB_CLIENT_ID")
-	redirectURI := os.Getenv("YNAB_REDIRECT_URI")
+func (y *YNABAuthService) InitiateOAuth(clientID string, redirectURI string) (string, error) {
+	state, err := y.GenerateState()
+	if err != nil {
+		return "", err
+	}
+
+	authURL := y.GetAuthorizationURL(state, clientID, redirectURI)
+
+	return authURL, nil
+}
+
+func (y *YNABAuthService) GetAuthorizationURL(state string, clientID string, redirectURI string) string {
 
 	return "https://app.ynab.com/oauth/authorize?" +
 		"client_id=" + url.QueryEscape(clientID) +
@@ -45,31 +64,31 @@ func (y *YNABAuthService) GetAuthorizationURL(state string) string {
 }
 
 func (y *YNABAuthService) ExchangeCodeForTokens(code string) (*TokenResponse, error) {
-    clientID := os.Getenv("YNAB_CLIENT_ID")
-    clientSecret := os.Getenv("YNAB_CLIENT_SECRET")
-    redirectURI := os.Getenv("YNAB_REDIRECT_URI")
+	clientID := os.Getenv("YNAB_CLIENT_ID")
+	clientSecret := os.Getenv("YNAB_CLIENT_SECRET")
+	redirectURI := os.Getenv("YNAB_REDIRECT_URI")
 
-    data := url.Values{}
-    data.Set("client_id", clientID)
-    data.Set("client_secret", clientSecret)
-    data.Set("redirect_uri", redirectURI)
-    data.Set("grant_type", "authorization_code")
-    data.Set("code", code)
+	data := url.Values{}
+	data.Set("client_id", clientID)
+	data.Set("client_secret", clientSecret)
+	data.Set("redirect_uri", redirectURI)
+	data.Set("grant_type", "authorization_code")
+	data.Set("code", code)
 
-    resp, err := http.Post(
-        "https://app.ynab.com/oauth/token",
-        "application/x-www-form-urlencoded",
-        strings.NewReader(data.Encode()),
-    )
-    if err != nil {
-        return nil, fmt.Errorf("failed to exchange code: %w", err)
-    }
-    defer resp.Body.Close()
+	resp, err := http.Post(
+		"https://app.ynab.com/oauth/token",
+		"application/x-www-form-urlencoded",
+		strings.NewReader(data.Encode()),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to exchange code: %w", err)
+	}
+	defer resp.Body.Close()
 
-    var tokenResponse TokenResponse
-    if err := json.NewDecoder(resp.Body).Decode(&tokenResponse); err != nil {
-        return nil, fmt.Errorf("failed to decode token response: %w", err)
-    }
+	var tokenResponse TokenResponse
+	if err := json.NewDecoder(resp.Body).Decode(&tokenResponse); err != nil {
+		return nil, fmt.Errorf("failed to decode token response: %w", err)
+	}
 
-    return &tokenResponse, nil
+	return &tokenResponse, nil
 }
