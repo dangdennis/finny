@@ -66,11 +66,14 @@ class _CalculatorViewState extends State<CalculatorView> {
                   _unfocus();
                   if (_formKey.currentState!.validate()) {
                     setState(() {
-                      _freedomNumberToday = printTargetFreedomNumberToday();
-                      _freedomNumberAtRetirement =
-                          printTargetFreedomNumberAtRetirement();
-                      _monthlySavingsGoal = printTargetMonthlyFreedomSavings();
-                      _actualFreedomNumber = printActualFreedomNumber();
+                      _freedomNumberToday = _formatLargeNumber(
+                          _getTargetFreedomNumberAtToday().abs());
+                      _freedomNumberAtRetirement = _formatLargeNumber(
+                          _getTargetFreedomNumberAtRetirement().abs());
+                      _monthlySavingsGoal = _formatLargeNumber(
+                          _getTargetMonthlyFreedomSavings().abs());
+                      _actualFreedomNumber = _formatLargeNumber(
+                          _getActualFreedomNumberAtRetirement().abs());
                       _actualRetirementAge = printActualRetirementAge();
                       _showResults = true;
                     });
@@ -187,7 +190,7 @@ class _CalculatorViewState extends State<CalculatorView> {
                     'This is how much you will actually have saved at retirement with your current savings rate.'),
             _buildResultRow('Actual Retirement Age:', _actualRetirementAge,
                 tooltip:
-                    'This is the age you will reach financial indpendence with your current savings rate.'),
+                    'This is the age you will reach financial independence with your current savings rate.'),
           ],
         ),
       ),
@@ -215,11 +218,11 @@ class _CalculatorViewState extends State<CalculatorView> {
                     padding: const EdgeInsets.only(left: 4.0),
                     child: PopupMenuButton(
                       padding: EdgeInsets.zero,
-                      offset: const Offset(-100, 20), // Adjust popup position
+                      offset: const Offset(-100, 20),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      color: Colors.grey[800], // Dark background for popup
+                      color: Colors.grey[800],
                       icon: const Icon(
                         Icons.info_outline,
                         size: 16,
@@ -227,7 +230,7 @@ class _CalculatorViewState extends State<CalculatorView> {
                       ),
                       itemBuilder: (context) => [
                         PopupMenuItem(
-                          enabled: false, // Makes the item non-clickable
+                          enabled: false,
                           child: Container(
                             constraints: const BoxConstraints(maxWidth: 200),
                             padding: const EdgeInsets.all(8),
@@ -295,10 +298,6 @@ class _CalculatorViewState extends State<CalculatorView> {
     return futureValue;
   }
 
-  String printTargetFreedomNumberAtRetirement() {
-    return _formatLargeNumber(_getTargetFreedomNumberAtRetirement().abs());
-  }
-
   num _getTargetMonthlyFreedomSavings() {
     int currentAge = int.tryParse(_currentAgeController.text) ?? 0;
     int retirementAge = int.tryParse(_retirementAgeController.text) ?? 0;
@@ -317,10 +316,6 @@ class _CalculatorViewState extends State<CalculatorView> {
     );
 
     return annualSavingsGoal / 12;
-  }
-
-  String printTargetMonthlyFreedomSavings() {
-    return _formatLargeNumber(_getTargetMonthlyFreedomSavings().abs());
   }
 
   num _getActualFreedomNumberAtRetirement() {
@@ -343,10 +338,6 @@ class _CalculatorViewState extends State<CalculatorView> {
     );
 
     return trueFutureValue;
-  }
-
-  String printActualFreedomNumber() {
-    return _formatLargeNumber(_getActualFreedomNumberAtRetirement().abs());
   }
 
   num _getActualRetirementAge() {
@@ -375,7 +366,7 @@ class _CalculatorViewState extends State<CalculatorView> {
   String printActualRetirementAge() {
     num age = _getActualRetirementAge();
     if (age.isFinite) {
-      return '${age.ceil()} years old'; // or just '${age.ceil()}'
+      return '${age.ceil()} years old';
     }
     return 'N/A';
   }
