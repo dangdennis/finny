@@ -21,7 +21,7 @@ void main() {
           rate: 0.15,
           expected: 1868.1249999999993,
         ),
-         FvTestCase(
+        FvTestCase(
           name: 'example 3',
           nper: 35,
           pmt: 0,
