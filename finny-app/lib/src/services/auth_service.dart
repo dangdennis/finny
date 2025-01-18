@@ -1,0 +1,30 @@
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:logging/logging.dart';
+
+class AuthService {
+  static final _log = Logger('AuthService');
+  final _supabase = Supabase.instance.client;
+
+  Future<void> loginAnonymously() async {
+    try {
+      // Check if we're already authenticated
+      final session = _supabase.auth.currentSession;
+      if (session != null) {
+        _log.info('User already authenticated');
+        return;
+      }
+
+      // If not authenticated, perform anonymous sign in
+      _log.info('Performing anonymous authentication');
+      final response = await _supabase.auth.signInAnonymously();
+
+      if (response.session != null) {
+        _log.info('Anonymous authentication successful');
+      } else {
+        _log.warning('Anonymous authentication failed - no session returned');
+      }
+    } catch (e, stack) {
+      _log.severe('Failed to ensure anonymous authentication', e, stack);
+    }
+  }
+}
