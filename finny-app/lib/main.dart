@@ -27,14 +27,14 @@ void main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
 
-  final navigationProvider = NavigationProvider();
-  final authService = AuthService();
-
   await Supabase.initialize(
     url: 'https://tqonkxhrucymdyndpjzf.supabase.co',
     anonKey:
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxb25reGhydWN5bWR5bmRwanpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjAxNjI3NDIsImV4cCI6MjAzNTczODc0Mn0.sCXfp7mKFSQ0KKeS2MXAY7yRuBnMMr--7Gx4v_YEz1I',
   );
+
+  final navigationProvider = NavigationProvider();
+  final authService = AuthService(Supabase.instance.client);
 
   await authService.loginAnonymously();
 

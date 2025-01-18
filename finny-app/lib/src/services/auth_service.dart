@@ -2,8 +2,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:logging/logging.dart';
 
 class AuthService {
+  AuthService(SupabaseClient client) {
+    _supabase = client;
+  }
+
   static final _log = Logger('AuthService');
-  final _supabase = Supabase.instance.client;
+  late final SupabaseClient _supabase;
 
   Future<void> loginAnonymously() async {
     try {
