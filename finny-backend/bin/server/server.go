@@ -1,19 +1,9 @@
 package server
 
-import (
-	"log"
-	"net/http"
-	"os"
-
-	"github.com/finny/finny-backend/internal/budget"
-	"github.com/finny/finny-backend/internal/controllers"
-	"github.com/finny/finny-backend/internal/database"
-	"github.com/finny/finny-backend/internal/ynab_auth"
-
-	"github.com/joho/godotenv"
-)
+import "github.com/finny/finny-backend/internal/app"
 
 func StartServer() {
+	app.StartServer()
 	err := godotenv.Load(".env")
 	if err != nil {
 		log.Println("Error loading .env file:", err)
