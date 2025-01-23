@@ -36,6 +36,13 @@ Or run the http server directly with Go:
 go run main.go serve
 ```
 
+We also need to run ngrok if you are planning to develop the oauth workflow.
+
+Install [ngrok](https://ngrok.com/docs/getting-started/).
+```
+ngrok http 8080
+```
+
 ### Available Make commands
 
 - `make dev` - Run the server with live reloading using Air
