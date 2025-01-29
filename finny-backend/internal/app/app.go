@@ -2,8 +2,8 @@ package app
 
 import (
 	"crypto/rand"
+	"fmt"
 	"log"
-	"net/http"
 	"os"
 
 	"github.com/finny/finny-backend/internal/budget"
@@ -12,9 +12,25 @@ import (
 	"github.com/finny/finny-backend/internal/ynab_auth"
 
 	"github.com/joho/godotenv"
+	echojwt "github.com/labstack/echo-jwt/v4"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
-func StartServer() {
+type Config struct {
+	YNABClientID    string
+	YNABRedirectURI string
+	DatabaseURL     string
+	JWTSecret       []byte
+}
+
+type App struct {
+	config           Config
+	budgetController *controllers.BudgetController
+	ynabController   *controllers.YNABController
+}
+
+func loadConfig() (Config, error) {
 	err := godotenv.Load(".env")
 	if err != nil {
 		log.Println("Error loading .env file:", err)
@@ -22,50 +38,87 @@ func StartServer() {
 		log.Println(".env file loaded successfully")
 	}
 
-	ynabClientID := os.Getenv("YNAB_CLIENT_ID")
-	if ynabClientID == "" {
-		log.Fatal("YNAB_CLIENT_ID is not set")
+	config := Config{
+		YNABClientID:    os.Getenv("YNAB_CLIENT_ID"),
+		YNABRedirectURI: os.Getenv("YNAB_REDIRECT_URI"),
+		DatabaseURL:     os.Getenv("DATABASE_URL"),
+		JWTSecret:       []byte(os.Getenv("SUPABASE_JWT")),
 	}
 
-	ynabRedirectURI := os.Getenv("YNAB_REDIRECT_URI")
-	if ynabRedirectURI == "" {
-		log.Fatal("YNAB_REDIRECT_URI is not set")
+	if config.YNABClientID == "" {
+		return config, fmt.Errorf("YNAB_CLIENT_ID is not set")
+	}
+	if config.YNABRedirectURI == "" {
+		return config, fmt.Errorf("YNAB_REDIRECT_URI is not set")
+	}
+	if config.DatabaseURL == "" {
+		return config, fmt.Errorf("DATABASE_URL is not set")
+	}
+	if len(config.JWTSecret) == 0 {
+		return config, fmt.Errorf("SUPABASE_JWT is not set")
 	}
 
-	databaseUrl := os.Getenv("DATABASE_URL")
-	if databaseUrl == "" {
-		log.Fatal("DATABASE_URL is not set")
-	}
+	return config, nil
+}
 
-	db, err := database.NewDatabase(databaseUrl)
+func NewApp(config Config) (*App, error) {
+	db, err := database.NewDatabase(config.DatabaseURL)
 	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
+		return nil, fmt.Errorf("failed to connect to database: %v", err)
 	}
 
 	budgetService := budget.NewBudgetService(db)
 	ynabAuthService := ynab_auth.NewYNABAuthService(rand.Reader)
 
 	budgetController := controllers.NewBudgetController(budgetService)
-	ynabOAuthController := controllers.NewYNABController(ynabAuthService, ynabClientID, ynabRedirectURI)
+	ynabController := controllers.NewYNABController(ynabAuthService, config.YNABClientID, config.YNABRedirectURI)
 
-	http.HandleFunc("POST /api/get-expense", func(w http.ResponseWriter, r *http.Request) {
-		budgetController.GetExpense(w, r)
-	})
+	return &App{
+		config:           config,
+		budgetController: budgetController,
+		ynabController:   ynabController,
+	}, nil
+}
 
-	http.HandleFunc("POST /api/oauth/ynab/whatever", func(w http.ResponseWriter, r *http.Request) {
-		ynabOAuthController.SomeRouteHandler(w, r)
-	})
+func (a *App) SetupRoutes(e *echo.Echo) {
+	e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
+	e.Use(middleware.CORS())
 
-	// todo(rani): we want to test certain behaviors from this route
-	// 1.
-	http.HandleFunc("GET /api/oauth/ynab/authorize", func(w http.ResponseWriter, r *http.Request) {
-		ynabOAuthController.InitiateOAuth(w, r)
-	})
+	jwtConfig := echojwt.Config{
+		SigningKey: a.config.JWTSecret,
+	}
 
-	http.HandleFunc("GET /api/oauth/ynab/callback", func(w http.ResponseWriter, r *http.Request) {
-		ynabOAuthController.HandleCallback(w, r)
+	// API routes (protected)
+	api := e.Group("/api")
+	api.Use(echojwt.WithConfig(jwtConfig))
+	api.POST("/expenses/get-expense", a.budgetController.GetExpense)
+
+	// OAuth routes
+	oauth := e.Group("/oauth")
+	oauth.GET("/ynab/authorize", a.ynabController.InitiateOAuth)
+	oauth.GET("/ynab/callback", a.ynabController.HandleCallback)
+
+	// Public routes
+	e.GET("/", func(c echo.Context) error {
+		return c.String(200, "Hello there")
 	})
+}
+
+func StartServer() {
+	config, err := loadConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	app, err := NewApp(config)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	e := echo.New()
+	app.SetupRoutes(e)
 
 	log.Println("Finny server is listening on port 8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(e.Start(":8080"))
 }

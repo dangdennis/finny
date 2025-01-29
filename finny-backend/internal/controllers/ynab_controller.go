@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/finny/finny-backend/internal/ynab_auth"
+	"github.com/labstack/echo/v4"
 )
 
 type YNABController struct {
@@ -21,34 +22,27 @@ func NewYNABController(ynabOAuthService *ynab_auth.YNABAuthService, ynabClientID
 	}
 }
 
-func (y *YNABController) SomeRouteHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Hello, World!"))
-}
-
-func (y *YNABController) InitiateOAuth(w http.ResponseWriter, r *http.Request) {
+func (y *YNABController) InitiateOAuth(c echo.Context) error {
 	authURL, err := y.ynabOAuthService.InitiateOAuth(y.ynabClientID, y.ynabRedirectURI)
 	if err != nil {
-		http.Error(w, "Failed to generate state", http.StatusInternalServerError)
-		return
+		return c.String(http.StatusInternalServerError, "Failed to generate state")
 	}
 
-	http.Redirect(w, r, authURL, http.StatusTemporaryRedirect)
+	return c.Redirect(http.StatusTemporaryRedirect, authURL)
 }
 
-func (y *YNABController) HandleCallback(w http.ResponseWriter, r *http.Request) {
-	code := r.URL.Query().Get("code")
+func (y *YNABController) HandleCallback(c echo.Context) error {
+	code := c.QueryParam("code")
 	if code == "" {
-		http.Error(w, "Missing authorization code", http.StatusBadRequest)
-		return
+		return c.String(http.StatusBadRequest, "Missing authorization code")
 	}
 
 	_, err := y.ynabOAuthService.ExchangeCodeForTokens(code)
 	if err != nil {
-		http.Error(w, "Failed to exchange code for tokens", http.StatusInternalServerError)
-		return
+		return c.String(http.StatusInternalServerError, "Failed to exchange code for tokens")
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.Write([]byte(`{"message": "Successfully authenticated with YNAB!"}`))
-
+	return c.JSON(http.StatusOK, map[string]string{
+		"message": "Successfully authenticated with YNAB!",
+	})
 }
