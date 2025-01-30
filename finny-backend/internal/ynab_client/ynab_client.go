@@ -1,7 +1,11 @@
 package ynab_client
 
 import (
+	"context"
+	"encoding/json"
+	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/finny/finny-backend/internal/ynab_openapi"
 )
@@ -10,10 +14,17 @@ const (
 	baseURL = "https://api.ynab.com/v1"
 )
 
-type YNABClient struct {
-	AccessToken string
-	Client      *ynab_openapi.ClientWithResponses
+type YNABClientIntf interface {
+	GetLatestBudget(ctx context.Context) (*ynab_openapi.BudgetDetailResponse, error)
+	GetLatestCategories(ctx context.Context) (*ynab_openapi.CategoriesResponse, error)
 }
+
+type YNABClient struct {
+	accessToken string
+	client      *ynab_openapi.ClientWithResponses
+}
+
+var _ YNABClientIntf = (*YNABClient)(nil)
 
 func NewYNABClient(accessToken string) (*YNABClient, error) {
 	authDoer := &AuthHttpDoer{
@@ -27,109 +38,75 @@ func NewYNABClient(accessToken string) (*YNABClient, error) {
 	}
 
 	return &YNABClient{
-		AccessToken: accessToken,
-		Client:      client,
+		accessToken: accessToken,
+		client:      client,
 	}, nil
 }
 
-type AuthHttpDoer struct {
-	accessToken string
-	client      *http.Client
+func (y *YNABClient) GetLatestCategories(ctx context.Context) (*ynab_openapi.CategoriesResponse, error) {
+	categoriesResp, err := y.client.GetCategoriesWithResponse(ctx, "last-used", nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to make request for categories. err=%w", err)
+	}
+
+	if categoriesResp.JSON200 == nil {
+		return nil, fmt.Errorf("failed to get categories. err=%w", err)
+	}
+
+	return categoriesResp.JSON200, nil
 }
 
-func (a *AuthHttpDoer) Do(req *http.Request) (*http.Response, error) {
-	req.Header.Set("Authorization", "Bearer "+a.accessToken)
-	return a.client.Do(req)
+func (y *YNABClient) GetLatestBudget(ctx context.Context) (*ynab_openapi.BudgetDetailResponse, error) {
+	budgetResp, err := y.client.GetBudgetByIdWithResponse(ctx, "last-used", nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to make request for budget. err=%w", err)
+	}
+
+	if budgetResp.JSON200 == nil {
+		return nil, fmt.Errorf("failed to get budget. err=%w", err)
+	}
+
+	return budgetResp.JSON200, nil
 }
 
-// func (c *YNABClient) makeRequest(endpoint string) ([]byte, error) {
-// 	req, err := http.NewRequest("GET", baseURL+endpoint, nil)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("error creating request: %w", err)
-// 	}
+func (y *YNABClient) WriteBudgetToFile(budget *ynab_openapi.BudgetDetailResponse, filename string) error {
+	jsonData, err := json.MarshalIndent(budget, "", "    ")
+	if err != nil {
+		return fmt.Errorf("failed to marshal budget to JSON: %w", err)
+	}
 
-// 	req.Header.Set("Authorization", "Bearer "+c.accessToken)
+	err = os.WriteFile(filename, jsonData, 0777)
+	if err != nil {
+		return fmt.Errorf("failed to write budget to file: %w", err)
+	}
 
-// 	resp, err := c.httpClient.Do(req)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("error making request: %w", err)
-// 	}
-// 	defer resp.Body.Close()
+	return nil
+}
+func (y *YNABClient) WriteCategoriesToFile(categories *ynab_openapi.CategoriesResponse, filename string) error {
+	jsonData, err := json.MarshalIndent(categories, "", "    ")
+	if err != nil {
+		return fmt.Errorf("failed to marshal categories to JSON: %w", err)
+	}
 
-// 	if resp.StatusCode != http.StatusOK {
-// 		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
-// 	}
+	err = os.WriteFile(filename, jsonData, 0777)
+	if err != nil {
+		return fmt.Errorf("failed to write categories to file: %w", err)
+	}
 
-// 	body, err := io.ReadAll(resp.Body)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("error reading response body: %w", err)
-// 	}
+	return nil
+}
 
-// 	return body, nil
-// }
+func (y *YNABClient) ReadCategoriesFromFile(filename string) (*ynab_openapi.CategoriesResponse, error) {
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read categories file: %w", err)
+	}
 
-// func (c *YNABClient) GetLastUsedBudget() (*Budget, error) {
-// 	body, err := c.makeRequest("/budgets/last-used")
-// 	if err != nil {
-// 		return nil, err
-// 	}
+	var categories ynab_openapi.CategoriesResponse
+	err = json.Unmarshal(data, &categories)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal categories JSON: %w", err)
+	}
 
-// 	var response LastUsedBudgetResponse
-// 	if err := json.Unmarshal(body, &response); err != nil {
-// 		return nil, fmt.Errorf("error unmarshaling response: %w", err)
-// 	}
-
-// 	return response.Data.Budget, nil
-// }
-
-// func (c *YNABClient) GetBudgets() ([]*Budget, error) {
-// 	body, err := c.makeRequest("/budgets")
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	var response BudgetResponse
-// 	if err := json.Unmarshal(body, &response); err != nil {
-// 		return nil, fmt.Errorf("error unmarshaling response: %w", err)
-// 	}
-
-// 	return response.Data.Budgets, nil
-// }
-
-// // package ynab_client
-
-// // import (
-// // 	"github.com/brunomvsouza/ynab.go"
-// // 	"github.com/brunomvsouza/ynab.go/api"
-// // 	"github.com/brunomvsouza/ynab.go/api/budget"
-// // 	"github.com/brunomvsouza/ynab.go/api/category"
-// // 	"github.com/google/uuid"
-// // )
-
-// // type YNABClient struct {
-// // 	client ynab.ClientServicer
-// // }
-
-// // func NewYNABClient(accessToken string) *YNABClient {
-// // 	client := ynab.NewClient(accessToken)
-// // 	return &YNABClient{client: client}
-// // }
-
-// // func (c *YNABClient) GetLastUsedBudget() (*budget.Snapshot, error) {
-// // 	return c.client.Budget().GetLastUsedBudget(nil)
-// // }
-
-// // func (c *YNABClient) GetBudgets() ([]*budget.Summary, error) {
-// // 	return c.client.Budget().GetBudgets()
-// // }
-
-// // func (c *YNABClient) GetCategories(userID uuid.UUID, lastKnowledgeOfServer uint64) (*category.SearchResultSnapshot, error) {
-// // 	var filter *api.Filter
-// // 	if lastKnowledgeOfServer > 0 {
-// // 		filter = &api.Filter{
-// // 			LastKnowledgeOfServer: lastKnowledgeOfServer,
-// // 		}
-// // 	}
-
-// // 	return c.client.Category().GetCategories("last-used", filter)
-// // }
+	return &categories, nil
+}
