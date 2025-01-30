@@ -2,15 +2,28 @@ package budget
 
 import (
 	"testing"
+
+	"github.com/finny/finny-backend/internal/ynab_client"
 )
 
-// todo(rani): write tests for budget service
 func TestBudgetService(t *testing.T) {
-	// step 1: how to get a mock yet realistic Budget from YNAB.
-	// Does not need to actually call YNAB'S API for the budget data. We should have a local, immutable copy of a budget.
+	t.Skip("GetExpenseFromYNAB", func(t *testing.T) {
+		t.Run("should get expense from ynab budget", func(t *testing.T) {
+			ynabClient, err := ynab_client.NewYNABClient("x")
+			if err != nil {
+				t.Fatalf("failed to create ynab client: %v", err)
+			}
 
-	// c := ynab.NewClient(pat)
+			budgetSvc := NewBudgetService(nil)
+			totalExpense, err := budgetSvc.GetExpenseFromYNAB(ynabClient)
+			if err != nil {
+				t.Fatalf("failed to get expense from ynab: %v", err)
+			}
 
-	// step 2: calculate the expenses from the budget
-	// result, _ := budgetService.CalculateCashflow(&budget, ignoredCategories)
+			t.Logf("total expense: %d", totalExpense)
+			if totalExpense != 1000 {
+				t.Fatalf("expected total expense to be 1000, got %d", totalExpense)
+			}
+		})
+	})
 }

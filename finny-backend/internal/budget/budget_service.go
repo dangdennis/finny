@@ -1,6 +1,10 @@
 package budget
 
 import (
+	"context"
+	"fmt"
+
+	"github.com/finny/finny-backend/internal/ynab_client"
 	"gorm.io/gorm"
 )
 
@@ -12,6 +16,26 @@ func NewBudgetService(db *gorm.DB) *BudgetService {
 	return &BudgetService{
 		db: db,
 	}
+}
+
+func (b *BudgetService) GetExpenseFromYNAB(ynab *ynab_client.YNABClient) (int64, error) {
+
+	ctx := context.Background()
+	budgetResp, err := ynab.Client.GetBudgetByIdWithResponse(ctx, "last-used", nil)
+	if err != nil {
+		return 0, fmt.Errorf("failed to make request for budget. err=%w", err)
+	}
+
+	if budgetResp.JSON200 == nil {
+		return 0, fmt.Errorf("failed to get budget. err=%w", err)
+	}
+
+	var totalExpense int64
+	for _, category := range *budgetResp.JSON200.Data.Budget.Categories {
+		totalExpense += category.Activity
+	}
+
+	return totalExpense, nil
 }
 
 // func (b *BudgetService) CalculateCashflow(budget *ynab., ignoredCategories []string) (YNABInflowOutflow, error) {
