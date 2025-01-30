@@ -18,7 +18,7 @@ func NewBudgetService(db *gorm.DB) *BudgetService {
 	}
 }
 
-func (b *BudgetService) GetExpenseFromYNAB(ynab ynab_client.YNABClientIntf) (int64, error) {
+func (b *BudgetService) GetCurrentMonthExpenseFromYNAB(ynab ynab_client.YNABClientIntf) (int64, error) {
 	ctx := context.Background()
 	categories, err := ynab.GetLatestCategories(ctx)
 	if err != nil {
