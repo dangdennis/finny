@@ -7,67 +7,70 @@ import (
 	"time"
 
 	"github.com/finny/finny-backend/internal/ynab_openapi"
+	"github.com/oapi-codegen/runtime/types"
 )
+
+type YNABAPIClient interface {
+	GetBudgetMonthWithResponse(ctx context.Context, budgetID string, date types.Date, reqEditors ...ynab_openapi.RequestEditorFn) (*ynab_openapi.GetBudgetMonthResponse, error)
+}
 
 type MonthBudget struct {
 	Month  time.Time
-	Budget *ynab_openapi.BudgetDetailResponse
+	Budget *ynab_openapi.MonthDetail
 	Error  error
 }
 
+type YNABBudgetFetcher struct {
+	client YNABAPIClient
+}
 
-func (y *YNABClient) FetchMonthlyBudgets(ctx context.Context) []MonthBudget {
+func NewYNABBudgetFetcher(client YNABAPIClient) *YNABBudgetFetcher {
+	return &YNABBudgetFetcher{
+		client: client,
+	}
+}
+
+func (y *YNABBudgetFetcher) FetchMonthlyBudgets(ctx context.Context) []MonthBudget {
 	var wg sync.WaitGroup
 	results := make([]MonthBudget, 12)
-	
 
 	budgetChan := make(chan MonthBudget, 12)
-	
 
-	now := time.Now()
-	
+	// Use UTC time and set it to the first of the month
+	now := time.Now().UTC()
+	now = time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC)
 
 	for i := 0; i < 12; i++ {
 		wg.Add(1)
 		go func(monthsAgo int) {
 			defer wg.Done()
-			
 
 			targetMonth := now.AddDate(0, -monthsAgo, 0)
-			
-			// Insert your YNAB API endpoint URL here
-			// Example: fmt.Sprintf("https://api.ynab.com/v1/budgets/last-used/months/%s", targetMonth.Format("2006-01"))
-			
-			budget, err := y.GetLatestBudget(ctx)
+			budget, err := y.GetBudgetByMonth(ctx, "last-used", targetMonth)
 			result := MonthBudget{
 				Month:  targetMonth,
 				Budget: budget,
 				Error:  err,
 			}
-			
 
 			budgetChan <- result
 		}(i)
 	}
-	
 
 	go func() {
 		wg.Wait()
 		close(budgetChan)
 	}()
-	
 
 	for result := range budgetChan {
-
 		monthDiff := int(now.Sub(result.Month).Hours() / 24 / 30)
 		if monthDiff < 12 {
 			results[monthDiff] = result
 		}
 	}
-	
+
 	return results
 }
-
 
 func ProcessBudgetResults(results []MonthBudget) error {
 	for _, result := range results {
@@ -75,10 +78,22 @@ func ProcessBudgetResults(results []MonthBudget) error {
 			return fmt.Errorf("error fetching budget for %s: %w", 
 				result.Month.Format("2006-01"), result.Error)
 		}
-		
-		// Process successful results here
-		// You can access the budget data via result.Budget
 	}
-	
 	return nil
+}
+
+func (y *YNABBudgetFetcher) GetBudgetByMonth(ctx context.Context, budgetID string, month time.Time) (*ynab_openapi.MonthDetail, error) {
+    // Convert time.Time to types.Date
+    date := types.Date{Time: month}
+    
+    resp, err := y.client.GetBudgetMonthWithResponse(ctx, budgetID, date)
+    if err != nil {
+        return nil, fmt.Errorf("failed to make request for budget month %s: %w", month.Format("2006-01"), err)
+    }
+
+    if resp.JSON200 == nil {
+        return nil, fmt.Errorf("failed to get budget for month %s", month.Format("2006-01"))
+    }
+
+    return &resp.JSON200.Data.Month, nil
 }
