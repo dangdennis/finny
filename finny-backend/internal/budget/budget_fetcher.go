@@ -1,4 +1,4 @@
-package ynab_client
+package budget
 
 import (
 	"context"
@@ -33,10 +33,8 @@ func NewYNABBudgetFetcher(client YNABAPIClient) *YNABBudgetFetcher {
 func (y *YNABBudgetFetcher) FetchMonthlyBudgets(ctx context.Context) []MonthBudget {
 	var wg sync.WaitGroup
 	results := make([]MonthBudget, 12)
-
 	budgetChan := make(chan MonthBudget, 12)
 
-	// Use UTC time and set it to the first of the month
 	now := time.Now().UTC()
 	now = time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC)
 
@@ -52,7 +50,6 @@ func (y *YNABBudgetFetcher) FetchMonthlyBudgets(ctx context.Context) []MonthBudg
 				Budget: budget,
 				Error:  err,
 			}
-
 			budgetChan <- result
 		}(i)
 	}
@@ -63,37 +60,23 @@ func (y *YNABBudgetFetcher) FetchMonthlyBudgets(ctx context.Context) []MonthBudg
 	}()
 
 	for result := range budgetChan {
-		monthDiff := int(now.Sub(result.Month).Hours() / 24 / 30)
-		if monthDiff < 12 {
-			results[monthDiff] = result
-		}
+		monthIndex := int(now.Sub(result.Month).Hours() / 24 / 30)
+		results[monthIndex] = result
 	}
 
 	return results
 }
 
-func ProcessBudgetResults(results []MonthBudget) error {
-	for _, result := range results {
-		if result.Error != nil {
-			return fmt.Errorf("error fetching budget for %s: %w", 
-				result.Month.Format("2006-01"), result.Error)
-		}
-	}
-	return nil
-}
-
 func (y *YNABBudgetFetcher) GetBudgetByMonth(ctx context.Context, budgetID string, month time.Time) (*ynab_openapi.MonthDetail, error) {
-    // Convert time.Time to types.Date
-    date := types.Date{Time: month}
-    
-    resp, err := y.client.GetBudgetMonthWithResponse(ctx, budgetID, date)
-    if err != nil {
-        return nil, fmt.Errorf("failed to make request for budget month %s: %w", month.Format("2006-01"), err)
-    }
+	date := types.Date{Time: month}
+	resp, err := y.client.GetBudgetMonthWithResponse(ctx, budgetID, date)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get budget for month %s: %w", month.Format("2006-01"), err)
+	}
 
-    if resp.JSON200 == nil {
-        return nil, fmt.Errorf("failed to get budget for month %s", month.Format("2006-01"))
-    }
+	if resp.JSON200 == nil {
+		return nil, fmt.Errorf("no budget data for month %s", month.Format("2006-01"))
+	}
 
-    return &resp.JSON200.Data.Month, nil
+	return &resp.JSON200.Data.Month, nil
 }
