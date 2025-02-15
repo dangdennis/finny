@@ -1,5 +1,5 @@
 import 'package:finny/src/providers/navigation_provider.dart';
-import 'package:finny/src/views/dashboard/dashboard_view.dart';
+import 'package:finny/src/views/calculator/financial_calculator_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
@@ -68,15 +68,9 @@ class _MainViewState extends State<MainView> {
     super.initState();
 
     _widgetOptions = [
-      DashboardView(),
+      const CalculatorView(),
     ];
   }
-
-  // void _onItemTapped(int index) {
-  //   final navigationProvider =
-  //       Provider.of<NavigationProvider>(context, listen: false);
-  //   navigationProvider.setSelectedIndex(index);
-  // }
 
   @override
   Widget build(BuildContext context) {
