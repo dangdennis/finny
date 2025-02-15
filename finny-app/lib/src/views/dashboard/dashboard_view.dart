@@ -29,7 +29,7 @@ class _DashboardViewState extends State<DashboardView> {
               ),
             ),
           ),
-          const CalculatorView(),
+          const FinancialCalculatorView(),
           const SettingsView(),
         ],
       ),

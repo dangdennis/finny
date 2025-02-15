@@ -22,7 +22,7 @@ dependencies:
   path: ^1.9.0
   path_provider: ^2.1.3
   provider: ^6.1.2
-  sentry_flutter: ^8.11.0
+  sentry_flutter: ^8.13.0
   shared_preferences: ^2.3.2
   uuid: ^4.4.2
   sign_in_with_apple: ^6.1.2
@@ -37,8 +37,12 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
-  # Enable generation of localized Strings from arb files.
-  generate: true
+  # todo: https://docs.flutter.dev/release/breaking-changes/flutter-generate-i10n-source
+  # synthetic-package: false
+  # # The files are generated into the path specified by `arb-dir`
+  # arb-dir: lib/src/localization
+  # # Or, specifically provide an output path:
+  # output-dir: lib/src/generated/i18n
 
   # assets:
     # Add assets from the images directory to the application.
