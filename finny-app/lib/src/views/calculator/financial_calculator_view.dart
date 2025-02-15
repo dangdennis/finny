@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:finny/src/finance/finance.dart';
 
-class CalculatorView extends StatefulWidget {
-  const CalculatorView({super.key});
+class FinancialCalculatorView extends StatefulWidget {
+  const FinancialCalculatorView({super.key});
 
   @override
-  State<CalculatorView> createState() => _CalculatorViewState();
+  State<FinancialCalculatorView> createState() =>
+      _FinancialCalculatorViewState();
 }
 
-class _CalculatorViewState extends State<CalculatorView> {
+class _FinancialCalculatorViewState extends State<FinancialCalculatorView> {
   final _formKey = GlobalKey<FormState>();
   bool _showResults = false;
 
@@ -49,9 +50,6 @@ class _CalculatorViewState extends State<CalculatorView> {
       onTap: _unfocus,
       child: Scaffold(
         resizeToAvoidBottomInset: false,
-        appBar: AppBar(
-          title: const Text('Financial Independence'),
-        ),
         body: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Column(
