@@ -1,0 +1,4 @@
+enum ExpenseInputMode {
+  manual,
+  ynab,
+}

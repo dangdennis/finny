@@ -1,6 +1,10 @@
+import 'package:finny/src/models/expense_input_mode.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:finny/src/finance/finance.dart';
+import 'package:finny/src/providers/ynab_provider.dart';
+import 'package:finny/src/views/calculator/ynab_auth_dialog.dart';
+import 'package:provider/provider.dart';
 
 class FinancialCalculatorView extends StatefulWidget {
   const FinancialCalculatorView({super.key});
@@ -13,6 +17,7 @@ class FinancialCalculatorView extends StatefulWidget {
 class _FinancialCalculatorViewState extends State<FinancialCalculatorView> {
   final _formKey = GlobalKey<FormState>();
   bool _showResults = false;
+  ExpenseInputMode _expenseInputMode = ExpenseInputMode.manual;
 
   final TextEditingController _annualExpenseController =
       TextEditingController();
@@ -32,6 +37,11 @@ class _FinancialCalculatorViewState extends State<FinancialCalculatorView> {
 
   void _unfocus() {
     FocusScope.of(context).unfocus();
+  }
+
+  @override
+  void initState() {
+    super.initState();
   }
 
   @override
@@ -94,10 +104,13 @@ class _FinancialCalculatorViewState extends State<FinancialCalculatorView> {
       key: _formKey,
       child: Column(
         children: [
+          _buildYnabSection(),
+          const SizedBox(height: 12),
           _buildNumberInput(
             label: 'Annual Expense (\$)',
             hintText: 'Enter your annual expenses',
             controller: _annualExpenseController,
+            enabled: _expenseInputMode == ExpenseInputMode.manual,
           ),
           const SizedBox(height: 12),
           _buildNumberInput(
@@ -128,10 +141,79 @@ class _FinancialCalculatorViewState extends State<FinancialCalculatorView> {
     );
   }
 
+  Widget _buildYnabSection() {
+    final ynabProvider = context.watch<YNABProvider>();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (ynabProvider.authStatus != YnabAuthStatus.authorized) ...[
+          OutlinedButton.icon(
+            onPressed: () => _handleYnabAuthorization(),
+            icon: const Icon(Icons.link),
+            label: const Text('Connect YNAB'),
+          ),
+        ] else ...[
+          OutlinedButton.icon(
+            onPressed: () async {
+              try {
+                await ynabProvider.fetchAnnualExpenses();
+                if (ynabProvider.annualExpenses != null && mounted) {
+                  setState(() {
+                    _annualExpenseController.text = ynabProvider.annualExpenses!.toStringAsFixed(0);
+                  });
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Failed to fetch YNAB expenses'),
+                    ),
+                  );
+                }
+              }
+            },
+            icon: const Icon(Icons.sync),
+            label: const Text('Use YNAB Expense'),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Future<void> _handleYnabAuthorization() async {
+    final ynabService = context.read<YNABProvider>();
+
+    final authorized = await showDialog<bool>(
+      context: context,
+      builder: (context) => YnabAuthDialog(ynabService: ynabService),
+    );
+
+    if (authorized == true) {
+      try {
+        await ynabService.fetchAnnualExpenses();
+        if (ynabService.annualExpenses != null && mounted) {
+          setState(() {
+            _annualExpenseController.text = ynabService.annualExpenses!.toStringAsFixed(0);
+          });
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Failed to fetch YNAB expenses'),
+            ),
+          );
+        }
+      }
+    }
+  }
+
   Widget _buildNumberInput({
     required String label,
     required String hintText,
     required TextEditingController controller,
+    bool enabled = true,
   }) {
     return TextFormField(
       controller: controller,
@@ -151,6 +233,7 @@ class _FinancialCalculatorViewState extends State<FinancialCalculatorView> {
         }
         return null;
       },
+      enabled: enabled,
     );
   }
 
