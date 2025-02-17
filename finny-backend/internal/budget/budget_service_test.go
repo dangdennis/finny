@@ -1,9 +1,12 @@
 package budget
 
 import (
+	"crypto/rand"
 	"testing"
 
+	"github.com/finny/finny-backend/internal/ynab_auth"
 	"github.com/finny/finny-backend/internal/ynab_client"
+	"gorm.io/gorm"
 )
 
 func TestBudgetService(t *testing.T) {
@@ -19,7 +22,16 @@ func TestBudgetService(t *testing.T) {
 				t.Fatalf("failed to read categories from file: %v", err)
 			}
 
-			budgetSvc := NewBudgetService(nil)
+			db := &gorm.DB{}
+			ynabAuthService, err := ynab_auth.NewYNABAuthService(rand.Reader, db)
+			if err != nil {
+				t.Fatalf("failed to create ynab auth service: %v", err)
+			}
+			budgetSvc, err := NewBudgetService(db, ynabAuthService)
+			if err != nil {
+				t.Fatalf("failed to create budget service: %v", err)
+			}
+
 			totalExpense := budgetSvc.CalculateExpenseFromCategories(categories)
 			if err != nil {
 				t.Fatalf("failed to get expense from ynab: %v", err)
