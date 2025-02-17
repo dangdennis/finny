@@ -1,7 +1,7 @@
 package server
 
-import "github.com/finny/finny-backend/internal/app"
+import "github.com/finny/finny-backend/internal/server"
 
 func StartServer() {
-	app.StartServer()
+	server.Start()
 }

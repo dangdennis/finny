@@ -27,12 +27,12 @@ type YNABClient struct {
 var _ YNABClientIntf = (*YNABClient)(nil)
 
 func NewYNABClient(accessToken string) (*YNABClient, error) {
-	authDoer := &AuthHttpDoer{
+	httpDoer := &HttpDoer{
 		accessToken: accessToken,
 		client:      &http.Client{},
 	}
 
-	client, err := ynab_openapi.NewClientWithResponses(baseURL, ynab_openapi.WithHTTPClient(authDoer))
+	client, err := ynab_openapi.NewClientWithResponses(baseURL, ynab_openapi.WithHTTPClient(httpDoer))
 	if err != nil {
 		return nil, err
 	}

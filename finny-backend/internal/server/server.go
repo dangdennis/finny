@@ -1,4 +1,4 @@
-package app
+package server
 
 import (
 	"crypto/rand"
@@ -68,7 +68,10 @@ func NewApp(config Config) (*App, error) {
 	}
 
 	budgetService := budget.NewBudgetService(db)
-	ynabAuthService := ynab_auth.NewYNABAuthService(rand.Reader)
+	ynabAuthService, err := ynab_auth.NewYNABAuthService(rand.Reader, db)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create YNAB auth service: %v", err)
+	}
 
 	budgetController := controllers.NewBudgetController(budgetService)
 	ynabController := controllers.NewYNABController(ynabAuthService, config.YNABClientID, config.YNABRedirectURI)
@@ -105,7 +108,7 @@ func (a *App) SetupRoutes(e *echo.Echo) {
 	})
 }
 
-func StartServer() {
+func Start() {
 	config, err := loadConfig()
 	if err != nil {
 		log.Fatal(err)
