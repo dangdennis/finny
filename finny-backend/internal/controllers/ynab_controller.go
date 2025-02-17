@@ -1,10 +1,10 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/finny/finny-backend/internal/ynab_auth"
-	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
@@ -24,15 +24,10 @@ func NewYNABController(ynabOAuthService *ynab_auth.YNABAuthService, ynabClientID
 }
 
 func (y *YNABController) InitiateOAuth(c echo.Context) error {
-	user := c.Get("user").(*jwt.Token)
-	claims := user.Claims.(jwt.MapClaims)
-	sub := claims["sub"].(string)
-	userID, err := uuid.Parse(sub)
+	userID, err := GetContextUserID(c)
 	if err != nil {
-		return c.String(http.StatusBadRequest, "Invalid user ID format")
-	}
-	if userID == uuid.Nil {
-		return c.String(http.StatusUnauthorized, "User not authenticated")
+		fmt.Printf("Failed to get user ID from context: %v\n", err)
+		return c.String(http.StatusBadRequest, "User not authenticated")
 	}
 
 	authURL, err := y.ynabOAuthService.InitiateOAuth(y.ynabClientID, y.ynabRedirectURI, userID)

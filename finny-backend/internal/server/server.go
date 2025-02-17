@@ -67,10 +67,13 @@ func NewApp(config Config) (*App, error) {
 		return nil, fmt.Errorf("failed to connect to database: %v", err)
 	}
 
-	budgetService := budget.NewBudgetService(db)
 	ynabAuthService, err := ynab_auth.NewYNABAuthService(rand.Reader, db)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create YNAB auth service: %v", err)
+	}
+	budgetService, err := budget.NewBudgetService(db, ynabAuthService)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create budget service: %v", err)
 	}
 
 	budgetController := controllers.NewBudgetController(budgetService)
