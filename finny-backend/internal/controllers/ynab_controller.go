@@ -54,7 +54,21 @@ func (y *YNABController) HandleCallback(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "Failed to exchange code for tokens")
 	}
 
-	return c.JSON(http.StatusOK, map[string]string{
-		"message": "Successfully authenticated with YNAB!",
-	})
+	// Return an HTML page with a success message
+	htmlContent := `
+	<!DOCTYPE html>
+	<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>YNAB Connection Successful</title>
+	</head>
+	<body>
+		<h1>Connected to YNAB!</h1>
+		<p>You can close this window now.</p>
+	</body>
+	</html>
+	`
+
+	return c.HTML(http.StatusOK, htmlContent)
 }
