@@ -34,7 +34,7 @@ func (y *YNABController) InitiateOAuth(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "Failed to generate state")
 	}
 
-	return c.Redirect(http.StatusTemporaryRedirect, authURL)
+	return c.JSON(http.StatusOK, map[string]string{"url": authURL})
 }
 
 func (y *YNABController) HandleCallback(c echo.Context) error {
@@ -43,17 +43,7 @@ func (y *YNABController) HandleCallback(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "Missing authorization code")
 	}
 
-	state := c.QueryParam("state")
-	if state == "" {
-		return c.String(http.StatusBadRequest, "Missing state")
-	}
-
-	userID, err := y.ynabOAuthService.ExtractUserIDFromState(state)
-	if err != nil {
-		return c.String(http.StatusBadRequest, "Invalid state, missing user id")
-	}
-
-	err = y.ynabOAuthService.ExchangeCodeForTokens(code, userID)
+	err := y.ynabOAuthService.ExchangeCodeForTokens(code)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "Failed to exchange code for tokens")
 	}

@@ -41,22 +41,26 @@ func NewYNABAuthService(randReader RandomReader, db *gorm.DB) (*YNABAuthService,
 	}, nil
 }
 
-func (y *YNABAuthService) GenerateState(userID uuid.UUID) (string, error) {
+func (y *YNABAuthService) GenerateState() (string, error) {
 	b := make([]byte, 32)
 	if _, err := y.randReader.Read(b); err != nil {
 		return "", err
 	}
-	stateWithUser := fmt.Sprintf("%s.%s", b, userID.String())
-	return base64.URLEncoding.EncodeToString([]byte(stateWithUser)), nil
+	return base64.URLEncoding.EncodeToString([]byte(b)), nil
 }
 
 func (y *YNABAuthService) InitiateOAuth(clientID string, redirectURI string, userID uuid.UUID) (string, error) {
-	state, err := y.GenerateState(userID)
+	state, err := y.GenerateState()
 	if err != nil {
 		return "", err
 	}
 
 	authURL := y.GetAuthorizationURL(state, clientID, redirectURI)
+
+	err = y.StoreState(state, userID)
+	if err != nil {
+		return "", err
+	}
 
 	return authURL, nil
 }
@@ -66,10 +70,11 @@ func (y *YNABAuthService) GetAuthorizationURL(state string, clientID string, red
 		"client_id=" + url.QueryEscape(clientID) +
 		"&redirect_uri=" + url.QueryEscape(redirectURI) +
 		"&response_type=code" +
-		"&state=" + url.QueryEscape(state)
+		"&state=" + state
 }
 
-func (y *YNABAuthService) ExchangeCodeForTokens(code string, userID uuid.UUID) error {
+func (y *YNABAuthService) ExchangeCodeForTokens(code string) error {
+	// todo: read at toplevel and add these as private fields to the ynabAuthService struct
 	clientID := os.Getenv("YNAB_CLIENT_ID")
 	clientSecret := os.Getenv("YNAB_CLIENT_SECRET")
 	redirectURI := os.Getenv("YNAB_REDIRECT_URI")
@@ -94,6 +99,11 @@ func (y *YNABAuthService) ExchangeCodeForTokens(code string, userID uuid.UUID) e
 	var tokenResponse TokenResponse
 	if err := json.NewDecoder(resp.Body).Decode(&tokenResponse); err != nil {
 		return fmt.Errorf("failed to decode token response: %w", err)
+	}
+
+	userID, err := y.GetUserIDFromState(code)
+	if err != nil {
+		return fmt.Errorf("failed to get user ID from state: %w", err)
 	}
 
 	err = y.StoreAccessToken(&tokenResponse, userID)
@@ -139,7 +149,6 @@ func (y *YNABAuthService) GetAccessToken(userID uuid.UUID) (models.YNABToken, er
 	return token, nil
 }
 
-// todo(dennis): get access token, check expiration date, and return a true/false depending on the expiration status
 func (y *YNABAuthService) CheckAuthStatus(userID uuid.UUID) (bool, error) {
 	accessToken, err := y.GetAccessToken(userID)
 	if err != nil {
@@ -150,23 +159,29 @@ func (y *YNABAuthService) CheckAuthStatus(userID uuid.UUID) (bool, error) {
 
 }
 
-func (y *YNABAuthService) ExtractUserIDFromState(state string) (uuid.UUID, error) {
-	decodedState, err := base64.URLEncoding.DecodeString(state)
-	if err != nil {
-		return uuid.Nil, fmt.Errorf("failed to decode state: %w", err)
+func (y *YNABAuthService) StoreState(state string, userID uuid.UUID) error {
+	oauthState := models.OAuthState{
+		State:     state,
+		UserID:    userID,
+		CreatedAt: time.Now(),
+		ExpiresAt: time.Now().Add(5 * time.Minute), // State expires after 5 minutes
 	}
 
-	parts := strings.Split(string(decodedState), ".")
-	if len(parts) != 2 {
-		return uuid.Nil, fmt.Errorf("invalid state")
+	result := y.db.Create(&oauthState)
+	return result.Error
+}
+
+func (y *YNABAuthService) GetUserIDFromState(code string) (uuid.UUID, error) {
+	var oauthState models.OAuthState
+	result := y.db.Where("state = ? AND expires_at > ?", code, time.Now()).First(&oauthState)
+
+	if result.Error != nil {
+		return uuid.Nil, result.Error
 	}
 
-	userID, err := uuid.Parse(parts[1])
-	if err != nil {
-		return uuid.Nil, fmt.Errorf("failed to parse user ID: %w", err)
-	}
+	y.db.Delete(&oauthState)
 
-	return userID, nil
+	return oauthState.UserID, nil
 }
 
 type TokenResponse struct {

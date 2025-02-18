@@ -1,11 +1,9 @@
 package ynab_auth
 
 import (
-	"encoding/base64"
 	"fmt"
 	"math/rand/v2"
 	"net/url"
-	"strings"
 	"testing"
 	"time"
 
@@ -41,29 +39,13 @@ func TestInitiateOAuth(t *testing.T) {
 	if err != nil {
 		t.Error(err, "Failed to initiate OAuth")
 	}
-	expectedState := "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8uYzM4MzE4OTYtN2FlNy00YjFiLTgzZmMtMmZiMGVlMGE0NTY4"
+	expectedState := "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8="
 	expectedURL := "https://app.ynab.com/oauth/authorize?client_id=" + url.QueryEscape(mockClientID) + "&redirect_uri=" + url.QueryEscape(mockRedirectURI) + "&response_type=code&state=" + expectedState
 
 	if gotURL != expectedURL {
 		fmt.Println(gotURL)
 		fmt.Println(expectedURL)
 		t.Error("Invalid URL")
-	}
-
-	// The user ID should be encoded in the state
-	gotState, err := base64.URLEncoding.DecodeString(expectedState)
-	if err != nil {
-		t.Error(err, "Failed to decode state")
-	}
-	strState := string(gotState)
-	parts := strings.Split(strState, ".")
-	gotUserID, err := uuid.Parse(parts[1])
-	if err != nil {
-		t.Error(err, "Failed to parse user ID")
-	}
-
-	if gotUserID != mockUserID {
-		t.Error("User ID was not encoded correctly")
 	}
 }
 
