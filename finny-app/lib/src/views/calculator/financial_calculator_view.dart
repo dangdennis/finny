@@ -1,4 +1,3 @@
-import 'package:finny/src/models/expense_input_mode.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:finny/src/finance/finance.dart';
@@ -498,4 +497,9 @@ class _FinancialCalculatorViewState extends State<FinancialCalculatorView> {
     final ynabProvider = context.read<YNABProvider>();
     await ynabProvider.fetchAuthorizationStatus();
   }
+}
+
+enum ExpenseInputMode {
+  manual,
+  ynab,
 }
