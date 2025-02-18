@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/finny/finny-backend/internal/budget"
 	"github.com/finny/finny-backend/internal/controllers"
@@ -67,11 +68,50 @@ func NewApp(config Config) (*App, error) {
 		return nil, fmt.Errorf("failed to connect to database: %v", err)
 	}
 
-	budgetService := budget.NewBudgetService(db)
-	ynabAuthService := ynab_auth.NewYNABAuthService(rand.Reader)
+	ynabAuthService, err := ynab_auth.NewYNABAuthService(rand.Reader, db)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create YNAB auth service: %v", err)
+	}
+	budgetService, err := budget.NewBudgetService(db, ynabAuthService)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create budget service: %v", err)
+	}
 
 	budgetController := controllers.NewBudgetController(budgetService)
 	ynabController := controllers.NewYNABController(ynabAuthService, config.YNABClientID, config.YNABRedirectURI)
+
+	// Background task to clean up expired oauth states.
+	go func() {
+		fmt.Println("Starting cleanup task of oauth states...")
+		ticker := time.NewTicker(1 * time.Minute)
+		defer ticker.Stop()
+
+		backoff := time.Second // Initial backoff duration
+		maxBackoff := 5 * time.Minute
+
+		for {
+			select {
+			case <-ticker.C:
+				err := ynabAuthService.CleanupExpiredStates(10 * time.Minute)
+				if err != nil {
+					log.Printf("Error cleaning up expired states: %v. Retrying in %v...", err, backoff)
+
+					// Wait for backoff duration before retrying
+					time.Sleep(backoff)
+
+					// Exponential backoff with a maximum limit
+					backoff *= 2
+					if backoff > maxBackoff {
+						backoff = maxBackoff
+					}
+
+					continue
+				}
+				// Reset backoff on successful cleanup
+				backoff = time.Second
+			}
+		}
+	}()
 
 	return &App{
 		config:           config,
@@ -93,10 +133,11 @@ func (a *App) SetupRoutes(e *echo.Echo) {
 	api := e.Group("/api")
 	api.Use(echojwt.WithConfig(jwtConfig))
 	api.POST("/expenses/get-expense", a.budgetController.GetExpense)
+	api.GET("/ynab/auth-status", a.ynabController.GetAuthStatus)
 
 	// OAuth routes
 	oauth := e.Group("/oauth")
-	oauth.GET("/ynab/authorize", a.ynabController.InitiateOAuth)
+	oauth.GET("/ynab/authorize", a.ynabController.InitiateOAuth, echojwt.WithConfig(jwtConfig)) // Require authentication to initiate oauth
 	oauth.GET("/ynab/callback", a.ynabController.HandleCallback)
 
 	// Public routes
@@ -105,7 +146,7 @@ func (a *App) SetupRoutes(e *echo.Echo) {
 	})
 }
 
-func StartServer() {
+func Start() {
 	config, err := loadConfig()
 	if err != nil {
 		log.Fatal(err)

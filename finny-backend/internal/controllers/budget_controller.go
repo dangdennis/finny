@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/finny/finny-backend/internal/budget"
@@ -18,11 +19,19 @@ func NewBudgetController(budgetSvc *budget.BudgetService) *BudgetController {
 }
 
 func (b *BudgetController) GetExpense(c echo.Context) error {
-	// Parse the user's access token for their Supabase user id.
-	// Use the user id to fetch the user's budget data from the database.
-	// Compute the user's expenses for the last 12 months.
-	// Return the user's expenses as a JSON response
+	userID, err := GetContextUserID(c)
+	if err != nil {
+		fmt.Printf("Failed to get user ID from context: %v\n", err)
+		return c.String(http.StatusBadRequest, "User not authenticated")
+	}
+
+	expenseTotal, err := b.budgetService.GetCurrentMonthExpenseFromYNAB(userID)
+	if err != nil {
+		fmt.Printf("Failed to get current month expense from YNAB: %v\n", err)
+		return c.String(http.StatusBadRequest, "Failed to get current expense")
+	}
+
 	return c.JSON(http.StatusOK, map[string]interface{}{
-		// your response data here
+		"expense": expenseTotal,
 	})
 }

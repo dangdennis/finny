@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:finny/src/finance/finance.dart';
+import 'package:finny/src/providers/ynab_provider.dart';
+import 'package:finny/src/views/calculator/ynab_auth_dialog.dart';
+import 'package:provider/provider.dart';
 
 class FinancialCalculatorView extends StatefulWidget {
   const FinancialCalculatorView({super.key});
@@ -13,6 +16,7 @@ class FinancialCalculatorView extends StatefulWidget {
 class _FinancialCalculatorViewState extends State<FinancialCalculatorView> {
   final _formKey = GlobalKey<FormState>();
   bool _showResults = false;
+  final _expenseInputMode = ExpenseInputMode.manual;
 
   final TextEditingController _annualExpenseController =
       TextEditingController();
@@ -30,8 +34,16 @@ class _FinancialCalculatorViewState extends State<FinancialCalculatorView> {
   String _actualFreedomNumber = '';
   String _actualRetirementAge = '';
 
+  bool _isLoading = false;
+
   void _unfocus() {
     FocusScope.of(context).unfocus();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchAuthorizationStatus();
   }
 
   @override
@@ -94,10 +106,13 @@ class _FinancialCalculatorViewState extends State<FinancialCalculatorView> {
       key: _formKey,
       child: Column(
         children: [
+          _buildYnabSection(),
+          const SizedBox(height: 12),
           _buildNumberInput(
             label: 'Annual Expense (\$)',
             hintText: 'Enter your annual expenses',
             controller: _annualExpenseController,
+            enabled: _expenseInputMode == ExpenseInputMode.manual,
           ),
           const SizedBox(height: 12),
           _buildNumberInput(
@@ -128,10 +143,118 @@ class _FinancialCalculatorViewState extends State<FinancialCalculatorView> {
     );
   }
 
+  Widget _buildYnabSection() {
+    final ynabProvider = context.watch<YNABProvider>();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (ynabProvider.authStatus != YnabAuthStatus.authorized) ...[
+          OutlinedButton.icon(
+            onPressed: ynabProvider.authStatus == YnabAuthStatus.loading
+                ? null
+                : () => _handleYnabAuthorization(),
+            icon: ynabProvider.authStatus == YnabAuthStatus.loading
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                    ),
+                  )
+                : const Icon(Icons.link),
+            label: Text(ynabProvider.authStatus == YnabAuthStatus.loading
+                ? 'Connecting...'
+                : 'Connect YNAB'),
+          ),
+        ] else ...[
+          OutlinedButton.icon(
+            onPressed: _isLoading
+                ? null
+                : () async {
+                    setState(() {
+                      _isLoading = true;
+                    });
+                    try {
+                      await ynabProvider.fetchExpenseTotal();
+                      if (ynabProvider.annualExpenses != null && mounted) {
+                        setState(() {
+                          _annualExpenseController.text =
+                              ynabProvider.annualExpenses!.toStringAsFixed(0);
+                        });
+                      }
+                    } catch (e) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Failed to fetch YNAB expenses'),
+                          ),
+                        );
+                      }
+                    } finally {
+                      if (mounted) {
+                        setState(() {
+                          _isLoading = false;
+                        });
+                      }
+                    }
+                  },
+            icon: _isLoading
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                    ),
+                  )
+                : const Icon(Icons.sync),
+            label: Text(_isLoading ? 'Fetching...' : 'Use YNAB Expense'),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Future<void> _handleYnabAuthorization() async {
+    if (_isLoading) return;
+
+    final ynabService = context.read<YNABProvider>();
+
+    final authorizedByUser = await showDialog<bool>(
+        context: context,
+        builder: (context) => YnabAuthDialog(
+              ynabService: ynabService,
+            ));
+
+    if (authorizedByUser == true) {
+      setState(() {
+        _isLoading = true;
+      });
+      try {
+        await ynabService.authorize();
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Retry YNAB connection'),
+            ),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      }
+    }
+  }
+
   Widget _buildNumberInput({
     required String label,
     required String hintText,
     required TextEditingController controller,
+    bool enabled = true,
   }) {
     return TextFormField(
       controller: controller,
@@ -151,6 +274,7 @@ class _FinancialCalculatorViewState extends State<FinancialCalculatorView> {
         }
         return null;
       },
+      enabled: enabled,
     );
   }
 
@@ -368,4 +492,14 @@ class _FinancialCalculatorViewState extends State<FinancialCalculatorView> {
     }
     return 'N/A';
   }
+
+  Future<void> fetchAuthorizationStatus() async {
+    final ynabProvider = context.read<YNABProvider>();
+    await ynabProvider.fetchAuthorizationStatus();
+  }
+}
+
+enum ExpenseInputMode {
+  manual,
+  ynab,
 }

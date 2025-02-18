@@ -2,24 +2,47 @@ package budget
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/finny/finny-backend/internal/ynab_auth"
 	"github.com/finny/finny-backend/internal/ynab_client"
 	"github.com/finny/finny-backend/internal/ynab_openapi"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type BudgetService struct {
-	db *gorm.DB
+	db              *gorm.DB
+	ynabAuthService *ynab_auth.YNABAuthService
 }
 
-func NewBudgetService(db *gorm.DB) *BudgetService {
-	return &BudgetService{
-		db: db,
+func NewBudgetService(db *gorm.DB, ynabAuthService *ynab_auth.YNABAuthService) (*BudgetService, error) {
+	if db == nil {
+		return nil, fmt.Errorf("db is nil")
 	}
+
+	if ynabAuthService == nil {
+		return nil, fmt.Errorf("ynabAuthService is nil")
+	}
+
+	return &BudgetService{
+		db:              db,
+		ynabAuthService: ynabAuthService,
+	}, nil
 }
 
-func (b *BudgetService) GetCurrentMonthExpenseFromYNAB(ynab ynab_client.YNABClientIntf) (int64, error) {
+func (b *BudgetService) GetCurrentMonthExpenseFromYNAB(userID uuid.UUID) (int64, error) {
 	ctx := context.Background()
+	accessToken, err := b.ynabAuthService.GetAccessToken(userID)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return 0, fmt.Errorf("User has not connected to YNAB")
+		}
+
+		return 0, err
+	}
+
+	ynab, err := ynab_client.NewYNABClient(accessToken.AccessToken)
 	categories, err := ynab.GetLatestCategories(ctx)
 	if err != nil {
 		return 0, err

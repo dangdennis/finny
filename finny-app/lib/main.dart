@@ -1,4 +1,5 @@
 import 'package:finny/src/providers/navigation_provider.dart';
+import 'package:finny/src/providers/ynab_provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
@@ -34,6 +35,9 @@ void main() async {
   );
 
   final navigationProvider = NavigationProvider();
+  final ynabProvider = YNABProvider(
+    baseUrl: 'https://api.finny.finance',
+  );
   final authService = AuthService(Supabase.instance.client);
 
   await authService.loginAnonymously();
@@ -47,6 +51,7 @@ void main() async {
               MultiProvider(
                 providers: [
                   ChangeNotifierProvider(create: (_) => navigationProvider),
+                  ChangeNotifierProvider(create: (_) => ynabProvider),
                 ],
                 child: FinnyApp(),
               ),
@@ -56,6 +61,7 @@ void main() async {
       MultiProvider(
         providers: [
           ChangeNotifierProvider(create: (_) => navigationProvider),
+          ChangeNotifierProvider(create: (_) => ynabProvider),
         ],
         child: FinnyApp(),
       ),
