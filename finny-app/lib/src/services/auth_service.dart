@@ -14,7 +14,6 @@ class AuthService {
       // Check if we're already authenticated
       final session = _supabase.auth.currentSession;
       if (session != null) {
-        _log.info('User already authenticated');
         return;
       }
 

@@ -17,7 +17,7 @@ class FinancialCalculatorView extends StatefulWidget {
 class _FinancialCalculatorViewState extends State<FinancialCalculatorView> {
   final _formKey = GlobalKey<FormState>();
   bool _showResults = false;
-  ExpenseInputMode _expenseInputMode = ExpenseInputMode.manual;
+  final _expenseInputMode = ExpenseInputMode.manual;
 
   final TextEditingController _annualExpenseController =
       TextEditingController();
@@ -35,6 +35,8 @@ class _FinancialCalculatorViewState extends State<FinancialCalculatorView> {
   String _actualFreedomNumber = '';
   String _actualRetirementAge = '';
 
+  bool _isLoading = false;
+
   void _unfocus() {
     FocusScope.of(context).unfocus();
   }
@@ -42,6 +44,7 @@ class _FinancialCalculatorViewState extends State<FinancialCalculatorView> {
   @override
   void initState() {
     super.initState();
+    fetchAuthorizationStatus();
   }
 
   @override
@@ -149,32 +152,64 @@ class _FinancialCalculatorViewState extends State<FinancialCalculatorView> {
       children: [
         if (ynabProvider.authStatus != YnabAuthStatus.authorized) ...[
           OutlinedButton.icon(
-            onPressed: () => _handleYnabAuthorization(),
-            icon: const Icon(Icons.link),
-            label: const Text('Connect YNAB'),
+            onPressed: ynabProvider.authStatus == YnabAuthStatus.loading
+                ? null
+                : () => _handleYnabAuthorization(),
+            icon: ynabProvider.authStatus == YnabAuthStatus.loading
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                    ),
+                  )
+                : const Icon(Icons.link),
+            label: Text(ynabProvider.authStatus == YnabAuthStatus.loading
+                ? 'Connecting...'
+                : 'Connect YNAB'),
           ),
         ] else ...[
           OutlinedButton.icon(
-            onPressed: () async {
-              try {
-                await ynabProvider.fetchAnnualExpenses();
-                if (ynabProvider.annualExpenses != null && mounted) {
-                  setState(() {
-                    _annualExpenseController.text = ynabProvider.annualExpenses!.toStringAsFixed(0);
-                  });
-                }
-              } catch (e) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Failed to fetch YNAB expenses'),
+            onPressed: _isLoading
+                ? null
+                : () async {
+                    setState(() {
+                      _isLoading = true;
+                    });
+                    try {
+                      await ynabProvider.fetchExpenseTotal();
+                      if (ynabProvider.annualExpenses != null && mounted) {
+                        setState(() {
+                          _annualExpenseController.text =
+                              ynabProvider.annualExpenses!.toStringAsFixed(0);
+                        });
+                      }
+                    } catch (e) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Failed to fetch YNAB expenses'),
+                          ),
+                        );
+                      }
+                    } finally {
+                      if (mounted) {
+                        setState(() {
+                          _isLoading = false;
+                        });
+                      }
+                    }
+                  },
+            icon: _isLoading
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
                     ),
-                  );
-                }
-              }
-            },
-            icon: const Icon(Icons.sync),
-            label: const Text('Use YNAB Expense'),
+                  )
+                : const Icon(Icons.sync),
+            label: Text(_isLoading ? 'Fetching...' : 'Use YNAB Expense'),
           ),
         ],
       ],
@@ -182,28 +217,35 @@ class _FinancialCalculatorViewState extends State<FinancialCalculatorView> {
   }
 
   Future<void> _handleYnabAuthorization() async {
+    if (_isLoading) return;
+
     final ynabService = context.read<YNABProvider>();
 
-    final authorized = await showDialog<bool>(
-      context: context,
-      builder: (context) => YnabAuthDialog(ynabService: ynabService),
-    );
+    final authorizedByUser = await showDialog<bool>(
+        context: context,
+        builder: (context) => YnabAuthDialog(
+              ynabService: ynabService,
+            ));
 
-    if (authorized == true) {
+    if (authorizedByUser == true) {
+      setState(() {
+        _isLoading = true;
+      });
       try {
-        await ynabService.fetchAnnualExpenses();
-        if (ynabService.annualExpenses != null && mounted) {
-          setState(() {
-            _annualExpenseController.text = ynabService.annualExpenses!.toStringAsFixed(0);
-          });
-        }
+        await ynabService.authorize();
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Failed to fetch YNAB expenses'),
+              content: Text('Retry YNAB connection'),
             ),
           );
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
         }
       }
     }
@@ -450,5 +492,10 @@ class _FinancialCalculatorViewState extends State<FinancialCalculatorView> {
       return '${age.ceil()} years old';
     }
     return 'N/A';
+  }
+
+  Future<void> fetchAuthorizationStatus() async {
+    final ynabProvider = context.read<YNABProvider>();
+    await ynabProvider.fetchAuthorizationStatus();
   }
 }

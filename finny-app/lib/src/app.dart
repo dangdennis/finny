@@ -1,6 +1,5 @@
 import 'package:finny/src/providers/navigation_provider.dart';
 import 'package:finny/src/views/calculator/financial_calculator_view.dart';
-import 'package:finny/src/views/settings/settings_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
@@ -85,18 +84,18 @@ class _MainViewState extends State<MainView> {
           return Scaffold(
             appBar: AppBar(
               title: const Text('Find Your FIRE Number'),
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.settings),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const SettingsView()),
-                    );
-                  },
-                ),
-              ],
+              // actions: [
+              //   IconButton(
+              //     icon: const Icon(Icons.settings),
+              //     onPressed: () {
+              //       Navigator.push(
+              //         context,
+              //         MaterialPageRoute(
+              //             builder: (context) => const SettingsView()),
+              //       );
+              //     },
+              //   ),
+              // ],
             ),
             body: IndexedStack(
               index: navigationProvider.selectedIndex,

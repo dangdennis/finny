@@ -18,7 +18,7 @@ class YNABProvider extends ChangeNotifier {
 
   static final _log = Logger('YNABProvider');
   final String _baseUrl;
-  YnabAuthStatus _authStatus = YnabAuthStatus.authorized;
+  YnabAuthStatus _authStatus = YnabAuthStatus.unauthorized;
   double? _annualExpenses;
 
   YnabAuthStatus get authStatus => _authStatus;
@@ -26,6 +26,10 @@ class YNABProvider extends ChangeNotifier {
 
   Future<void> authorize() async {
     try {
+      if (_authStatus == YnabAuthStatus.loading) {
+        return;
+      }
+
       _authStatus = YnabAuthStatus.loading;
       notifyListeners();
 
@@ -42,21 +46,42 @@ class YNABProvider extends ChangeNotifier {
       );
 
       if (response.statusCode != 200) {
-        throw Exception('Failed to get auth URL: ${response.body}');
+        throw Exception('Failed to get oauth link: ${response.body}');
       }
 
       final data = json.decode(response.body);
       final authUrl = data['url'] as String;
 
       // Open YNAB authorization page in browser
-      if (!await launchUrl(Uri.parse(authUrl),
-          mode: LaunchMode.externalApplication)) {
+      if (!await launchUrl(Uri.parse(authUrl), mode: LaunchMode.inAppWebView)) {
         throw Exception('Could not launch YNAB authorization URL');
       }
 
-      // Note: The authorization callback will be handled by your Go backend
-      // We'll need to poll to check if authorization was successful
-      await _pollAuthStatus();
+      // Poll for authorization status
+      bool isAuthorized = false;
+      int attempts = 0;
+      const maxAttempts = 30; // 30 seconds timeout
+
+      while (!isAuthorized && attempts < maxAttempts) {
+        await Future.delayed(const Duration(seconds: 1));
+        try {
+          await fetchAuthorizationStatus();
+          if (_authStatus == YnabAuthStatus.authorized) {
+            isAuthorized = true;
+            break;
+          }
+        } catch (e) {
+          _log.warning('Authorization status check failed', e);
+        }
+        attempts++;
+      }
+
+      if (!isAuthorized) {
+        throw Exception('Authorization timeout');
+      } else {
+        _authStatus = YnabAuthStatus.authorized;
+        notifyListeners();
+      }
     } catch (e) {
       _log.severe('Failed to initiate YNAB authorization', e);
       _authStatus = YnabAuthStatus.unauthorized;
@@ -64,46 +89,9 @@ class YNABProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> _pollAuthStatus() async {
-    final authToken = Supabase.instance.client.auth.currentSession?.accessToken;
-    if (authToken == null) {
-      throw Exception('No auth token');
-    }
-
-    // Poll the backend to check if YNAB authorization was successful
-    for (var i = 0; i < 60; i++) {
-      // Poll for up to 1 minute
-      await Future.delayed(const Duration(seconds: 1));
-
-      try {
-        final response = await http.get(
-          Uri.parse('$_baseUrl/oauth/ynab/status'),
-          headers: {'Authorization': 'Bearer $authToken'},
-        );
-
-        if (response.statusCode == 200) {
-          final data = json.decode(response.body);
-          if (data['authorized'] == true) {
-            _authStatus = YnabAuthStatus.authorized;
-            notifyListeners();
-            await fetchAnnualExpenses();
-            return;
-          }
-        }
-      } catch (e) {
-        _log.warning('Failed to check YNAB auth status', e);
-      }
-    }
-
-    // If we get here, authorization timed out
-    _authStatus = YnabAuthStatus.unauthorized;
-    notifyListeners();
-    throw Exception('YNAB authorization timed out');
-  }
-
-  Future<void> fetchAnnualExpenses() async {
+  Future<void> fetchExpenseTotal() async {
     if (_authStatus != YnabAuthStatus.authorized) {
-      throw Exception('Not authorized with YNAB');
+      await fetchAuthorizationStatus();
     }
 
     final authToken = Supabase.instance.client.auth.currentSession?.accessToken;
@@ -122,7 +110,36 @@ class YNABProvider extends ChangeNotifier {
       }
 
       final data = json.decode(response.body);
-      _annualExpenses = data['annual_expenses'] as double;
+      int expense = data['expense'] as int;
+      _annualExpenses = expense.toDouble() / 1000;
+      notifyListeners();
+    } catch (e) {
+      _log.severe('Failed to fetch YNAB expenses', e);
+      rethrow;
+    }
+  }
+
+  Future<void> fetchAuthorizationStatus() async {
+    final authToken = Supabase.instance.client.auth.currentSession?.accessToken;
+    if (authToken == null) {
+      throw Exception('No auth token');
+    }
+
+    try {
+      final response = await http.get(
+        Uri.parse('$_baseUrl/api/ynab/auth-status'),
+        headers: {'Authorization': 'Bearer $authToken'},
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to fetch YNAB expenses: ${response.body}');
+      }
+
+      final data = json.decode(response.body);
+      _authStatus = (data['connected'] as bool)
+          ? YnabAuthStatus.authorized
+          : YnabAuthStatus.unauthorized;
+
       notifyListeners();
     } catch (e) {
       _log.severe('Failed to fetch YNAB expenses', e);
