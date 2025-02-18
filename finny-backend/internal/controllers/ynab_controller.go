@@ -43,7 +43,12 @@ func (y *YNABController) HandleCallback(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "Missing authorization code")
 	}
 
-	err := y.ynabOAuthService.ExchangeCodeForTokens(code)
+	state := c.QueryParam("state")
+	if state == "" {
+		return c.String(http.StatusBadRequest, "Missing state")
+	}
+
+	err := y.ynabOAuthService.ExchangeCodeForTokens(code, state)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "Failed to exchange code for tokens")
 	}

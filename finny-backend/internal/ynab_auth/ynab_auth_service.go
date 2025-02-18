@@ -70,10 +70,11 @@ func (y *YNABAuthService) GetAuthorizationURL(state string, clientID string, red
 		"client_id=" + url.QueryEscape(clientID) +
 		"&redirect_uri=" + url.QueryEscape(redirectURI) +
 		"&response_type=code" +
-		"&state=" + state
+		"&scope=read-only" +
+		"&state=" + url.QueryEscape(state)
 }
 
-func (y *YNABAuthService) ExchangeCodeForTokens(code string) error {
+func (y *YNABAuthService) ExchangeCodeForTokens(code string, state string) error {
 	// todo: read at toplevel and add these as private fields to the ynabAuthService struct
 	clientID := os.Getenv("YNAB_CLIENT_ID")
 	clientSecret := os.Getenv("YNAB_CLIENT_SECRET")
@@ -101,7 +102,7 @@ func (y *YNABAuthService) ExchangeCodeForTokens(code string) error {
 		return fmt.Errorf("failed to decode token response: %w", err)
 	}
 
-	userID, err := y.GetUserIDFromState(code)
+	userID, err := y.GetUserIDFromState(state)
 	if err != nil {
 		return fmt.Errorf("failed to get user ID from state: %w", err)
 	}
@@ -182,6 +183,15 @@ func (y *YNABAuthService) GetUserIDFromState(code string) (uuid.UUID, error) {
 	y.db.Delete(&oauthState)
 
 	return oauthState.UserID, nil
+}
+
+func (y *YNABAuthService) CleanupExpiredStates(olderThan time.Duration) error {
+	result := y.db.Where("expires_at < ?", time.Now().Add(-olderThan)).Delete(&models.OAuthState{})
+	if result.Error != nil {
+		return fmt.Errorf("failed to cleanup expired states: %w", result.Error)
+	}
+
+	return nil
 }
 
 type TokenResponse struct {
