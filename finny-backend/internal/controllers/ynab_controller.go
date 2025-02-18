@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/finny/finny-backend/internal/ynab_auth"
-	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
 
@@ -44,12 +43,17 @@ func (y *YNABController) HandleCallback(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "Missing authorization code")
 	}
 
-	userID := c.Get("user_id").(uuid.UUID)
-	if userID == uuid.Nil {
-		return c.String(http.StatusUnauthorized, "User not authenticated")
+	state := c.QueryParam("state")
+	if state == "" {
+		return c.String(http.StatusBadRequest, "Missing state")
 	}
 
-	err := y.ynabOAuthService.ExchangeCodeForTokens(code, userID)
+	userID, err := y.ynabOAuthService.ExtractUserIDFromState(state)
+	if err != nil {
+		return c.String(http.StatusBadRequest, "Invalid state, missing user id")
+	}
+
+	err = y.ynabOAuthService.ExchangeCodeForTokens(code, userID)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "Failed to exchange code for tokens")
 	}
@@ -71,4 +75,19 @@ func (y *YNABController) HandleCallback(c echo.Context) error {
 	`
 
 	return c.HTML(http.StatusOK, htmlContent)
+}
+
+func (y *YNABController) GetAuthStatus(c echo.Context) error {
+	userID, err := GetContextUserID(c)
+	if err != nil {
+		fmt.Printf("Failed to get user ID from context: %v\n", err)
+		return c.String(http.StatusBadRequest, "User not authenticated")
+	}
+
+	connected, err := y.ynabOAuthService.CheckAuthStatus(userID)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "Failed to check auth status")
+	}
+
+	return c.JSON(http.StatusOK, map[string]bool{"connected": connected})
 }

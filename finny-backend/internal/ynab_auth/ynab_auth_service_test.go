@@ -96,7 +96,7 @@ func TestStoreToken(t *testing.T) {
 		t.Error(err, "Failed to get access token")
 	}
 
-	if gotAccessToken != mockTokenResponse.AccessToken {
+	if gotAccessToken.AccessToken != mockTokenResponse.AccessToken {
 		t.Error("Access token does not match")
 	}
 

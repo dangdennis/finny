@@ -1,4 +1,4 @@
-package server
+package app
 
 import (
 	"crypto/rand"
@@ -99,10 +99,11 @@ func (a *App) SetupRoutes(e *echo.Echo) {
 	api := e.Group("/api")
 	api.Use(echojwt.WithConfig(jwtConfig))
 	api.POST("/expenses/get-expense", a.budgetController.GetExpense)
+	api.GET("/ynab/auth-status", a.ynabController.GetAuthStatus)
 
 	// OAuth routes
 	oauth := e.Group("/oauth")
-	oauth.GET("/ynab/authorize", a.ynabController.InitiateOAuth)
+	oauth.GET("/ynab/authorize", a.ynabController.InitiateOAuth, echojwt.WithConfig(jwtConfig)) // Require authentication to initiate oauth
 	oauth.GET("/ynab/callback", a.ynabController.HandleCallback)
 
 	// Public routes

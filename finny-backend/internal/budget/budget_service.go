@@ -42,7 +42,7 @@ func (b *BudgetService) GetCurrentMonthExpenseFromYNAB(userID uuid.UUID) (int64,
 		return 0, err
 	}
 
-	ynab, err := ynab_client.NewYNABClient(accessToken)
+	ynab, err := ynab_client.NewYNABClient(accessToken.AccessToken)
 	categories, err := ynab.GetLatestCategories(ctx)
 	if err != nil {
 		return 0, err

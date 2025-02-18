@@ -126,17 +126,47 @@ func (y *YNABAuthService) StoreAccessToken(tokenResponse *TokenResponse, userID 
 	return nil
 }
 
-func (y *YNABAuthService) GetAccessToken(userID uuid.UUID) (string, error) {
+func (y *YNABAuthService) GetAccessToken(userID uuid.UUID) (models.YNABToken, error) {
 	var token models.YNABToken
 	result := y.db.Where("user_id = ?", userID).First(&token)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return "", gorm.ErrRecordNotFound
+			return token, gorm.ErrRecordNotFound
 		}
-		return "", fmt.Errorf("failed to get token: %w", result.Error)
+		return token, fmt.Errorf("failed to get token: %w", result.Error)
 	}
 
-	return token.AccessToken, nil
+	return token, nil
+}
+
+// todo(dennis): get access token, check expiration date, and return a true/false depending on the expiration status
+func (y *YNABAuthService) CheckAuthStatus(userID uuid.UUID) (bool, error) {
+	accessToken, err := y.GetAccessToken(userID)
+	if err != nil {
+		return false, err
+	}
+
+	return accessToken.ExpiresAt.After(time.Now()), nil
+
+}
+
+func (y *YNABAuthService) ExtractUserIDFromState(state string) (uuid.UUID, error) {
+	decodedState, err := base64.URLEncoding.DecodeString(state)
+	if err != nil {
+		return uuid.Nil, fmt.Errorf("failed to decode state: %w", err)
+	}
+
+	parts := strings.Split(string(decodedState), ".")
+	if len(parts) != 2 {
+		return uuid.Nil, fmt.Errorf("invalid state")
+	}
+
+	userID, err := uuid.Parse(parts[1])
+	if err != nil {
+		return uuid.Nil, fmt.Errorf("failed to parse user ID: %w", err)
+	}
+
+	return userID, nil
 }
 
 type TokenResponse struct {
