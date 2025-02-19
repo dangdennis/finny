@@ -33,48 +33,38 @@ func NewBudgetService(db *gorm.DB, ynabAuthService *ynab_auth.YNABAuthService) (
 	}, nil
 }
 
-func (b *BudgetService) GetCurrentMonthExpenseFromYNAB(userID uuid.UUID) (int64, error) {
-	ctx := context.Background()
-	accessToken, err := b.ynabAuthService.GetAccessToken(userID)
+func (b *BudgetService) GetAnnualAverageExpenseFromYNAB(userID uuid.UUID) (int64, error) {
+	monthBudgets, err := b.FetchLast12MonthsDetails(userID)
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return 0, fmt.Errorf("user has not connected to YNAB")
-		}
-
-		return 0, err
+		return 0, fmt.Errorf("failed to fetch last 12 months details. err=%w", err)
 	}
 
-	ynab, err := ynab_client.NewYNABClient(accessToken.AccessToken)
-	if err != nil {
-		return 0, fmt.Errorf("failed to create YNAB client. err=%w", err)
+	var avgAnnualExpense int64
+	for _, budget := range monthBudgets {
+		expenseForTheMonth := b.CalculateExpenseFromCategories(budget.Budget.Categories)
+		avgAnnualExpense += expenseForTheMonth
 	}
 
-	categories, err := ynab.GetLatestCategories(ctx)
-	if err != nil {
-		return 0, err
-	}
-
-	return b.CalculateExpenseFromCategories(categories), nil
+	return avgAnnualExpense / int64(len(monthBudgets)), nil
 }
 
-func (b *BudgetService) CalculateExpenseFromCategories(categories *ynab_openapi.CategoriesResponse) int64 {
+func (b *BudgetService) CalculateExpenseFromCategories(categories []ynab_openapi.Category) int64 {
 	var totalExpense int64
-	for _, cg := range categories.Data.CategoryGroups {
-		if cg.Name == "Credit Card Payments" {
+
+	for _, c := range categories {
+		if c.Name == "Credit Card Payments" {
 			continue
 		}
 
-		if cg.Name == "Hidden Categories" {
+		if c.Name == "Hidden Categories" {
 			continue
 		}
 
-		for _, c := range cg.Categories {
-			if *c.CategoryGroupName == "Internal Master Category" && c.Name != "Uncategorized" {
-				continue
-			}
-
-			totalExpense += c.Activity
+		if *c.CategoryGroupName == "Internal Master Category" && c.Name != "Uncategorized" {
+			continue
 		}
+
+		totalExpense += c.Activity
 	}
 
 	return (totalExpense / 1000) * -1
