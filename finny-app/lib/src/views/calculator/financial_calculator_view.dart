@@ -474,10 +474,10 @@ class _FinancialCalculatorViewState extends State<FinancialCalculatorView> {
     final fv = _getTargetFreedomNumberAtRetirement();
 
     num nper = Finance.nper(
-      pmt: monthlySavings,
+      pmt: monthlySavings.abs() * 12 * -1,
       rate: inflationRate,
-      pv: pv,
-      fv: -fv,
+      pv: pv.abs() * -1,
+      fv: fv.abs(),
     );
 
     final trueRetirementAge = nper + currentAge;
@@ -487,10 +487,7 @@ class _FinancialCalculatorViewState extends State<FinancialCalculatorView> {
 
   String printActualRetirementAge() {
     num age = _getActualRetirementAge();
-    if (age.isFinite) {
-      return '${age.ceil()} years old';
-    }
-    return 'N/A';
+    return '${age.round()} years old';
   }
 
   Future<void> fetchAuthorizationStatus() async {
