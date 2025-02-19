@@ -71,5 +71,5 @@ func (b *BudgetService) CalculateExpenseFromCategories(categories *ynab_openapi.
 		}
 	}
 
-	return totalExpense
+	return (totalExpense / 1000) * -1
 }

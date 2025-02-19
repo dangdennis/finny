@@ -38,7 +38,7 @@ func TestBudgetService(t *testing.T) {
 			}
 
 			t.Logf("total expense: %d", totalExpense)
-			if totalExpense != -3899164 {
+			if totalExpense != 3899 {
 				t.Fatalf("expected total expense to be -8101300, got %d", totalExpense)
 			}
 		})
