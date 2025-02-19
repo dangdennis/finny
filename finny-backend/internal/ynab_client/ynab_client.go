@@ -29,7 +29,7 @@ type YNABClient struct {
 
 var _ YNAB = (*YNABClient)(nil)
 
-func NewYNABClient(accessToken string) (*YNABClient, error) {
+func NewYNABClient(accessToken string) (YNAB, error) {
 	httpDoer := &HttpDoer{
 		accessToken: accessToken,
 		client:      &http.Client{},

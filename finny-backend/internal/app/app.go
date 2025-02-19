@@ -11,6 +11,7 @@ import (
 	"github.com/finny/finny-backend/internal/controllers"
 	"github.com/finny/finny-backend/internal/database"
 	"github.com/finny/finny-backend/internal/ynab_auth"
+	"github.com/finny/finny-backend/internal/ynab_client"
 
 	"github.com/joho/godotenv"
 	echojwt "github.com/labstack/echo-jwt/v4"
@@ -72,7 +73,7 @@ func NewApp(config Config) (*App, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to create YNAB auth service: %v", err)
 	}
-	budgetService, err := budget.NewBudgetService(db, ynabAuthService)
+	budgetService, err := budget.NewBudgetService(ynabAuthService, ynab_client.NewYNABClient)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create budget service: %v", err)
 	}

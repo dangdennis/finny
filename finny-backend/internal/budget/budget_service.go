@@ -14,27 +14,38 @@ import (
 )
 
 type BudgetService struct {
-	db              *gorm.DB
-	ynabAuthService *ynab_auth.YNABAuthService
+	ynabAuthService    *ynab_auth.YNABAuthService
+	ynabClientProvider func(accessToken string) (ynab_client.YNAB, error)
 }
 
-func NewBudgetService(db *gorm.DB, ynabAuthService *ynab_auth.YNABAuthService) (*BudgetService, error) {
-	if db == nil {
-		return nil, fmt.Errorf("db is nil")
-	}
-
+func NewBudgetService(ynabAuthService *ynab_auth.YNABAuthService, ynabClientProvider func(accessToken string) (ynab_client.YNAB, error)) (*BudgetService, error) {
 	if ynabAuthService == nil {
 		return nil, fmt.Errorf("ynabAuthService is nil")
 	}
 
 	return &BudgetService{
-		db:              db,
-		ynabAuthService: ynabAuthService,
+		ynabAuthService:    ynabAuthService,
+		ynabClientProvider: ynabClientProvider,
 	}, nil
 }
 
 func (b *BudgetService) GetAnnualAverageExpenseFromYNAB(userID uuid.UUID) (int64, error) {
-	monthBudgets, err := b.FetchLast12MonthsDetails(userID)
+	accessToken, err := b.ynabAuthService.GetAccessToken(userID)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return 0, fmt.Errorf("user has not connected to YNAB")
+		}
+
+		return 0, err
+	}
+
+	// ynab client is not injected, need to inject. but NewYNABCLient creates the client. so how can i control NewYNABClient?
+	ynab, err := b.ynabClientProvider(accessToken.AccessToken)
+	if err != nil {
+		return 0, fmt.Errorf("failed to create YNAB client. err=%w", err)
+	}
+
+	monthBudgets, err := b.FetchLast12MonthsDetails(ynab)
 	if err != nil {
 		return 0, fmt.Errorf("failed to fetch last 12 months details. err=%w", err)
 	}
@@ -76,21 +87,8 @@ type MonthBudget struct {
 	Error  error
 }
 
-func (b *BudgetService) FetchLast12MonthsDetails(userID uuid.UUID) ([]MonthBudget, error) {
+func (b *BudgetService) FetchLast12MonthsDetails(ynab ynab_client.YNAB) ([]MonthBudget, error) {
 	ctx := context.Background()
-	accessToken, err := b.ynabAuthService.GetAccessToken(userID)
-	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return []MonthBudget{}, fmt.Errorf("user has not connected to YNAB")
-		}
-
-		return []MonthBudget{}, err
-	}
-
-	ynab, err := ynab_client.NewYNABClient(accessToken.AccessToken)
-	if err != nil {
-		return []MonthBudget{}, fmt.Errorf("failed to create YNAB client. err=%w", err)
-	}
 
 	var wg sync.WaitGroup
 	results := make([]MonthBudget, 12)
