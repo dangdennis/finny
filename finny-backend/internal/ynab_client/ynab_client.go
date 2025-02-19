@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/finny/finny-backend/internal/ynab_openapi"
+	"github.com/oapi-codegen/runtime/types"
 )
 
 const (
@@ -109,4 +111,18 @@ func (y *YNABClient) ReadCategoriesFromFile(filename string) (*ynab_openapi.Cate
 	}
 
 	return &categories, nil
+}
+
+func (y *YNABClient) GetBudgetByMonth(ctx context.Context, budgetID string, month time.Time) (*ynab_openapi.MonthDetail, error) {
+	date := types.Date{Time: month}
+	resp, err := y.client.GetBudgetMonthWithResponse(ctx, budgetID, date)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get budget for month %s: %w", month.Format("2006-01"), err)
+	}
+
+	if resp.JSON200 == nil {
+		return nil, fmt.Errorf("no budget data for month %s", month.Format("2006-01"))
+	}
+
+	return &resp.JSON200.Data.Month, nil
 }

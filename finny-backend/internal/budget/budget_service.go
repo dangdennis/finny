@@ -3,6 +3,8 @@ package budget
 import (
 	"context"
 	"fmt"
+	"sync"
+	"time"
 
 	"github.com/finny/finny-backend/internal/ynab_auth"
 	"github.com/finny/finny-backend/internal/ynab_client"
@@ -76,4 +78,66 @@ func (b *BudgetService) CalculateExpenseFromCategories(categories *ynab_openapi.
 	}
 
 	return (totalExpense / 1000) * -1
+}
+
+type MonthBudget struct {
+	Month  time.Time
+	Budget *ynab_openapi.MonthDetail
+	Error  error
+}
+
+func (b *BudgetService) FetchLast12MonthsBudgets(userID uuid.UUID) ([]MonthBudget, error) {
+	ctx := context.Background()
+	accessToken, err := b.ynabAuthService.GetAccessToken(userID)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return []MonthBudget{}, fmt.Errorf("user has not connected to YNAB")
+		}
+
+		return []MonthBudget{}, err
+	}
+
+	ynab, err := ynab_client.NewYNABClient(accessToken.AccessToken)
+	if err != nil {
+		return []MonthBudget{}, fmt.Errorf("failed to create YNAB client. err=%w", err)
+	}
+
+	var wg sync.WaitGroup
+	results := make([]MonthBudget, 12)
+	budgetChan := make(chan MonthBudget, 12)
+
+	now := time.Now().UTC()
+	now = time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC)
+
+	for i := 0; i < 12; i++ {
+		wg.Add(1)
+
+		go func(monthsAgo int) {
+			defer wg.Done()
+
+			targetMonth := now.AddDate(0, -monthsAgo, 0)
+			budget, err := ynab.GetBudgetByMonth(ctx, "last-used", targetMonth)
+			if err != nil {
+				fmt.Printf("failed to get budget for month %s: %v\n", targetMonth.Format("2006-01"), err)
+				return
+			}
+
+			result := MonthBudget{
+				Month:  targetMonth,
+				Budget: budget,
+				Error:  err,
+			}
+			budgetChan <- result
+		}(i)
+	}
+
+	wg.Wait()
+	close(budgetChan)
+
+	for result := range budgetChan {
+		monthIndex := int(now.Sub(result.Month).Hours() / 24 / 30)
+		results[monthIndex] = result
+	}
+
+	return results, nil
 }

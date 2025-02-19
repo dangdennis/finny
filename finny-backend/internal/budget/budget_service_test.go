@@ -43,4 +43,8 @@ func TestBudgetService(t *testing.T) {
 			}
 		})
 	})
+
+	t.Run("FetchLast12MonthsBudgets", func(t *testing.T) {
+		t.SkipNow()
+	})
 }
