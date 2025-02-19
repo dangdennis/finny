@@ -86,7 +86,7 @@ type MonthBudget struct {
 	Error  error
 }
 
-func (b *BudgetService) FetchLast12MonthsBudgets(userID uuid.UUID) ([]MonthBudget, error) {
+func (b *BudgetService) FetchLast12MonthsDetails(userID uuid.UUID) ([]MonthBudget, error) {
 	ctx := context.Background()
 	accessToken, err := b.ynabAuthService.GetAccessToken(userID)
 	if err != nil {
@@ -116,7 +116,7 @@ func (b *BudgetService) FetchLast12MonthsBudgets(userID uuid.UUID) ([]MonthBudge
 			defer wg.Done()
 
 			targetMonth := now.AddDate(0, -monthsAgo, 0)
-			budget, err := ynab.GetBudgetByMonth(ctx, "last-used", targetMonth)
+			budget, err := ynab.GetMonthDetail(ctx, "last-used", targetMonth)
 			result := MonthBudget{
 				Month:  targetMonth,
 				Budget: budget,

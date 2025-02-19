@@ -19,7 +19,7 @@ const (
 type YNAB interface {
 	GetLatestBudget(ctx context.Context) (*ynab_openapi.BudgetDetailResponse, error)
 	GetLatestCategories(ctx context.Context) (*ynab_openapi.CategoriesResponse, error)
-	GetBudgetByMonth(ctx context.Context, budgetID string, month time.Time) (*ynab_openapi.MonthDetail, error)
+	GetMonthDetail(ctx context.Context, budgetID string, month time.Time) (*ynab_openapi.MonthDetail, error)
 }
 
 type YNABClient struct {
@@ -114,7 +114,7 @@ func (y *YNABClient) ReadCategoriesFromFile(filename string) (*ynab_openapi.Cate
 	return &categories, nil
 }
 
-func (y *YNABClient) GetBudgetByMonth(ctx context.Context, budgetID string, month time.Time) (*ynab_openapi.MonthDetail, error) {
+func (y *YNABClient) GetMonthDetail(ctx context.Context, budgetID string, month time.Time) (*ynab_openapi.MonthDetail, error) {
 	date := types.Date{Time: month}
 	resp, err := y.client.GetBudgetMonthWithResponse(ctx, budgetID, date)
 	if err != nil {

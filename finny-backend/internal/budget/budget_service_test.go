@@ -45,6 +45,10 @@ func TestBudgetService(t *testing.T) {
 	})
 
 	t.Run("FetchLast12MonthsBudgets", func(t *testing.T) {
+		// todo(rani): mock out YNAB.
+		// we want to test that we fetching the last 12 months of budgets.
+		// we want to test what what happens when we have less than 12 months of budgets.
+		// we want to test what happens if we failed to fetch one of the budgets.
 		t.SkipNow()
 	})
 }
