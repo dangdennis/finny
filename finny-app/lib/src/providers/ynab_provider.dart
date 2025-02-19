@@ -111,7 +111,7 @@ class YNABProvider extends ChangeNotifier {
 
       final data = json.decode(response.body);
       int expense = data['expense'] as int;
-      _annualExpenses = expense.toDouble() / 1000;
+      _annualExpenses = expense.toDouble();
       notifyListeners();
     } catch (e) {
       _log.severe('Failed to fetch YNAB expenses', e);
