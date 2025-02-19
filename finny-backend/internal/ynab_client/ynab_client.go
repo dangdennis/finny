@@ -19,6 +19,7 @@ const (
 type YNABClientIntf interface {
 	GetLatestBudget(ctx context.Context) (*ynab_openapi.BudgetDetailResponse, error)
 	GetLatestCategories(ctx context.Context) (*ynab_openapi.CategoriesResponse, error)
+	GetBudgetByMonth(ctx context.Context, budgetID string, month time.Time) (*ynab_openapi.MonthDetail, error)
 }
 
 type YNABClient struct {
