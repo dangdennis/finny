@@ -53,7 +53,7 @@ func (b *BudgetService) GetCurrentMonthExpenseFromYNAB(userID uuid.UUID) (int64,
 
 func (b *BudgetService) CalculateExpenseFromCategories(categories *ynab_openapi.CategoriesResponse) int64 {
 	var totalExpense int64
-	for _, cg := range *&categories.Data.CategoryGroups {
+	for _, cg := range categories.Data.CategoryGroups {
 		if cg.Name == "Credit Card Payments" {
 			continue
 		}
