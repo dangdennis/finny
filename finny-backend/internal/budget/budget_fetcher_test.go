@@ -12,7 +12,7 @@ import (
 
 type mockYNABClient struct {
 	monthDetails map[string]*ynab_openapi.MonthDetail
-	err         error
+	err          error
 }
 
 func (m *mockYNABClient) GetBudgetMonthWithResponse(ctx context.Context, budgetID string, date types.Date, reqEditors ...ynab_openapi.RequestEditorFn) (*ynab_openapi.GetBudgetMonthResponse, error) {

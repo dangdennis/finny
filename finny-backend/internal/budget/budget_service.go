@@ -36,13 +36,17 @@ func (b *BudgetService) GetCurrentMonthExpenseFromYNAB(userID uuid.UUID) (int64,
 	accessToken, err := b.ynabAuthService.GetAccessToken(userID)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return 0, fmt.Errorf("User has not connected to YNAB")
+			return 0, fmt.Errorf("user has not connected to YNAB")
 		}
 
 		return 0, err
 	}
 
 	ynab, err := ynab_client.NewYNABClient(accessToken.AccessToken)
+	if err != nil {
+		return 0, fmt.Errorf("failed to create YNAB client. err=%w", err)
+	}
+
 	categories, err := ynab.GetLatestCategories(ctx)
 	if err != nil {
 		return 0, err

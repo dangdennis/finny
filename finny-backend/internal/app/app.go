@@ -89,27 +89,24 @@ func NewApp(config Config) (*App, error) {
 		backoff := time.Second // Initial backoff duration
 		maxBackoff := 5 * time.Minute
 
-		for {
-			select {
-			case <-ticker.C:
-				err := ynabAuthService.CleanupExpiredStates(10 * time.Minute)
-				if err != nil {
-					log.Printf("Error cleaning up expired states: %v. Retrying in %v...", err, backoff)
+		for range ticker.C {
+			err := ynabAuthService.CleanupExpiredStates(10 * time.Minute)
+			if err != nil {
+				log.Printf("Error cleaning up expired states: %v. Retrying in %v...", err, backoff)
 
-					// Wait for backoff duration before retrying
-					time.Sleep(backoff)
+				// Wait for backoff duration before retrying
+				time.Sleep(backoff)
 
-					// Exponential backoff with a maximum limit
-					backoff *= 2
-					if backoff > maxBackoff {
-						backoff = maxBackoff
-					}
-
-					continue
+				// Exponential backoff with a maximum limit
+				backoff *= 2
+				if backoff > maxBackoff {
+					backoff = maxBackoff
 				}
-				// Reset backoff on successful cleanup
-				backoff = time.Second
+
+				continue
 			}
+			// Reset backoff on successful cleanup
+			backoff = time.Second
 		}
 	}()
 

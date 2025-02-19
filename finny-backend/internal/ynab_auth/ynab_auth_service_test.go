@@ -74,6 +74,10 @@ func TestStoreToken(t *testing.T) {
 		t.Error(err, "Failed to create user")
 	}
 	ynabService, err := NewYNABAuthService(nil, db)
+	if err != nil {
+		t.Error(err, "Failed to create YNAB service")
+	}
+
 	mockTokenResponse := &TokenResponse{
 		RefreshToken: "refresh-token",
 		ExpiresIn:    20,

@@ -44,7 +44,7 @@ func (y *YNABBudgetFetcher) FetchMonthlyBudgets(ctx context.Context) []MonthBudg
 			defer wg.Done()
 
 			targetMonth := now.AddDate(0, -monthsAgo, 0)
-			budget, err := y.GetBudgetByMonth(ctx, "last-used", targetMonth) 
+			budget, err := y.GetBudgetByMonth(ctx, "last-used", targetMonth)
 			result := MonthBudget{
 				Month:  targetMonth,
 				Budget: budget,
