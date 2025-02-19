@@ -117,11 +117,6 @@ func (b *BudgetService) FetchLast12MonthsBudgets(userID uuid.UUID) ([]MonthBudge
 
 			targetMonth := now.AddDate(0, -monthsAgo, 0)
 			budget, err := ynab.GetBudgetByMonth(ctx, "last-used", targetMonth)
-			if err != nil {
-				fmt.Printf("failed to get budget for month %s: %v\n", targetMonth.Format("2006-01"), err)
-				return
-			}
-
 			result := MonthBudget{
 				Month:  targetMonth,
 				Budget: budget,
@@ -135,6 +130,10 @@ func (b *BudgetService) FetchLast12MonthsBudgets(userID uuid.UUID) ([]MonthBudge
 	close(budgetChan)
 
 	for result := range budgetChan {
+		if result.Error != nil {
+			return []MonthBudget{}, fmt.Errorf("encountered error when fetching a month's budget. err=%w", result.Error)
+		}
+
 		monthIndex := int(now.Sub(result.Month).Hours() / 24 / 30)
 		results[monthIndex] = result
 	}
