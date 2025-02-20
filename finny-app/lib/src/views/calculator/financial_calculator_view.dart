@@ -279,27 +279,27 @@ class _FinancialCalculatorViewState extends State<FinancialCalculatorView>
             _buildAnimatedResultRow(
               'FIRE Today',
               _freedomNumberToday,
-              'Amount needed today for financial independence',
+              'Amount needed today for financial independence. You can withdraw 4% annually to cover your current annual expenses (\$${double.parse(_annualExpenseController.text).toStringAsFixed(2)}).',
             ),
             _buildAnimatedResultRow(
               'FIRE at Retirement',
               _freedomNumberAtRetirement,
-              'Amount needed at retirement for financial independence (adjusted for 2% annual inflation)',
+              'Amount needed at retirement for financial independence. This is the same as FIRE Today, but adjusted for an annual inflation rate of 2%.',
             ),
             _buildAnimatedResultRow(
               'Monthly Savings Goal',
               _monthlySavingsGoal,
-              'Required monthly savings to reach your goal by desired retirement',
+              'Required monthly savings to reach your goal by desired retirement. This is based on an 8% annual return on investment. Try changing your retirement age to see how it affects your monthly savings goal.',
             ),
             _buildAnimatedResultRow(
               'Retirement Savings',
               _actualFreedomNumber,
-              'Projected savings at retirement',
+              'Projected savings at retirement. This is based on your current savings, monthly savings, and an 8% annual return on investment.',
             ),
             _buildAnimatedResultRow(
               'Retirement Age',
               _actualRetirementAge,
-              'When you\'ll reach financial independence',
+              'When you\'ll reach financial independence. This is based on your current savings, monthly savings, and an 8% annual return on investment. If you are saving more or less than your monthly savings goal, this age will change.',
             ),
           ],
         ),
@@ -554,19 +554,17 @@ class _FinancialCalculatorViewState extends State<FinancialCalculatorView>
   num _getActualFreedomNumberAtRetirement() {
     int currentAge = int.tryParse(_currentAgeController.text) ?? 0;
     int retirementAge = int.tryParse(_retirementAgeController.text) ?? 0;
-    const double inflationRate = 0.08;
+    const double rate = 0.08;
     double nper = (retirementAge - currentAge).toDouble();
-    double monthlySavings =
-        double.tryParse(_monthlySavingsController.text) ?? 0;
+    double pmt = -(double.tryParse(_monthlySavingsController.text) ?? 0) * 12;
     double currentSavings =
         double.tryParse(_currentSavingsController.text) ?? 0;
-
     final pv = -currentSavings;
 
     num trueFutureValue = Finance.fv(
-      rate: inflationRate,
+      rate: rate,
       nper: nper,
-      pmt: monthlySavings,
+      pmt: pmt,
       pv: pv,
     );
 
