@@ -17,10 +17,10 @@ class FinancialCalculatorView extends StatefulWidget {
 
 class _FinancialCalculatorViewState extends State<FinancialCalculatorView>
     with TickerProviderStateMixin {
+  final _scrollController = ScrollController();
   final _formKey = GlobalKey<FormState>();
   bool _showResults = false;
   final _expenseInputMode = ExpenseInputMode.manual;
-  late AnimationController _resultsAnimationController;
   late AnimationController _celebrationAnimationController;
 
   final TextEditingController _annualExpenseController =
@@ -51,10 +51,6 @@ class _FinancialCalculatorViewState extends State<FinancialCalculatorView>
   @override
   void initState() {
     super.initState();
-    _resultsAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
     _celebrationAnimationController = AnimationController(
       duration: const Duration(seconds: 2),
       vsync: this,
@@ -64,7 +60,7 @@ class _FinancialCalculatorViewState extends State<FinancialCalculatorView>
 
   @override
   void dispose() {
-    _resultsAnimationController.dispose();
+    _scrollController.dispose();
     _celebrationAnimationController.dispose();
     _annualExpenseController.dispose();
     _currentAgeController.dispose();
@@ -86,6 +82,7 @@ class _FinancialCalculatorViewState extends State<FinancialCalculatorView>
         backgroundColor: themeColors['background'],
         body: SafeArea(
           child: SingleChildScrollView(
+            controller: _scrollController,
             padding: const EdgeInsets.all(20.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -225,7 +222,14 @@ class _FinancialCalculatorViewState extends State<FinancialCalculatorView>
             _actualRetirementAge = printActualRetirementAge();
             _showResults = true;
           });
-          _resultsAnimationController.forward(from: 0);
+
+          if (mounted) {
+            _scrollController.animateTo(
+              _scrollController.position.maxScrollExtent,
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeOut,
+            );
+          }
         }
       },
       style: ElevatedButton.styleFrom(
@@ -251,92 +255,69 @@ class _FinancialCalculatorViewState extends State<FinancialCalculatorView>
   }
 
   Widget _buildResults() {
-    return AnimatedBuilder(
-      animation: _resultsAnimationController,
-      builder: (context, child) {
-        return FadeTransition(
-          opacity: _resultsAnimationController,
-          child: SlideTransition(
-            position: Tween<Offset>(
-              begin: const Offset(0, 0.2),
-              end: Offset.zero,
-            ).animate(CurvedAnimation(
-              parent: _resultsAnimationController,
-              curve: Curves.easeOut,
-            )),
-            child: Card(
-              elevation: 8,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              color: Colors.white,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Lottie.asset(
-                      'assets/partybirdlottie.json',
-                      height: 100,
-                      repeat: true,
-                      controller: _celebrationAnimationController,
-                      onLoaded: (composition) {
-                        _celebrationAnimationController
-                          ..duration = composition.duration
-                          ..repeat();
-                      },
-                    ),
-                    const Text(
-                      '🎉 Results',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    _buildAnimatedResultRow(
-                      'Freedom Number Today:',
-                      _freedomNumberToday,
-                      'Amount needed today for financial independence',
-                    ),
-                    _buildAnimatedResultRow(
-                      'Freedom Number at Retirement:',
-                      _freedomNumberAtRetirement,
-                      'Required savings at retirement (inflation adjusted)',
-                    ),
-                    _buildAnimatedResultRow(
-                      'Monthly Savings Goal:',
-                      _monthlySavingsGoal,
-                      'Required monthly savings to reach your goal',
-                    ),
-                    _buildAnimatedResultRow(
-                      'Actual Retirement Savings:',
-                      _actualFreedomNumber,
-                      'Projected savings at retirement',
-                    ),
-                    _buildAnimatedResultRow(
-                      'Actual Retirement Age:',
-                      _actualRetirementAge,
-                      'When you\'ll reach financial independence',
-                    ),
-                  ],
-                ),
-              ),
+    return Card(
+      elevation: 8,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            Lottie.asset(
+              'assets/partybirdlottie.json',
+              height: 100,
+              repeat: true,
+              controller: _celebrationAnimationController,
+              onLoaded: (composition) {
+                _celebrationAnimationController
+                  ..duration = composition.duration
+                  ..repeat();
+              },
             ),
-          ),
-        );
-      },
+            const SizedBox(height: 16),
+            _buildAnimatedResultRow(
+              'FIRE Today',
+              _freedomNumberToday,
+              'Amount needed today for financial independence',
+            ),
+            _buildAnimatedResultRow(
+              'FIRE at Retirement',
+              _freedomNumberAtRetirement,
+              'Amount needed at retirement for financial independence (adjusted for 2% annual inflation)',
+            ),
+            _buildAnimatedResultRow(
+              'Monthly Savings Goal',
+              _monthlySavingsGoal,
+              'Required monthly savings to reach your goal by desired retirement',
+            ),
+            _buildAnimatedResultRow(
+              'Retirement Savings',
+              _actualFreedomNumber,
+              'Projected savings at retirement',
+            ),
+            _buildAnimatedResultRow(
+              'Retirement Age',
+              _actualRetirementAge,
+              'When you\'ll reach financial independence',
+            ),
+          ],
+        ),
+      ),
     );
   }
 
   Widget _buildAnimatedResultRow(String label, String value, String tooltip) {
+    final uniqueKey =
+        Key('$label-$value-${DateTime.now().millisecondsSinceEpoch}');
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
-            flex: 3,
+            flex: 4,
             child: Row(
               children: [
                 Flexible(
@@ -345,14 +326,34 @@ class _FinancialCalculatorViewState extends State<FinancialCalculatorView>
                     style: const TextStyle(fontSize: 14),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 4.0),
-                  child: Tooltip(
-                    message: tooltip,
-                    child: const Icon(
-                      Icons.info_outline,
-                      size: 16,
-                      color: Colors.grey,
+                MouseRegion(
+                  cursor: SystemMouseCursors.help,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: Text(label),
+                            content: Text(tooltip),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                child: const Text('Got it'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Icon(
+                        Icons.info_outline,
+                        size: 20,
+                        color: themeColors['primary'],
+                      ),
                     ),
                   ),
                 ),
@@ -360,22 +361,23 @@ class _FinancialCalculatorViewState extends State<FinancialCalculatorView>
             ),
           ),
           Expanded(
-            flex: 4,
-            child: AnimatedTextKit(
-              animatedTexts: [
-                TyperAnimatedText(
-                  value,
-                  speed: const Duration(milliseconds: 50),
-                  textStyle: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: themeColors['secondary'],
+              flex: 4,
+              child: AnimatedTextKit(
+                key: uniqueKey,
+                animatedTexts: [
+                  TyperAnimatedText(
+                    value,
+                    speed: const Duration(milliseconds: 20),
+                    textStyle: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: themeColors['primary'],
+                    ),
                   ),
-                ),
-              ],
-              isRepeatingAnimation: false,
-            ),
-          ),
+                ],
+                isRepeatingAnimation: false,
+                displayFullTextOnTap: true,
+              )),
         ],
       ),
     );

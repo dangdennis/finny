@@ -1,5 +1,5 @@
-f:
+fmt:
 	dart format . && dart fix --apply
 
-a:
+analyze:
 	dart analyze

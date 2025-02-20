@@ -20,8 +20,8 @@ samples, guidance on mobile development, and a full API reference.
 ## Development
 - `flutter run` to run the app.
 - `flutter clean` to clean all build artifacts in case some weird dependency issue arises.
-- `make f` to fix format and lint
-- `make a` to typecheck
+- `make fmt` to fix format and lint
+- `make analyze` to typecheck
 
 ## Assets
 
