@@ -29,6 +29,8 @@ dependencies:
   crypto: ^3.0.5
   supabase_flutter: ^2.8.3
   url_launcher: ^6.3.1
+  animated_text_kit: ^4.2.3
+  lottie: ^3.3.1
 
 dev_dependencies:
   flutter_test:
@@ -47,6 +49,5 @@ flutter:
   # # Or, specifically provide an output path:
   # output-dir: lib/src/generated/i18n
 
-  # assets:
-    # Add assets from the images directory to the application.
-    # - assets/images/
+  assets:
+    - assets/

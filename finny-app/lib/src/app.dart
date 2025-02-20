@@ -82,21 +82,21 @@ class _MainViewState extends State<MainView> {
       home: Consumer<NavigationProvider>(
         builder: (context, navigationProvider, child) {
           return Scaffold(
-            appBar: AppBar(
-              title: const Text('Find Your FIRE Number'),
-              // actions: [
-              //   IconButton(
-              //     icon: const Icon(Icons.settings),
-              //     onPressed: () {
-              //       Navigator.push(
-              //         context,
-              //         MaterialPageRoute(
-              //             builder: (context) => const SettingsView()),
-              //       );
-              //     },
-              //   ),
-              // ],
-            ),
+            // appBar: AppBar(
+            //   title: const Text('Find Your FIRE Number'),
+            // actions: [
+            //   IconButton(
+            //     icon: const Icon(Icons.settings),
+            //     onPressed: () {
+            //       Navigator.push(
+            //         context,
+            //         MaterialPageRoute(
+            //             builder: (context) => const SettingsView()),
+            //       );
+            //     },
+            //   ),
+            // ],
+            // ),
             body: IndexedStack(
               index: navigationProvider.selectedIndex,
               children: _widgetOptions,

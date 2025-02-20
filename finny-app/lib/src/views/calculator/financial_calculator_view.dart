@@ -4,6 +4,8 @@ import 'package:finny/src/finance/finance.dart';
 import 'package:finny/src/providers/ynab_provider.dart';
 import 'package:finny/src/views/calculator/ynab_auth_dialog.dart';
 import 'package:provider/provider.dart';
+import 'package:animated_text_kit/animated_text_kit.dart';
+import 'package:lottie/lottie.dart';
 
 class FinancialCalculatorView extends StatefulWidget {
   const FinancialCalculatorView({super.key});
@@ -13,16 +15,19 @@ class FinancialCalculatorView extends StatefulWidget {
       _FinancialCalculatorViewState();
 }
 
-class _FinancialCalculatorViewState extends State<FinancialCalculatorView> {
+class _FinancialCalculatorViewState extends State<FinancialCalculatorView>
+    with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   bool _showResults = false;
   final _expenseInputMode = ExpenseInputMode.manual;
+  late AnimationController _resultsAnimationController;
+  late AnimationController _celebrationAnimationController;
 
   final TextEditingController _annualExpenseController =
       TextEditingController();
   final TextEditingController _currentAgeController = TextEditingController();
   final TextEditingController _retirementAgeController =
-      TextEditingController();
+      TextEditingController(text: '65');
   final TextEditingController _currentSavingsController =
       TextEditingController();
   final TextEditingController _monthlySavingsController =
@@ -36,24 +41,41 @@ class _FinancialCalculatorViewState extends State<FinancialCalculatorView> {
 
   bool _isLoading = false;
 
-  void _unfocus() {
-    FocusScope.of(context).unfocus();
-  }
+  final themeColors = {
+    'primary': const Color(0xFF6C63FF),
+    'secondary': const Color(0xFF00BFA6),
+    'accent': const Color(0xFFFF6584),
+    'background': const Color(0xFFF0F3FF),
+  };
 
   @override
   void initState() {
     super.initState();
+    _resultsAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    _celebrationAnimationController = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    );
     fetchAuthorizationStatus();
   }
 
   @override
   void dispose() {
-    super.dispose();
+    _resultsAnimationController.dispose();
+    _celebrationAnimationController.dispose();
     _annualExpenseController.dispose();
     _currentAgeController.dispose();
     _retirementAgeController.dispose();
     _currentSavingsController.dispose();
     _monthlySavingsController.dispose();
+    super.dispose();
+  }
+
+  void _unfocus() {
+    FocusScope.of(context).unfocus();
   }
 
   @override
@@ -61,40 +83,30 @@ class _FinancialCalculatorViewState extends State<FinancialCalculatorView> {
     return GestureDetector(
       onTap: _unfocus,
       child: Scaffold(
-        resizeToAvoidBottomInset: false,
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildInputForm(),
-              const SizedBox(height: 10),
-              if (_showResults) _buildResults(),
-              const SizedBox(height: 12),
-              ElevatedButton(
-                onPressed: () {
-                  _unfocus();
-                  if (_formKey.currentState!.validate()) {
-                    setState(() {
-                      _freedomNumberToday = _formatLargeNumber(
-                          _getTargetFreedomNumberAtToday().abs());
-                      _freedomNumberAtRetirement = _formatLargeNumber(
-                          _getTargetFreedomNumberAtRetirement().abs());
-                      _monthlySavingsGoal = _formatLargeNumber(
-                          _getTargetMonthlyFreedomSavings().abs());
-                      _actualFreedomNumber = _formatLargeNumber(
-                          _getActualFreedomNumberAtRetirement().abs());
-                      _actualRetirementAge = printActualRetirementAge();
-                      _showResults = true;
-                    });
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.all(16),
+        backgroundColor: themeColors['background'],
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  '✨ Financial Freedom Calculator ✨',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: themeColors['primary'],
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                child: const Text('Calculate', style: TextStyle(fontSize: 18)),
-              ),
-            ],
+                const SizedBox(height: 20),
+                _buildInputForm(),
+                const SizedBox(height: 20),
+                _buildCalculateButton(),
+                const SizedBox(height: 20),
+                if (_showResults) _buildResults(),
+              ],
+            ),
           ),
         ),
       ),
@@ -104,39 +116,265 @@ class _FinancialCalculatorViewState extends State<FinancialCalculatorView> {
   Widget _buildInputForm() {
     return Form(
       key: _formKey,
-      child: Column(
+      child: Card(
+        elevation: 8,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              _buildYnabSection(),
+              const SizedBox(height: 16),
+              _buildNumberInput(
+                label: 'Annual Expense 💰',
+                hintText: 'Enter your annual expenses',
+                controller: _annualExpenseController,
+                icon: Icons.attach_money,
+                enabled: _expenseInputMode == ExpenseInputMode.manual,
+              ),
+              const SizedBox(height: 12),
+              _buildNumberInput(
+                label: 'Current Age 🎂',
+                hintText: 'Enter your current age',
+                controller: _currentAgeController,
+                icon: Icons.cake,
+              ),
+              const SizedBox(height: 12),
+              _buildNumberInput(
+                label: 'Retirement Age 🎯',
+                hintText: 'Enter your desired retirement age',
+                controller: _retirementAgeController,
+                icon: Icons.flag,
+              ),
+              const SizedBox(height: 12),
+              _buildNumberInput(
+                label: 'Current Savings 💲',
+                hintText: 'Enter your current savings',
+                controller: _currentSavingsController,
+                icon: Icons.savings,
+              ),
+              const SizedBox(height: 12),
+              _buildNumberInput(
+                label: 'Monthly Savings 📈',
+                hintText: 'Enter your monthly savings',
+                controller: _monthlySavingsController,
+                icon: Icons.trending_up,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNumberInput({
+    required String label,
+    required String hintText,
+    required TextEditingController controller,
+    required IconData icon,
+    bool enabled = true,
+  }) {
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: hintText,
+        prefixIcon: Icon(icon, color: themeColors['primary']),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide(color: themeColors['primary']!),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide(color: themeColors['secondary']!, width: 2),
+        ),
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        isDense: true,
+      ),
+      keyboardType: TextInputType.number,
+      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter a value';
+        }
+        return null;
+      },
+      enabled: enabled,
+    );
+  }
+
+  Widget _buildCalculateButton() {
+    return ElevatedButton(
+      onPressed: () async {
+        _unfocus();
+        if (_formKey.currentState!.validate()) {
+          setState(() {
+            _freedomNumberToday =
+                _formatLargeNumber(_getTargetFreedomNumberAtToday().abs());
+            _freedomNumberAtRetirement =
+                _formatLargeNumber(_getTargetFreedomNumberAtRetirement().abs());
+            _monthlySavingsGoal =
+                _formatLargeNumber(_getTargetMonthlyFreedomSavings().abs());
+            _actualFreedomNumber =
+                _formatLargeNumber(_getActualFreedomNumberAtRetirement().abs());
+            _actualRetirementAge = printActualRetirementAge();
+            _showResults = true;
+          });
+          _resultsAnimationController.forward(from: 0);
+        }
+      },
+      style: ElevatedButton.styleFrom(
+        backgroundColor: themeColors['primary'],
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+        ),
+      ),
+      child: const Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          _buildYnabSection(),
-          const SizedBox(height: 12),
-          _buildNumberInput(
-            label: 'Annual Expense (\$)',
-            hintText: 'Enter your annual expenses',
-            controller: _annualExpenseController,
-            enabled: _expenseInputMode == ExpenseInputMode.manual,
+          Icon(Icons.calculate_rounded, size: 24, color: Colors.white),
+          SizedBox(width: 8),
+          Text(
+            'Calculate My Future!',
+            style: TextStyle(fontSize: 18),
           ),
-          const SizedBox(height: 12),
-          _buildNumberInput(
-            label: 'Current Age',
-            hintText: 'Enter your current age',
-            controller: _currentAgeController,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildResults() {
+    return AnimatedBuilder(
+      animation: _resultsAnimationController,
+      builder: (context, child) {
+        return FadeTransition(
+          opacity: _resultsAnimationController,
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0, 0.2),
+              end: Offset.zero,
+            ).animate(CurvedAnimation(
+              parent: _resultsAnimationController,
+              curve: Curves.easeOut,
+            )),
+            child: Card(
+              elevation: 8,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              color: Colors.white,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Lottie.asset(
+                      'assets/partybirdlottie.json',
+                      height: 100,
+                      repeat: true,
+                      controller: _celebrationAnimationController,
+                      onLoaded: (composition) {
+                        _celebrationAnimationController
+                          ..duration = composition.duration
+                          ..repeat();
+                      },
+                    ),
+                    const Text(
+                      '🎉 Results',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildAnimatedResultRow(
+                      'Freedom Number Today:',
+                      _freedomNumberToday,
+                      'Amount needed today for financial independence',
+                    ),
+                    _buildAnimatedResultRow(
+                      'Freedom Number at Retirement:',
+                      _freedomNumberAtRetirement,
+                      'Required savings at retirement (inflation adjusted)',
+                    ),
+                    _buildAnimatedResultRow(
+                      'Monthly Savings Goal:',
+                      _monthlySavingsGoal,
+                      'Required monthly savings to reach your goal',
+                    ),
+                    _buildAnimatedResultRow(
+                      'Actual Retirement Savings:',
+                      _actualFreedomNumber,
+                      'Projected savings at retirement',
+                    ),
+                    _buildAnimatedResultRow(
+                      'Actual Retirement Age:',
+                      _actualRetirementAge,
+                      'When you\'ll reach financial independence',
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
-          const SizedBox(height: 12),
-          _buildNumberInput(
-            label: 'Desired Retirement Age',
-            hintText: 'Enter your desired retirement age',
-            controller: _retirementAgeController,
+        );
+      },
+    );
+  }
+
+  Widget _buildAnimatedResultRow(String label, String value, String tooltip) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            flex: 3,
+            child: Row(
+              children: [
+                Flexible(
+                  child: Text(
+                    label,
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 4.0),
+                  child: Tooltip(
+                    message: tooltip,
+                    child: const Icon(
+                      Icons.info_outline,
+                      size: 16,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 12),
-          _buildNumberInput(
-            label: 'Current Savings (\$)',
-            hintText: 'Enter your current savings',
-            controller: _currentSavingsController,
-          ),
-          const SizedBox(height: 12),
-          _buildNumberInput(
-            label: 'Estimated Monthly Savings (\$)',
-            hintText: 'Enter your estimated monthly savings',
-            controller: _monthlySavingsController,
+          Expanded(
+            flex: 4,
+            child: AnimatedTextKit(
+              animatedTexts: [
+                TyperAnimatedText(
+                  value,
+                  speed: const Duration(milliseconds: 50),
+                  textStyle: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: themeColors['secondary'],
+                  ),
+                ),
+              ],
+              isRepeatingAnimation: false,
+            ),
           ),
         ],
       ),
@@ -145,7 +383,6 @@ class _FinancialCalculatorViewState extends State<FinancialCalculatorView> {
 
   Widget _buildYnabSection() {
     final ynabProvider = context.watch<YNABProvider>();
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -158,14 +395,19 @@ class _FinancialCalculatorViewState extends State<FinancialCalculatorView> {
                 ? const SizedBox(
                     width: 16,
                     height: 16,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                    ),
+                    child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : const Icon(Icons.link),
             label: Text(ynabProvider.authStatus == YnabAuthStatus.loading
                 ? 'Connecting...'
                 : 'Connect YNAB'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: themeColors['primary'],
+              side: BorderSide(color: themeColors['primary']!),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+            ),
           ),
         ] else ...[
           OutlinedButton.icon(
@@ -203,12 +445,17 @@ class _FinancialCalculatorViewState extends State<FinancialCalculatorView> {
                 ? const SizedBox(
                     width: 16,
                     height: 16,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                    ),
+                    child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : const Icon(Icons.sync),
             label: Text(_isLoading ? 'Fetching...' : 'Use YNAB Expense'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: themeColors['primary'],
+              side: BorderSide(color: themeColors['secondary']!),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+            ),
           ),
         ],
       ],
@@ -248,144 +495,6 @@ class _FinancialCalculatorViewState extends State<FinancialCalculatorView> {
         }
       }
     }
-  }
-
-  Widget _buildNumberInput({
-    required String label,
-    required String hintText,
-    required TextEditingController controller,
-    bool enabled = true,
-  }) {
-    return TextFormField(
-      controller: controller,
-      decoration: InputDecoration(
-          labelText: label,
-          hintText: hintText,
-          border: const OutlineInputBorder(),
-          filled: true,
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-          isDense: true),
-      keyboardType: TextInputType.number,
-      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please enter a value';
-        }
-        return null;
-      },
-      enabled: enabled,
-    );
-  }
-
-  Widget _buildResults() {
-    return Card(
-      elevation: 4,
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Results',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            _buildResultRow(
-              'Freedom Number Today:',
-              _freedomNumberToday,
-              tooltip:
-                  'This is the amount of money you need to have invested today to be financially independent based on your current annual expenses.',
-            ),
-            _buildResultRow(
-                'Freedom Number at Retirement:', _freedomNumberAtRetirement,
-                tooltip:
-                    'This is your required savings at retirement, adjusted for 2% inflation.'),
-            _buildResultRow('Monthly Savings Goal:', _monthlySavingsGoal,
-                tooltip:
-                    'This is how much you need to save monthly to reach your freedom number by your target retirement age.'),
-            _buildResultRow('Actual Retirement Savings:', _actualFreedomNumber,
-                tooltip:
-                    'This is how much you will actually have saved at retirement with your current savings rate.'),
-            _buildResultRow('Actual Retirement Age:', _actualRetirementAge,
-                tooltip:
-                    'This is the age you will reach financial independence with your current savings rate.'),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildResultRow(String label, String value, {String? tooltip}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            flex: 3,
-            child: Row(
-              children: [
-                Flexible(
-                  child: Text(
-                    label,
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                ),
-                if (tooltip != null)
-                  Padding(
-                    padding: const EdgeInsets.only(left: 4.0),
-                    child: PopupMenuButton(
-                      padding: EdgeInsets.zero,
-                      offset: const Offset(-100, 20),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      color: Colors.grey[800],
-                      icon: const Icon(
-                        Icons.info_outline,
-                        size: 16,
-                        color: Colors.grey,
-                      ),
-                      itemBuilder: (context) => [
-                        PopupMenuItem(
-                          enabled: false,
-                          child: Container(
-                            constraints: const BoxConstraints(maxWidth: 200),
-                            padding: const EdgeInsets.all(8),
-                            child: Text(
-                              tooltip,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          Expanded(
-            flex: 4,
-            child: Text(
-              value,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-              textAlign: TextAlign.right,
-              softWrap: true,
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   String _formatLargeNumber(num value) {
