@@ -554,19 +554,17 @@ class _FinancialCalculatorViewState extends State<FinancialCalculatorView>
   num _getActualFreedomNumberAtRetirement() {
     int currentAge = int.tryParse(_currentAgeController.text) ?? 0;
     int retirementAge = int.tryParse(_retirementAgeController.text) ?? 0;
-    const double inflationRate = 0.08;
+    const double rate = 0.08;
     double nper = (retirementAge - currentAge).toDouble();
-    double monthlySavings =
-        double.tryParse(_monthlySavingsController.text) ?? 0;
+    double pmt = -(double.tryParse(_monthlySavingsController.text) ?? 0) * 12;
     double currentSavings =
         double.tryParse(_currentSavingsController.text) ?? 0;
-
     final pv = -currentSavings;
 
     num trueFutureValue = Finance.fv(
-      rate: inflationRate,
+      rate: rate,
       nper: nper,
-      pmt: monthlySavings,
+      pmt: pmt,
       pv: pv,
     );
 
