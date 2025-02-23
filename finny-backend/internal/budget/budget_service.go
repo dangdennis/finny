@@ -11,6 +11,25 @@ import (
 	"github.com/finny/finny-backend/internal/ynab_openapi"
 )
 
+// create the network and not found errror in this file because I believe that
+// these structs are only used in this file.
+type NetworkError struct {
+	Message string
+}
+
+
+func (e * NetworkError) Error() string {
+	return fmt.Sprintf("Network error: %s", e.Message)
+}
+
+type NotFoundError struct {
+	Message string
+}
+
+func (e *NotFoundError) Error() string {
+	return fmt.Sprintf("No data found Error: %s", e.Message)
+}
+
 // I changed the struct to include the ynabClient here for better testability.
 // Want to achieve client creation separate from service logic.
 type BudgetService struct {
@@ -30,7 +49,11 @@ func NewBudgetService(ynabAuthService *ynab_auth.YNABAuthService, ynabClient yna
 func (b *BudgetService) GetAnnualAverageExpenseFromYNAB() (int64, error) {
 	monthBudgets, err := b.FetchLast12MonthsDetails(b.ynabClient)
 	if err != nil {
-		return 0, fmt.Errorf("failed to fetch last 12 months details. err=%w", err)
+		if _, ok:= err.(*NetworkError); ok {
+			return 0, &NetworkError{Message: err.Error()}
+		}
+
+		return 0, &NotFoundError{Message: err.Error()}
 	}
 
 	var avgAnnualExpense int64
@@ -102,7 +125,11 @@ func (b *BudgetService) FetchLast12MonthsDetails(ynab ynab_client.YNAB) ([]Month
 
 	for result := range budgetChan {
 		if result.Error != nil {
-			return []MonthBudget{}, fmt.Errorf("encountered error when fetching a month's budget. err=%w", result.Error)
+
+			if _, ok := result.Error.(*NetworkError); ok{
+				return []MonthBudget{}, &NetworkError{Message: result.Error.Error()}
+			}
+			return []MonthBudget{}, &NotFoundError{Message: "No data found for the specified month"}
 		}
 
 		monthIndex := int(now.Sub(result.Month).Hours() / 24 / 30)
