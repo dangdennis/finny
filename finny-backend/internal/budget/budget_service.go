@@ -9,43 +9,26 @@ import (
 	"github.com/finny/finny-backend/internal/ynab_auth"
 	"github.com/finny/finny-backend/internal/ynab_client"
 	"github.com/finny/finny-backend/internal/ynab_openapi"
-	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
+// I changed the struct to include the ynabClient here for better testability.
+// Want to achieve client creation separate from service logic.
 type BudgetService struct {
 	ynabAuthService    *ynab_auth.YNABAuthService
-	ynabClientProvider func(accessToken string) (ynab_client.YNAB, error)
+	ynabClient ynab_client.YNAB
 }
 
-func NewBudgetService(ynabAuthService *ynab_auth.YNABAuthService, ynabClientProvider func(accessToken string) (ynab_client.YNAB, error)) (*BudgetService, error) {
-	if ynabAuthService == nil {
-		return nil, fmt.Errorf("ynabAuthService is nil")
-	}
 
-	return &BudgetService{
-		ynabAuthService:    ynabAuthService,
-		ynabClientProvider: ynabClientProvider,
-	}, nil
+// New budget service now uses the dependency injection to create the client.
+func NewBudgetService(ynabAuthService *ynab_auth.YNABAuthService, ynabClient ynab_client.YNAB) *BudgetService {
+    return &BudgetService{
+        ynabAuthService: ynabAuthService,
+        ynabClient:      ynabClient,
+    }
 }
 
-func (b *BudgetService) GetAnnualAverageExpenseFromYNAB(userID uuid.UUID) (int64, error) {
-	accessToken, err := b.ynabAuthService.GetAccessToken(userID)
-	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return 0, fmt.Errorf("user has not connected to YNAB")
-		}
-
-		return 0, err
-	}
-
-	// ynab client is not injected, need to inject. but NewYNABCLient creates the client. so how can i control NewYNABClient?
-	ynab, err := b.ynabClientProvider(accessToken.AccessToken)
-	if err != nil {
-		return 0, fmt.Errorf("failed to create YNAB client. err=%w", err)
-	}
-
-	monthBudgets, err := b.FetchLast12MonthsDetails(ynab)
+func (b *BudgetService) GetAnnualAverageExpenseFromYNAB() (int64, error) {
+	monthBudgets, err := b.FetchLast12MonthsDetails(b.ynabClient)
 	if err != nil {
 		return 0, fmt.Errorf("failed to fetch last 12 months details. err=%w", err)
 	}
