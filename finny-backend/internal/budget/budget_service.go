@@ -9,6 +9,7 @@ import (
 	"github.com/finny/finny-backend/internal/ynab_auth"
 	"github.com/finny/finny-backend/internal/ynab_client"
 	"github.com/finny/finny-backend/internal/ynab_openapi"
+	"github.com/google/uuid"
 )
 
 // create the network and not found errror in this file because I believe that
@@ -35,15 +36,25 @@ func (e *NotFoundError) Error() string {
 type BudgetService struct {
 	ynabAuthService    *ynab_auth.YNABAuthService
 	ynabClient ynab_client.YNAB
+	budgetID uuid.UUID
 }
 
 
 // New budget service now uses the dependency injection to create the client.
-func NewBudgetService(ynabAuthService *ynab_auth.YNABAuthService, ynabClient ynab_client.YNAB) *BudgetService {
+func NewBudgetService(ynabAuthService *ynab_auth.YNABAuthService, ynabClient ynab_client.YNAB) (*BudgetService, error) {
+	budgetResponse, err := ynabClient.GetLatestBudget(context.Background())
+	if err != nil {
+		if _, ok:= err.(*NetworkError); ok {
+			return nil, &NetworkError{Message: err.Error()}
+		}
+		return nil, &NotFoundError{Message: err.Error()}
+	}
+
     return &BudgetService{
         ynabAuthService: ynabAuthService,
         ynabClient:      ynabClient,
-    }
+		budgetID: budgetResponse.Data.Budget.Id,
+    }, nil
 }
 
 func (b *BudgetService) GetAnnualAverageExpenseFromYNAB() (int64, error) {
@@ -110,7 +121,7 @@ func (b *BudgetService) FetchLast12MonthsDetails(ynab ynab_client.YNAB) ([]Month
 			defer wg.Done()
 
 			targetMonth := now.AddDate(0, -monthsAgo, 0)
-			budget, err := ynab.GetMonthDetail(ctx, "last-used", targetMonth)
+			budget, err := ynab.GetMonthDetail(ctx, b.budgetID.String(), targetMonth)
 			result := MonthBudget{
 				Month:  targetMonth,
 				Budget: budget,
