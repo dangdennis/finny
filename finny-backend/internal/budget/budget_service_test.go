@@ -1,13 +1,39 @@
 package budget
 
 import (
+	"context"
 	"testing"
+	"time"
 
 	"github.com/finny/finny-backend/internal/ynab_auth"
 	"github.com/finny/finny-backend/internal/ynab_client"
+	"github.com/finny/finny-backend/internal/ynab_openapi"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
+
+//because we are injecting a ynab in our service
+//we have to create a mock of ynab to control
+//if there is a network error or data not found error
+type MockYNABClient struct{
+	simulateNetworkError bool
+	simulateNotFoundError bool
+}
+
+func (m *MockYNABClient) GetMonthDetail(ctx context.Context, budgetID string, month time.Time) (*ynab_openapi.MonthDetail, error){
+	if m.simulateNetworkError{
+		return nil, &NetworkError{Message: "Simulated network error"}
+	}
+	if m.simulateNotFoundError{
+		return nil, &NotFoundError{Message: "Simulated not found error"}
+	}
+
+	return &ynab_openapi.MonthDetail{}, nil
+}
+
+
+
+
 
 func TestBudgetService(t *testing.T) {
 	// t.Run("CalculateExpenseFromCategories", func(t *testing.T) {
