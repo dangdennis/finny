@@ -14,9 +14,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-//because we are injecting a ynab in our service
-//we have to create a mock of ynab to control
-//if there is a network error or data not found error
 type MockYNABClient struct{
 	simulateNetworkError bool
 	simulateNotFoundError bool

@@ -12,12 +12,9 @@ import (
 	"github.com/google/uuid"
 )
 
-// create the network and not found errror in this file because I believe that
-// these structs are only used in this file.
 type NetworkError struct {
 	Message string
 }
-
 
 func (e * NetworkError) Error() string {
 	return fmt.Sprintf("Network error: %s", e.Message)
@@ -31,16 +28,12 @@ func (e *NotFoundError) Error() string {
 	return fmt.Sprintf("No data found Error: %s", e.Message)
 }
 
-// I changed the struct to include the ynabClient here for better testability.
-// Want to achieve client creation separate from service logic.
 type BudgetService struct {
 	ynabAuthService    *ynab_auth.YNABAuthService
 	ynabClient ynab_client.YNAB
 	budgetID uuid.UUID
 }
 
-
-// New budget service now uses the dependency injection to create the client.
 func NewBudgetService(ynabAuthService *ynab_auth.YNABAuthService, ynabClient ynab_client.YNAB) (*BudgetService, error) {
 	budgetResponse, err := ynabClient.GetLatestBudget(context.Background())
 	if err != nil {
