@@ -11,6 +11,7 @@ import (
 	"github.com/finny/finny-backend/internal/controllers"
 	"github.com/finny/finny-backend/internal/database"
 	"github.com/finny/finny-backend/internal/ynab_auth"
+	"github.com/finny/finny-backend/internal/ynab_client"
 
 	"github.com/joho/godotenv"
 	echojwt "github.com/labstack/echo-jwt/v4"
@@ -72,7 +73,7 @@ func NewApp(config Config) (*App, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to create YNAB auth service: %v", err)
 	}
-	budgetService, err := budget.NewBudgetService(db, ynabAuthService)
+	budgetService, err := budget.NewBudgetService(ynabAuthService, ynab_client.NewYNABClient)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create budget service: %v", err)
 	}
@@ -89,27 +90,24 @@ func NewApp(config Config) (*App, error) {
 		backoff := time.Second // Initial backoff duration
 		maxBackoff := 5 * time.Minute
 
-		for {
-			select {
-			case <-ticker.C:
-				err := ynabAuthService.CleanupExpiredStates(10 * time.Minute)
-				if err != nil {
-					log.Printf("Error cleaning up expired states: %v. Retrying in %v...", err, backoff)
+		for range ticker.C {
+			err := ynabAuthService.CleanupExpiredStates(10 * time.Minute)
+			if err != nil {
+				log.Printf("Error cleaning up expired states: %v. Retrying in %v...", err, backoff)
 
-					// Wait for backoff duration before retrying
-					time.Sleep(backoff)
+				// Wait for backoff duration before retrying
+				time.Sleep(backoff)
 
-					// Exponential backoff with a maximum limit
-					backoff *= 2
-					if backoff > maxBackoff {
-						backoff = maxBackoff
-					}
-
-					continue
+				// Exponential backoff with a maximum limit
+				backoff *= 2
+				if backoff > maxBackoff {
+					backoff = maxBackoff
 				}
-				// Reset backoff on successful cleanup
-				backoff = time.Second
+
+				continue
 			}
+			// Reset backoff on successful cleanup
+			backoff = time.Second
 		}
 	}()
 

@@ -16,4 +16,10 @@ fmt:
 vet:
 	go vet ./...
 
+lint:
+	golangci-lint run
+
+upgrade-deps:
+	go get -u ./...
+
 .PHONY: build serve test fmt vet
