@@ -6,9 +6,7 @@ import (
 	"time"
 
 	"github.com/finny/finny-backend/internal/ynab_auth"
-	"github.com/finny/finny-backend/internal/ynab_client"
 	"github.com/finny/finny-backend/internal/ynab_openapi"
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -49,69 +47,81 @@ func setupBudgetServiceWithMockClient(simulateNetworkError bool, simulateNotFoun
 	return NewBudgetService(ynabAuthService, mockClient)
 }
 
+func mockCategories() []ynab_openapi.Category{
+	return []ynab_openapi.Category{
+		{
+            Name:            "Groceries",
+            Activity:        5000, 
+            CategoryGroupName: &[]string{"Monthly Expenses"}[0],
+        },
+        {
+            Name:            "Utilities",
+            Activity:        2000,
+            CategoryGroupName: &[]string{"Monthly Expenses"}[0],
+        },
+        {
+            Name:            "Credit Card Payments",
+            Activity:        1000,
+            CategoryGroupName: &[]string{"Monthly Expenses"}[0],
+        },
+    }
+	}
+
+		
+
 
 func TestBudgetService(t *testing.T) {
-	// t.Run("CalculateExpenseFromCategories", func(t *testing.T) {
-	// 	t.Run("should get expense from ynab budget", func(t *testing.T) {
-	// 		ynabClient, err := ynab_client.NewYNABClient("x")
-	// 		if err != nil {
-	// 			t.Fatalf("failed to create ynab client: %v", err)
-	// 		}
-
-	// 		categories, err := ynabClient.ReadCategoriesFromFile("categories_fixture.json")
-	// 		if err != nil {
-	// 			t.Fatalf("failed to read categories from file: %v", err)
-	// 		}
-
-	// 		db := &gorm.DB{}
-	// 		ynabAuthService, err := ynab_auth.NewYNABAuthService(rand.Reader, db)
-	// 		if err != nil {
-	// 			t.Fatalf("failed to create ynab auth service: %v", err)
-	// 		}
-	// 		budgetSvc, err := NewBudgetService(db, ynabAuthService)
-	// 		if err != nil {
-	// 			t.Fatalf("failed to create budget service: %v", err)
-	// 		}
-
-	// 		totalExpense := budgetSvc.CalculateExpenseFromCategories(categories)
-	// 		if err != nil {
-	// 			t.Fatalf("failed to get expense from ynab: %v", err)
-	// 		}
-
-	// 		t.Logf("total expense: %d", totalExpense)
-	// 		if totalExpense != 3899 {
-	// 			t.Fatalf("expected total expense to be -8101300, got %d", totalExpense)
-	// 		}
-	// 	})
-	// })
-	//
-
-	t.Run("GetAnnualAverageExpenseFromYNAB", func(t *testing.T) {
-		// todo(rani): mock out YNAB.
-		// we want to test that we fetching the last 12 months of budgets.
-		// we want to test what what happens when we have less than 12 months of budgets.
-		// we want to test what happens if we failed to fetch one of the budgets.
-		//
-
-		// 1. mock out ynabauthservice
-		// 2. mock out ynabclient provider
-
-		mockYnabAuthService := &ynab_auth.YNABAuthService{}
-
-		budgetService, err := NewBudgetService(mockYnabAuthService, mockClientProvider)
-		assert.NoError(t, err)
-
-		totalavgExpense, err := budgetService.GetAnnualAverageExpenseFromYNAB(uuid.MustParse("2c84e471-d9e0-464d-88c4-a496be29c910"))
-		assert.NoError(t, err)
-
-		assert.Equal(t, int64(0), totalavgExpense)
-
-		t.SkipNow()
+	t.Run("Should return network error when fetching avg expense", func(t *testing.T){
+		budgetSvc := setupBudgetServiceWithMockClient(true, false)
+		_, err := budgetSvc.GetAnnualAverageExpenseFromYNAB()
+		assert.Error(t, err)
+		assert.IsType(t, &NetworkError{}, err)
 	})
+
+	t.Run("Should return not found error when fetching avg expense", func(t *testing.T){
+		budgetSvc := setupBudgetServiceWithMockClient(false, true)
+		_, err := budgetSvc.GetAnnualAverageExpenseFromYNAB()
+		assert.Error(t, err)
+		assert.IsType(t, &NotFoundError{}, err)
+	})
+
+	t.Run("Should calculate average expense successfully with full data", func(t *testing.T){
+		budgetSvc := setupBudgetServiceWithMockClient(false, false)
+		avgExpense, err := budgetSvc.GetAnnualAverageExpenseFromYNAB()
+		assert.NoError(t, err)
+		assert.GreaterOrEqual(t, avgExpense, int64(0))
+	})
+
+	t.Run("Should fetch last 12 months and calculate average", func(t *testing.T) {
+		budgetSvc := setupBudgetServiceWithMockClient(false, false)
+		mockClient:= &MockYNABClient{}
+		budgets, err := budgetSvc.FetchLast12MonthsDetails(mockClient)
+		assert.NoError(t, err)
+		assert.Equal(t, 12, len(budgets))
+		categories := mockCategories()
+		avgExpense := budgetSvc.CalculateExpenseFromCategories(categories)
+		assert.GreaterOrEqual(t, avgExpense, int64(0))
+	})
+
+	t.Run("Should handle NotFoundError when fetching last 12 months", func(t *testing.T){
+		budgetSvc := setupBudgetServiceWithMockClient(false, true)
+		mockClient:= &MockYNABClient{}
+		budgets, err := budgetSvc.FetchLast12MonthsDetails(mockClient)
+		assert.Error(t, err)
+		assert.Less(t, len(budgets), 12)
+		categories := mockCategories()
+		avgExpense := budgetSvc.CalculateExpenseFromCategories(categories)
+		assert.GreaterOrEqual(t, avgExpense, int64(0))
+	})
+
+	t.Run("Should handle NetworkError when fetching last 12 months", func(t *testing.T){
+		budgetSvc := setupBudgetServiceWithMockClient(true, false)
+		mockClient:= &MockYNABClient{}
+		_, err := budgetSvc.FetchLast12MonthsDetails(mockClient)
+		assert.Error(t, err)
+		assert.IsType(t, &NetworkError{}, err)
+	})
+
 }
 
-func mockClientProvider(accessToken string) (ynab_client.YNAB, error) {
-	// return a mock client
-	//
-	return nil, nil
-}
+
