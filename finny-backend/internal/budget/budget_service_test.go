@@ -31,8 +31,23 @@ func (m *MockYNABClient) GetMonthDetail(ctx context.Context, budgetID string, mo
 	return &ynab_openapi.MonthDetail{}, nil
 }
 
+func (m *MockYNABClient) GetLatestBudget(ctx context.Context) (*ynab_openapi.BudgetDetailResponse, error) {
+    return &ynab_openapi.BudgetDetailResponse{}, nil 
+}
+
+func (m *MockYNABClient) GetLatestCategories(ctx context.Context) (*ynab_openapi.CategoriesResponse, error) {
+    return &ynab_openapi.CategoriesResponse{}, nil 
+}
 
 
+func setupBudgetServiceWithMockClient(simulateNetworkError bool, simulateNotFoundError bool) *BudgetService{
+	mockClient := &MockYNABClient{
+		simulateNetworkError: simulateNetworkError,
+		simulateNotFoundError: simulateNotFoundError,
+	}
+	ynabAuthService := &ynab_auth.YNABAuthService{}
+	return NewBudgetService(ynabAuthService, mockClient)
+}
 
 
 func TestBudgetService(t *testing.T) {
