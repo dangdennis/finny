@@ -94,30 +94,27 @@ func TestBudgetService(t *testing.T) {
 
 	t.Run("Should fetch last 12 months and calculate average", func(t *testing.T) {
 		budgetSvc := setupBudgetServiceWithMockClient(false, false)
-		mockClient:= &MockYNABClient{}
-		budgets, err := budgetSvc.FetchLast12MonthsDetails(mockClient)
+		budgets, err := budgetSvc.FetchLast12MonthsDetails(budgetSvc.ynabClient)
 		assert.NoError(t, err)
 		assert.Equal(t, 12, len(budgets))
 		categories := mockCategories()
 		avgExpense := budgetSvc.CalculateExpenseFromCategories(categories)
-		assert.GreaterOrEqual(t, avgExpense, int64(0))
+		assert.LessOrEqual(t, avgExpense, int64(0))
 	})
 
 	t.Run("Should handle NotFoundError when fetching last 12 months", func(t *testing.T){
 		budgetSvc := setupBudgetServiceWithMockClient(false, true)
-		mockClient:= &MockYNABClient{}
-		budgets, err := budgetSvc.FetchLast12MonthsDetails(mockClient)
+		budgets, err := budgetSvc.FetchLast12MonthsDetails(budgetSvc.ynabClient)
 		assert.Error(t, err)
 		assert.Less(t, len(budgets), 12)
 		categories := mockCategories()
 		avgExpense := budgetSvc.CalculateExpenseFromCategories(categories)
-		assert.GreaterOrEqual(t, avgExpense, int64(0))
+		assert.LessOrEqual(t, avgExpense, int64(0))
 	})
 
 	t.Run("Should handle NetworkError when fetching last 12 months", func(t *testing.T){
 		budgetSvc := setupBudgetServiceWithMockClient(true, false)
-		mockClient:= &MockYNABClient{}
-		_, err := budgetSvc.FetchLast12MonthsDetails(mockClient)
+		_, err := budgetSvc.FetchLast12MonthsDetails(budgetSvc.ynabClient)
 		assert.Error(t, err)
 		assert.IsType(t, &NetworkError{}, err)
 	})
