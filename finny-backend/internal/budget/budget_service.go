@@ -136,11 +136,12 @@ func (b *BudgetService) FetchLast12MonthsDetails(ynab ynab_client.YNAB) ([]Month
 
 	for result := range budgetChan {
 		if result.Error != nil {
-
 			if _, ok := result.Error.(*NetworkError); ok {
 				return []MonthBudget{}, &NetworkError{Message: result.Error.Error()}
 			}
-			return []MonthBudget{}, &NotFoundError{Message: "No data found for the specified month"}
+
+			// If the month is not found, we can skip it
+			continue
 		}
 
 		monthIndex := int(now.Sub(result.Month).Hours() / 24 / 30)
