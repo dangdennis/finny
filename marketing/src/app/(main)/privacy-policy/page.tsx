@@ -25,14 +25,14 @@ export default function PrivacyPolicy() {
             <h2 className="mb-6 mt-12">1. Data We Collect</h2>
             <ul className="mb-8 space-y-4">
               <li>
-                Budget Categories and Balances: Finny collects and stores your
-                budget categories and balance data from YNAB through the YNAB
-                API to provide you with tailored budgeting insights.
+                Budget Categories: Finny collects and stores your budget`&apos;s
+                categories and balances from YNAB through the YNAB API to
+                provide you with insight into your finances.
               </li>
               <li>
-                OAuth Access Token: Finny uses an OAuth access token to interact
-                with YNAB&apos;s API and retrieve your financial data securely.
-                We do not store or request any other financial account
+                OAuth Access Token: Finny uses a read-only OAuth access token to
+                interact with YNAB&apos;s API and retrieve your financial data
+                securely. We do not store or request any other financial account
                 credentials.
               </li>
             </ul>

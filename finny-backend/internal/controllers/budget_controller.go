@@ -25,7 +25,7 @@ func (b *BudgetController) GetExpense(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "User not authenticated")
 	}
 
-	expenseTotal, err := b.budgetService.GetCurrentMonthExpenseFromYNAB(userID)
+	expenseTotal, err := b.budgetService.GetAnnualAverageExpenseFromYNAB(userID)
 	if err != nil {
 		fmt.Printf("Failed to get current month expense from YNAB: %v\n", err)
 		return c.String(http.StatusBadRequest, "Failed to get current expense")

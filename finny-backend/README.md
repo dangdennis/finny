@@ -17,6 +17,11 @@ Backend service for Finny, written in Go.
 go install github.com/air-verse/air@latest
 ```
 
+2. Install the Go linter:
+```bash
+go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+```
+
 2. Install dependencies:
 ```bash
 go mod tidy
@@ -51,6 +56,7 @@ ngrok http 8080
 - `make test` - Run tests
 - `make fmt` - Format code
 - `make vet` - Run Go vet for static analysis
+- `make lint` - Run the linter
 
 ## Deployment
 
