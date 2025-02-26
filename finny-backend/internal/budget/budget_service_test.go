@@ -112,19 +112,21 @@ func mockCategories() []ynab_openapi.Category {
 
 func TestBudgetService(t *testing.T) {
 	t.Run("Should return network error when fetching avg expense", func(t *testing.T){
+		expectedErr := &NetworkError{Message: "Simulated network error"}
 		budgetSvc, err := setupBudgetServiceWithMockClient(true, false)
 		assert.NoError(t, err)
 		_, err = budgetSvc.GetAnnualAverageExpenseFromYNAB(uuid.UUID{})
 		assert.Error(t, err)
-		assert.IsType(t, &NetworkError{}, err)
+		assert.Equal(t, expectedErr, err)
 	})
 
     t.Run("Should return not found error when fetching avg expense", func(t *testing.T) {
-        budgetSvc, err := setupBudgetServiceWithMockClient(false, true)
-        assert.NoError(t, err)
-        _, err = budgetSvc.GetAnnualAverageExpenseFromYNAB(uuid.UUID{})
-        assert.Error(t, err)
-        assert.IsType(t, &NotFoundError{}, err)
+		expectedErr := &NotFoundError{Message: "Simulated not found error"}
+		budgetSvc, err := setupBudgetServiceWithMockClient(false, true)
+		assert.NoError(t, err)
+		_, err = budgetSvc.GetAnnualAverageExpenseFromYNAB(uuid.UUID{})
+		assert.Error(t, err)
+		assert.Equal(t, expectedErr, err)
     })
 
 	t.Run("Should calculate average expense successfully with full data", func(t *testing.T){
@@ -149,25 +151,27 @@ func TestBudgetService(t *testing.T) {
 	})
 
 	t.Run("Should handle NotFoundError when fetching last 12 months", func(t *testing.T){
-        budgetSvc, err := setupBudgetServiceWithMockClient(false, true)
-        assert.NoError(t, err)
-        ynabClient, err := budgetSvc.ynabClientProvider("")
-        assert.NoError(t, err)
-        budgets, err := budgetSvc.FetchLast12MonthsDetails(ynabClient)
-        assert.Error(t, err)
-        assert.IsType(t, &NotFoundError{}, err)
-        assert.Empty(t, budgets)
+		expectedErr := &NotFoundError{Message: "Simulated not found error"}
+		budgetSvc, err := setupBudgetServiceWithMockClient(false, true)
+		assert.NoError(t, err)
+		ynabClient, err := budgetSvc.ynabClientProvider("")
+		assert.NoError(t, err)
+		budgets, err := budgetSvc.FetchLast12MonthsDetails(ynabClient)
+		assert.Error(t, err)
+		assert.Equal(t, expectedErr, err)
+		assert.Empty(t, budgets)
 	})
-
+	
 	t.Run("Should handle NetworkError when fetching last 12 months", func(t *testing.T){
-        budgetSvc, err := setupBudgetServiceWithMockClient(true, false)
-        assert.NoError(t, err)
-        ynabClient, err := budgetSvc.ynabClientProvider("")
-        assert.NoError(t, err)
-        budgets, err := budgetSvc.FetchLast12MonthsDetails(ynabClient)
-        assert.Error(t, err)
-        assert.IsType(t, &NetworkError{}, err)
-        assert.Empty(t, budgets)
+		expectedErr := &NetworkError{Message: "Simulated network error"}
+		budgetSvc, err := setupBudgetServiceWithMockClient(true, false)
+		assert.NoError(t, err)
+		ynabClient, err := budgetSvc.ynabClientProvider("")
+		assert.NoError(t, err)
+		budgets, err := budgetSvc.FetchLast12MonthsDetails(ynabClient)
+		assert.Error(t, err)
+		assert.Equal(t, expectedErr, err)
+		assert.Empty(t, budgets)
 	})
 
 }
