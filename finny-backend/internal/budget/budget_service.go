@@ -12,29 +12,13 @@ import (
 	"github.com/google/uuid"
 )
 
-type NetworkError struct {
-	Message string
-}
-
-func (e *NetworkError) Error() string {
-	return fmt.Sprintf("Network error: %s", e.Message)
-}
-
-type NotFoundError struct {
-	Message string
-}
-
-func (e *NotFoundError) Error() string {
-	return fmt.Sprintf("No data found Error: %s", e.Message)
-}
-
 type BudgetService struct {
-	ynabAuthService    *ynab_auth.YNABAuthService
+	ynabAuthService    ynab_auth.YNABAuth
 	ynabClientProvider func(accessToken string) (ynab_client.YNAB, error)
 }
 
 func NewBudgetService(
-	ynabAuthService *ynab_auth.YNABAuthService,
+	ynabAuthService ynab_auth.YNABAuth,
 	ynabClientProvider func(accessToken string) (ynab_client.YNAB, error),
 ) (*BudgetService, error) {
 	if ynabAuthService == nil {
@@ -61,10 +45,10 @@ func (b *BudgetService) GetAnnualAverageExpenseFromYNAB(userID uuid.UUID) (int64
 	monthBudgets, err := b.FetchLast12MonthsDetails(ynabClient)
 	if err != nil {
 		if _, ok := err.(*NetworkError); ok {
-			return 0, &NetworkError{Message: err.Error()}
+			return 0, err
 		}
 
-		return 0, &NotFoundError{Message: err.Error()}
+		return 0, err
 	}
 
 	var avgAnnualExpense int64

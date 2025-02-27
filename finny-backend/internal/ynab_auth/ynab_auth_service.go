@@ -21,10 +21,16 @@ type RandomReader interface {
 	Read([]byte) (int, error)
 }
 
+type YNABAuth interface {
+	GetAccessToken(userID uuid.UUID) (models.YNABToken, error)
+}
+
 type YNABAuthService struct {
 	randReader RandomReader
 	db         *gorm.DB
 }
+
+var _ YNABAuth = (*YNABAuthService)(nil)
 
 func NewYNABAuthService(randReader RandomReader, db *gorm.DB) (*YNABAuthService, error) {
 	if randReader == nil {
