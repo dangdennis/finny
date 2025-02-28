@@ -192,7 +192,7 @@ func (y *YNABAuthService) GetUserIDFromState(code string) (uuid.UUID, error) {
 }
 
 func (y *YNABAuthService) DeleteUserOAuthState(userID uuid.UUID) error {
-	result := y.db.Where("user_id = ?", userID.String()).Delete(&models.OAuthState{})
+	result := y.db.Unscoped().Where("user_id = ?", userID).Delete(&models.OAuthState{})
 	if result.Error != nil {
 		return fmt.Errorf("failed to cleanup expired states: %w", result.Error)
 	}

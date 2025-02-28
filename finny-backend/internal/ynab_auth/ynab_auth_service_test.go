@@ -7,6 +7,7 @@ import (
 
 	"github.com/finny/finny-backend/internal/database"
 	"github.com/finny/finny-backend/internal/test_utils"
+	"github.com/stretchr/testify/assert"
 )
 
 type MockRandomReader struct {
@@ -37,12 +38,6 @@ func TestInitiateOAuth(t *testing.T) {
 	if err != nil {
 		t.Error(err, "Failed to create user")
 	}
-	defer func() {
-		err = ynabService.DeleteUserOAuthState(userID)
-		if err != nil {
-			t.Error(err, "Failed to delete user state")
-		}
-	}()
 
 	mockClientID := "xxxxfinny"
 	mockRedirectURI := "https://api.finny.com/api/ynab/oauth/callback"
@@ -59,6 +54,8 @@ func TestInitiateOAuth(t *testing.T) {
 		t.Error("Invalid URL")
 	}
 
+	err = ynabService.DeleteUserOAuthState(userID)
+	assert.NoError(t, err)
 }
 
 func TestStoreToken(t *testing.T) {

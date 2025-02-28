@@ -47,16 +47,17 @@ func (b *BudgetService) GetAnnualAverageExpenseFromYNAB(userID uuid.UUID) (int64
 		return 0, err
 	}
 
-	var avgAnnualExpense int64
+	var totalExpense int64
 	for _, budget := range monthBudgets {
 		if budget.Budget == nil {
 			continue
 		}
 		expenseForTheMonth := b.CalculateExpenseFromCategories(budget.Budget.Categories)
-		avgAnnualExpense += expenseForTheMonth
+
+		totalExpense += expenseForTheMonth
 	}
 
-	return avgAnnualExpense / int64(len(monthBudgets)), nil
+	return totalExpense / int64(len(monthBudgets)), nil
 }
 
 func (b *BudgetService) CalculateExpenseFromCategories(categories []ynab_openapi.Category) int64 {
