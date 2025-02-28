@@ -12,29 +12,13 @@ import (
 	"github.com/google/uuid"
 )
 
-type NetworkError struct {
-	Message string
-}
-
-func (e *NetworkError) Error() string {
-	return fmt.Sprintf("Network error: %s", e.Message)
-}
-
-type NotFoundError struct {
-	Message string
-}
-
-func (e *NotFoundError) Error() string {
-	return fmt.Sprintf("No data found Error: %s", e.Message)
-}
-
 type BudgetService struct {
-	ynabAuthService    *ynab_auth.YNABAuthService
+	ynabAuthService    ynab_auth.YNABAuth
 	ynabClientProvider func(accessToken string) (ynab_client.YNAB, error)
 }
 
 func NewBudgetService(
-	ynabAuthService *ynab_auth.YNABAuthService,
+	ynabAuthService ynab_auth.YNABAuth,
 	ynabClientProvider func(accessToken string) (ynab_client.YNAB, error),
 ) (*BudgetService, error) {
 	if ynabAuthService == nil {
@@ -55,40 +39,32 @@ func (b *BudgetService) GetAnnualAverageExpenseFromYNAB(userID uuid.UUID) (int64
 
 	ynabClient, err := b.ynabClientProvider(accessToken.AccessToken)
 	if err != nil {
-
+		return 0, err
 	}
 
 	monthBudgets, err := b.FetchLast12MonthsDetails(ynabClient)
 	if err != nil {
-		if _, ok := err.(*NetworkError); ok {
-			return 0, &NetworkError{Message: err.Error()}
-		}
-
-		return 0, &NotFoundError{Message: err.Error()}
+		return 0, err
 	}
 
-	var avgAnnualExpense int64
+	var totalExpense int64
 	for _, budget := range monthBudgets {
+		if budget.Budget == nil {
+			continue
+		}
 		expenseForTheMonth := b.CalculateExpenseFromCategories(budget.Budget.Categories)
-		avgAnnualExpense += expenseForTheMonth
+
+		totalExpense += expenseForTheMonth
 	}
 
-	return avgAnnualExpense / int64(len(monthBudgets)), nil
+	return totalExpense / int64(len(monthBudgets)), nil
 }
 
 func (b *BudgetService) CalculateExpenseFromCategories(categories []ynab_openapi.Category) int64 {
 	var totalExpense int64
 
 	for _, c := range categories {
-		if c.Name == "Credit Card Payments" {
-			continue
-		}
-
-		if c.Name == "Hidden Categories" {
-			continue
-		}
-
-		if *c.CategoryGroupName == "Internal Master Category" && c.Name != "Uncategorized" {
+		if *c.CategoryGroupName == "Credit Card Payments" || *c.CategoryGroupName == "Internal Master Category" {
 			continue
 		}
 

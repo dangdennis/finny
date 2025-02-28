@@ -21,10 +21,16 @@ type RandomReader interface {
 	Read([]byte) (int, error)
 }
 
+type YNABAuth interface {
+	GetAccessToken(userID uuid.UUID) (models.YNABToken, error)
+}
+
 type YNABAuthService struct {
 	randReader RandomReader
 	db         *gorm.DB
 }
+
+var _ YNABAuth = (*YNABAuthService)(nil)
 
 func NewYNABAuthService(randReader RandomReader, db *gorm.DB) (*YNABAuthService, error) {
 	if randReader == nil {
@@ -186,7 +192,7 @@ func (y *YNABAuthService) GetUserIDFromState(code string) (uuid.UUID, error) {
 }
 
 func (y *YNABAuthService) DeleteUserOAuthState(userID uuid.UUID) error {
-	result := y.db.Where("user_id = ?", userID.String()).Delete(&models.OAuthState{})
+	result := y.db.Unscoped().Where("user_id = ?", userID).Delete(&models.OAuthState{})
 	if result.Error != nil {
 		return fmt.Errorf("failed to cleanup expired states: %w", result.Error)
 	}
