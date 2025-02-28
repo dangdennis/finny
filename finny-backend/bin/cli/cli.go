@@ -3,20 +3,12 @@
 package main
 
 import (
-	"fmt"
-
-	"github.com/brunomvsouza/ynab.go"
+	"github.com/finny/finny-backend/internal/ynab_client"
 )
 
 func main() {
-	pat := ""
-
-	c := ynab.NewClient(pat)
-	budget, err := c.Budget().GetLastUsedBudget(nil)
+	_, err := ynab_client.NewYNABClient("xxx")
 	if err != nil {
 		panic(err)
 	}
-
-	fmt.Printf("print my entire budget %+v", *budget.Budget)
-
 }
