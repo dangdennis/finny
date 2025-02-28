@@ -39,20 +39,19 @@ func (b *BudgetService) GetAnnualAverageExpenseFromYNAB(userID uuid.UUID) (int64
 
 	ynabClient, err := b.ynabClientProvider(accessToken.AccessToken)
 	if err != nil {
-
+		return 0, err
 	}
 
 	monthBudgets, err := b.FetchLast12MonthsDetails(ynabClient)
 	if err != nil {
-		if _, ok := err.(*NetworkError); ok {
-			return 0, err
-		}
-
 		return 0, err
 	}
 
 	var avgAnnualExpense int64
 	for _, budget := range monthBudgets {
+		if budget.Budget == nil {
+			continue
+		}
 		expenseForTheMonth := b.CalculateExpenseFromCategories(budget.Budget.Categories)
 		avgAnnualExpense += expenseForTheMonth
 	}
@@ -64,15 +63,7 @@ func (b *BudgetService) CalculateExpenseFromCategories(categories []ynab_openapi
 	var totalExpense int64
 
 	for _, c := range categories {
-		if c.Name == "Credit Card Payments" {
-			continue
-		}
-
-		if c.Name == "Hidden Categories" {
-			continue
-		}
-
-		if *c.CategoryGroupName == "Internal Master Category" && c.Name != "Uncategorized" {
+		if *c.CategoryGroupName == "Credit Card Payments" || *c.CategoryGroupName == "Internal Master Category" {
 			continue
 		}
 
