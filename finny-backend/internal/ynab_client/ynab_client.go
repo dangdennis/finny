@@ -2,10 +2,8 @@ package ynab_client
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/finny/finny-backend/internal/ynab_openapi"
@@ -70,48 +68,6 @@ func (y *YNABClient) GetLatestBudget(ctx context.Context) (*ynab_openapi.BudgetD
 	}
 
 	return budgetResp.JSON200, nil
-}
-
-func (y *YNABClient) WriteBudgetToFile(budget *ynab_openapi.BudgetDetailResponse, filename string) error {
-	jsonData, err := json.MarshalIndent(budget, "", "    ")
-	if err != nil {
-		return fmt.Errorf("failed to marshal budget to JSON: %w", err)
-	}
-
-	err = os.WriteFile(filename, jsonData, 0777)
-	if err != nil {
-		return fmt.Errorf("failed to write budget to file: %w", err)
-	}
-
-	return nil
-}
-func (y *YNABClient) WriteCategoriesToFile(categories *ynab_openapi.CategoriesResponse, filename string) error {
-	jsonData, err := json.MarshalIndent(categories, "", "    ")
-	if err != nil {
-		return fmt.Errorf("failed to marshal categories to JSON: %w", err)
-	}
-
-	err = os.WriteFile(filename, jsonData, 0777)
-	if err != nil {
-		return fmt.Errorf("failed to write categories to file: %w", err)
-	}
-
-	return nil
-}
-
-func (y *YNABClient) ReadCategoriesFromFile(filename string) (*ynab_openapi.CategoriesResponse, error) {
-	data, err := os.ReadFile(filename)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read categories file: %w", err)
-	}
-
-	var categories ynab_openapi.CategoriesResponse
-	err = json.Unmarshal(data, &categories)
-	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal categories JSON: %w", err)
-	}
-
-	return &categories, nil
 }
 
 func (y *YNABClient) GetMonthDetail(ctx context.Context, budgetID string, month time.Time) (*ynab_openapi.MonthDetail, error) {
