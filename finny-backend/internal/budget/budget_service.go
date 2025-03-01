@@ -48,6 +48,10 @@ func (b *BudgetService) GetAnnualAverageExpenseFromYNAB(userID uuid.UUID) (int64
 	}
 
 	var totalExpense int64
+	if len(monthBudgets) == 0 {
+		return totalExpense, nil
+	}
+
 	for _, budget := range monthBudgets {
 		if budget.Budget == nil {
 			continue
@@ -57,7 +61,7 @@ func (b *BudgetService) GetAnnualAverageExpenseFromYNAB(userID uuid.UUID) (int64
 		totalExpense += expenseForTheMonth
 	}
 
-	return totalExpense / int64(len(monthBudgets)), nil
+	return totalExpense / int64(len(monthBudgets)) * 12, nil
 }
 
 func (b *BudgetService) CalculateExpenseFromCategories(categories []ynab_openapi.Category) int64 {
@@ -84,7 +88,6 @@ func (b *BudgetService) FetchLast12MonthsDetails(ynab ynab_client.YNAB) ([]Month
 	ctx := context.Background()
 
 	var wg sync.WaitGroup
-	results := make([]MonthBudget, 12)
 	budgetChan := make(chan MonthBudget, 12)
 
 	now := time.Now().UTC()
@@ -110,19 +113,19 @@ func (b *BudgetService) FetchLast12MonthsDetails(ynab ynab_client.YNAB) ([]Month
 	wg.Wait()
 	close(budgetChan)
 
-	for result := range budgetChan {
-		if result.Error != nil {
-			if _, ok := result.Error.(*NetworkError); ok {
-				return []MonthBudget{}, &NetworkError{Message: result.Error.Error()}
+	existingBudgets := []MonthBudget{}
+	for budget := range budgetChan {
+		if budget.Error != nil {
+			if _, ok := budget.Error.(*NetworkError); ok {
+				return []MonthBudget{}, &NetworkError{Message: budget.Error.Error()}
 			}
 
 			// If the month is not found, we can skip it
 			continue
 		}
 
-		monthIndex := int(now.Sub(result.Month).Hours() / 24 / 30)
-		results[monthIndex] = result
+		existingBudgets = append(existingBudgets, budget)
 	}
 
-	return results, nil
+	return existingBudgets, nil
 }

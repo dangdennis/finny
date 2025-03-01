@@ -34,14 +34,14 @@ func TestBudgetService(t *testing.T) {
 			totalExpense := budgetSvc.CalculateExpenseFromCategories(categories)
 			assert.NoError(t, err)
 
-			assert.Equal(t, int64(7599), totalExpense)
+			assert.Equal(t, int64(8319), totalExpense)
 		})
 	})
 
 	t.Run("GetAnnualAverageExpenseFromYNAB", func(t *testing.T) {
-		t.Run("Average annual expense should return network error if any", func(t *testing.T) {
+		t.Run("Average annual expense should return network error if any one of the calls fail", func(t *testing.T) {
 			expectedErr := &NetworkError{Message: "Simulated network error"}
-			budgetSvc, err := setupBudgetServiceWithMockClient(true, false, 1)
+			budgetSvc, err := setupBudgetServiceWithMockClient(true, false, 1, 0) // One call will fail with a NetworkError
 			assert.NoError(t, err)
 			_, err = budgetSvc.GetAnnualAverageExpenseFromYNAB(uuid.UUID{})
 			assert.Error(t, err)
@@ -49,29 +49,33 @@ func TestBudgetService(t *testing.T) {
 		})
 
 		t.Run("Default to 0 if user doesn't have any budget data", func(t *testing.T) {
-			budgetSvc, err := setupBudgetServiceWithMockClient(false, true, 12)
+			budgetSvc, err := setupBudgetServiceWithMockClient(false, true, 12, 0) // All 12 calls to get month details will return a NotFoundError
 			assert.NoError(t, err)
 			avgExp, err := budgetSvc.GetAnnualAverageExpenseFromYNAB(uuid.UUID{})
 			assert.NoError(t, err)
-			assert.LessOrEqual(t, avgExp, int64(0))
+			assert.Equal(t, avgExp, int64(0))
 		})
 
-		// t.Run("Should fetch last 12 months and calculate average, skipping any months that dont have data", func(t *testing.T) {
-		// 	budgetSvc, err := setupBudgetServiceWithMockClient(false, true, 4)
-		// 	assert.NoError(t, err)
-		// 	avgExp, err := budgetSvc.GetAnnualAverageExpenseFromYNAB(uuid.UUID{})
-		// 	assert.NoError(t, err)
-		// 	assert.LessOrEqual(t, avgExp, int64(1231231123))
-		// })
+		t.Run("Should fetch last 12 months and calculate annual expense average, skipping any months that dont have data", func(t *testing.T) {
+			budgetSvc, err := setupBudgetServiceWithMockClient(false, true, 6, 2) // Skip 6 months, so get average of 6 months then mult by 12 for annual average
+			assert.NoError(t, err)
+			avgExp, err := budgetSvc.GetAnnualAverageExpenseFromYNAB(uuid.UUID{})
+			assert.NoError(t, err)
+			assert.Equal(t, avgExp, int64(191028))
+		})
 	})
 }
 
+// todo(dennis): This mock API is not nice and should be refactored such that we can have more control over
+// how each ynabclient method behaves without having to append more and more fields here.
 type MockYNABClient struct {
 	simulateNetworkError  bool
 	simulateNotFoundError bool
 	callCount             int
 	numErrors             int
-	mu                    sync.Mutex // To make it safe for concurrent access
+	// expenseMultFactor is a multiplier used to change the total expense calculated from GetMonthDetail for more variation.
+	expenseMultFactor int
+	monthDetailMutex  sync.Mutex
 }
 
 type MockYNABAuthService struct {
@@ -86,18 +90,27 @@ func (m *MockYNABAuthService) GetAccessToken(userID uuid.UUID) (models.YNABToken
 }
 
 func (m *MockYNABClient) GetMonthDetail(ctx context.Context, budgetID string, month time.Time) (*ynab_openapi.MonthDetail, error) {
-	m.mu.Lock()
+	m.monthDetailMutex.Lock()
+	defer m.monthDetailMutex.Unlock()
+
 	m.callCount++
-	m.mu.Unlock()
+
+	expenseMultFactor := m.expenseMultFactor
+	if m.expenseMultFactor > 0 {
+		m.expenseMultFactor++
+	}
 
 	// Simulate errors up to desired number of errors
-	if m.numErrors > 0 {
-		m.numErrors--
-		if m.simulateNotFoundError {
+	if m.simulateNetworkError {
+		if m.numErrors > 0 {
+			m.numErrors--
+			return nil, &NetworkError{Message: "Simulated network error"}
+		}
+	} else if m.simulateNotFoundError {
+		if m.numErrors > 0 {
+			m.numErrors--
 			return nil, &NotFoundError{Message: "Simulated not found"}
 		}
-
-		return nil, &NetworkError{Message: "Simulated network error"}
 	}
 
 	monthDetail, err := ynab_client.ReadMonthDetailsFromFile("month_details.json")
@@ -105,7 +118,11 @@ func (m *MockYNABClient) GetMonthDetail(ctx context.Context, budgetID string, mo
 		return nil, err
 	}
 
-	fmt.Println("monthDetail", monthDetail)
+	if expenseMultFactor > 0 {
+		// We change the category in the 7th index pos because it just happens to be the first expense-contributing category.
+		monthDetail.Categories[7].Activity = monthDetail.Categories[7].Activity * int64(expenseMultFactor)
+		fmt.Println("monthDetail.Categories[7].Activity - expenseMultFactor", monthDetail.Categories[7].Activity, expenseMultFactor)
+	}
 
 	return monthDetail, nil
 }
@@ -118,12 +135,13 @@ func (m *MockYNABClient) GetLatestCategories(ctx context.Context) (*ynab_openapi
 	return &ynab_openapi.CategoriesResponse{}, nil
 }
 
-func setupBudgetServiceWithMockClient(simulateNetworkError bool, simulateNotFoundError bool, numErrors int) (*BudgetService, error) {
+func setupBudgetServiceWithMockClient(simulateNetworkError bool, simulateNotFoundError bool, numErrors int, expenseVarianceFactor int) (*BudgetService, error) {
 	mockClient := &MockYNABClient{
 		simulateNetworkError:  simulateNetworkError,
 		simulateNotFoundError: simulateNotFoundError,
 		callCount:             0,
 		numErrors:             numErrors,
+		expenseMultFactor:     expenseVarianceFactor,
 	}
 
 	mockAuthService := &MockYNABAuthService{
