@@ -113,6 +113,7 @@ func (y *YNABAuthService) ExchangeCodeForTokens(code string, state string) error
 		return fmt.Errorf("failed to get user ID from state: %w", err)
 	}
 
+	fmt.Printf("token response: %+v\n", tokenResponse)
 	err = y.StoreAccessToken(&tokenResponse, userID)
 	if err != nil {
 		return fmt.Errorf("failed to store token: %w", err)
