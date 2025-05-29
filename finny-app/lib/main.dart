@@ -36,7 +36,7 @@ void main() async {
 
   final navigationProvider = NavigationProvider();
   final ynabProvider = YNABProvider(
-    baseUrl: 'https://api.finny.finance',
+    baseUrl: 'https://finny-production.up.railway.app',
   );
   final authService = AuthService(Supabase.instance.client);
 
