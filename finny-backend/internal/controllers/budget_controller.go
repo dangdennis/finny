@@ -31,7 +31,7 @@ func (b *BudgetController) GetExpense(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "Failed to get current expense")
 	}
 
-	return c.JSON(http.StatusOK, map[string]interface{}{
+	return c.JSON(http.StatusOK, map[string]any{
 		"expense": expenseTotal,
 	})
 }
