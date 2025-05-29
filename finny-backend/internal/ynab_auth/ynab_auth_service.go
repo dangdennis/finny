@@ -1,13 +1,11 @@
 package ynab_auth
 
 import (
-	"bytes"
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -105,18 +103,8 @@ func (y *YNABAuthService) ExchangeCodeForTokens(code string, state string) error
 	}
 	defer resp.Body.Close()
 
-	// Read the body once into a byte slice
-	bodyBytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println("Raw body:", string(bodyBytes))
-
-	copiedReader := bytes.NewReader(bodyBytes)
-
 	var tokenResponse TokenResponse
-	if err := json.NewDecoder(copiedReader).Decode(&tokenResponse); err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(&tokenResponse); err != nil {
 		return fmt.Errorf("failed to decode token response: %w", err)
 	}
 
