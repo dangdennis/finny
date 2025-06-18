@@ -199,6 +199,34 @@ class _FinancialCalculatorViewState extends State<FinancialCalculatorView>
         if (value == null || value.isEmpty) {
           return 'Please enter a value';
         }
+
+        final int? numValue = int.tryParse(value);
+        if (numValue == null) {
+          return 'Please enter a valid number';
+        }
+
+        // Age validation for current age and retirement age
+        if (label.contains('Age')) {
+          if (numValue < 1 || numValue > 100) {
+            return 'Age must be between 1 and 100';
+          }
+
+          // Additional validation for current vs retirement age
+          if (label.contains('Current Age')) {
+            final retirementAge = int.tryParse(_retirementAgeController.text);
+            if (retirementAge != null && numValue >= retirementAge) {
+              return 'Current age must be less than retirement age';
+            }
+          }
+
+          if (label.contains('Retirement Age')) {
+            final currentAge = int.tryParse(_currentAgeController.text);
+            if (currentAge != null && numValue <= currentAge) {
+              return 'Retirement age must be greater than current age';
+            }
+          }
+        }
+
         return null;
       },
       enabled: enabled,
@@ -314,7 +342,7 @@ class _FinancialCalculatorViewState extends State<FinancialCalculatorView>
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(
             flex: 4,
@@ -596,6 +624,9 @@ class _FinancialCalculatorViewState extends State<FinancialCalculatorView>
 
   String printActualRetirementAge() {
     num age = _getActualRetirementAge();
+    if (age <= 0) {
+      return 'Retire now!';
+    }
     return '${age.round()} years old';
   }
 
