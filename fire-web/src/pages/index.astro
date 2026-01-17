@@ -1,0 +1,47 @@
+---
+import '../styles/global.css';
+import FIRECalculator from '../components/FIRECalculator.svelte';
+---
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<meta
+			name="description"
+			content="Plan your FIRE savings with a clean, fast retirement calculator."
+		/>
+		<title>Fire Web | Retirement Savings Planner</title>
+	</head>
+	<body>
+		<div class="page">
+			<header class="site-header">
+				<div class="logo">fire-web</div>
+				<div class="nav-pill">FIRE savings planner</div>
+			</header>
+
+			<main class="container">
+				<section class="hero">
+					<div class="chip-row">
+						<span class="chip">Perpetual interest</span>
+						<span class="chip">Tax-aware returns</span>
+						<span class="chip">Inflation adjusted</span>
+					</div>
+					<h1>Retire freely with a savings plan you can trust.</h1>
+					<p>
+						Estimate the portfolio you need to live on interest and the monthly
+						contribution required to reach your target retirement age.
+					</p>
+				</section>
+
+				<FIRECalculator client:load />
+			</main>
+
+			<footer class="footer">
+				All values are in today&apos;s dollars. Adjust assumptions to match your plan.
+			</footer>
+		</div>
+	</body>
+</html>
